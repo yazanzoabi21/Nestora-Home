@@ -1,0 +1,20 @@
+<article class="analytics-card">
+  <div class="mb-5">
+    <h2 class="text-xl font-bold text-[#1f2a1f]">Sales by Category</h2>
+    <p class="mt-1 text-sm font-medium text-[#8d877e]">Share of sales by product group</p>
+  </div>
+
+  <highcharts-chart [options]="chartOptions" class="block h-[280px] w-full"></highcharts-chart>
+
+  <div class="mt-5 space-y-3">
+    @for (category of categories; track category.name) {
+      <div class="flex items-center justify-between gap-4 text-sm">
+        <span class="flex items-center gap-3 font-semibold text-[#342f29]">
+          <span class="h-2.5 w-2.5 rounded-full" [style.background]="category.color"></span>
+          {{ category.name }}
+        </span>
+        <span class="font-bold text-[#8d877e]">{{ category.value }}%</span>
+      </div>
+    }
+  </div>
+</article>

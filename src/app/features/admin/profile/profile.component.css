@@ -1,0 +1,152 @@
+:host {
+  display: block;
+}
+
+.profile-card {
+  border: 1px solid #e5ded2;
+  border-radius: 1rem;
+  background: #fff;
+  padding: 1.5rem;
+  box-shadow: 0 12px 32px rgba(52, 47, 41, 0.06);
+}
+
+.card-title {
+  color: #1f2a1f;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.icon-box {
+  display: flex;
+  height: 2.75rem;
+  width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: #eef4e8;
+  color: #5f6f43;
+}
+
+.primary-action,
+.secondary-action {
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  padding: 0 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.primary-action {
+  background: #5f6f43;
+  color: #fff;
+}
+
+.primary-action:hover {
+  background: #53613b;
+}
+
+.secondary-action {
+  border: 1px solid #e5ded2;
+  background: #fff;
+  color: #342f29;
+}
+
+.secondary-action:hover {
+  background: #f7f4ef;
+}
+
+.profile-field {
+  position: relative;
+  display: flex;
+  min-height: 46px;
+  width: 100%;
+  align-items: center;
+  border-radius: 0.75rem;
+  border: 1px solid #e5ded2;
+  background: #fff;
+  padding: 0 1rem;
+  color: #342f29;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.toggle-on,
+.toggle-off {
+  position: relative;
+  height: 26px;
+  width: 48px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  transition: background-color 160ms ease;
+}
+
+.toggle-on {
+  background: #5f6f43;
+}
+
+.toggle-off {
+  background: #dedbd6;
+}
+
+.toggle-on span,
+.toggle-off span {
+  position: absolute;
+  top: 3px;
+  height: 20px;
+  width: 20px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(31, 42, 31, 0.18);
+}
+
+.toggle-on span {
+  right: 3px;
+}
+
+.toggle-off span {
+  left: 3px;
+}
+
+.select-pill {
+  display: flex;
+  height: 40px;
+  min-width: 150px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5ded2;
+  background: #fff;
+  padding: 0 0.875rem;
+  color: #342f29;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 160ms ease;
+}
+
+.select-pill:hover {
+  background: #f7f4ef;
+}
+
+.danger-action {
+  height: 2.5rem;
+  min-width: 9.25rem;
+  border-width: 1px;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background-color 160ms ease;
+}

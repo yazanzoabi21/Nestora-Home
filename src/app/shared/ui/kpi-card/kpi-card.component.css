@@ -1,0 +1,8 @@
+:host {
+  display: block;
+}
+
+:host ::ng-deep .highcharts-container,
+:host ::ng-deep .highcharts-root {
+  overflow: visible;
+}

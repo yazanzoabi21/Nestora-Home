@@ -1,0 +1,24 @@
+<article class="analytics-card">
+  <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h2 class="text-xl font-bold text-[#1f2a1f]">Sales vs Orders</h2>
+      <p class="mt-1 text-sm font-medium text-[#8d877e]">Revenue and order volume comparison</p>
+    </div>
+
+    <div class="inline-flex w-fit rounded-2xl bg-[#f1eee8] p-1">
+      @for (filter of filters; track filter) {
+        <button
+          type="button"
+          class="h-10 rounded-xl px-4 text-sm font-semibold text-[#8d877e] transition"
+          [class.bg-white]="filter === '7D'"
+          [class.text-[#1f2a1f]]="filter === '7D'"
+          [class.shadow-sm]="filter === '7D'"
+        >
+          {{ filter }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <highcharts-chart [options]="chartOptions" class="block h-80 w-full"></highcharts-chart>
+</article>

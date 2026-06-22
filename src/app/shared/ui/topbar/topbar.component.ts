@@ -1,9 +1,26 @@
-﻿import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { UserMenuComponent } from '../user-menu';
+
+export interface TopbarUser {
+  name: string;
+  role: string;
+  initials: string;
+}
 
 @Component({
-  selector: 'ui-topbar',
+  selector: 'app-topbar',
   standalone: true,
+  imports: [UserMenuComponent],
   templateUrl: './topbar.component.html',
-  styleUrl: './topbar.component.scss',
+  styleUrl: './topbar.component.css',
 })
-export class TopbarComponent {}
+export class TopbarComponent {
+  @Input() user: TopbarUser = {
+    name: 'Alex Johnson',
+    role: 'Super Admin',
+    initials: 'AJ',
+  };
+
+  readonly dateLabel = 'Wednesday, 22 April 2026';
+  readonly notificationCount = 3;
+}

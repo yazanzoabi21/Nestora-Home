@@ -1,0 +1,72 @@
+<div class="relative">
+  <button
+    type="button"
+    class="flex items-center gap-3 rounded-full py-1.5 pl-1.5 pr-2.5 transition duration-200 hover:bg-[#efeae2]"
+    aria-label="Open user menu"
+    [attr.aria-expanded]="isOpen()"
+    (click)="toggleMenu()"
+  >
+    <span class="flex h-11 w-11 items-center justify-center rounded-full bg-[#6f7d42] text-sm font-bold text-white">
+      {{ user.initials }}
+    </span>
+
+    <span class="hidden text-left sm:block">
+      <span class="block text-sm font-semibold leading-5 text-[#342f29]">{{ user.name }}</span>
+      <span class="block text-xs font-medium leading-4 text-[#9a9389]">{{ user.role }}</span>
+    </span>
+
+    <i
+      class="pi pi-chevron-down text-xs text-[#8e867c] transition-transform duration-200"
+      [class.rotate-180]="isOpen()"
+    ></i>
+  </button>
+
+  @if (isOpen()) {
+    <div
+      class="absolute right-0 top-full z-50 mt-3 w-[250px] rounded-2xl border border-[#e5ded2] bg-white p-2 shadow-[0_18px_45px_rgba(52,47,41,0.12)]"
+      role="menu"
+    >
+      <a
+        routerLink="/admin/profile"
+        class="flex h-12 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-[#342f29] transition duration-200 hover:bg-[#f7f4ef]"
+        role="menuitem"
+        (click)="closeMenu()"
+      >
+        <i class="pi pi-user text-base text-[#7d756b]"></i>
+        <span>My Profile</span>
+      </a>
+
+      <!-- <a
+        routerLink="/admin/profile"
+        class="flex h-12 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-[#342f29] transition duration-200 hover:bg-[#f7f4ef]"
+        role="menuitem"
+        (click)="closeMenu()"
+      >
+        <i class="pi pi-cog text-base text-[#7d756b]"></i>
+        <span>Account Settings</span>
+      </a> -->
+
+      <a
+        routerLink="/admin/help-support"
+        class="flex h-12 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-[#342f29] transition duration-200 hover:bg-[#f7f4ef]"
+        role="menuitem"
+        (click)="closeMenu()"
+      >
+        <i class="pi pi-question-circle text-base text-[#7d756b]"></i>
+        <span>Help &amp; Support</span>
+      </a>
+
+      <div class="my-2 h-px bg-[#e5ded2]" aria-hidden="true"></div>
+
+      <button
+        type="button"
+        class="flex h-12 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-[#dc3f35] transition duration-200 hover:bg-[#fff1f0]"
+        role="menuitem"
+        (click)="signOut()"
+      >
+        <i class="pi pi-sign-out text-base text-[#dc3f35]"></i>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  }
+</div>

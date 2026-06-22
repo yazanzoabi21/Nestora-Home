@@ -1,0 +1,7 @@
+.topbar-search input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.topbar-search input {
+  appearance: none;
+}

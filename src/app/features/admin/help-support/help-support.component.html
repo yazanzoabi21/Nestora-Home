@@ -1,0 +1,206 @@
+<main class="min-h-[calc(100vh-88px)] bg-[#f7f4ef] px-6 py-7 text-[#1f2a1f] lg:px-8">
+  <section class="mb-7">
+    <h1 class="text-3xl font-bold text-[#1f2a1f]">Help &amp; Support</h1>
+    <p class="mt-1 max-w-3xl text-sm font-medium text-[#8d877e] md:text-base">
+      Get assistance, browse help resources, and contact the Nestora Home support team.
+    </p>
+  </section>
+
+  <section class="help-card mb-6">
+    <div class="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+      <div class="flex min-w-0 flex-1 gap-5">
+        <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eef4e8] text-[#5f6f43]">
+          <i class="pi pi-headphones text-2xl"></i>
+        </span>
+        <div class="min-w-0 flex-1">
+          <h2 class="text-2xl font-bold text-[#1f2a1f]">How can we help you today?</h2>
+          <label class="mt-5 flex h-12 max-w-3xl items-center gap-3 rounded-xl border border-[#e5ded2] bg-[#fbfaf8] px-4 text-[#8d877e] transition focus-within:border-[#b8ad9d] focus-within:bg-white">
+            <i class="pi pi-search text-sm"></i>
+            <input
+              type="search"
+              class="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#342f29] outline-none placeholder:text-[#8d877e]"
+              placeholder="Search help articles, guides, and FAQs"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2 xl:max-w-[480px] xl:justify-end">
+        @for (action of quickActions; track action.label) {
+          <button type="button" class="quick-chip">
+            <i class="{{ action.icon }} text-sm"></i>
+            {{ action.label }}
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)_420px]">
+    <article class="help-card">
+      <div class="mb-6">
+        <h2 class="card-title">Contact Support</h2>
+        <p class="mt-1 text-sm font-medium text-[#8d877e]">Choose your preferred support channel.</p>
+      </div>
+
+      <div class="space-y-4">
+        @for (channel of supportChannels; track channel.title) {
+          <div class="flex items-center gap-4 rounded-xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+            <span class="icon-box">
+              <i class="{{ channel.icon }} text-base"></i>
+            </span>
+            <div>
+              <h3 class="text-sm font-bold text-[#342f29]">{{ channel.title }}</h3>
+              <p class="mt-1 text-sm font-medium text-[#8d877e]">{{ channel.detail }}</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        <button type="button" class="primary-action">
+          <i class="pi pi-comments text-sm"></i>
+          Start Live Chat
+        </button>
+        <button type="button" class="secondary-action">
+          <i class="pi pi-ticket text-sm"></i>
+          Create Ticket
+        </button>
+      </div>
+    </article>
+
+    <article class="help-card">
+      <div class="mb-6">
+        <h2 class="card-title">Popular Help Articles</h2>
+        <p class="mt-1 text-sm font-medium text-[#8d877e]">Browse our most helpful articles and guides.</p>
+      </div>
+
+      <div class="space-y-2">
+        @for (article of helpArticles; track article.title) {
+          <button type="button" class="list-row">
+            <span class="flex items-center gap-3">
+              <i class="{{ article.icon }} text-base text-[#7d756b]"></i>
+              <span>{{ article.title }}</span>
+            </span>
+            <i class="pi pi-chevron-right text-xs text-[#8d877e]"></i>
+          </button>
+        }
+      </div>
+    </article>
+
+    <div class="space-y-6">
+      <article class="help-card">
+        <div class="mb-6">
+          <h2 class="card-title">Ticket Status</h2>
+          <p class="mt-1 text-sm font-medium text-[#8d877e]">Overview of your support tickets.</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          @for (stat of ticketStats; track stat.label) {
+            <div [class]="'rounded-xl px-3 py-4 text-center ' + stat.className">
+              <p class="text-2xl font-bold">{{ stat.value }}</p>
+              <p class="mt-1 text-xs font-bold">{{ stat.label }}</p>
+            </div>
+          }
+        </div>
+
+        <div class="mt-6 space-y-3">
+          <h3 class="text-sm font-bold text-[#1f2a1f]">Recent Tickets</h3>
+          @for (ticket of recentTickets; track ticket.id) {
+            <div class="rounded-xl border border-[#e5ded2] bg-[#fbfaf8] p-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-[#5f6f43]">{{ ticket.id }}</p>
+                  <h4 class="mt-1 truncate text-sm font-bold text-[#342f29]">{{ ticket.title }}</h4>
+                  <p class="mt-1 text-xs font-medium text-[#8d877e]">{{ ticket.date }}</p>
+                </div>
+                <span [class]="'shrink-0 rounded-full px-3 py-1 text-xs font-semibold ' + ticket.badgeClass">
+                  {{ ticket.status }}
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button type="button" class="mt-5 h-11 w-full rounded-xl border border-[#e5ded2] bg-white text-sm font-semibold text-[#5f6f43] transition hover:bg-[#f7f4ef]">
+          View All Tickets
+        </button>
+      </article>
+
+      <article class="help-card">
+        <div class="mb-6">
+          <h2 class="card-title">FAQ Categories</h2>
+          <p class="mt-1 text-sm font-medium text-[#8d877e]">Explore help topics by category.</p>
+        </div>
+
+        <div class="space-y-2">
+          @for (category of faqCategories; track category.title) {
+            <button type="button" class="list-row">
+              <span class="flex items-center gap-3">
+                <i class="{{ category.icon }} text-base text-[#7d756b]"></i>
+                <span>{{ category.title }}</span>
+              </span>
+              <i class="pi pi-chevron-right text-xs text-[#8d877e]"></i>
+            </button>
+          }
+        </div>
+      </article>
+
+      <article class="help-card">
+        <div class="flex items-start gap-4">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eef4e8] text-[#5f6f43]">
+            <i class="pi pi-check-circle text-lg"></i>
+          </span>
+          <div>
+            <h2 class="card-title">System Status</h2>
+            <p class="mt-1 text-sm font-medium text-[#8d877e]">All systems are running normally.</p>
+            <p class="mt-4 inline-flex items-center gap-2 rounded-full bg-[#eef4e8] px-3 py-1 text-xs font-bold text-[#5f6f43]">
+              <span class="h-2 w-2 rounded-full bg-[#8fc263]"></span>
+              All Systems Operational
+            </p>
+            <p class="mt-3 text-xs font-medium text-[#8d877e]">Updated 22 Apr 2026, 09:15 AM</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="help-card mt-6">
+    <div class="mb-6">
+      <h2 class="card-title">Submit a Support Request</h2>
+      <p class="mt-1 text-sm font-medium text-[#8d877e]">Fill out the form below and our team will get back to you.</p>
+    </div>
+
+    <div class="grid gap-5 lg:grid-cols-3">
+      <label class="field-label">
+        <span>Subject</span>
+        <input class="support-field" placeholder="Brief summary of your issue" />
+      </label>
+      <label class="field-label">
+        <span>Category</span>
+        <div class="relative">
+          <input class="support-field pr-10" placeholder="Select a category" />
+          <i class="pi pi-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#8d877e]"></i>
+        </div>
+      </label>
+      <label class="field-label">
+        <span>Priority</span>
+        <div class="relative">
+          <input class="support-field pr-10" placeholder="Select priority" />
+          <i class="pi pi-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#8d877e]"></i>
+        </div>
+      </label>
+      <label class="field-label lg:col-span-3">
+        <span>Message</span>
+        <textarea class="support-field min-h-32 resize-none py-3" placeholder="Please provide details about your issue..."></textarea>
+      </label>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <button type="button" class="primary-action px-7" (click)="submitRequest()">
+        <i class="pi pi-send text-sm"></i>
+        Submit Request
+      </button>
+    </div>
+  </section>
+</main>

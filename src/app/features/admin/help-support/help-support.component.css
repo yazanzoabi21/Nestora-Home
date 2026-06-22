@@ -1,0 +1,139 @@
+:host {
+  display: block;
+}
+
+.help-card {
+  border: 1px solid #e5ded2;
+  border-radius: 1rem;
+  background: #fff;
+  padding: 1.5rem;
+  box-shadow: 0 12px 32px rgba(52, 47, 41, 0.06);
+}
+
+.card-title {
+  color: #1f2a1f;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.icon-box {
+  display: flex;
+  height: 2.75rem;
+  width: 2.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: #eef4e8;
+  color: #5f6f43;
+}
+
+.quick-chip {
+  display: inline-flex;
+  height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid #e5ded2;
+  background: #fbfaf8;
+  padding: 0 1rem;
+  color: #5f6f43;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.quick-chip:hover {
+  border-color: #cfc5b8;
+  background: #eef4e8;
+}
+
+.primary-action,
+.secondary-action {
+  display: inline-flex;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.primary-action {
+  background: #5f6f43;
+  color: #fff;
+}
+
+.primary-action:hover {
+  background: #53613b;
+}
+
+.secondary-action {
+  border: 1px solid #e5ded2;
+  background: #fff;
+  color: #5f6f43;
+}
+
+.secondary-action:hover {
+  background: #f7f4ef;
+}
+
+.list-row {
+  display: flex;
+  min-height: 3.25rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: 0.75rem;
+  padding: 0 1rem;
+  color: #342f29;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background-color 160ms ease;
+}
+
+.list-row:hover {
+  background: #f7f4ef;
+}
+
+.field-label {
+  display: grid;
+  gap: 0.5rem;
+  color: #342f29;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.support-field {
+  min-height: 2.875rem;
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #e5ded2;
+  background: #fff;
+  padding: 0 1rem;
+  color: #342f29;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.support-field::placeholder {
+  color: #a19a90;
+}
+
+.support-field:focus {
+  border-color: #b8ad9d;
+  box-shadow: 0 0 0 3px rgba(95, 111, 67, 0.1);
+}

@@ -1,0 +1,57 @@
+<main class="min-h-[calc(100vh-88px)] bg-[#f7f4ef] px-6 py-7 lg:px-8">
+  <section class="mb-6 flex flex-col gap-5 rounded-2xl border-0 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">Dashboard</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        Welcome back, Alex. Here's what's happening today.
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <button
+        type="button"
+        class="flex h-11 min-w-[170px] items-center justify-between gap-4 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-semibold text-[#342f29] shadow-sm transition hover:bg-[#f7f4ef]"
+        (click)="selectMonth()"
+      >
+        <span>April 2026</span>
+        <i class="pi pi-chevron-down text-xs text-[#8d877e]"></i>
+      </button>
+
+      <button
+        type="button"
+        class="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-6 text-sm font-bold text-white shadow-sm transition hover:bg-[#53613b]"
+        (click)="exportReport()"
+      >
+        <i class="pi pi-download text-sm"></i>
+        Export Report
+      </button>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards; track card.title) {
+      <app-kpi-card [data]="card"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <div class="xl:col-span-2">
+      <app-revenue-overview-chart></app-revenue-overview-chart>
+    </div>
+    <app-sales-category-chart></app-sales-category-chart>
+  </section>
+
+  <section class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <div class="xl:col-span-2">
+      <app-sales-orders-chart></app-sales-orders-chart>
+    </div>
+    <app-sales-performance-card></app-sales-performance-card>
+  </section>
+
+  <section class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <div class="xl:col-span-2">
+      <app-recent-orders-card></app-recent-orders-card>
+    </div>
+    <app-best-selling-products-card></app-best-selling-products-card>
+  </section>
+</main>

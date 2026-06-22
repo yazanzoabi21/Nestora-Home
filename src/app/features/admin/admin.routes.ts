@@ -1,14 +1,46 @@
-﻿import { Routes } from '@angular/router';
+﻿// import { Routes } from '@angular/router';
+// import { AdminLayoutComponent } from '../../core/layouts/admin-layout';
+// import { authGuard } from '../../core/guards/auth.guard';
+// import { permissionGuard } from '../../core/guards/permission.guard';
+// import { roleGuard } from '../../core/guards/role.guard';
+
+// export const ADMIN_ROUTES: Routes = [
+//   {
+//     path: '',
+//     component: AdminLayoutComponent,
+//     canActivate: [authGuard, roleGuard, permissionGuard],
+//     children: [],
+//   },
+// ];
+
+import { Routes } from '@angular/router';
 import { AdminLayoutComponent } from '../../core/layouts/admin-layout';
-import { authGuard } from '../../core/guards/auth.guard';
-import { permissionGuard } from '../../core/guards/permission.guard';
-import { roleGuard } from '../../core/guards/role.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
     path: '',
     component: AdminLayoutComponent,
-    canActivate: [authGuard, roleGuard, permissionGuard],
-    children: [],
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./profile').then((m) => m.ProfileComponent),
+      },
+      {
+        path: 'help-support',
+        loadComponent: () =>
+          import('./help-support').then((m) => m.HelpSupportComponent),
+      },
+    ],
   },
 ];

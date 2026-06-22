@@ -1,0 +1,226 @@
+<main class="min-h-[calc(100vh-88px)] bg-[#f7f4ef] px-6 py-7 text-[#1f2a1f] lg:px-8">
+  <section class="mb-7 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-[#1f2a1f]">Profile &amp; Settings</h1>
+      <p class="mt-1 max-w-3xl text-sm font-medium text-[#8d877e] md:text-base">
+        Manage your personal information, security, preferences, and account controls in one place.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button type="button" class="secondary-action">Cancel</button>
+      <button type="button" class="primary-action">Save Changes</button>
+    </div>
+  </section>
+
+  <section class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)_420px]">
+    <article class="profile-card xl:min-h-[660px]">
+      <h2 class="card-title">Profile Summary</h2>
+
+      <div class="mt-6 flex flex-col items-center text-center">
+        <div class="flex h-32 w-32 items-center justify-center rounded-full bg-[#5f6f43] text-5xl font-bold text-white shadow-inner">
+          {{ profileSummary.initials }}
+        </div>
+        <h3 class="mt-4 text-2xl font-bold text-[#1f2a1f]">{{ profileSummary.name }}</h3>
+        <p class="text-base font-medium text-[#8d877e]">{{ profileSummary.role }}</p>
+        <span class="mt-3 inline-flex items-center gap-2 rounded-full bg-[#eef4e8] px-3 py-1 text-sm font-medium text-[#5f6f43]">
+          <span class="h-2 w-2 rounded-full bg-[#8fc263]"></span>
+          {{ profileSummary.status }}
+        </span>
+      </div>
+
+      <div class="my-6 h-px bg-[#e5ded2]"></div>
+
+      <div class="space-y-4">
+        @for (detail of profileSummary.details; track detail.value) {
+          <div class="flex items-center gap-3 text-sm font-medium text-[#8d877e]">
+            <i class="{{ detail.icon }} text-base text-[#7d756b]"></i>
+            <span>{{ detail.value }}</span>
+          </div>
+        }
+      </div>
+
+      <button type="button" class="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white text-sm font-semibold text-[#5f6f43] transition hover:bg-[#f7f4ef]">
+        <i class="pi pi-upload text-sm"></i>
+        Change Avatar
+      </button>
+    </article>
+
+    <div class="space-y-6">
+      <article class="profile-card">
+        <div class="card-heading">
+          <span class="icon-box">
+            <i class="pi pi-user text-lg"></i>
+          </span>
+          <h2 class="card-title">Personal Information</h2>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          @for (field of personalFields; track field.label) {
+            <div class="space-y-2 text-sm font-medium text-[#342f29]">
+              <span>{{ field.label }}</span>
+              <div class="profile-field" [class.pr-10]="field.hasChevron">
+                {{ field.value }}
+                @if (field.hasChevron) {
+                  <i class="pi pi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#8d877e]"></i>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="profile-card xl:min-h-[405px]">
+        <div class="card-heading">
+          <span class="icon-box">
+            <i class="pi pi-shield text-lg"></i>
+          </span>
+          <h2 class="card-title">Security &amp; Login</h2>
+        </div>
+
+        <div class="grid gap-5 lg:grid-cols-[1fr_1.25fr_auto]">
+          @for (field of securityFields; track field.label) {
+            <div class="space-y-2 text-sm font-medium text-[#342f29]">
+              <span>{{ field.label }}</span>
+              <div class="profile-field">{{ field.value }}</div>
+            </div>
+          }
+          <button type="button" class="mt-auto h-11 rounded-xl border border-[#e5ded2] bg-white px-5 text-sm font-semibold text-[#5f6f43] transition hover:bg-[#f7f4ef]">
+            Change Password
+          </button>
+        </div>
+
+        <div class="mt-6 divide-y divide-[#e5ded2]">
+          @for (toggle of securityToggles; track toggle.label) {
+            <div class="flex items-center justify-between gap-4 py-4 first:pt-0">
+              <div>
+                <h3 class="text-sm font-bold text-[#1f2a1f]">{{ toggle.label }}</h3>
+                <p class="mt-1 text-sm font-medium text-[#8d877e]">{{ toggle.description }}</p>
+              </div>
+              <button type="button" class="toggle-on" [attr.aria-label]="toggle.label + ' enabled'">
+                <span></span>
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="pt-1">
+          <h3 class="text-sm font-bold text-[#1f2a1f]">Active Session</h3>
+          <div class="mt-3 flex flex-col gap-3 rounded-xl border border-[#e5ded2] bg-[#faf9f6] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-3 text-sm font-medium text-[#8d877e]">
+              <i class="pi pi-desktop text-base text-[#7d756b]"></i>
+              <span>{{ activeSession.device }}</span>
+            </div>
+            <span class="w-fit rounded-full bg-[#eef4e8] px-3 py-1 text-xs font-semibold text-[#5f6f43]">
+              {{ activeSession.badge }}
+            </span>
+          </div>
+          <div class="mt-5 flex justify-end">
+            <button type="button" class="h-11 rounded-xl border border-[#e5ded2] bg-white px-6 text-sm font-semibold text-[#5f6f43] transition hover:bg-[#f7f4ef]">
+              Manage Sessions
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="space-y-6">
+      <article class="profile-card">
+        <div class="card-heading">
+          <span class="icon-box">
+            <i class="pi pi-sliders-h text-lg"></i>
+          </span>
+          <h2 class="card-title">Preferences</h2>
+        </div>
+
+        <div class="space-y-4">
+          @for (preference of preferences; track preference.label) {
+            <div class="flex items-center justify-between gap-5">
+              <h3 class="text-sm font-bold text-[#342f29]">{{ preference.label }}</h3>
+              <button class="select-pill" type="button">
+                {{ preference.value }}
+                <i class="pi pi-chevron-down text-xs"></i>
+              </button>
+            </div>
+          }
+
+          @for (toggle of preferenceToggles; track toggle.label) {
+            <div class="flex items-center justify-between gap-5 pt-1">
+              <div>
+                <h3 class="text-sm font-bold text-[#342f29]">{{ toggle.label }}</h3>
+                <p class="mt-1 text-xs font-medium text-[#8d877e]">{{ toggle.description }}</p>
+              </div>
+              <button
+                type="button"
+                [class]="toggle.enabled ? 'toggle-on' : 'toggle-off'"
+                [attr.aria-label]="toggle.label + (toggle.enabled ? ' enabled' : ' disabled')"
+              >
+                <span></span>
+              </button>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="profile-card">
+        <div class="card-heading">
+          <span class="icon-box">
+            <i class="pi pi-clock text-lg"></i>
+          </span>
+          <h2 class="card-title">Recent Activity</h2>
+        </div>
+
+        <div class="space-y-5">
+          @for (activity of activities; track activity.title) {
+            <div class="flex gap-4">
+              <span class="mt-1.5 h-3 w-3 rounded-full bg-[#5f6f43]"></span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 class="text-sm font-bold text-[#342f29]">{{ activity.title }}</h3>
+                    <p class="mt-1 text-xs font-medium text-[#8d877e] sm:text-sm">{{ activity.date }}</p>
+                  </div>
+                  <span [class]="'rounded-full px-3 py-1 text-xs font-semibold ' + activity.badgeClass">
+                    {{ activity.status }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button type="button" class="mt-6 h-11 w-full rounded-xl border border-[#e5ded2] bg-white text-sm font-semibold text-[#5f6f43] transition hover:bg-[#f7f4ef]">
+          View All Activity
+        </button>
+      </article>
+
+      <article class="profile-card border-[#f1c7c2]">
+        <div class="mb-5 flex items-center gap-3 text-[#dc3f35]">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff1f0]">
+            <i class="pi pi-exclamation-triangle text-lg"></i>
+          </span>
+          <h2 class="card-title text-[#dc3f35]">Danger Zone</h2>
+        </div>
+
+        <div class="space-y-3">
+          @for (action of dangerActions; track action.title) {
+            <div class="flex flex-col gap-3 rounded-xl border border-[#f1e3df] bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-3">
+                <i class="{{ action.icon }} text-base text-[#dc3f35]"></i>
+                <div>
+                  <h3 class="text-sm font-bold" [class.text-[#dc3f35]]="action.title === 'Delete Account'" [class.text-[#342f29]]="action.title !== 'Delete Account'">
+                    {{ action.title }}
+                  </h3>
+                  <p class="text-xs font-medium text-[#8d877e]">{{ action.description }}</p>
+                </div>
+              </div>
+              <button type="button" [class]="'danger-action ' + action.buttonClass">
+                {{ action.buttonLabel }}
+              </button>
+            </div>
+          }
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
