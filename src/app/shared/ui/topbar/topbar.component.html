@@ -1,17 +1,30 @@
-<header class="flex h-[88px] w-full items-center justify-between border-b border-[#e5ded2] bg-[#f8f7f5] px-7 lg:px-8">
-  <div class="flex min-w-0 items-center gap-7">
-    <p class="whitespace-nowrap text-sm font-medium text-[#8d877e]">
-      {{ dateLabel }}
+<header
+  class="fixed left-0 right-0 top-0 z-[70] flex h-[72px] max-w-full min-w-0 items-center justify-between gap-3 overflow-visible border-b border-[#e5ded2] bg-[#f8f7f5] px-4 transition-[left] duration-300 sm:px-6 lg:h-[88px] lg:px-8"
+  [class.lg:left-[260px]]="!sidebarCollapsed"
+  [class.lg:left-[76px]]="sidebarCollapsed"
+>
+  <div class="flex min-w-0 items-center gap-3 sm:gap-5 lg:gap-7">
+    <button
+      type="button"
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#6f675e] transition hover:bg-[#efeae2] hover:text-[#37322d] lg:hidden"
+      [attr.aria-label]="'TOPBAR.OPEN_SIDEBAR' | translate"
+      (click)="menuClick.emit()"
+    >
+      <i class="pi pi-bars text-lg"></i>
+    </button>
+
+    <p class="hidden whitespace-nowrap text-sm font-medium text-[#8d877e] sm:block">
+      {{ 'TOPBAR.DATE' | translate }}
     </p>
 
     <label
-      class="topbar-search flex h-11 w-[210px] items-center gap-3 rounded-full border border-[#e5ded2] bg-[#f1eee8] px-4 text-[#9b948a] transition duration-200 focus-within:border-[#cfc5b8] focus-within:bg-white focus-within:shadow-sm"
-      aria-label="Search"
+      class="topbar-search hidden h-11 w-[clamp(150px,18vw,210px)] max-w-full items-center gap-3 rounded-full border border-[#e5ded2] bg-[#f1eee8] px-4 text-[#9b948a] transition duration-200 focus-within:border-[#cfc5b8] focus-within:bg-white focus-within:shadow-sm md:flex"
+      [attr.aria-label]="'COMMON.SEARCH' | translate"
     >
       <i class="pi pi-search text-sm"></i>
       <input
         type="search"
-        placeholder="Search..."
+        [placeholder]="'COMMON.SEARCH' | translate"
         class="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#544e46] outline-none placeholder:text-[#a8a096]"
       />
       <span class="rounded-full bg-[#e4ded4] px-2 py-1 text-[11px] font-semibold leading-none text-[#8a8176]">
@@ -20,11 +33,19 @@
     </label>
   </div>
 
-  <div class="flex items-center gap-5">
+  <div class="flex shrink-0 items-center gap-2 sm:gap-4 lg:gap-5">
+    <button
+      type="button"
+      class="flex h-10 min-w-14 items-center justify-center rounded-full border border-[#e5ded2] bg-white px-3 text-xs font-bold text-[#5f6f43] transition hover:bg-[#eef4e8]"
+      (click)="switchLanguage()"
+    >
+      {{ translation.currentLang() === 'en' ? ('COMMON.AR' | translate) : ('COMMON.EN' | translate) }}
+    </button>
+
     <button
       type="button"
       class="relative flex h-11 w-11 items-center justify-center rounded-full text-[#6f675e] transition duration-200 hover:bg-[#efeae2] hover:text-[#37322d]"
-      aria-label="Notifications"
+      [attr.aria-label]="'TOPBAR.NOTIFICATIONS' | translate"
     >
       <i class="pi pi-bell text-xl"></i>
       <span
@@ -34,7 +55,7 @@
       </span>
     </button>
 
-    <span class="h-10 w-px bg-[#e5ded2]" aria-hidden="true"></span>
+    <span class="hidden h-10 w-px bg-[#e5ded2] sm:block" aria-hidden="true"></span>
 
     <app-user-menu [user]="user"></app-user-menu>
   </div>

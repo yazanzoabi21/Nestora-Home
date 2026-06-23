@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { HighchartsChartComponent } from 'highcharts-angular';
 import type { Options } from 'highcharts';
 
 @Component({
   selector: 'app-sales-orders-chart',
   standalone: true,
-  imports: [HighchartsChartComponent],
+  imports: [HighchartsChartComponent, TranslatePipe],
   templateUrl: './sales-orders-chart.component.html',
   styleUrl: './sales-orders-chart.component.css',
 })

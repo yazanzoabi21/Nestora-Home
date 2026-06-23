@@ -1,9 +1,102 @@
-﻿import { Component } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
+import { filter } from 'rxjs';
+import {
+  ADMIN_NAVIGATION_SECTIONS,
+  AdminNavigationSection,
+} from '../../../core/services/navigation/admin-navigation.config';
+
+type OpenSections = Record<string, boolean>;
 
 @Component({
-  selector: 'ui-sidebar',
+  selector: 'app-sidebar',
   standalone: true,
+  imports: [RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.scss',
+  styleUrl: './sidebar.component.css',
 })
-export class SidebarComponent {}
+export class SidebarComponent implements OnInit {
+  @Input() collapsed = false;
+  @Input() mobileOpen = false;
+  @Output() collapsedChange = new EventEmitter<boolean>();
+  @Output() mobileClose = new EventEmitter<void>();
+
+  readonly sections = ADMIN_NAVIGATION_SECTIONS;
+  readonly openSections = signal<OpenSections>({
+    main: true,
+    catalogue: false,
+    marketing: true,
+    operations: true,
+    people: true,
+    system: true,
+    account: true,
+  });
+
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+
+  ngOnInit(): void {
+    this.openActiveSection(this.router.url);
+
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((event) => {
+        this.openActiveSection(event.urlAfterRedirects);
+      });
+  }
+
+  toggleCollapsed(): void {
+    this.collapsedChange.emit(!this.collapsed);
+  }
+
+  closeMobile(): void {
+    this.mobileClose.emit();
+  }
+
+  isCollapsedView(): boolean {
+    return this.collapsed && !this.mobileOpen;
+  }
+
+  toggleSection(sectionKey: string): void {
+    this.openSections.update((sections) => ({
+      ...sections,
+      [sectionKey]: !sections[sectionKey],
+    }));
+  }
+
+  isSectionOpen(sectionKey: string): boolean {
+    return this.openSections()[sectionKey] ?? false;
+  }
+
+  isSectionActive(section: AdminNavigationSection): boolean {
+    return section.items.some((item) => this.isRouteActive(item.route));
+  }
+
+  private openActiveSection(url: string): void {
+    const activeSection = this.sections.find((section) =>
+      section.items.some((item) => this.urlMatchesRoute(url, item.route)),
+    );
+
+    if (!activeSection) {
+      return;
+    }
+
+    this.openSections.update((sections) => ({
+      ...sections,
+      [activeSection.key]: true,
+    }));
+  }
+
+  private isRouteActive(route: string): boolean {
+    return this.urlMatchesRoute(this.router.url, route);
+  }
+
+  private urlMatchesRoute(url: string, route: string): boolean {
+    return url === route || url.startsWith(`${route}/`);
+  }
+}

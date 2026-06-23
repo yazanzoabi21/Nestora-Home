@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, Input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 export interface UserMenuUser {
   name: string;
@@ -10,7 +11,7 @@ export interface UserMenuUser {
 @Component({
   selector: 'app-user-menu',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './user-menu.component.html',
   styleUrl: './user-menu.component.css',
 })

@@ -1,17 +1,17 @@
 <article class="analytics-card">
-  <h2 class="text-xl font-bold text-[#1f2a1f]">Sales Performance</h2>
+  <h2 class="text-xl font-bold text-[#1f2a1f]">{{ 'DASHBOARD.SALES_PERFORMANCE' | translate }}</h2>
 
   <div class="mt-6 grid gap-5 sm:grid-cols-2">
     @for (metric of metrics; track metric.label) {
       <div class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-5">
-        <p class="text-sm font-medium text-[#8d877e]">{{ metric.label }}</p>
+        <p class="text-sm font-medium text-[#8d877e]">{{ metric.labelKey | translate }}</p>
         <p class="mt-4 text-3xl font-extrabold text-[#1f2a1f]">{{ metric.value }}</p>
         <p
           class="mt-3 text-sm font-bold"
           [class.text-[#0f7b49]]="metric.tone === 'positive'"
           [class.text-[#a51f1a]]="metric.tone === 'negative'"
         >
-          {{ metric.change }}
+          {{ metric.change }} {{ 'DASHBOARD.VS_LAST_MONTH' | translate }}
         </p>
       </div>
     }

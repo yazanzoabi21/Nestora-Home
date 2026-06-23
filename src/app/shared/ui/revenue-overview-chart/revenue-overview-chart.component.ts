@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { HighchartsChartComponent } from 'highcharts-angular';
 import type { Options } from 'highcharts';
 
 @Component({
   selector: 'app-revenue-overview-chart',
   standalone: true,
-  imports: [HighchartsChartComponent],
+  imports: [HighchartsChartComponent, TranslatePipe],
   templateUrl: './revenue-overview-chart.component.html',
   styleUrl: './revenue-overview-chart.component.css',
 })

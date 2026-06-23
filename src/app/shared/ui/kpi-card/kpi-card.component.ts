@@ -1,9 +1,11 @@
 import { Component, Input } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { HighchartsChartComponent } from 'highcharts-angular';
 import type { Options } from 'highcharts';
 
 export interface KpiCardData {
   title: string;
+  titleKey?: string;
   value: string;
   icon: string;
   iconColor: string;
@@ -18,7 +20,7 @@ export interface KpiCardData {
 @Component({
   selector: 'app-kpi-card',
   standalone: true,
-  imports: [HighchartsChartComponent],
+  imports: [HighchartsChartComponent, TranslatePipe],
   templateUrl: './kpi-card.component.html',
   styleUrl: './kpi-card.component.css',
 })

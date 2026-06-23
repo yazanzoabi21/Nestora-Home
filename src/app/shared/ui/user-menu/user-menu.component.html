@@ -1,8 +1,8 @@
-<div class="relative">
+<div class="relative overflow-visible">
   <button
     type="button"
     class="flex items-center gap-3 rounded-full py-1.5 pl-1.5 pr-2.5 transition duration-200 hover:bg-[#efeae2]"
-    aria-label="Open user menu"
+    [attr.aria-label]="'TOPBAR.OPEN_USER_MENU' | translate"
     [attr.aria-expanded]="isOpen()"
     (click)="toggleMenu()"
   >
@@ -23,7 +23,7 @@
 
   @if (isOpen()) {
     <div
-      class="absolute right-0 top-full z-50 mt-3 w-[250px] rounded-2xl border border-[#e5ded2] bg-white p-2 shadow-[0_18px_45px_rgba(52,47,41,0.12)]"
+      class="absolute right-0 top-full z-[9999] mt-3 w-[260px] max-w-[calc(100vw-24px)] rounded-2xl border border-[#e5ded2] bg-white p-2 shadow-xl"
       role="menu"
     >
       <a
@@ -33,7 +33,7 @@
         (click)="closeMenu()"
       >
         <i class="pi pi-user text-base text-[#7d756b]"></i>
-        <span>My Profile</span>
+        <span>{{ 'SIDEBAR.MY_PROFILE' | translate }}</span>
       </a>
 
       <!-- <a
@@ -53,7 +53,7 @@
         (click)="closeMenu()"
       >
         <i class="pi pi-question-circle text-base text-[#7d756b]"></i>
-        <span>Help &amp; Support</span>
+        <span>{{ 'SIDEBAR.HELP_SUPPORT' | translate }}</span>
       </a>
 
       <div class="my-2 h-px bg-[#e5ded2]" aria-hidden="true"></div>
@@ -65,7 +65,7 @@
         (click)="signOut()"
       >
         <i class="pi pi-sign-out text-base text-[#dc3f35]"></i>
-        <span>Sign Out</span>
+        <span>{{ 'SIDEBAR.SIGN_OUT' | translate }}</span>
       </button>
     </div>
   }

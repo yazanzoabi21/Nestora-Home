@@ -1,1 +1,134 @@
-﻿
+<aside
+  class="admin-sidebar fixed left-0 top-0 z-[100] flex h-screen w-[260px] max-w-[82vw] -translate-x-full flex-col border-r border-[#2f352c] bg-[#1f241d] text-white transition-[width,transform] duration-300 lg:z-[60] lg:max-w-none lg:translate-x-0"
+  [class.sidebar-mobile-open]="mobileOpen"
+  [class.translate-x-0]="mobileOpen"
+  [class.lg:w-[260px]]="!collapsed"
+  [class.lg:w-[76px]]="collapsed"
+>
+  <div class="flex h-[72px] items-center justify-between border-b border-[#2f352c] px-4 lg:h-[88px] lg:px-5" [class.lg:justify-center]="isCollapsedView()">
+    <div class="flex items-center gap-3">
+      <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#5f6f43] text-white">
+        <i class="pi pi-leaf text-lg"></i>
+      </span>
+      @if (!isCollapsedView()) {
+        <span>
+          <span class="block text-lg font-bold leading-5 text-white">{{ 'SIDEBAR.BRAND' | translate }}</span>
+          <span class="mt-1 block text-xs font-semibold uppercase tracking-[0.24em] text-[#9da694]">{{ 'SIDEBAR.ADMIN_PANEL' | translate }}</span>
+        </span>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="flex h-10 w-10 items-center justify-center rounded-full text-[#cbd3c4] transition hover:bg-[#2b3128] hover:text-white lg:hidden"
+      [attr.aria-label]="'SIDEBAR.CLOSE_SIDEBAR' | translate"
+      (click)="closeMobile()"
+    >
+      <i class="pi pi-times text-sm"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-scroll flex-1 overflow-y-auto px-3 py-5 lg:px-4">
+    @for (section of sections; track section.key) {
+      <div class="mb-3">
+        <button
+          type="button"
+          class="section-header flex h-10 w-full items-center rounded-xl text-left transition duration-200 hover:bg-[#2b3128]"
+          [class.justify-center]="isCollapsedView()"
+          [class.justify-between]="!isCollapsedView()"
+          [class.px-4]="!isCollapsedView()"
+          [class.is-open]="isSectionOpen(section.key) && !isCollapsedView()"
+          [title]="isCollapsedView() ? (section.labelKey | translate) : ''"
+          (click)="toggleSection(section.key)"
+        >
+          @if (!isCollapsedView()) {
+            <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#8d877e]">{{ section.labelKey | translate }}</span>
+            <i
+              class="pi text-[10px] text-[#8d877e] transition-transform duration-200"
+              [class.pi-chevron-down]="isSectionOpen(section.key)"
+              [class.pi-chevron-right]="!isSectionOpen(section.key)"
+            ></i>
+          } @else {
+            <i
+              class="pi text-xs text-[#8d877e]"
+              [class.pi-chevron-down]="isSectionOpen(section.key)"
+              [class.pi-chevron-right]="!isSectionOpen(section.key)"
+            ></i>
+          }
+        </button>
+
+        <div
+          class="section-panel overflow-hidden transition-[max-height,opacity,transform] duration-300 ease-out"
+          [class.max-h-0]="!isSectionOpen(section.key)"
+          [class.opacity-0]="!isSectionOpen(section.key)"
+          [class.-translate-y-1]="!isSectionOpen(section.key)"
+          [class.max-h-[360px]]="isSectionOpen(section.key)"
+          [class.opacity-100]="isSectionOpen(section.key)"
+          [class.translate-y-0]="isSectionOpen(section.key)"
+        >
+          <div class="space-y-1 py-1">
+            @for (item of section.items; track item.label) {
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="is-active"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="sidebar-link group relative flex h-[54px] items-center rounded-[18px] px-4 text-[#e8e4dc] no-underline transition duration-200 hover:bg-[rgba(255,255,255,0.05)] hover:text-white"
+                [class.justify-center]="isCollapsedView()"
+                [class.gap-3.5]="!isCollapsedView()"
+              [title]="isCollapsedView() ? (item.labelKey | translate) : ''"
+                (click)="closeMobile()"
+              >
+                <i class="{{ item.icon }} text-xl text-[#c9c3b8] transition group-hover:text-white"></i>
+                @if (!isCollapsedView()) {
+                  <span class="min-w-0 flex-1 truncate text-sm font-semibold">{{ item.labelKey | translate }}</span>
+                  @if (item.badge) {
+                    <span class="rounded-full bg-[#dc3f35] px-2 py-0.5 text-xs font-bold leading-none text-white">
+                      {{ item.badge }}
+                    </span>
+                  }
+                } @else if (item.badge) {
+                  <span class="absolute right-2 top-2 rounded-full bg-[#dc3f35] px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                    {{ item.badge }}
+                  </span>
+                }
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="mt-6">
+      <a
+        href="#"
+        class="flex items-center rounded-2xl border border-[#343b31] bg-[#272d25] transition duration-200 hover:bg-[#2b3128]"
+        [class.justify-center]="isCollapsedView()"
+        [class.h-12]="isCollapsedView()"
+        [class.p-4]="!isCollapsedView()"
+        [title]="isCollapsedView() ? ('SIDEBAR.VIEW_STORE' | translate) : ''"
+        (click)="closeMobile()"
+      >
+        @if (!isCollapsedView()) {
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-bold text-white">{{ 'SIDEBAR.VIEW_STORE' | translate }}</p>
+            <p class="mt-1 truncate text-xs font-medium text-[#8f9888]">{{ 'SIDEBAR.STORE_URL' | translate }}</p>
+          </div>
+        }
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#3d4936] text-[#b6c5a7]">
+          <i class="pi pi-external-link text-sm"></i>
+        </span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="hidden border-t border-[#2f352c] p-5 lg:block">
+    <button
+      type="button"
+      class="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-[#3b4238] bg-[#272d25] text-[#cbd3c4] transition hover:bg-[#2f372b] hover:text-white"
+      [attr.aria-label]="'SIDEBAR.TOGGLE_SIDEBAR' | translate"
+      (click)="toggleCollapsed()"
+    >
+      <i class="pi text-sm transition" [class.pi-angle-left]="!collapsed" [class.pi-angle-right]="collapsed"></i>
+    </button>
+  </div>
+</aside>

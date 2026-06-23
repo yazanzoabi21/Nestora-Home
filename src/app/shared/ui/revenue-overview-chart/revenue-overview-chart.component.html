@@ -1,8 +1,8 @@
 <article class="analytics-card">
   <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
-      <h2 class="text-xl font-bold text-[#1f2a1f]">Revenue Overview</h2>
-      <p class="mt-1 text-sm font-medium text-[#8d877e]">Monthly revenue vs target</p>
+      <h2 class="text-xl font-bold text-[#1f2a1f]">{{ 'DASHBOARD.REVENUE_OVERVIEW' | translate }}</h2>
+      <p class="mt-1 text-sm font-medium text-[#8d877e]">{{ 'DASHBOARD.REVENUE_OVERVIEW_SUBTITLE' | translate }}</p>
     </div>
 
     <div class="inline-flex w-fit rounded-2xl bg-[#f1eee8] p-1">
@@ -20,5 +20,7 @@
     </div>
   </div>
 
-  <highcharts-chart [options]="chartOptions" class="block h-[315px] w-full"></highcharts-chart>
+  <div class="w-full min-w-0 overflow-hidden">
+    <highcharts-chart [options]="chartOptions" class="block h-[315px] w-full min-w-0"></highcharts-chart>
+  </div>
 </article>

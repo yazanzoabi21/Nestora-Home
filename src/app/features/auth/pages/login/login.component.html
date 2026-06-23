@@ -1,0 +1,270 @@
+<main class="auth-shell min-h-screen overflow-x-hidden bg-[#f7f4ef] text-[#1f2a1f]">
+  <section class="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(360px,40%)_minmax(0,1fr)]">
+    <aside
+      class="brand-panel relative hidden overflow-hidden bg-[#1f241d] px-10 py-12 text-white lg:flex lg:flex-col xl:px-16">
+      <div class="brand-glow brand-glow-one"></div>
+      <div class="brand-glow brand-glow-two"></div>
+
+      <div class="relative z-10 flex items-center gap-4">
+        <span
+          class="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#5f6f43] text-white shadow-[0_18px_40px_rgba(95,111,67,0.35)]">
+          <i class="pi pi-leaf text-3xl"></i>
+        </span>
+        <span>
+          <span class="block text-3xl font-extrabold tracking-normal">{{ 'AUTH.BRAND' | translate }}</span>
+          <span class="mt-1 block text-sm font-semibold uppercase tracking-[0.28em] text-[#a9b79a]">{{
+            'AUTH.ADMIN_PANEL' | translate }}</span>
+        </span>
+      </div>
+
+      <div class="relative z-10 mt-24 max-w-xl">
+        <p class="text-3xl font-bold text-[#a9c184]">{{ 'AUTH.WELCOME_TO' | translate }}</p>
+        <h1 class="mt-4 text-6xl font-extrabold tracking-normal text-white drop-shadow-sm xl:text-7xl">
+          {{ 'AUTH.BRAND' | translate }}
+        </h1>
+        <p class="mt-8 max-w-lg text-xl font-medium leading-8 text-[#e3e0d8]">
+          {{ 'AUTH.BRAND_DESCRIPTION' | translate }}
+        </p>
+      </div>
+
+      <div class="relative z-10 my-10 h-px max-w-md bg-white/15"></div>
+
+      <div class="relative z-10 space-y-7">
+        <div class="flex max-w-lg gap-5">
+          <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5f6f43]/35 text-[#b9d18e]">
+            <i class="pi pi-shield text-2xl"></i>
+          </span>
+          <div>
+            <h2 class="text-lg font-bold text-white">{{ 'AUTH.FEATURE_SECURE_TITLE' | translate }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ 'AUTH.FEATURE_SECURE_TEXT' | translate }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex max-w-lg gap-5">
+          <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5f6f43]/35 text-[#b9d18e]">
+            <i class="pi pi-users text-2xl"></i>
+          </span>
+          <div>
+            <h2 class="text-lg font-bold text-white">{{ 'AUTH.FEATURE_ROLES_TITLE' | translate }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ 'AUTH.FEATURE_ROLES_TEXT' | translate }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex max-w-lg gap-5">
+          <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5f6f43]/35 text-[#b9d18e]">
+            <i class="pi pi-chart-line text-2xl"></i>
+          </span>
+          <div>
+            <h2 class="text-lg font-bold text-white">{{ 'AUTH.FEATURE_EFFICIENCY_TITLE' | translate }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ 'AUTH.FEATURE_EFFICIENCY_TEXT' | translate
+              }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-house" aria-hidden="true">
+        <i class="pi pi-home"></i>
+      </div>
+    </aside>
+
+    <section class="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-10">
+      <div class="w-full max-w-[620px]">
+        <div class="mb-8 flex items-center justify-center gap-3 lg:hidden">
+          <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#5f6f43] text-white">
+            <i class="pi pi-leaf text-xl"></i>
+          </span>
+          <span>
+            <span class="block text-xl font-extrabold">{{ 'AUTH.BRAND' | translate }}</span>
+            <span class="block text-xs font-bold uppercase tracking-[0.24em] text-[#8d877e]">{{ 'AUTH.ADMIN_PANEL' |
+              translate }}</span>
+          </span>
+        </div>
+
+        <article
+          class="rounded-[28px] border border-[#e5ded2] bg-white/95 px-5 py-8 shadow-[0_24px_70px_rgba(52,47,41,0.10)] sm:px-10 lg:px-14">
+          @if (authMode() === 'login') {
+          <form class="space-y-6" (submit)="$event.preventDefault(); submitLogin()">
+            <div class="text-center">
+              <span
+                class="inline-flex items-center gap-2 rounded-2xl border border-[#dce4d4] bg-[#f0f4ec] px-4 py-2 text-sm font-semibold text-[#3f4c2e]">
+                <i class="pi pi-shield text-sm"></i>
+                {{ 'AUTH.SINGLE_LOGIN' | translate }}
+              </span>
+              <h2 class="mt-7 text-4xl font-extrabold text-[#1f2a1f]">{{ 'AUTH.SIGN_IN' | translate }}</h2>
+              <p class="mt-3 text-base font-medium text-[#8d877e]">{{ 'AUTH.SIGN_IN_SUBTITLE' | translate }}</p>
+            </div>
+
+            <label class="auth-label">
+              <span>{{ 'AUTH.EMAIL_ADDRESS' | translate }}</span>
+              <span class="auth-field">
+                <i class="pi pi-envelope text-[#8d877e]"></i>
+                <input type="email" name="loginEmail" [(ngModel)]="loginForm.email"
+                  [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate" />
+              </span>
+            </label>
+
+            <label class="auth-label">
+              <span>{{ 'AUTH.PASSWORD' | translate }}</span>
+              <span class="auth-field">
+                <i class="pi pi-lock text-[#8d877e]"></i>
+                <input name="loginPassword" [(ngModel)]="loginForm.password"
+                  [type]="passwordVisible() ? 'text' : 'password'"
+                  [placeholder]="'AUTH.PASSWORD_PLACEHOLDER' | translate" />
+                <button type="button" class="auth-eye" (click)="togglePasswordVisibility()">
+                  <i class="pi" [class.pi-eye]="!passwordVisible()" [class.pi-eye-slash]="passwordVisible()"></i>
+                </button>
+              </span>
+            </label>
+
+            <div class="flex items-center justify-between gap-4 text-sm">
+              <label class="flex items-center gap-3 font-medium text-[#342f29]">
+                <input type="checkbox" checked class="h-4 w-4 accent-[#5f6f43]" />
+                {{ 'AUTH.REMEMBER_ME' | translate }}
+              </label>
+              <a href="#" class="font-semibold text-[#5f6f43] transition hover:text-[#495735]">{{ 'AUTH.FORGOT_PASSWORD'
+                | translate }}</a>
+            </div>
+
+            @if (errorMessage()) {
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+              {{ errorMessage() }}
+            </div>
+            }
+
+            <button type="submit" class="auth-primary" [disabled]="loading()">
+              @if (loading()) {
+              <i class="pi pi-spin pi-spinner"></i>
+              }
+              {{ 'AUTH.SIGN_IN' | translate }}
+            </button>
+            <div class="auth-divider"><span>{{ 'AUTH.OR' | translate }}</span></div>
+
+            <button type="button" class="auth-google">
+              <span class="text-xl font-extrabold text-[#4285f4]">G</span>
+              {{ 'AUTH.CONTINUE_GOOGLE' | translate }}
+            </button>
+
+            <p class="text-center text-sm font-medium text-[#6f675e]">
+              {{ 'AUTH.NO_ACCOUNT' | translate }}
+              <button type="button" class="font-bold text-[#5f6f43] hover:text-[#495735]" (click)="setMode('register')" [disabled]="loading()">
+                {{ 'AUTH.CREATE_ACCOUNT' | translate }}
+              </button>
+            </p>
+          </form>
+          } @else {
+          <form class="space-y-4" (submit)="$event.preventDefault(); submitRegister()">
+            <div class="text-center">
+              <span
+                class="inline-flex items-center gap-2 rounded-2xl border border-[#dce4d4] bg-[#f0f4ec] px-4 py-2 text-sm font-semibold text-[#3f4c2e]">
+                <i class="pi pi-shield text-sm"></i>
+                {{ 'AUTH.CREATE_ACCOUNT_BADGE' | translate }}
+              </span>
+              <h2 class="mt-6 text-4xl font-extrabold text-[#1f2a1f]">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</h2>
+              <p class="mt-3 text-base font-medium text-[#8d877e]">{{ 'AUTH.CREATE_ACCOUNT_SUBTITLE' | translate }}</p>
+            </div>
+
+            <label class="auth-label">
+              <span>{{ 'AUTH.FULL_NAME' | translate }}</span>
+              <span class="auth-field">
+                <i class="pi pi-user text-[#8d877e]"></i>
+                <input type="text" name="registerFullName" [(ngModel)]="registerForm.fullName"
+                  [placeholder]="'AUTH.FULL_NAME_PLACEHOLDER' | translate" /> </span>
+            </label>
+
+            <label class="auth-label">
+              <span>{{ 'AUTH.EMAIL_ADDRESS' | translate }}</span>
+              <span class="auth-field">
+                <i class="pi pi-envelope text-[#8d877e]"></i>
+                <input type="email" name="registerEmail" [(ngModel)]="registerForm.email"
+                  [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate" /> </span>
+            </label>
+
+            <label class="auth-label">
+              <span>{{ 'AUTH.PHONE_NUMBER' | translate }}</span>
+              <span class="auth-field">
+                <i class="pi pi-phone text-[#8d877e]"></i>
+                <input type="tel" name="registerPhone" [(ngModel)]="registerForm.phone"
+                  [placeholder]="'AUTH.PHONE_PLACEHOLDER' | translate" /> </span>
+            </label>
+
+            <label class="auth-label">
+              <span>{{ 'AUTH.PASSWORD' | translate }}</span>
+              <span class="auth-field">
+                <i class="pi pi-lock text-[#8d877e]"></i>
+                <input name="registerPassword" [(ngModel)]="registerForm.password"
+                  [type]="passwordVisible() ? 'text' : 'password'"
+                  [placeholder]="'AUTH.CREATE_PASSWORD_PLACEHOLDER' | translate" /> <button type="button"
+                  class="auth-eye" (click)="togglePasswordVisibility()">
+                  <i class="pi" [class.pi-eye]="!passwordVisible()" [class.pi-eye-slash]="passwordVisible()"></i>
+                </button>
+              </span>
+            </label>
+
+            <label class="auth-label">
+              <span>{{ 'AUTH.CONFIRM_PASSWORD' | translate }}</span>
+              <span class="auth-field">
+                <i class="pi pi-lock text-[#8d877e]"></i>
+                <input name="registerConfirmPassword" [(ngModel)]="registerForm.confirmPassword"
+                  [type]="confirmPasswordVisible() ? 'text' : 'password'"
+                  [placeholder]="'AUTH.CONFIRM_PASSWORD_PLACEHOLDER' | translate" /> <button type="button"
+                  class="auth-eye" (click)="toggleConfirmPasswordVisibility()">
+                  <i class="pi" [class.pi-eye]="!confirmPasswordVisible()"
+                    [class.pi-eye-slash]="confirmPasswordVisible()"></i>
+                </button>
+              </span>
+            </label>
+
+            <label class="auth-label">
+              <span>{{ 'AUTH.ROLE_ACCOUNT_TYPE' | translate }}</span>
+              <span class="auth-field bg-[#fbfaf8]">
+                <i class="pi pi-users text-[#8d877e]"></i>
+                <input type="text" readonly [value]="'AUTH.ALL_ROLES_SUPPORTED' | translate" />
+                <i class="pi pi-chevron-down text-xs text-[#8d877e]"></i>
+              </span>
+            </label>
+
+            <label class="flex items-center gap-3 text-sm font-medium text-[#342f29]">
+              <input type="checkbox" checked class="h-4 w-4 accent-[#5f6f43]" />
+              <span>{{ 'AUTH.AGREE_TERMS' | translate }}</span>
+            </label>
+
+            @if (errorMessage()) {
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+              {{ errorMessage() }}
+            </div>
+            }
+
+            <button type="submit" class="auth-primary" [disabled]="loading()">
+              @if (loading()) {
+              <i class="pi pi-spin pi-spinner"></i>
+              }
+              {{ 'AUTH.CREATE_ACCOUNT' | translate }}
+            </button>
+
+            <div class="auth-divider"><span>{{ 'AUTH.OR' | translate }}</span></div>
+
+            <button type="button" class="auth-google">
+              <span class="text-xl font-extrabold text-[#4285f4]">G</span>
+              {{ 'AUTH.CONTINUE_GOOGLE' | translate }}
+            </button>
+
+            <p class="text-center text-sm font-medium text-[#6f675e]">
+              {{ 'AUTH.HAVE_ACCOUNT' | translate }}
+              <button type="button" class="font-bold text-[#5f6f43] hover:text-[#495735]" (click)="setMode('login')" [disabled]="loading()">
+                {{ 'AUTH.SIGN_IN_LINK' | translate }}
+              </button>
+            </p>
+          </form>
+          }
+        </article>
+
+        <p class="mt-8 flex items-center justify-center gap-3 text-sm font-medium text-[#8d877e]">
+          <i class="pi pi-shield text-[#7d756b]"></i>
+          {{ 'AUTH.PROTECTED_SECURITY' | translate }}
+        </p>
+      </div>
+    </section>
+  </section>
+</main>

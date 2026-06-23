@@ -1,21 +1,22 @@
 import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { HighchartsChartComponent } from 'highcharts-angular';
 import type { Options } from 'highcharts';
 
 @Component({
   selector: 'app-sales-category-chart',
   standalone: true,
-  imports: [HighchartsChartComponent],
+  imports: [HighchartsChartComponent, TranslatePipe],
   templateUrl: './sales-category-chart.component.html',
   styleUrl: './sales-category-chart.component.css',
 })
 export class SalesCategoryChartComponent {
   readonly categories = [
-    { name: 'Kitchen Tools', value: 32, color: '#5f6f43' },
-    { name: 'Cookware', value: 24, color: '#d9cab8' },
-    { name: 'Home Accessories', value: 20, color: '#3b82f6' },
-    { name: 'Cleaning', value: 14, color: '#d97706' },
-    { name: 'Smart Home', value: 10, color: '#a855f7' },
+    { name: 'Kitchen Tools', nameKey: 'DASHBOARD.KITCHEN_TOOLS', value: 32, color: '#5f6f43' },
+    { name: 'Cookware', nameKey: 'DASHBOARD.COOKWARE', value: 24, color: '#d9cab8' },
+    { name: 'Home Accessories', nameKey: 'DASHBOARD.HOME_ACCESSORIES', value: 20, color: '#3b82f6' },
+    { name: 'Cleaning', nameKey: 'DASHBOARD.CLEANING', value: 14, color: '#d97706' },
+    { name: 'Smart Home', nameKey: 'DASHBOARD.SMART_HOME', value: 10, color: '#a855f7' },
   ];
 
   readonly chartOptions: Options = {

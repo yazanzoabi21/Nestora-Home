@@ -1,8 +1,13 @@
 :host {
   display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 :host ::ng-deep .highcharts-container,
 :host ::ng-deep .highcharts-root {
+  width: 100% !important;
+  max-width: 100%;
   overflow: visible;
 }

@@ -1,8 +1,8 @@
 <article class="analytics-card">
   <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
-      <h2 class="text-xl font-bold text-[#1f2a1f]">Sales vs Orders</h2>
-      <p class="mt-1 text-sm font-medium text-[#8d877e]">Revenue and order volume comparison</p>
+      <h2 class="text-xl font-bold text-[#1f2a1f]">{{ 'DASHBOARD.SALES_VS_ORDERS' | translate }}</h2>
+      <p class="mt-1 text-sm font-medium text-[#8d877e]">{{ 'DASHBOARD.SALES_VS_ORDERS_SUBTITLE' | translate }}</p>
     </div>
 
     <div class="inline-flex w-fit rounded-2xl bg-[#f1eee8] p-1">
@@ -20,5 +20,7 @@
     </div>
   </div>
 
-  <highcharts-chart [options]="chartOptions" class="block h-80 w-full"></highcharts-chart>
+  <div class="w-full min-w-0 overflow-hidden">
+    <highcharts-chart [options]="chartOptions" class="block h-80 w-full min-w-0"></highcharts-chart>
+  </div>
 </article>
