@@ -249,4 +249,13 @@
     </p>
     }
   </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="isDeleteSelectedProductsModalOpen()" variant="delete" title="Delete Selected Products"
+    [message]="deleteSelectedProductsMessage()" submitLabel="Yes, Delete" cancelLabel="Cancel" [loading]="saving()"
+    (close)="closeDeleteSelectedProductsModal()" (submit)="confirmDeleteSelectedProducts()">
+    <p class="mt-3 rounded-xl bg-[#f7f4ef] px-4 py-3 text-sm font-extrabold text-[#1f2a1f]">
+      {{ selectedProductsLabel() }}
+    </p>
+  </app-admin-form-modal>
+
 </main>
