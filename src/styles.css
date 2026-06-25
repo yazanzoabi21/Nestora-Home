@@ -15,3 +15,271 @@ app-root {
   min-height: 100vh;
   overflow-x: hidden;
 }
+
+select,
+select option {
+  background-color: #fff;
+  color: #342f29;
+}
+
+.p-select-overlay,
+.p-dropdown-panel,
+.admin-form-select-panel {
+  z-index: 10050 !important;
+  min-width: var(--p-select-anchor-width, var(--p-dropdown-trigger-width, 100%)) !important;
+  overflow: hidden !important;
+  border: 1px solid #e5ded2 !important;
+  border-radius: 14px !important;
+  background: #fffdfa !important;
+  box-shadow: 0 16px 34px rgba(31, 42, 31, 0.12) !important;
+}
+
+.p-select-list,
+.p-dropdown-items {
+  display: grid !important;
+  gap: 4px !important;
+  background: #fffdfa !important;
+  padding: 8px !important;
+}
+
+.p-select-option,
+.p-dropdown-item {
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: #342f29 !important;
+  padding: 11px 14px !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.p-select-option:hover,
+.p-dropdown-item:hover,
+.p-select-option.p-focus,
+.p-select-option.p-selected,
+.p-dropdown-item.p-highlight {
+  background: #f4f0eb !important;
+  color: #1f2a1f !important;
+}
+
+.p-select-option:first-child,
+.p-dropdown-item:first-child {
+  background: #f7f4ef !important;
+}
+
+.p-select-filter,
+.p-dropdown-filter {
+  border: 1px solid #e5ded2 !important;
+  border-radius: 10px !important;
+  background: #fbfaf8 !important;
+  color: #342f29 !important;
+  padding: 10px 12px !important;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.p-select-filter:focus,
+.p-dropdown-filter:focus {
+  border-color: #5f6f43 !important;
+  background: #fff !important;
+}
+
+/* =========================
+   Nestora PrimeNG Toast
+========================= */
+
+.p-toast.nestora-toast {
+  z-index: 12000 !important;
+  width: min(420px, calc(100vw - 32px)) !important;
+}
+
+.p-toast.nestora-toast .p-toast-message {
+  position: relative;
+  margin: 0 0 14px 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #e5ded2 !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 250, 0.98), rgba(247, 244, 239, 0.96)) !important;
+  box-shadow:
+    0 20px 50px rgba(31, 42, 31, 0.18),
+    0 4px 12px rgba(31, 42, 31, 0.08) !important;
+  backdrop-filter: blur(12px);
+}
+
+.p-toast.nestora-toast .p-toast-message::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 6px;
+  background: #5f6f43;
+}
+
+.p-toast.nestora-toast .p-toast-message-content {
+  display: grid !important;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 76px;
+  padding: 16px 18px 16px 20px !important;
+}
+
+.p-toast.nestora-toast .p-toast-message-icon {
+  display: flex !important;
+  width: 38px !important;
+  height: 38px !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #eef4e8;
+  color: #5f6f43 !important;
+  font-size: 17px !important;
+}
+
+.p-toast.nestora-toast .p-toast-message-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.p-toast.nestora-toast .p-toast-summary {
+  color: #1f2a1f !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.01em;
+}
+
+.p-toast.nestora-toast .p-toast-detail {
+  margin: 0 !important;
+  color: #756f66 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+}
+
+.p-toast.nestora-toast .p-toast-close-button {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 999px !important;
+  color: #675f55 !important;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.p-toast.nestora-toast .p-toast-close-button:hover {
+  background: #f0ebe4 !important;
+  color: #1f2a1f !important;
+  transform: scale(1.04);
+}
+
+/* Success */
+.p-toast.nestora-toast .p-toast-message-success::before {
+  background: #5f6f43;
+}
+
+.p-toast.nestora-toast .p-toast-message-success .p-toast-message-icon {
+  background: #eef4e8;
+  color: #5f6f43 !important;
+}
+
+/* Error */
+.p-toast.nestora-toast .p-toast-message-error::before {
+  background: #d92d20;
+}
+
+.p-toast.nestora-toast .p-toast-message-error .p-toast-message-icon {
+  background: #fff1f0;
+  color: #d92d20 !important;
+}
+
+/* Warning */
+.p-toast.nestora-toast .p-toast-message-warn::before {
+  background: #d98916;
+}
+
+.p-toast.nestora-toast .p-toast-message-warn .p-toast-message-icon {
+  background: #fff7e8;
+  color: #d98916 !important;
+}
+
+/* Info */
+.p-toast.nestora-toast .p-toast-message-info::before {
+  background: #2563eb;
+}
+
+.p-toast.nestora-toast .p-toast-message-info .p-toast-message-icon {
+  background: #eff6ff;
+  color: #2563eb !important;
+}
+
+/* Better success icon inside toast circle */
+.p-toast.nestora-toast .p-toast-message-success .p-toast-message-icon {
+  position: relative !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 35% 30%, #ffffff 0 18%, transparent 19%),
+    linear-gradient(135deg, #eef8e8 0%, #dcefd1 100%) !important;
+  color: #4f6338 !important;
+  border: 1px solid rgba(95, 111, 67, 0.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 8px 18px rgba(95, 111, 67, 0.18) !important;
+}
+
+/* Make the check icon cleaner and centered */
+.p-toast.nestora-toast .p-toast-message-success .p-toast-message-icon::before {
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+/* If PrimeNG renders SVG icon */
+.p-toast.nestora-toast .p-toast-message-success .p-toast-message-icon svg,
+.p-toast.nestora-toast .p-toast-message-success .p-toast-message-icon .p-icon {
+  width: 18px !important;
+  height: 18px !important;
+  color: #4f6338 !important;
+  stroke-width: 3px !important;
+}
+
+/* Small premium ring around the icon */
+.p-toast.nestora-toast .p-toast-message-success .p-toast-message-icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1px solid rgba(95, 111, 67, 0.12);
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .p-toast.nestora-toast {
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+  }
+
+  .p-toast.nestora-toast .p-toast-message-content {
+    min-height: 68px;
+    padding: 14px 15px !important;
+    gap: 12px;
+  }
+
+  .p-toast.nestora-toast .p-toast-message-icon {
+    width: 34px !important;
+    height: 34px !important;
+  }
+}

@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { HighchartsChartComponent } from 'highcharts-angular';
 import type { Options } from 'highcharts';
@@ -10,17 +11,18 @@ export interface KpiCardData {
   icon: string;
   iconColor: string;
   iconBg: string;
-  trend: string;
-  trendType: 'up' | 'down';
-  trendColor: string;
-  chartColor: string;
-  chartData: number[];
+  trend?: string;
+  trendType?: 'up' | 'down';
+  trendColor?: string;
+  chartColor?: string;
+  chartData?: number[];
+  showChart?: boolean;
 }
 
 @Component({
   selector: 'app-kpi-card',
   standalone: true,
-  imports: [HighchartsChartComponent, TranslatePipe],
+  imports: [HighchartsChartComponent, NgIf, TranslatePipe],
   templateUrl: './kpi-card.component.html',
   styleUrl: './kpi-card.component.css',
 })
@@ -72,10 +74,18 @@ export class KpiCardComponent {
       series: [
         {
           type: 'line',
-          data: this.data.chartData,
+          data: this.data.chartData ?? [],
           color: this.data.chartColor,
         },
       ],
     };
+  }
+
+  get hasTrend(): boolean {
+    return !!this.data.trend && !!this.data.trendType;
+  }
+
+  get shouldShowChart(): boolean {
+    return this.data.showChart !== false && !!this.data.chartData?.length;
   }
 }

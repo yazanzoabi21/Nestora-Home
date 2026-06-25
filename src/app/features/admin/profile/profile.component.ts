@@ -145,7 +145,7 @@ export class ProfileComponent {
     },
     {
       label: 'Currency',
-      value: 'GBP (£)',
+      value: 'USD ($)',
     },
   ];
 

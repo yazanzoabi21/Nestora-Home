@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -10,7 +11,7 @@ type AuthMode = 'login' | 'register';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, TranslatePipe],
+  imports: [FormsModule, NgTemplateOutlet, TranslatePipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })

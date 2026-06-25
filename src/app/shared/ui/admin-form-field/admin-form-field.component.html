@@ -1,0 +1,168 @@
+<div [ngClass]="hostClasses">
+  @switch (type) {
+    @case ('checkbox') {
+      <label class="admin-form-checkbox-field">
+        <input
+          class="admin-form-checkbox"
+          type="checkbox"
+          [name]="name"
+          [checked]="!!value"
+          [required]="required"
+          [disabled]="disabled"
+          (change)="emitCheckboxValue($event)"
+        />
+        @if (label) {
+          <span>{{ label | translate }}</span>
+        }
+      </label>
+    }
+
+    @case ('file') {
+      <div class="admin-form-field">
+        @if (label) {
+          <span>{{ label | translate }}</span>
+        }
+
+        <label class="admin-form-upload-card">
+          <input
+            class="sr-only"
+            type="file"
+            [name]="name"
+            [accept]="accept"
+            [required]="required"
+            [disabled]="disabled"
+            (change)="emitFileChange($event)"
+          />
+
+          @if (previewUrl) {
+            <div class="admin-form-upload-preview">
+              <img [src]="previewUrl" [alt]="label | translate" />
+            </div>
+          } @else {
+            <div class="admin-form-upload-icon">
+              <i class="pi pi-cloud-upload"></i>
+            </div>
+          }
+
+          <span class="text-sm font-extrabold text-[#342f29]">{{ 'PRODUCTS.UPLOAD_IMAGE' | translate }}</span>
+          @if (helperText) {
+            <span class="text-xs font-semibold text-[#8d877e]">{{ helperText | translate }}</span>
+          }
+
+          @if (fileName) {
+            <span class="max-w-full truncate rounded-full bg-[#eef4e8] px-3 py-1 text-xs font-bold text-[#5f6f43]">
+              {{ fileName }}
+            </span>
+          }
+        </label>
+
+        @if (previewUrl) {
+          <button type="button" class="admin-form-remove-file-button" (click)="removeFile.emit()">
+            <i class="pi pi-trash text-xs"></i>
+            <span>{{ 'PRODUCTS.REMOVE_IMAGE' | translate }}</span>
+          </button>
+        }
+
+        @if (error) {
+          <p class="admin-form-error">{{ error | translate }}</p>
+        }
+      </div>
+    }
+
+    @case ('textarea') {
+      <label class="admin-form-field">
+        @if (label) {
+          <span>{{ label | translate }}</span>
+        }
+        <textarea
+          class="admin-form-input admin-form-textarea"
+          [name]="name"
+          [rows]="rows"
+          [placeholder]="translatedPlaceholder | translate"
+          [ngModel]="value"
+          [required]="required"
+          [disabled]="disabled"
+          [readOnly]="readonly"
+          (ngModelChange)="emitValue($event)"
+        ></textarea>
+        @if (helperText) {
+          <span class="admin-form-helper">{{ helperText | translate }}</span>
+        }
+        @if (error) {
+          <p class="admin-form-error">{{ error | translate }}</p>
+        }
+      </label>
+    }
+
+    @case ('select') {
+      <div class="admin-form-field">
+        @if (label) {
+          <span>{{ label | translate }}</span>
+        }
+        <p-select
+          styleClass="admin-form-select"
+          panelStyleClass="admin-form-select-panel"
+          appendTo="body"
+          [name]="name"
+          [options]="options"
+          [optionLabel]="optionLabel"
+          [optionValue]="optionValue"
+          [filter]="filter"
+          [showClear]="showClear"
+          [placeholder]="translatedPlaceholder | translate"
+          [ngModel]="value"
+          [required]="required"
+          [disabled]="disabled"
+          (ngModelChange)="emitValue($event)"
+        >
+          <ng-template #selectedItem let-selectedOption>
+            {{ optionText(selectedOption) | translate }}
+          </ng-template>
+          <ng-template #item let-option>
+            {{ optionText(option) | translate }}
+          </ng-template>
+        </p-select>
+        @if (helperText) {
+          <span class="admin-form-helper">{{ helperText | translate }}</span>
+        }
+        @if (error) {
+          <p class="admin-form-error">{{ error | translate }}</p>
+        }
+      </div>
+    }
+
+    @default {
+      <label class="admin-form-field">
+        @if (label) {
+          <span>{{ label | translate }}</span>
+        }
+        <span class="admin-form-input-shell" [class.admin-form-input-shell-search]="type === 'search'">
+          @if (type === 'search') {
+            <i class="pi pi-search"></i>
+          }
+          <input
+            class="admin-form-input"
+            [class.admin-form-input-with-icon]="type === 'search'"
+            [type]="inputType"
+            [name]="name"
+            [min]="min"
+            [max]="max"
+            [step]="step"
+            [placeholder]="translatedPlaceholder | translate"
+            [ngModel]="value"
+            [required]="required"
+            [disabled]="disabled"
+            [readOnly]="readonly"
+            (ngModelChange)="emitValue($event)"
+          />
+        </span>
+        @if (helperText) {
+          <span class="admin-form-helper">{{ helperText | translate }}</span>
+        }
+        @if (error) {
+          <p class="admin-form-error">{{ error | translate }}</p>
+        }
+      </label>
+    }
+  }
+</div>

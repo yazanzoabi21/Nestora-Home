@@ -1,15 +1,10 @@
 <header
   class="fixed left-0 right-0 top-0 z-[70] flex h-[72px] max-w-full min-w-0 items-center justify-between gap-3 overflow-visible border-b border-[#e5ded2] bg-[#f8f7f5] px-4 transition-[left] duration-300 sm:px-6 lg:h-[88px] lg:px-8"
-  [class.lg:left-[260px]]="!sidebarCollapsed"
-  [class.lg:left-[76px]]="sidebarCollapsed"
->
+  [class.lg:left-[260px]]="!sidebarCollapsed" [class.lg:left-[76px]]="sidebarCollapsed">
   <div class="flex min-w-0 items-center gap-3 sm:gap-5 lg:gap-7">
-    <button
-      type="button"
+    <button type="button"
       class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#6f675e] transition hover:bg-[#efeae2] hover:text-[#37322d] lg:hidden"
-      [attr.aria-label]="'TOPBAR.OPEN_SIDEBAR' | translate"
-      (click)="menuClick.emit()"
-    >
+      [attr.aria-label]="'TOPBAR.OPEN_SIDEBAR' | translate" (click)="menuClick.emit()">
       <i class="pi pi-bars text-lg"></i>
     </button>
 
@@ -19,14 +14,10 @@
 
     <label
       class="topbar-search hidden h-11 w-[clamp(150px,18vw,210px)] max-w-full items-center gap-3 rounded-full border border-[#e5ded2] bg-[#f1eee8] px-4 text-[#9b948a] transition duration-200 focus-within:border-[#cfc5b8] focus-within:bg-white focus-within:shadow-sm md:flex"
-      [attr.aria-label]="'COMMON.SEARCH' | translate"
-    >
+      [attr.aria-label]="'COMMON.SEARCH' | translate">
       <i class="pi pi-search text-sm"></i>
-      <input
-        type="search"
-        [placeholder]="'COMMON.SEARCH' | translate"
-        class="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#544e46] outline-none placeholder:text-[#a8a096]"
-      />
+      <input type="search" [placeholder]="'COMMON.SEARCH' | translate"
+        class="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#544e46] outline-none placeholder:text-[#a8a096]" />
       <span class="rounded-full bg-[#e4ded4] px-2 py-1 text-[11px] font-semibold leading-none text-[#8a8176]">
         ⌘K
       </span>
@@ -34,23 +25,18 @@
   </div>
 
   <div class="flex shrink-0 items-center gap-2 sm:gap-4 lg:gap-5">
-    <button
-      type="button"
+    <button type="button"
       class="flex h-10 min-w-14 items-center justify-center rounded-full border border-[#e5ded2] bg-white px-3 text-xs font-bold text-[#5f6f43] transition hover:bg-[#eef4e8]"
-      (click)="switchLanguage()"
-    >
+      (click)="switchLanguage()">
       {{ translation.currentLang() === 'en' ? ('COMMON.AR' | translate) : ('COMMON.EN' | translate) }}
     </button>
 
-    <button
-      type="button"
+    <button type="button"
       class="relative flex h-11 w-11 items-center justify-center rounded-full text-[#6f675e] transition duration-200 hover:bg-[#efeae2] hover:text-[#37322d]"
-      [attr.aria-label]="'TOPBAR.NOTIFICATIONS' | translate"
-    >
+      [attr.aria-label]="'TOPBAR.NOTIFICATIONS' | translate">
       <i class="pi pi-bell text-xl"></i>
       <span
-        class="absolute right-2 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#dc3f35] px-1 text-[11px] font-bold leading-none text-white ring-2 ring-[#f8f7f5]"
-      >
+        class="absolute right-2 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#dc3f35] px-1 text-[11px] font-bold leading-none text-white ring-2 ring-[#f8f7f5]">
         {{ notificationCount }}
       </span>
     </button>

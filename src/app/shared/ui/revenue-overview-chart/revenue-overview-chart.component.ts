@@ -43,14 +43,14 @@ export class RevenueOverviewChartComponent {
       gridLineDashStyle: 'Dash',
       labels: {
         style: { color: '#8d877e', fontSize: '12px' },
-        format: '£{value}k',
+        format: '${value}k',
       },
     },
     tooltip: {
       borderColor: '#e5ded2',
       borderRadius: 12,
       shadow: false,
-      valuePrefix: '£',
+      valuePrefix: '$',
       valueSuffix: 'k',
     },
     plotOptions: {

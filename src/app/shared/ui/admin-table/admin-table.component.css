@@ -1,0 +1,76 @@
+.admin-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: max-content;
+  min-width: 100%;
+}
+
+.admin-table th,
+.admin-table td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.admin-table th span,
+.admin-table td span,
+.admin-table-product-cell,
+.admin-table-product-info,
+.admin-table-product-title-row,
+.admin-table-product-name,
+.admin-table-product-sku,
+.admin-table-badge,
+.admin-table-price,
+.admin-table-stock,
+.admin-table-status,
+.admin-table-actions {
+  white-space: nowrap;
+}
+
+.admin-table-product-name,
+.admin-table-product-sku {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-table-icon-button {
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.admin-table-icon-button:hover {
+  background-color: #f7f4ef;
+  transform: translateY(-1px);
+}
+
+.admin-table-page-button {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.875rem;
+  border: 1px solid #e5ded2;
+  background: #fbfaf8;
+  color: #342f29;
+  transition: background-color 150ms ease;
+}
+
+.admin-table-page-button:hover:not(:disabled) {
+  background: #ffffff;
+}
+
+.admin-table-page-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}

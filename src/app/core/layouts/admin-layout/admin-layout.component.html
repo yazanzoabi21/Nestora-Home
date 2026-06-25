@@ -1,24 +1,14 @@
-<app-sidebar
-  [collapsed]="sidebarCollapsed()"
-  [mobileOpen]="mobileSidebarOpen()"
-  (collapsedChange)="sidebarCollapsed.set($event)"
-  (mobileClose)="mobileSidebarOpen.set(false)"
-></app-sidebar>
+<app-sidebar [collapsed]="sidebarCollapsed()" [mobileOpen]="mobileSidebarOpen()"
+  (collapsedChange)="sidebarCollapsed.set($event)" (mobileClose)="mobileSidebarOpen.set(false)"></app-sidebar>
 
 @if (mobileSidebarOpen()) {
-  <button
-    type="button"
-    class="fixed inset-0 z-[90] bg-black/50 lg:hidden"
-    aria-label="Close sidebar"
-    (click)="mobileSidebarOpen.set(false)"
-  ></button>
+<button type="button" class="fixed inset-0 z-[90] bg-black/50 lg:hidden" aria-label="Close sidebar"
+  (click)="mobileSidebarOpen.set(false)"></button>
 }
 
 <div
   class="min-h-screen w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] pt-[72px] transition-[margin] duration-300 lg:w-auto lg:pt-[88px]"
-  [class.lg:ml-[260px]]="!sidebarCollapsed()"
-  [class.lg:ml-[76px]]="sidebarCollapsed()"
->
+  [class.lg:ml-[260px]]="!sidebarCollapsed()" [class.lg:ml-[76px]]="sidebarCollapsed()">
   <app-topbar [sidebarCollapsed]="sidebarCollapsed()" (menuClick)="mobileSidebarOpen.set(true)"></app-topbar>
   <router-outlet></router-outlet>
 </div>

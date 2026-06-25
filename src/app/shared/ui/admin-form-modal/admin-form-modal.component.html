@@ -1,0 +1,67 @@
+@if (isOpen) {
+<div class="fixed inset-0 z-[10000] overflow-y-auto overflow-x-hidden bg-black/50 px-4 py-6 backdrop-blur-sm sm:px-6"
+  (click)="onBackdropClick($event)">
+  <section class="mx-auto flex min-h-full w-full items-center justify-center">
+    <div class="w-full rounded-2xl border border-[#e5ded2] bg-white shadow-xl" [ngClass]="sizeClass()" role="dialog"
+      aria-modal="true">
+      <header class="flex items-start justify-between gap-4 border-b border-[#e5ded2] px-5 py-4 sm:px-6">
+        <div class="min-w-0">
+          <h2 class="text-xl font-extrabold text-[#1f2a1f]">
+            {{ title | translate }}
+          </h2>
+
+          @if (subtitle) {
+          <p class="mt-1 text-sm font-medium text-[#8d877e]">
+            {{ subtitle | translate }}
+          </p>
+          }
+        </div>
+
+        <button type="button" class="admin-modal-icon-button" (click)="close.emit()"
+          [attr.aria-label]="'COMMON.CLOSE' | translate">
+          <i class="pi pi-times"></i>
+        </button>
+      </header>
+
+      <div class="max-h-[70vh] overflow-y-auto px-5 py-5 sm:px-6">
+        @if (isDeleteModal()) {
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#fff1f0] text-2xl text-[#dc3f35]">
+            <i class="pi pi-trash"></i>
+          </div>
+
+          @if (message) {
+          <p class="max-w-sm text-base font-semibold leading-7 text-[#675f55]">
+            {{ message | translate }}
+          </p>
+          }
+
+          <ng-content></ng-content>
+        </div>
+        } @else {
+        <ng-content></ng-content>
+        }
+      </div>
+
+      <footer
+        class="flex flex-col-reverse gap-3 border-t border-[#e5ded2] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+        <button type="button" class="admin-modal-cancel-button" (click)="close.emit()">
+          {{ cancelLabel | translate }}
+        </button>
+
+        <button type="button" [class]="submitButtonClass()" [disabled]="loading" (click)="submit.emit()">
+          @if (loading) {
+          <i class="pi pi-spin pi-spinner text-sm"></i>
+          }
+
+          @if (isDeleteModal() && !loading) {
+          <i class="pi pi-trash text-sm"></i>
+          }
+
+          <span>{{ submitLabel | translate }}</span>
+        </button>
+      </footer>
+    </div>
+  </section>
+</div>
+}

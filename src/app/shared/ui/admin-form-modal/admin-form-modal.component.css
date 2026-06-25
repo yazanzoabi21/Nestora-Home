@@ -1,0 +1,87 @@
+.admin-modal-icon-button {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  color: #8d877e;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.admin-modal-icon-button:hover {
+  background: #f7f4ef;
+  color: #342f29;
+}
+
+.admin-modal-cancel-button,
+.admin-modal-submit-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.875rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition:
+    background-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.admin-modal-cancel-button {
+  border: 1px solid #e5ded2;
+  background: #ffffff;
+  color: #342f29;
+}
+
+.admin-modal-cancel-button:hover {
+  background: #f7f4ef;
+}
+
+.admin-modal-submit-button {
+  background: #5f6f43;
+  color: #ffffff;
+}
+
+.admin-modal-submit-button:hover:not(:disabled) {
+  background: #526139;
+}
+
+.admin-modal-submit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.admin-modal-delete-button {
+  display: inline-flex;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  background: #dc3f35;
+  padding: 0 18px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.admin-modal-delete-button:hover:not(:disabled) {
+  background: #b42318;
+  box-shadow: 0 12px 26px rgba(220, 63, 53, 0.22);
+  transform: translateY(-1px);
+}
+
+.admin-modal-delete-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}

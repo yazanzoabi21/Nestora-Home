@@ -36,7 +36,7 @@ export class Dashboard {
         title: 'KPI Summary',
         headers: ['Metric', 'Value', 'Trend'],
         rows: [
-          ['Total Revenue', '£891.4K', '+18.4%'],
+          ['Total Revenue', '$891.4K', '+18.4%'],
           ['Total Orders', '6.8K', '+12.2%'],
           ['Total Customers', '14.3K', '+8.6%'],
           ['Active Products', '524', '-2.1%'],
@@ -46,12 +46,12 @@ export class Dashboard {
         title: 'Recent Orders',
         headers: ['Order ID', 'Customer', 'Date', 'Total', 'Payment', 'Delivery'],
         rows: [
-          ['ORD-8821', 'Sophie Barrett', '22 Apr 2026', '£248.97', 'Paid', 'Delivered'],
-          ['ORD-8820', 'Marcus Hunt', '22 Apr 2026', '£89.99', 'Paid', 'Shipped'],
-          ['ORD-8819', 'Clara Morel', '21 Apr 2026', '£387.45', 'Paid', 'Processing'],
-          ['ORD-8818', 'James Thornton', '21 Apr 2026', '£124.98', 'Pending', 'Processing'],
-          ['ORD-8817', 'Anya Patel', '20 Apr 2026', '£312.96', 'Paid', 'Delivered'],
-          ['ORD-8816', 'Luca Rossi', '20 Apr 2026', '£149.99', 'Refunded', 'Returned'],
+          ['ORD-8821', 'Sophie Barrett', '22 Apr 2026', '$248.97', 'Paid', 'Delivered'],
+          ['ORD-8820', 'Marcus Hunt', '22 Apr 2026', '$89.99', 'Paid', 'Shipped'],
+          ['ORD-8819', 'Clara Morel', '21 Apr 2026', '$387.45', 'Paid', 'Processing'],
+          ['ORD-8818', 'James Thornton', '21 Apr 2026', '$124.98', 'Pending', 'Processing'],
+          ['ORD-8817', 'Anya Patel', '20 Apr 2026', '$312.96', 'Paid', 'Delivered'],
+          ['ORD-8816', 'Luca Rossi', '20 Apr 2026', '$149.99', 'Refunded', 'Returned'],
         ],
       },
       {
@@ -80,7 +80,7 @@ export class Dashboard {
     {
       title: 'Total Revenue',
       titleKey: 'DASHBOARD.TOTAL_REVENUE',
-      value: '£891.4K',
+      value: '$891.4K',
       icon: 'pi pi-dollar',
       iconColor: '#5f6f43',
       iconBg: '#eef4e8',

@@ -1,5 +1,9 @@
-<main class="auth-shell min-h-screen overflow-x-hidden bg-[#f7f4ef] text-[#1f2a1f]">
-  <section class="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(360px,40%)_minmax(0,1fr)]">
+<main
+  class="auth-shell min-h-screen overflow-x-hidden bg-[#f7f4ef] text-[#1f2a1f]"
+  [class.auth-login-mode]="authMode() === 'login'"
+  [class.auth-register-mode]="authMode() === 'register'"
+>
+  <section class="auth-layout grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(360px,40%)_minmax(0,1fr)]">
     <aside
       class="brand-panel relative hidden overflow-hidden bg-[#1f241d] px-10 py-12 text-white lg:flex lg:flex-col xl:px-16">
       <div class="brand-glow brand-glow-one"></div>
@@ -17,7 +21,7 @@
         </span>
       </div>
 
-      <div class="relative z-10 mt-24 max-w-xl">
+      <div class="brand-intro relative z-10 mt-24 max-w-xl">
         <p class="text-3xl font-bold text-[#a9c184]">{{ 'AUTH.WELCOME_TO' | translate }}</p>
         <h1 class="mt-4 text-6xl font-extrabold tracking-normal text-white drop-shadow-sm xl:text-7xl">
           {{ 'AUTH.BRAND' | translate }}
@@ -27,9 +31,9 @@
         </p>
       </div>
 
-      <div class="relative z-10 my-10 h-px max-w-md bg-white/15"></div>
+      <div class="brand-divider relative z-10 my-10 h-px max-w-md bg-white/15"></div>
 
-      <div class="relative z-10 space-y-7">
+      <div class="brand-features relative z-10 space-y-7">
         <div class="flex max-w-lg gap-5">
           <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5f6f43]/35 text-[#b9d18e]">
             <i class="pi pi-shield text-2xl"></i>
@@ -69,8 +73,8 @@
       </div>
     </aside>
 
-    <section class="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-10">
-      <div class="w-full max-w-[620px]">
+    <section class="auth-content flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-10">
+      <div class="auth-card-stack w-full max-w-[620px]">
         <div class="mb-8 flex items-center justify-center gap-3 lg:hidden">
           <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#5f6f43] text-white">
             <i class="pi pi-leaf text-xl"></i>
@@ -83,10 +87,25 @@
         </div>
 
         <article
-          class="rounded-[28px] border border-[#e5ded2] bg-white/95 px-5 py-8 shadow-[0_24px_70px_rgba(52,47,41,0.10)] sm:px-10 lg:px-14">
+          class="auth-card rounded-[28px] border border-[#e5ded2] bg-white/95 px-5 py-8 shadow-[0_24px_70px_rgba(52,47,41,0.10)] sm:px-10 lg:px-14">
+          <ng-template #authError>
+            @if (errorMessage()) {
+            <div
+              class="flex items-start gap-3 rounded-2xl border border-[#fecaca] bg-[#fff1f0] px-4 py-3.5 text-[#c62828] shadow-[0_12px_24px_rgba(220,63,53,0.08)]"
+              role="alert"
+              aria-live="polite"
+            >
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#ffe4e1] text-sm text-[#dc3f35]">
+                <i class="pi pi-exclamation-circle"></i>
+              </span>
+              <p class="min-w-0 break-words text-sm font-bold leading-relaxed">{{ errorMessage() }}</p>
+            </div>
+            }
+          </ng-template>
+
           @if (authMode() === 'login') {
-          <form class="space-y-6" (submit)="$event.preventDefault(); submitLogin()">
-            <div class="text-center">
+          <form class="auth-form space-y-6" (submit)="$event.preventDefault(); submitLogin()">
+            <div class="auth-card-header text-center">
               <span
                 class="inline-flex items-center gap-2 rounded-2xl border border-[#dce4d4] bg-[#f0f4ec] px-4 py-2 text-sm font-semibold text-[#3f4c2e]">
                 <i class="pi pi-shield text-sm"></i>
@@ -127,11 +146,7 @@
                 | translate }}</a>
             </div>
 
-            @if (errorMessage()) {
-            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
-              {{ errorMessage() }}
-            </div>
-            }
+            <ng-container *ngTemplateOutlet="authError"></ng-container>
 
             <button type="submit" class="auth-primary" [disabled]="loading()">
               @if (loading()) {
@@ -148,14 +163,15 @@
 
             <p class="text-center text-sm font-medium text-[#6f675e]">
               {{ 'AUTH.NO_ACCOUNT' | translate }}
-              <button type="button" class="font-bold text-[#5f6f43] hover:text-[#495735]" (click)="setMode('register')" [disabled]="loading()">
+              <button type="button" class="font-bold text-[#5f6f43] hover:text-[#495735]" (click)="setMode('register')"
+                [disabled]="loading()">
                 {{ 'AUTH.CREATE_ACCOUNT' | translate }}
               </button>
             </p>
           </form>
           } @else {
-          <form class="space-y-4" (submit)="$event.preventDefault(); submitRegister()">
-            <div class="text-center">
+          <form class="auth-form space-y-4" (submit)="$event.preventDefault(); submitRegister()">
+            <div class="auth-card-header text-center">
               <span
                 class="inline-flex items-center gap-2 rounded-2xl border border-[#dce4d4] bg-[#f0f4ec] px-4 py-2 text-sm font-semibold text-[#3f4c2e]">
                 <i class="pi pi-shield text-sm"></i>
@@ -230,11 +246,7 @@
               <span>{{ 'AUTH.AGREE_TERMS' | translate }}</span>
             </label>
 
-            @if (errorMessage()) {
-            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
-              {{ errorMessage() }}
-            </div>
-            }
+            <ng-container *ngTemplateOutlet="authError"></ng-container>
 
             <button type="submit" class="auth-primary" [disabled]="loading()">
               @if (loading()) {
@@ -252,7 +264,8 @@
 
             <p class="text-center text-sm font-medium text-[#6f675e]">
               {{ 'AUTH.HAVE_ACCOUNT' | translate }}
-              <button type="button" class="font-bold text-[#5f6f43] hover:text-[#495735]" (click)="setMode('login')" [disabled]="loading()">
+              <button type="button" class="font-bold text-[#5f6f43] hover:text-[#495735]" (click)="setMode('login')"
+                [disabled]="loading()">
                 {{ 'AUTH.SIGN_IN_LINK' | translate }}
               </button>
             </p>
@@ -260,7 +273,7 @@
           }
         </article>
 
-        <p class="mt-8 flex items-center justify-center gap-3 text-sm font-medium text-[#8d877e]">
+        <p class="auth-security mt-8 flex items-center justify-center gap-3 text-sm font-medium text-[#8d877e]">
           <i class="pi pi-shield text-[#7d756b]"></i>
           {{ 'AUTH.PROTECTED_SECURITY' | translate }}
         </p>

@@ -90,8 +90,15 @@ export class AuthService {
     }
 
     async logout(): Promise<void> {
-        await this.supabase.auth.signOut();
-        await this.router.navigate(['/auth/login']);
+        const { error } = await this.supabase.auth.signOut({ scope: 'local' });
+
+        if (error) {
+            console.error('Failed to clear the local auth session.', error);
+        }
+
+        await this.router.navigate(['/auth/login'], {
+            replaceUrl: true,
+        });
     }
 
     async getProfile(userId: string): Promise<UserProfile | null> {
@@ -148,7 +155,7 @@ export class AuthService {
                 break;
 
             case 'admin':
-                await this.router.navigate(['/admin']);
+                await this.router.navigate(['/admin'], { replaceUrl: true });
                 break;
 
             case 'customer':
@@ -156,5 +163,10 @@ export class AuthService {
                 await this.router.navigate(['/shop']);
                 break;
         }
+    }
+
+    async isAuthenticated(): Promise<boolean> {
+        const { data } = await this.supabase.auth.getSession();
+        return !!data.session;
     }
 }

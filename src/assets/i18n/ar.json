@@ -1,6 +1,10 @@
 {
   "COMMON": {
     "SEARCH": "بحث...",
+    "CANCEL": "إلغاء",
+    "SAVE": "حفظ",
+    "CLOSE": "إغلاق",
+    "LOADING": "جار التحميل...",
     "EN": "EN",
     "AR": "AR"
   },
@@ -70,6 +74,97 @@
     "RETURN_RATE": "معدل الإرجاع",
     "CART_ABANDON": "ترك السلة",
     "VS_LAST_MONTH": "مقارنة بالشهر الماضي"
+  },
+  "PRODUCTS": {
+    "TITLE": "المنتجات",
+    "SUBTITLE_PREFIX": "إدارة جميع منتجات المتجر",
+    "ITEMS_TOTAL": "عنصر إجمالي",
+    "EXPORT": "تصدير",
+    "ADD_PRODUCT": "إضافة منتج",
+    "EDIT_PRODUCT": "تعديل المنتج",
+    "CREATE_PRODUCT_SUBTITLE": "أنشئ منتجاً جديداً لمتجر Nestora Home.",
+    "EDIT_PRODUCT_SUBTITLE": "حدّث معلومات هذا المنتج في المتجر.",
+    "SEARCH_PLACEHOLDER": "ابحث بالاسم أو رمز SKU أو الفئة...",
+    "ALL_CATEGORIES": "كل الفئات",
+    "ALL_STATUSES": "كل الحالات",
+    "PRICE_RANGE": "نطاق السعر",
+    "RESULTS": "نتائج",
+    "LIST_VIEW": "عرض القائمة",
+    "GRID_VIEW": "عرض الشبكة",
+    "LOADING": "جار تحميل المنتجات...",
+    "EMPTY_TITLE": "لا توجد منتجات بعد",
+    "EMPTY_TEXT": "ستظهر منتجات Supabase هنا بمجرد إضافتها.",
+    "NO_MATCHING_TITLE": "لا توجد منتجات مطابقة",
+    "NO_MATCHING_TEXT": "جرّب مسح البحث أو الفلاتر.",
+    "CLEAR_FILTERS": "مسح الفلاتر",
+    "SAVE_SUCCESS": "تم حفظ المنتج بنجاح.",
+    "UPDATE_SUCCESS": "تم تحديث المنتج بنجاح.",
+    "ERROR_TITLE": "تعذر تحميل المنتجات",
+    "UPLOAD_IMAGE": "انقر لرفع الصورة",
+    "UPLOAD_HELPER": "PNG أو JPG أو WEBP حتى 5MB",
+    "REMOVE_IMAGE": "إزالة الصورة",
+    "IMAGE_TYPE_ERROR": "يرجى رفع صورة بصيغة PNG أو JPG أو WEBP.",
+    "IMAGE_SIZE_ERROR": "يجب أن يكون حجم الصورة 5MB أو أقل.",
+    "SAVE_FAILED": "تعذر حفظ المنتج.",
+    "UPLOAD_FAILED": "تعذر رفع صورة المنتج.",
+    "STATS": {
+      "TOTAL_PRODUCTS": "إجمالي المنتجات",
+      "IN_STOCK": "متوفر",
+      "LOW_STOCK": "مخزون منخفض",
+      "OUT_OF_STOCK": "نفد المخزون"
+    },
+    "STATUS": {
+      "IN_STOCK": "متوفر",
+      "LOW_STOCK": "مخزون منخفض",
+      "OUT_OF_STOCK": "نفد المخزون"
+    },
+    "PRICE_RANGES": {
+      "ALL": "نطاق السعر",
+      "UNDER_25": "أقل من $25",
+      "25_50": "$25 - $50",
+      "50_75": "$50 - $75",
+      "OVER_75": "أكثر من $75"
+    },
+    "TABLE": {
+      "PRODUCT": "المنتج",
+      "SLUG": "المعرف",
+      "SKU": "رمز SKU",
+      "CATEGORY": "الفئة",
+      "PRICE": "السعر",
+      "SALE_PRICE": "سعر التخفيض",
+      "STOCK": "المخزون",
+      "SOLD": "المباع",
+      "RATING": "التقييم",
+      "FEATURED": "مميز",
+      "NEW": "جديد",
+      "ACTIVE": "نشط",
+      "STATUS": "الحالة",
+      "CREATED_AT": "تاريخ الإنشاء",
+      "ACTIONS": "الإجراءات"
+    },
+    "ACTIONS": {
+      "VIEW": "عرض المنتج",
+      "EDIT": "تعديل المنتج",
+      "DELETE": "حذف المنتج"
+    },
+    "FIELDS": {
+      "NAME": "اسم المنتج",
+      "SLUG": "المعرف",
+      "SKU": "رمز SKU",
+      "CATEGORY": "الفئة",
+      "PRICE": "السعر",
+      "SALE_PRICE": "سعر التخفيض",
+      "STOCK": "المخزون",
+      "SOLD_COUNT": "عدد المبيعات",
+      "RATING": "التقييم",
+      "SHORT_DESCRIPTION": "وصف مختصر",
+      "DESCRIPTION": "الوصف",
+      "IMAGE": "صورة المنتج",
+      "IMAGE_URL": "رابط الصورة",
+      "IS_FEATURED": "منتج مميز",
+      "IS_NEW": "منتج جديد",
+      "IS_ACTIVE": "نشط"
+    }
   },
   "AUTH": {
     "BRAND": "نيستورا هوم",

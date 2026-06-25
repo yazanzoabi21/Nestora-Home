@@ -24,7 +24,7 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'admin',
+    redirectTo: 'auth/login',
     pathMatch: 'full',
   },
   {
@@ -53,6 +53,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'admin',
+    redirectTo: 'auth/login',
   },
 ];

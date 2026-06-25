@@ -9,6 +9,7 @@
     </span>
 
     <span
+      *ngIf="hasTrend"
       class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold"
       [class.bg-[#eef4e8]]="data.trendType === 'up'"
       [class.bg-[#fff1f0]]="data.trendType === 'down'"
@@ -24,7 +25,7 @@
     <p class="mt-1 text-sm font-semibold text-[#8d877e]">{{ (data.titleKey ?? data.title) | translate }}</p>
   </div>
 
-  <div class="mt-auto h-7 overflow-hidden">
+  <div *ngIf="shouldShowChart" class="mt-auto h-7 overflow-hidden">
     <highcharts-chart [options]="chartOptions" class="block h-7 w-full"></highcharts-chart>
   </div>
 </article>

@@ -1,6 +1,10 @@
 {
   "COMMON": {
     "SEARCH": "Search...",
+    "CANCEL": "Cancel",
+    "SAVE": "Save",
+    "CLOSE": "Close",
+    "LOADING": "Loading...",
     "EN": "EN",
     "AR": "AR"
   },
@@ -70,6 +74,97 @@
     "RETURN_RATE": "Return Rate",
     "CART_ABANDON": "Cart Abandon",
     "VS_LAST_MONTH": "vs last month"
+  },
+  "PRODUCTS": {
+    "TITLE": "Products",
+    "SUBTITLE_PREFIX": "Manage all store products",
+    "ITEMS_TOTAL": "items total",
+    "EXPORT": "Export",
+    "ADD_PRODUCT": "Add Product",
+    "EDIT_PRODUCT": "Edit Product",
+    "CREATE_PRODUCT_SUBTITLE": "Create a new product for Nestora Home.",
+    "EDIT_PRODUCT_SUBTITLE": "Update this product's store information.",
+    "SEARCH_PLACEHOLDER": "Search by name, SKU, or category...",
+    "ALL_CATEGORIES": "All categories",
+    "ALL_STATUSES": "All statuses",
+    "PRICE_RANGE": "Price Range",
+    "RESULTS": "results",
+    "LIST_VIEW": "List view",
+    "GRID_VIEW": "Grid view",
+    "LOADING": "Loading products...",
+    "EMPTY_TITLE": "No products yet",
+    "EMPTY_TEXT": "Products from Supabase will appear here once they are added.",
+    "NO_MATCHING_TITLE": "No matching products",
+    "NO_MATCHING_TEXT": "Try clearing search or filters.",
+    "CLEAR_FILTERS": "Clear Filters",
+    "SAVE_SUCCESS": "Product saved successfully.",
+    "UPDATE_SUCCESS": "Product updated successfully.",
+    "ERROR_TITLE": "Unable to load products",
+    "UPLOAD_IMAGE": "Click to upload image",
+    "UPLOAD_HELPER": "PNG, JPG, WEBP up to 5MB",
+    "REMOVE_IMAGE": "Remove image",
+    "IMAGE_TYPE_ERROR": "Please upload a PNG, JPG, or WEBP image.",
+    "IMAGE_SIZE_ERROR": "Image must be 5MB or smaller.",
+    "SAVE_FAILED": "Unable to save product.",
+    "UPLOAD_FAILED": "Unable to upload product image.",
+    "STATS": {
+      "TOTAL_PRODUCTS": "Total Products",
+      "IN_STOCK": "In Stock",
+      "LOW_STOCK": "Low Stock",
+      "OUT_OF_STOCK": "Out of Stock"
+    },
+    "STATUS": {
+      "IN_STOCK": "In Stock",
+      "LOW_STOCK": "Low Stock",
+      "OUT_OF_STOCK": "Out of Stock"
+    },
+    "PRICE_RANGES": {
+      "ALL": "Price Range",
+      "UNDER_25": "Under $25",
+      "25_50": "$25 - $50",
+      "50_75": "$50 - $75",
+      "OVER_75": "Over $75"
+    },
+    "TABLE": {
+      "PRODUCT": "Product",
+      "SLUG": "Slug",
+      "SKU": "SKU",
+      "CATEGORY": "Category",
+      "PRICE": "Price",
+      "SALE_PRICE": "Sale Price",
+      "STOCK": "Stock",
+      "SOLD": "Sold",
+      "RATING": "Rating",
+      "FEATURED": "Featured",
+      "NEW": "New",
+      "ACTIVE": "Active",
+      "STATUS": "Status",
+      "CREATED_AT": "Created At",
+      "ACTIONS": "Actions"
+    },
+    "ACTIONS": {
+      "VIEW": "View product",
+      "EDIT": "Edit product",
+      "DELETE": "Delete product"
+    },
+    "FIELDS": {
+      "NAME": "Product Name",
+      "SLUG": "Slug",
+      "SKU": "SKU",
+      "CATEGORY": "Category",
+      "PRICE": "Price",
+      "SALE_PRICE": "Sale Price",
+      "STOCK": "Stock",
+      "SOLD_COUNT": "Sold Count",
+      "RATING": "Rating",
+      "SHORT_DESCRIPTION": "Short Description",
+      "DESCRIPTION": "Description",
+      "IMAGE": "Product Image",
+      "IMAGE_URL": "Image URL",
+      "IS_FEATURED": "Is Featured",
+      "IS_NEW": "Is New",
+      "IS_ACTIVE": "Is Active"
+    }
   },
   "AUTH": {
     "BRAND": "Nestora Home",

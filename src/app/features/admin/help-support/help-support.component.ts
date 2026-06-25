@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 
+import { AdminFormFieldComponent } from '../../../shared/ui/admin-form-field';
+
 interface QuickAction {
   icon: string;
   label: string;
@@ -35,9 +37,15 @@ interface FaqCategory {
   title: string;
 }
 
+interface SupportOption {
+  label: string;
+  value: string;
+}
+
 @Component({
   selector: 'app-help-support',
   standalone: true,
+  imports: [AdminFormFieldComponent],
   templateUrl: './help-support.component.html',
   styleUrl: './help-support.component.css',
 })
@@ -126,6 +134,19 @@ export class HelpSupportComponent {
     { icon: 'pi pi-box', title: 'Inventory & Products' },
     { icon: 'pi pi-chart-bar', title: 'Reports & Analytics' },
     { icon: 'pi pi-shield', title: 'Security & Privacy' },
+  ];
+  readonly supportCategoryOptions: SupportOption[] = [
+    { label: 'Orders', value: 'orders' },
+    { label: 'Products', value: 'products' },
+    { label: 'Payments', value: 'payments' },
+    { label: 'Account', value: 'account' },
+    { label: 'Security', value: 'security' },
+  ];
+  readonly priorityOptions: SupportOption[] = [
+    { label: 'Low', value: 'low' },
+    { label: 'Normal', value: 'normal' },
+    { label: 'High', value: 'high' },
+    { label: 'Urgent', value: 'urgent' },
   ];
 
   submitRequest(): void {

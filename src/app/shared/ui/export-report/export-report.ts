@@ -34,7 +34,7 @@ export interface ExportReportConfig {
 })
 export class ExportReportComponent {
   @Input({ required: true }) config!: ExportReportConfig;
-
+  @Input() variant: 'primary' | 'secondary' = 'primary';
   @Input() buttonLabel = 'Export Report';
   @Input() buttonIcon = 'pi pi-download';
 

@@ -44,7 +44,7 @@ export class SalesOrdersChartComponent {
         gridLineDashStyle: 'Dash',
         labels: {
           style: { color: '#8d877e', fontSize: '12px' },
-          format: '£{value}k',
+          format: '${value}k',
         },
       },
       {

@@ -1,0 +1,216 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.admin-form-field-host {
+  min-width: 0;
+}
+
+.admin-form-field-full,
+.admin-form-field-col-2 {
+  grid-column: 1 / -1;
+}
+
+.admin-form-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #675f55;
+}
+
+.admin-form-input-shell {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.admin-form-input-shell-search i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  z-index: 1;
+  transform: translateY(-50%);
+  color: #9a9389;
+  font-size: 0.875rem;
+}
+
+.admin-form-input {
+  min-height: 2.75rem;
+  width: 100%;
+  border-radius: 0.875rem;
+  border: 1px solid #e5ded2;
+  background: #fbfaf8;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #342f29;
+  outline: none;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.admin-form-input-with-icon {
+  padding-left: 2.75rem;
+}
+
+.admin-form-textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.admin-form-input:focus {
+  border-color: #5f6f43;
+  background: #ffffff;
+}
+
+.admin-form-input:disabled,
+.admin-form-input[readonly] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.admin-form-checkbox-field {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.875rem;
+  border: 1px solid #e5ded2;
+  background: #fbfaf8;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #342f29;
+}
+
+.admin-form-checkbox {
+  height: 1rem;
+  width: 1rem;
+  accent-color: #5f6f43;
+}
+
+.admin-form-upload-card {
+  display: flex;
+  min-height: 13rem;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 0.875rem;
+  border: 1.5px dashed #e5ded2;
+  background: #fbfaf8;
+  padding: 1rem;
+  text-align: center;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.admin-form-upload-card:hover {
+  border-color: #5f6f43;
+  background: #ffffff;
+}
+
+.admin-form-upload-icon {
+  display: flex;
+  height: 3.5rem;
+  width: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: #eef4e8;
+  color: #5f6f43;
+  font-size: 1.5rem;
+}
+
+.admin-form-upload-preview {
+  height: 8rem;
+  width: min(100%, 18rem);
+  overflow: hidden;
+  border-radius: 0.875rem;
+  border: 1px solid #e5ded2;
+  background: #f7f4ef;
+}
+
+.admin-form-upload-preview img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.admin-form-remove-file-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #f1b9b4;
+  background: #fff1f0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: #b42318;
+  transition: background-color 150ms ease;
+}
+
+.admin-form-remove-file-button:hover {
+  background: #ffe5e3;
+}
+
+.admin-form-helper {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8d877e;
+}
+
+.admin-form-error {
+  border-radius: 0.75rem;
+  border: 1px solid #f1b9b4;
+  background: #fff1f0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #b42318;
+}
+
+:host ::ng-deep .admin-form-select {
+  min-height: 2.75rem;
+  width: 100%;
+  border-radius: 0.875rem;
+  border: 1px solid #e5ded2;
+  background: #fbfaf8;
+  color: #342f29;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: none;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+:host ::ng-deep .admin-form-select:not(.p-disabled).p-focus {
+  border-color: #5f6f43;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(95, 111, 67, 0.08);
+}
+
+:host ::ng-deep .admin-form-select .p-select-label {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: #342f29;
+  font-weight: 600;
+}
+
+:host ::ng-deep .admin-form-select .p-select-dropdown {
+  width: 2.75rem;
+  color: #675f55;
+}

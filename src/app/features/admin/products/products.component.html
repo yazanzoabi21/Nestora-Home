@@ -1,0 +1,252 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'PRODUCTS.TITLE' | translate }}</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        {{ 'PRODUCTS.SUBTITLE_PREFIX' | translate }} · {{ products().length }} {{ 'PRODUCTS.ITEMS_TOTAL' | translate }}
+      </p>
+    </div>
+
+    <div class="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
+      <app-export-report [config]="productsExportConfig()" [buttonLabel]="'PRODUCTS.EXPORT' | translate"
+        variant="secondary">
+      </app-export-report>
+
+      <button type="button"
+        class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#526139] sm:w-auto"
+        (click)="openAddProductModal()">
+        <i class="pi pi-plus text-sm"></i>
+        <span>{{ 'PRODUCTS.ADD_PRODUCT' | translate }}</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.titleKey) {
+    <app-kpi-card class="min-w-0" [data]="card"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="grid gap-3 xl:grid-cols-[minmax(260px,1fr)_180px_170px_auto_auto_auto] xl:items-center">
+      <app-admin-form-field type="search" name="productSearch" [placeholder]="'PRODUCTS.SEARCH_PLACEHOLDER'"
+        [value]="searchTerm()" (valueChange)="searchTerm.set($any($event))" />
+
+      <app-admin-form-field type="select" name="categoryFilter" [value]="selectedCategory()"
+        [options]="categoryFilterOptions()" optionLabel="label" optionValue="value"
+        (valueChange)="selectedCategory.set($any($event))" />
+
+      <app-admin-form-field type="select" name="statusFilter" [value]="selectedStatus()" [options]="statusFilterOptions"
+        optionLabel="label" optionValue="value" (valueChange)="selectedStatus.set($any($event))" />
+
+      <button type="button"
+        class="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-[#fbfaf8] px-4 text-sm font-semibold text-[#342f29] transition hover:bg-white"
+        (click)="openPriceRange()">
+        <i class="pi pi-sliders-h text-sm text-[#5f6f43]"></i>
+        <span>{{ priceRangeLabelKey() | translate }}</span>
+      </button>
+
+      @if (hasActiveFilters()) {
+      <button type="button"
+        class="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-semibold text-[#5f6f43] shadow-sm transition hover:bg-[#f7f4ef]"
+        (click)="clearFilters()">
+        <i class="pi pi-filter-slash text-sm"></i>
+        <span>{{ 'PRODUCTS.CLEAR_FILTERS' | translate }}</span>
+      </button>
+      }
+
+      <div class="flex h-11 items-center justify-between gap-3 rounded-xl border border-[#e5ded2] bg-[#fbfaf8] px-2">
+        <span class="px-2 text-sm font-semibold text-[#8d877e]">{{ filteredProducts().length }} {{ 'PRODUCTS.RESULTS' |
+          translate }}</span>
+        <div class="flex gap-1">
+          <button type="button" class="flex h-8 w-8 items-center justify-center rounded-lg text-sm transition"
+            [class.bg-white]="viewMode() === 'list'" [class.text-[#5f6f43]]="viewMode() === 'list'"
+            [class.shadow-sm]="viewMode() === 'list'" (click)="setViewMode('list')"
+            [attr.aria-label]="'PRODUCTS.LIST_VIEW' | translate">
+            <i class="pi pi-list"></i>
+          </button>
+          <button type="button" class="flex h-8 w-8 items-center justify-center rounded-lg text-sm transition"
+            [class.bg-white]="viewMode() === 'grid'" [class.text-[#5f6f43]]="viewMode() === 'grid'"
+            [class.shadow-sm]="viewMode() === 'grid'" (click)="setViewMode('grid')"
+            [attr.aria-label]="'PRODUCTS.GRID_VIEW' | translate">
+            <i class="pi pi-th-large"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  @if (viewMode() === 'list') {
+
+  @if (selectedProductsCount() > 0) {
+  <section
+    class="mt-6 flex w-full flex-col gap-4 rounded-2xl bg-[#2f2f2f] px-5 py-4 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <p class="text-base font-extrabold">
+      {{ selectedProductsLabel() }}
+    </p>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button type="button"
+        class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-extrabold text-white transition hover:bg-white/15"
+        (click)="openBulkStatus()">
+        <i class="pi pi-tag text-sm"></i>
+        <span>Change Status</span>
+      </button>
+
+      <button type="button"
+        class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#fff1f0] px-4 text-sm font-extrabold text-[#dc3f35] transition hover:bg-[#ffe4e2]"
+        [disabled]="saving()" (click)="openDeleteSelectedProductsModal()">
+        <i class="pi pi-trash text-sm"></i>
+        <span>Delete Selected</span>
+      </button>
+
+      <button type="button"
+        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/15"
+        (click)="clearSelectedProducts()" aria-label="Clear selected products">
+        <i class="pi pi-times text-sm"></i>
+      </button>
+    </div>
+  </section>
+  }
+
+  <app-admin-table [class.mt-6]="selectedProductsCount() === 0" [class.mt-4]="selectedProductsCount() > 0" class="block"
+    [columns]="productTableColumns" [rows]="tableRows()" [loading]="loading()" [emptyTitle]="emptyTitleKey()"
+    [emptyText]="emptyTextKey()" [selectable]="true" [showActions]="true" [pageSize]="10"
+    [selectionResetKey]="tableSelectionResetKey()" (rowView)="viewProduct($event)"
+    (rowEdit)="openEditProductModal($event)" (rowDelete)="openDeleteProductModal($event)"
+    (selectionChange)="updateSelection($event)">
+  </app-admin-table>
+
+  } @else if (!loading() && filteredProducts().length === 0) {
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-10 text-center shadow-sm">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eef4e8] text-2xl text-[#5f6f43]">
+      <i class="pi pi-box"></i>
+    </div>
+    <h2 class="mt-4 text-xl font-extrabold text-[#1f2a1f]">{{ emptyTitleKey() | translate }}</h2>
+    <p class="mx-auto mt-2 max-w-md text-sm font-medium text-[#8d877e]">{{ emptyTextKey() | translate }}</p>
+    @if (hasActiveFilters()) {
+    <button type="button"
+      class="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-semibold text-[#5f6f43] shadow-sm transition hover:bg-[#f7f4ef]"
+      (click)="clearFilters()">
+      <i class="pi pi-filter-slash text-sm"></i>
+      <span>{{ 'PRODUCTS.CLEAR_FILTERS' | translate }}</span>
+    </button>
+    }
+  </section>
+  } @else {
+  <section class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    @for (product of filteredProducts(); track product.id) {
+    <article class="rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+      <div class="flex items-start gap-4">
+        <div
+          class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#e5ded2] bg-[#f7f4ef] text-sm font-extrabold text-[#5f6f43]">
+          @if (product.image_url) {
+          <img class="h-full w-full object-cover" [src]="product.image_url" [alt]="product.name" />
+          } @else {
+          <span>{{ productInitials(product) }}</span>
+          }
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <h2 class="truncate text-base font-extrabold text-[#182116]">{{ product.name }}</h2>
+            @if (product.is_featured) {
+            <i class="pi pi-star-fill text-xs text-[#d98916]"></i>
+            }
+          </div>
+          <p class="mt-1 text-sm font-medium text-[#9a9389]">SKU: {{ product.sku }}</p>
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <span class="rounded-full bg-[#f0ebe4] px-3 py-1 text-xs font-semibold text-[#675f55]">{{
+              categoryLabel(product) }}</span>
+            <span class="rounded-full px-3 py-1 text-xs font-bold" [ngClass]="statusBadgeClass(product)">{{
+              statusLabelKey(product) | translate }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 grid grid-cols-3 gap-3 border-t border-[#eee8df] pt-4 text-sm">
+        <div>
+          <p class="font-semibold text-[#9a9389]">{{ 'PRODUCTS.TABLE.PRICE' | translate }}</p>
+          <p class="mt-1 font-extrabold text-[#182116]">{{ formatPrice(product) }}</p>
+        </div>
+        <div>
+          <p class="font-semibold text-[#9a9389]">{{ 'PRODUCTS.TABLE.STOCK' | translate }}</p>
+          <p class="mt-1 font-extrabold" [ngClass]="stockTextClass(product)">{{ product.stock }}</p>
+        </div>
+        <div>
+          <p class="font-semibold text-[#9a9389]">{{ 'PRODUCTS.TABLE.SOLD' | translate }}</p>
+          <p class="mt-1 font-extrabold text-[#182116]">{{ product.sold_count }}</p>
+        </div>
+      </div>
+    </article>
+    }
+  </section>
+  }
+
+  <app-admin-form-modal [isOpen]="isProductModalOpen()" [title]="productModalTitleKey()"
+    [subtitle]="productModalSubtitleKey()" size="xl" [submitLabel]="'COMMON.SAVE'" [cancelLabel]="'COMMON.CANCEL'"
+    [loading]="saving()" (close)="closeProductModal()" (submit)="saveProduct()">
+    <form class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <app-admin-form-field type="text" name="name" [label]="'PRODUCTS.FIELDS.NAME'" [value]="productForm().name"
+        (valueChange)="updateProductForm('name', $any($event))" />
+
+      <app-admin-form-field type="text" name="sku" [label]="'PRODUCTS.FIELDS.SKU'" [value]="productForm().sku"
+        (valueChange)="updateProductForm('sku', $any($event))" />
+
+      <app-admin-form-field type="text" name="slug" [label]="'PRODUCTS.FIELDS.SLUG'" [value]="productForm().slug"
+        (valueChange)="updateProductForm('slug', $any($event))" />
+
+      <app-admin-form-field type="text" name="category" [label]="'PRODUCTS.FIELDS.CATEGORY'"
+        [value]="productForm().category" (valueChange)="updateProductForm('category', $any($event))" />
+
+      <app-admin-form-field type="number" name="price" [label]="'PRODUCTS.FIELDS.PRICE'" [value]="productForm().price"
+        (valueChange)="updateProductForm('price', $any($event))" />
+
+      <app-admin-form-field type="number" name="salePrice" [label]="'PRODUCTS.FIELDS.SALE_PRICE'"
+        [value]="productForm().salePrice" (valueChange)="updateProductForm('salePrice', $any($event))" />
+
+      <app-admin-form-field type="number" name="stock" [label]="'PRODUCTS.FIELDS.STOCK'" [value]="productForm().stock"
+        (valueChange)="updateProductForm('stock', $any($event))" />
+
+      <app-admin-form-field type="number" name="soldCount" [label]="'PRODUCTS.FIELDS.SOLD_COUNT'"
+        [value]="productForm().soldCount" (valueChange)="updateProductForm('soldCount', $any($event))" />
+
+      <app-admin-form-field type="number" name="rating" [label]="'PRODUCTS.FIELDS.RATING'" min="0" max="5" step="0.1"
+        [value]="productForm().rating" (valueChange)="updateProductForm('rating', $any($event))" />
+
+      <app-admin-form-field class="md:col-span-2" type="text" name="shortDescription"
+        [label]="'PRODUCTS.FIELDS.SHORT_DESCRIPTION'" [value]="productForm().shortDescription"
+        (valueChange)="updateProductForm('shortDescription', $any($event))" />
+
+      <app-admin-form-field class="md:col-span-2" type="textarea" name="description"
+        [label]="'PRODUCTS.FIELDS.DESCRIPTION'" [value]="productForm().description"
+        (valueChange)="updateProductForm('description', $any($event))" />
+
+      <app-admin-form-field class="md:col-span-2" type="file" name="image" [label]="'PRODUCTS.FIELDS.IMAGE'"
+        accept="image/png,image/jpeg,image/webp" [previewUrl]="imagePreviewUrl()" [error]="imageUploadError()"
+        [helperText]="'PRODUCTS.UPLOAD_HELPER'" [fileName]="selectedImageFile()?.name ?? null"
+        (fileChange)="onImageSelected($event)" (removeFile)="removeSelectedImage()" />
+
+      <div class="grid gap-3 md:col-span-2 md:grid-cols-3">
+        <app-admin-form-field type="checkbox" name="isFeatured" [label]="'PRODUCTS.FIELDS.IS_FEATURED'"
+          [value]="productForm().isFeatured" (valueChange)="updateProductForm('isFeatured', $any($event))" />
+
+        <app-admin-form-field type="checkbox" name="isNew" [label]="'PRODUCTS.FIELDS.IS_NEW'"
+          [value]="productForm().isNew" (valueChange)="updateProductForm('isNew', $any($event))" />
+
+        <app-admin-form-field type="checkbox" name="isActive" [label]="'PRODUCTS.FIELDS.IS_ACTIVE'"
+          [value]="productForm().isActive" (valueChange)="updateProductForm('isActive', $any($event))" />
+      </div>
+    </form>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="isDeleteProductModalOpen()" variant="delete" title="Delete Product"
+    message="Are you sure you want to delete this product? This action cannot be undone." submitLabel="Yes, Delete"
+    cancelLabel="Cancel" [loading]="saving()" (close)="closeDeleteProductModal()" (submit)="confirmDeleteProduct()">
+    @if (productPendingDelete()) {
+    <p class="mt-3 rounded-xl bg-[#f7f4ef] px-4 py-3 text-sm font-extrabold text-[#1f2a1f]">
+      {{ productPendingDelete()?.name }}
+    </p>
+    }
+  </app-admin-form-modal>
+</main>

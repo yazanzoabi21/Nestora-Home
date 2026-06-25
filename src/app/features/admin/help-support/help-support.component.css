@@ -104,36 +104,3 @@
 .list-row:hover {
   background: #f7f4ef;
 }
-
-.field-label {
-  display: grid;
-  gap: 0.5rem;
-  color: #342f29;
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
-.support-field {
-  min-height: 2.875rem;
-  width: 100%;
-  border-radius: 0.75rem;
-  border: 1px solid #e5ded2;
-  background: #fff;
-  padding: 0 1rem;
-  color: #342f29;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  outline: none;
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.support-field::placeholder {
-  color: #a19a90;
-}
-
-.support-field:focus {
-  border-color: #b8ad9d;
-  box-shadow: 0 0 0 3px rgba(95, 111, 67, 0.1);
-}

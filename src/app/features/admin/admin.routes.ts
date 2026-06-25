@@ -15,11 +15,13 @@
 
 import { Routes } from '@angular/router';
 import { AdminLayoutComponent } from '../../core/layouts/admin-layout';
+import { authGuard } from '../../core/guards/auth.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
     path: '',
     component: AdminLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -30,6 +32,11 @@ export const ADMIN_ROUTES: Routes = [
         path: 'dashboard',
         loadComponent: () =>
           import('./dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./products').then((m) => m.ProductsComponent),
       },
       {
         path: 'profile',

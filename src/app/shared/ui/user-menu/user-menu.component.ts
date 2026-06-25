@@ -1,5 +1,6 @@
-import { Component, ElementRef, HostListener, Input, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, Input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth';
 import { TranslatePipe } from '@ngx-translate/core';
 
 export interface UserMenuUser {
@@ -22,9 +23,11 @@ export class UserMenuComponent {
     initials: 'AJ',
   };
 
+  private readonly authService = inject(AuthService);
+
   readonly isOpen = signal(false);
 
-  constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
+  constructor(private readonly elementRef: ElementRef<HTMLElement>) { }
 
   @HostListener('document:click', ['$event'])
   closeOnOutsideClick(event: MouseEvent): void {
@@ -46,8 +49,8 @@ export class UserMenuComponent {
     this.isOpen.set(false);
   }
 
-  signOut(): void {
-    // TODO: Add real sign-out logic.
+  async signOut(): Promise<void> {
     this.closeMenu();
+    await this.authService.logout();
   }
 }

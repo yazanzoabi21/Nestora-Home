@@ -21,7 +21,7 @@ export class SalesPerformanceCardComponent {
     {
       label: 'Avg. Order Value',
       labelKey: 'DASHBOARD.AVG_ORDER_VALUE',
-      value: '£130.50',
+      value: '$130.50',
       change: '+5.8%',
       tone: 'positive',
     },
