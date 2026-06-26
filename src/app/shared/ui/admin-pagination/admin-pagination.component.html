@@ -1,0 +1,67 @@
+<nav
+  class="admin-pagination flex w-full min-w-0 flex-col gap-3 border-t border-[#eee8df] bg-[#fffdfa] px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
+  aria-label="Table pagination"
+>
+  @if (showSummary) {
+    <p class="min-w-0 text-sm font-semibold text-[#8d877e]">
+      Showing
+      <span class="font-extrabold text-[#342f29]">{{ startItem }}</span>&ndash;<span class="font-extrabold text-[#342f29]">{{ endItem }}</span>
+      of
+      <span class="font-extrabold text-[#342f29]">{{ totalItems }}</span>
+    </p>
+  }
+
+  <div class="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
+    @if (showPageSize) {
+      <div class="admin-pagination-size flex min-w-0 items-center gap-2">
+        <span class="text-sm font-semibold text-[#8d877e]">Rows</span>
+        <p-select
+          styleClass="admin-pagination-select"
+          panelStyleClass="admin-form-select-panel admin-pagination-select-panel"
+          appendTo="body"
+          [options]="pageSizeOptions"
+          [ngModel]="pageSize"
+          (ngModelChange)="setPageSize($event)"
+        />
+      </div>
+    }
+
+    <div class="admin-pagination-pages flex min-w-0 flex-wrap items-center gap-1.5">
+      <button
+        type="button"
+        class="admin-pagination-button"
+        [disabled]="safeCurrentPage === 1"
+        (click)="setPage(safeCurrentPage - 1)"
+        aria-label="Previous page"
+      >
+        <i class="pi pi-chevron-left text-xs"></i>
+      </button>
+
+      @for (item of pageItems; track $index) {
+        @if (item === 'ellipsis') {
+          <span class="admin-pagination-ellipsis">...</span>
+        } @else {
+          <button
+            type="button"
+            class="admin-pagination-button admin-pagination-number"
+            [class.admin-pagination-active]="item === safeCurrentPage"
+            [attr.aria-current]="item === safeCurrentPage ? 'page' : null"
+            (click)="setPage(item)"
+          >
+            {{ item }}
+          </button>
+        }
+      }
+
+      <button
+        type="button"
+        class="admin-pagination-button"
+        [disabled]="safeCurrentPage === totalPages"
+        (click)="setPage(safeCurrentPage + 1)"
+        aria-label="Next page"
+      >
+        <i class="pi pi-chevron-right text-xs"></i>
+      </button>
+    </div>
+  </div>
+</nav>

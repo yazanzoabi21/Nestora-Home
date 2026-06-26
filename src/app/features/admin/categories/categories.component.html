@@ -1,0 +1,370 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'CATEGORIES.TITLE' | translate }}</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        {{ 'CATEGORIES.SUBTITLE' | translate: { count: categories().length } }}
+      </p>
+    </div>
+
+    <button type="button"
+      class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-5 text-sm font-extrabold text-white shadow-[0_12px_26px_rgba(95,111,67,0.22)] transition hover:bg-[#526139] sm:w-auto"
+      (click)="openAddCategoryModal()">
+      <i class="pi pi-plus text-sm"></i>
+      <span>{{ 'CATEGORIES.ADD_CATEGORY' | translate }}</span>
+    </button>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.title) {
+    <app-kpi-card class="min-w-0" [data]="card"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <app-admin-form-field class="min-w-0 flex-1" type="search" name="categorySearch"
+        placeholder="CATEGORIES.SEARCH_PLACEHOLDER" [value]="searchTerm()" (valueChange)="searchTerm.set($any($event))" />
+
+      <div class="flex h-11 shrink-0 items-center gap-1 rounded-xl border border-[#e5ded2] bg-[#fbfaf8] p-1">
+        <button type="button" class="category-view-button" [class.category-view-button-active]="viewMode() === 'tree'"
+          (click)="setViewMode('tree')" [attr.aria-label]="'CATEGORIES.TREE_VIEW_ARIA' | translate">
+          <i class="pi pi-list"></i>
+          <span>{{ 'CATEGORIES.TREE_VIEW' | translate }}</span>
+        </button>
+        <button type="button" class="category-view-button" [class.category-view-button-active]="viewMode() === 'grid'"
+          (click)="setViewMode('grid')" [attr.aria-label]="'CATEGORIES.GRID_VIEW_ARIA' | translate">
+          <i class="pi pi-th-large"></i>
+          <span>{{ 'CATEGORIES.GRID_VIEW' | translate }}</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  @if (!loading() && filteredCategories().length === 0) {
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-10 text-center shadow-sm">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eef4e8] text-2xl text-[#5f6f43]">
+      <i class="pi pi-tags"></i>
+    </div>
+    <h2 class="mt-4 text-xl font-extrabold text-[#1f2a1f]">{{ 'CATEGORIES.EMPTY_TITLE' | translate }}</h2>
+    <p class="mx-auto mt-2 max-w-md text-sm font-medium text-[#8d877e]">{{ 'CATEGORIES.EMPTY_TEXT' | translate }}</p>
+  </section>
+  } @else if (viewMode() === 'tree') {
+  <section class="category-tree-layout mt-6">
+    <aside class="category-tree-panel">
+      <header class="category-panel-header">
+        <h2>{{ 'CATEGORIES.TREE_TITLE' | translate }}</h2>
+        <span>{{ 'CATEGORIES.ITEMS' | translate: { count: filteredCategories().length } }}</span>
+      </header>
+
+      <div class="category-tree-scroll">
+        @if (loading()) {
+        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+        <div class="category-tree-skeleton"></div>
+        }
+        } @else {
+        @for (category of rootCategories(); track category.id) {
+        @let children = childCategories(category.id);
+        <div class="category-tree-group">
+          <div class="category-tree-row" [class.category-tree-row-active]="isSelectedCategory(category)"
+            (click)="selectCategory(category)">
+            @if (children.length > 0) {
+            <button type="button" class="category-tree-chevron" (click)="toggleExpanded(category, $event)"
+              [attr.aria-label]="(isExpanded(category) ? 'CATEGORIES.COLLAPSE_CATEGORY' : 'CATEGORIES.EXPAND_CATEGORY') | translate">
+              <i class="pi" [class.pi-chevron-down]="isExpanded(category)"
+                [class.pi-chevron-right]="!isExpanded(category)"></i>
+            </button>
+            } @else {
+            <span class="category-tree-chevron category-tree-chevron-empty"></span>
+            }
+
+            <span class="category-mini-icon">
+              @if (categoryImageUrl(category)) {
+              <img [src]="categoryImageUrl(category)!" [alt]="category.name" />
+              } @else {
+              <i [class]="categoryIconClass(category)"></i>
+              }
+            </span>
+
+            <span class="min-w-0 flex-1 text-left">
+              <span class="flex min-w-0 items-center gap-2">
+                <span class="truncate text-sm font-extrabold text-[#182116]">{{ category.name }}</span>
+                @if (isHiddenCategory(category)) {
+                <span class="category-hidden-badge">{{ 'COMMON.HIDDEN' | translate }}</span>
+                }
+              </span>
+              <span class="mt-1 block text-xs font-semibold text-[#8d877e]">{{ productCountLabel(category) }}</span>
+            </span>
+
+            <span class="category-row-actions">
+              <button type="button" class="category-row-action text-[#5f6f43]"
+                (click)="openAddChildCategoryModal(category); $event.stopPropagation()" [attr.aria-label]="'CATEGORIES.ADD_CHILD_CATEGORY' | translate">
+                <i class="pi pi-plus"></i>
+              </button>
+              <button type="button" class="category-row-action text-[#5f6f43]"
+                (click)="openEditCategoryModal(category); $event.stopPropagation()" [attr.aria-label]="'CATEGORIES.EDIT_CATEGORY_ARIA' | translate">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button type="button" class="category-row-action text-[#dc3f35]"
+                (click)="openDeleteCategoryModal(category); $event.stopPropagation()" [attr.aria-label]="'CATEGORIES.DELETE_CATEGORY_ARIA' | translate">
+                <i class="pi pi-trash"></i>
+              </button>
+            </span>
+          </div>
+
+          @if (isExpanded(category)) {
+          <div class="category-tree-children">
+            @for (child of children; track child.id) {
+            <div class="category-tree-row category-tree-row-child"
+              [class.category-tree-row-active]="isSelectedCategory(child)" (click)="selectCategory(child)">
+              <span class="category-tree-branch"></span>
+              <span class="category-mini-icon">
+                @if (categoryImageUrl(child)) {
+                <img [src]="categoryImageUrl(child)!" [alt]="child.name" />
+                } @else {
+                <i [class]="categoryIconClass(child)"></i>
+                }
+              </span>
+              <span class="min-w-0 flex-1 text-left">
+                <span class="flex min-w-0 items-center gap-2">
+                  <span class="truncate text-sm font-extrabold text-[#182116]">{{ child.name }}</span>
+                  @if (isHiddenCategory(child)) {
+                  <span class="category-hidden-badge">{{ 'COMMON.HIDDEN' | translate }}</span>
+                  }
+                </span>
+                <span class="mt-1 block text-xs font-semibold text-[#8d877e]">{{ productCountLabel(child) }}</span>
+              </span>
+              <span class="category-row-actions">
+                <button type="button" class="category-row-action text-[#5f6f43]"
+                  (click)="openEditCategoryModal(child); $event.stopPropagation()" [attr.aria-label]="'CATEGORIES.EDIT_CATEGORY_ARIA' | translate">
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button type="button" class="category-row-action text-[#dc3f35]"
+                  (click)="openDeleteCategoryModal(child); $event.stopPropagation()" [attr.aria-label]="'CATEGORIES.DELETE_CATEGORY_ARIA' | translate">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </span>
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
+        }
+      </div>
+    </aside>
+
+    @if (selectedCategoryDetails(); as category) {
+    <section class="category-details-panel">
+      <div class="category-details-hero">
+        <span class="category-detail-icon">
+          @if (categoryImageUrl(category)) {
+          <img [src]="categoryImageUrl(category)!" [alt]="category.name" />
+          } @else {
+          <i [class]="categoryIconClass(category)"></i>
+          }
+        </span>
+        <h2>{{ category.name }}</h2>
+        <p>/{{ category.slug }}</p>
+        <div class="mt-4 flex flex-wrap justify-center gap-2">
+          <span class="category-status-badge" [class.category-status-badge-hidden]="isHiddenCategory(category)">
+            <span class="h-2 w-2 rounded-full bg-current"></span>
+            {{ (isHiddenCategory(category) ? 'COMMON.HIDDEN' : 'COMMON.ACTIVE') | translate }}
+          </span>
+          <span class="category-type-badge">
+            <i class="pi pi-tag text-xs"></i>
+            {{ (parentCategory(category) ? 'CATEGORIES.SUB_CATEGORY' : 'CATEGORIES.PARENT_CATEGORY') | translate }}
+          </span>
+        </div>
+      </div>
+
+      <div class="category-details-scroll mt-3">
+        <div class="category-detail-grid">
+          <div class="category-detail-stat">
+            <span>{{ 'COMMON.PRODUCTS' | translate }}</span>
+            <strong>{{ category.products_count ?? 0 }}</strong>
+          </div>
+          <div class="category-detail-stat">
+            <span>{{ 'CATEGORIES.SUB_CATEGORIES' | translate }}</span>
+            <strong>{{ subCategoryCount(category) }}</strong>
+          </div>
+          <div class="category-detail-stat">
+            <span>{{ 'COMMON.STATUS' | translate }}</span>
+            <strong>{{ (isHiddenCategory(category) ? 'COMMON.HIDDEN' : 'COMMON.ACTIVE') | translate }}</strong>
+          </div>
+          <div class="category-detail-stat">
+            <span>{{ 'COMMON.CREATED' | translate }}</span>
+            <strong>{{ formatDate(category.created_at) }}</strong>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-2xl border border-[#eee8df] bg-[#fbfaf8] p-4">
+          <h3 class="text-sm font-extrabold text-[#342f29]">{{ 'COMMON.DESCRIPTION' | translate }}</h3>
+          <p class="mt-2 text-sm font-medium leading-6 text-[#675f55]">
+            {{ category.description || ('CATEGORIES.NO_DESCRIPTION' | translate) }}
+          </p>
+        </div>
+
+        <div class="category-detail-actions">
+          @if (!parentCategory(category)) {
+          <button type="button" class="category-action-button" (click)="openAddChildCategoryModal(category)">
+            <i class="pi pi-plus"></i>
+            <span>{{ 'CATEGORIES.ADD_CHILD' | translate }}</span>
+          </button>
+          }
+          <button type="button" class="category-primary-button flex-1" (click)="openEditCategoryModal(category)">
+            <i class="pi pi-pencil"></i>
+            <span>{{ 'CATEGORIES.EDIT_CATEGORY' | translate }}</span>
+          </button>
+          <button type="button" class="category-action-button" (click)="toggleCategoryVisibility(category)"
+            [attr.aria-label]="(isHiddenCategory(category) ? 'CATEGORIES.SHOW_CATEGORY' : 'CATEGORIES.HIDE_CATEGORY') | translate">
+            <i class="pi" [class.pi-eye]="isHiddenCategory(category)"
+              [class.pi-eye-slash]="!isHiddenCategory(category)"></i>
+          </button>
+          <button type="button" class="category-danger-button" (click)="openDeleteCategoryModal(category)"
+            [attr.aria-label]="'CATEGORIES.DELETE_CATEGORY_ARIA' | translate">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+    }
+  </section>
+  } @else {
+  <section class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+    @for (category of filteredCategories(); track category.id) {
+    <article class="category-grid-card" [class.category-grid-card-active]="isSelectedCategory(category)">
+      <button type="button" class="category-grid-card-media" (click)="selectCategory(category)">
+        @if (categoryImageUrl(category)) {
+        <img [src]="categoryImageUrl(category)!" [alt]="category.name" />
+        } @else {
+        <i [class]="categoryIconClass(category)"></i>
+        }
+      </button>
+
+      <button type="button" class="category-card-main" (click)="selectCategory(category)">
+        <span class="min-w-0 flex-1 text-left">
+          <span class="block truncate text-base font-extrabold text-[#182116]">{{ category.name }}</span>
+          @if (parentCategory(category); as parent) {
+          <span class="mt-1 block truncate text-sm font-semibold text-[#8d877e]">{{ 'CATEGORIES.SUB_OF_PARENT' | translate: { name: parent.name } }}</span>
+          }
+        </span>
+        <span class="category-status-badge" [class.category-status-badge-hidden]="isHiddenCategory(category)">
+          <span class="h-2 w-2 rounded-full bg-current"></span>
+          {{ (isHiddenCategory(category) ? 'COMMON.HIDDEN' : 'COMMON.ACTIVE') | translate }}
+        </span>
+      </button>
+
+      <div class="mt-4 flex items-center justify-between gap-3 border-t border-[#eee8df] pt-4">
+        <span class="text-sm font-semibold text-[#675f55]">
+          <i class="pi pi-box mr-1 text-xs"></i>{{ productCountLabel(category) }}
+        </span>
+        <span class="text-sm font-semibold text-[#675f55]">
+          {{ 'CATEGORIES.SUB_COUNT_SHORT' | translate: { count: subCategoryCount(category) } }}
+        </span>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <button type="button" class="category-action-button flex-1 text-[#5f6f43]"
+          (click)="openEditCategoryModal(category)">
+          <i class="pi pi-pencil"></i>
+          <span>{{ 'COMMON.EDIT' | translate }}</span>
+        </button>
+        <button type="button" class="category-action-button text-[#dc3f35]" (click)="openDeleteCategoryModal(category)"
+          [attr.aria-label]="'CATEGORIES.DELETE_CATEGORY_ARIA' | translate">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+    </article>
+    }
+  </section>
+  }
+
+  <app-admin-form-modal [isOpen]="isCategoryModalOpen()" [title]="categoryModalTitle()"
+    [subtitle]="categoryModalSubtitle()" size="lg" submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL"
+    [loading]="saving()" (close)="closeCategoryModal()" (submit)="saveCategory()">
+    <form class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <app-admin-form-field type="text" name="categoryName" label="COMMON.NAME" [required]="true" [value]="categoryForm().name"
+        (valueChange)="updateCategoryForm('name', $any($event))" />
+
+      <app-admin-form-field type="text" name="categorySlug" label="COMMON.SLUG" [required]="true" [value]="categoryForm().slug"
+        (valueChange)="updateCategoryForm('slug', $any($event))" />
+
+      <section class="category-image-picker md:col-span-2">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+          <div class="category-image-preview">
+            @if (assetMode() === 'upload' && imagePreviewUrl()) {
+            <img [src]="imagePreviewUrl()!" [alt]="'CATEGORIES.CATEGORY_PREVIEW' | translate" />
+            } @else if (selectedIcon()) {
+            <i [class]="selectedIcon()"></i>
+            } @else {
+            <i [class]="defaultCategoryIcon"></i>
+            }
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="text-sm font-extrabold text-[#342f29]">{{ 'CATEGORIES.CATEGORY_IMAGE_ICON' | translate }}</h3>
+                <p class="mt-1 text-xs font-semibold text-[#8d877e]">{{ 'CATEGORIES.CATEGORY_IMAGE_ICON_HELPER' | translate }}</p>
+              </div>
+
+              <div class="category-picker-tabs">
+                <button type="button" class="category-picker-tab"
+                  [class.category-picker-tab-active]="assetMode() === 'upload'" (click)="setAssetMode('upload')">
+                  {{ 'CATEGORIES.UPLOAD_IMAGE' | translate }}
+                </button>
+                <button type="button" class="category-picker-tab"
+                  [class.category-picker-tab-active]="assetMode() === 'icon'" (click)="setAssetMode('icon')">
+                  {{ 'CATEGORIES.CHOOSE_ICON' | translate }}
+                </button>
+              </div>
+            </div>
+
+            @if (assetMode() === 'upload') {
+            <label class="category-upload-dropzone">
+              <input class="sr-only" type="file" name="categoryImage" [accept]="categoryImageAccept"
+                (change)="onCategoryImageSelected($event)" />
+              <i class="pi pi-cloud-upload text-lg text-[#5f6f43]"></i>
+              <span>{{ selectedCategoryImageFile()?.name || ('CATEGORIES.IMAGE_UPLOAD_PLACEHOLDER' | translate) }}</span>
+            </label>
+            } @else {
+            <div class="category-icon-grid">
+
+              @for (icon of visibleCategoryIconOptions(); track icon) {
+              <button type="button" class="category-icon-option"
+                [class.category-icon-option-active]="selectedIcon() === icon" (click)="selectIcon(icon)"
+                [attr.aria-label]="'CATEGORIES.CHOOSE_ICON_ARIA' | translate: { icon: icon }">
+                <i [class]="icon"></i>
+              </button>
+              }
+
+              <button type="button" class="category-icon-option category-icon-more-button" (click)="toggleMoreIcons()"
+                [attr.aria-label]="(showMoreIcons() ? 'CATEGORIES.SHOW_FEWER_ICONS' : 'CATEGORIES.SHOW_MORE_ICONS') | translate">
+                <i class="pi" [class.pi-ellipsis-h]="!showMoreIcons()" [class.pi-chevron-up]="showMoreIcons()"></i>
+                <span>{{ (showMoreIcons() ? 'COMMON.LESS' : 'COMMON.MORE') | translate }}</span>
+              </button>
+            </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <app-admin-form-field class="md:col-span-2" type="textarea" name="categoryDescription" label="COMMON.DESCRIPTION"
+        [value]="categoryForm().description" (valueChange)="updateCategoryForm('description', $any($event))" />
+    </form>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="isDeleteCategoryModalOpen()" variant="delete" title="CATEGORIES.DELETE_CATEGORY"
+    subtitle="CATEGORIES.PRODUCTS_WILL_NOT_BE_DELETED" [message]="deleteCategoryMessage()" submitLabel="CATEGORIES.DELETE_CATEGORY"
+    cancelLabel="COMMON.CANCEL" [loading]="saving()" (close)="closeDeleteCategoryModal()"
+    (submit)="confirmDeleteCategory()">
+    @if (categoryPendingDelete()) {
+    <p class="mt-3 rounded-xl bg-[#f7f4ef] px-4 py-3 text-sm font-extrabold text-[#1f2a1f]">
+      {{ categoryPendingDelete()?.name }}
+    </p>
+    }
+  </app-admin-form-modal>
+</main>

@@ -1,0 +1,92 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.admin-pagination {
+  overflow: hidden;
+}
+
+.admin-pagination-button,
+.admin-pagination-ellipsis {
+  display: inline-flex;
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.admin-pagination-button {
+  border: 1px solid #e5ded2;
+  background: #ffffff;
+  color: #342f29;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.admin-pagination-button:hover:not(:disabled):not(.admin-pagination-active) {
+  background: #f7f4ef;
+  border-color: #d8d0c3;
+  transform: translateY(-1px);
+}
+
+.admin-pagination-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.admin-pagination-active,
+.admin-pagination-active:hover {
+  border-color: #5f6f43;
+  background: #5f6f43;
+  color: #ffffff;
+}
+
+.admin-pagination-ellipsis {
+  min-width: 1.75rem;
+  color: #8d877e;
+}
+
+:host ::ng-deep .admin-pagination-select {
+  min-height: 2.5rem;
+  min-width: 5.75rem;
+  border-radius: 0.875rem;
+  border: 1px solid #e5ded2;
+  background: #ffffff;
+  color: #342f29;
+  font-size: 0.875rem;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+:host ::ng-deep .admin-pagination-select:not(.p-disabled).p-focus {
+  border-color: #5f6f43;
+  box-shadow: 0 0 0 3px rgba(95, 111, 67, 0.08);
+}
+
+:host ::ng-deep .admin-pagination-select .p-select-label {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  padding: 0.625rem 0.75rem;
+  color: #342f29;
+  font-weight: 800;
+}
+
+:host ::ng-deep .admin-pagination-select .p-select-dropdown {
+  width: 2.25rem;
+  color: #675f55;
+}
+
+@media (max-width: 640px) {
+  .admin-pagination-pages,
+  .admin-pagination-size {
+    width: 100%;
+  }
+}

@@ -32,7 +32,8 @@ const PRODUCT_SELECT = `
   created_at,
   categories (
     id,
-    name
+    name,
+    slug
   )
 `;
 

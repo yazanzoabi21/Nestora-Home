@@ -52,25 +52,3 @@
   background-color: #f7f4ef;
   transform: translateY(-1px);
 }
-
-.admin-table-page-button {
-  display: inline-flex;
-  height: 2.5rem;
-  width: 2.5rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.875rem;
-  border: 1px solid #e5ded2;
-  background: #fbfaf8;
-  color: #342f29;
-  transition: background-color 150ms ease;
-}
-
-.admin-table-page-button:hover:not(:disabled) {
-  background: #ffffff;
-}
-
-.admin-table-page-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}

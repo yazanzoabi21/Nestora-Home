@@ -22,6 +22,11 @@
   color: #675f55;
 }
 
+.admin-form-select-field {
+  position: relative;
+  z-index: 1;
+}
+
 .admin-form-input-shell {
   position: relative;
   display: block;

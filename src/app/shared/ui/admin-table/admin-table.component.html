@@ -76,10 +76,12 @@
                       @let cell = imageTextCell(row, column.key);
                       <div class="admin-table-product-cell flex min-w-[260px] items-center gap-4">
                         <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#e5ded2] bg-[#f7f4ef] text-sm font-extrabold text-[#5f6f43]">
-                          @if (cell.imageUrl) {
+                          @if (isIconValue(cell.imageUrl)) {
+                            <i [class]="cell.imageUrl"></i>
+                          } @else if (cell.imageUrl) {
                             <img class="h-full w-full object-cover" [src]="cell.imageUrl" [alt]="cell.title" />
                           } @else {
-                            <span>{{ cell.initials }}</span>
+                            <i class="pi pi-box"></i>
                           }
                         </div>
                         <div class="admin-table-product-info min-w-0">
@@ -192,15 +194,16 @@
     </table>
   </div>
 
-  @if (!loading && rows.length > pageSize) {
-    <div class="flex items-center justify-end gap-2 border-t border-[#eee8df] px-4 py-4">
-      <button type="button" class="admin-table-page-button" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">
-        <i class="pi pi-chevron-left text-xs"></i>
-      </button>
-      <span class="rounded-xl bg-[#5f6f43] px-4 py-2 text-sm font-bold text-white">{{ currentPage() }}</span>
-      <button type="button" class="admin-table-page-button" [disabled]="currentPage() === totalPages" (click)="setPage(currentPage() + 1)">
-        <i class="pi pi-chevron-right text-xs"></i>
-      </button>
-    </div>
+  @if (!loading && rows.length > 0) {
+    <app-admin-pagination
+      [currentPage]="currentPage()"
+      [totalItems]="rows.length"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      [showPageSize]="showPageSize"
+      [showSummary]="showPaginationSummary"
+      (pageChange)="setPage($event)"
+      (pageSizeChange)="setPageSize($event)"
+    />
   }
 </section>

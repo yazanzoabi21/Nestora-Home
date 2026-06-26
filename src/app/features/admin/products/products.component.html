@@ -196,8 +196,9 @@
       <app-admin-form-field type="text" name="slug" [label]="'PRODUCTS.FIELDS.SLUG'" [value]="productForm().slug"
         (valueChange)="updateProductForm('slug', $any($event))" />
 
-      <app-admin-form-field type="text" name="category" [label]="'PRODUCTS.FIELDS.CATEGORY'"
-        [value]="productForm().category" (valueChange)="updateProductForm('category', $any($event))" />
+      <app-admin-form-field type="select" name="category" [label]="'PRODUCTS.FIELDS.CATEGORY'"
+        [value]="productForm().categoryId" [options]="productCategoryOptions()" optionLabel="label"
+        optionValue="value" (valueChange)="updateProductForm('categoryId', $any($event))" />
 
       <app-admin-form-field type="number" name="price" [label]="'PRODUCTS.FIELDS.PRICE'" [value]="productForm().price"
         (valueChange)="updateProductForm('price', $any($event))" />
