@@ -19,6 +19,8 @@ export interface KpiCardData {
   showChart?: boolean;
 }
 
+type KpiCardVariant = 'default' | 'compact';
+
 @Component({
   selector: 'app-kpi-card',
   standalone: true,
@@ -28,6 +30,11 @@ export interface KpiCardData {
 })
 export class KpiCardComponent {
   @Input({ required: true }) data!: KpiCardData;
+  @Input() variant: KpiCardVariant = 'default';
+
+  get isCompact(): boolean {
+    return this.variant === 'compact';
+  }
 
   get chartOptions(): Options {
     return {

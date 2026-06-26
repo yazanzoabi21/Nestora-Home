@@ -25,7 +25,7 @@
 
   <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
     @for (card of kpiCards(); track card.titleKey) {
-    <app-kpi-card class="min-w-0" [data]="card"></app-kpi-card>
+    <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
     }
   </section>
 

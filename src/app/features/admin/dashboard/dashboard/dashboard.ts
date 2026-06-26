@@ -11,6 +11,7 @@ import { ExportReportComponent, ExportReportConfig } from '../../../../shared/ui
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [
     BestSellingProductsCardComponent,
     KpiCardComponent,
