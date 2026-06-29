@@ -1,0 +1,302 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'INVENTORY.TITLE' | translate }}</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        {{ 'INVENTORY.SUBTITLE' | translate: { count: products().length } }}
+      </p>
+    </div>
+
+    <button type="button"
+      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-semibold text-[#342f29] shadow-sm transition hover:bg-[#f7f4ef] sm:w-auto"
+      (click)="syncStock()">
+      <i class="pi pi-refresh text-sm text-[#5f6f43]"></i>
+      <span>{{ 'INVENTORY.SYNC_STOCK' | translate }}</span>
+    </button>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.titleKey) {
+    <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    }
+  </section>
+
+  @if (outOfStockProducts().length > 0) {
+  <section class="mt-6 rounded-[1.25rem] border border-[#f1b9b4] bg-[#fff1f0] p-5">
+    <h2 class="flex items-center gap-2.5 text-base font-black text-[#b42318]">
+      <i class="pi pi-exclamation-triangle"></i>
+      {{ 'INVENTORY.ALERTS.OUT_OF_STOCK_TITLE' | translate: { count: outOfStockProducts().length } }}
+    </h2>
+    <div class="mt-4 flex flex-wrap gap-3">
+      @for (product of outOfStockProducts(); track product.id) {
+      <article
+        class="flex min-w-0 w-full items-start gap-3 rounded-2xl bg-[#fffdfa] px-3 py-2.5 shadow-[0_8px_18px_rgba(52,47,41,0.06)] sm:w-auto sm:max-w-[23rem] sm:items-center">
+        <span
+          class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[0.8rem] border border-[#e5ded2] bg-[#f7f4ef] text-sm font-black text-[#5f6f43]">
+          @if (product.image_url) {
+          <img class="h-full w-full object-cover" [src]="product.image_url" [alt]="product.name" />
+          } @else {
+          <span>{{ productInitials(product) }}</span>
+          }
+        </span>
+        <span class="min-w-0 flex-1">
+          <strong
+            class="block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-black text-[#182116]">{{
+            product.name }}</strong>
+          <small class="mt-0.5 block text-xs font-bold text-[#8d877e]">{{ 'INVENTORY.QUANTITY_LEFT' | translate: {
+            count: product.stock ?? 0 } }}</small>
+        </span>
+        <button type="button"
+          class="inline-flex min-h-9 w-full shrink-0 items-center justify-center gap-1.5 rounded-[0.9rem] bg-[#dc3f35] px-3.5 py-2 text-[13px] font-black text-white transition hover:-translate-y-0.5 sm:w-auto"
+          (click)="openStockModal(product, 'restock')">
+          <i class="pi pi-bolt"></i>
+          <span>{{ 'INVENTORY.RESTOCK' | translate }}</span>
+        </button>
+      </article>
+      }
+    </div>
+  </section>
+  }
+
+  @if (lowStockProducts().length > 0) {
+  <section class="mt-6 rounded-[1.25rem] border border-[#f6d39a] bg-[#fff8e8] p-5">
+    <h2 class="flex items-center gap-2.5 text-base font-black text-[#a66309]">
+      <i class="pi pi-chart-line"></i>
+      {{ 'INVENTORY.ALERTS.LOW_STOCK_TITLE' | translate: { count: lowStockProducts().length } }}
+    </h2>
+    <div class="mt-4 flex flex-wrap gap-3">
+      @for (product of lowStockProducts(); track product.id) {
+      <article
+        class="flex min-w-0 w-full items-start gap-3 rounded-2xl bg-[#fffdfa] px-3 py-2.5 shadow-[0_8px_18px_rgba(52,47,41,0.06)] sm:w-auto sm:max-w-[23rem] sm:items-center">
+        <span
+          class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[0.8rem] border border-[#e5ded2] bg-[#f7f4ef] text-sm font-black text-[#5f6f43]">
+          @if (product.image_url) {
+          <img class="h-full w-full object-cover" [src]="product.image_url" [alt]="product.name" />
+          } @else {
+          <span>{{ productInitials(product) }}</span>
+          }
+        </span>
+        <span class="min-w-0 flex-1">
+          <strong
+            class="block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-black text-[#182116]">{{
+            product.name }}</strong>
+          <small class="mt-0.5 block text-xs font-bold text-[#8d877e]">{{ 'INVENTORY.QUANTITY_LEFT' | translate: {
+            count: product.stock ?? 0 } }}</small>
+        </span>
+        <button type="button"
+          class="inline-flex min-h-9 w-full shrink-0 items-center justify-center gap-1.5 rounded-[0.9rem] bg-[#d98916] px-3.5 py-2 text-[13px] font-black text-white transition hover:-translate-y-0.5 sm:w-auto"
+          (click)="openStockModal(product, 'restock')">
+          <i class="pi pi-plus"></i>
+          <span>{{ 'INVENTORY.TOP_UP' | translate }}</span>
+        </button>
+      </article>
+      }
+    </div>
+  </section>
+  }
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="grid gap-3 xl:grid-cols-[minmax(260px,1fr)_200px_170px_auto_auto] xl:items-center">
+      <app-admin-form-field type="search" name="inventorySearch" placeholder="INVENTORY.SEARCH_PLACEHOLDER"
+        [value]="searchTerm()" (valueChange)="searchTerm.set($any($event)); currentPage.set(1)" />
+
+      <app-admin-form-field type="select" name="inventoryCategoryFilter" [value]="selectedCategory()"
+        [options]="categoryOptions()" optionLabel="label" optionValue="value"
+        (valueChange)="selectedCategory.set($any($event)); currentPage.set(1)" />
+
+      <app-admin-form-field type="select" name="inventoryStatusFilter" [value]="selectedStatus()"
+        [options]="statusOptions" optionLabel="label" optionValue="value"
+        (valueChange)="selectedStatus.set($any($event)); currentPage.set(1)" />
+
+      <button type="button"
+        class="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-[#fbfaf8] px-4 text-sm font-semibold text-[#342f29] transition hover:bg-white"
+        [ngClass]="showAll() ? 'border-[#5f6f43] bg-[#eef4e8] text-[#5f6f43]' : ''" (click)="toggleShowAll()">
+        <i class="pi pi-exclamation-triangle text-sm text-[#8d877e]"></i>
+        <span>{{ 'INVENTORY.SHOW_ALL' | translate }}</span>
+      </button>
+
+      <span class="px-2 text-sm font-semibold text-[#8d877e]">
+        {{ 'INVENTORY.RESULTS' | translate: { count: filteredProducts().length } }}
+      </span>
+    </div>
+  </section>
+
+  <section
+    class="mt-6 overflow-hidden rounded-[1.25rem] border border-[#e5ded2] bg-white shadow-[0_10px_28px_rgba(52,47,41,0.06)]">
+    <div class="w-full overflow-x-auto">
+      <table class="w-max min-w-full border-collapse">
+        <thead>
+          <tr>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.PRODUCT' | translate }}</th>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.SKU' | translate }}</th>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.CATEGORY' | translate }}</th>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.STOCK' | translate }}</th>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.SOLD' | translate }}</th>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.PROGRESS' | translate }}</th>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.UNIT_PRICE' | translate }}</th>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.STATUS' | translate }}</th>
+            <th
+              class="whitespace-nowrap border-b border-[#e5ded2] px-5 py-5 text-left text-xs font-black uppercase tracking-[0.06em] text-[#9a9389] align-middle">{{
+              'INVENTORY.TABLE.UPDATE' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <tr>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]"
+              colspan="9">
+              <div class="h-14 animate-pulse rounded-2xl bg-[#fbfaf8]"></div>
+            </td>
+          </tr>
+          }
+          } @else {
+          @for (product of visibleProducts(); track product.id) {
+          <tr>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              <div class="flex min-w-[18rem] items-center gap-3.5">
+                <span
+                  class="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center overflow-hidden rounded-[0.9rem] border border-[#e5ded2] bg-[#f7f4ef] font-black text-[#5f6f43]">
+                  @if (product.image_url) {
+                  <img class="h-full w-full object-cover" [src]="product.image_url" [alt]="product.name" />
+                  } @else {
+                  <span>{{ productInitials(product) }}</span>
+                  }
+                </span>
+                <span class="min-w-0">
+                  <strong
+                    class="block max-w-56 overflow-hidden text-ellipsis whitespace-nowrap font-black text-[#182116]">{{
+                    product.name }}</strong>
+                  <small class="mt-1 block text-[13px] font-bold text-[#8d877e]">{{ 'INVENTORY.PRODUCT_VALUE' |
+                    translate: { value: formatCurrency(productValue(product)) }
+                    }}</small>
+                </span>
+              </div>
+            </td>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              <span class="rounded-xl bg-[#f3f0eb] px-2 py-1 text-[13px] text-[#675f55]">{{ product.sku || '-'
+                }}</span>
+            </td>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              {{ categoryLabel(product) }}</td>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              <span class="inline-flex items-center gap-2.5 text-lg font-black" [ngClass]="stockClass(product)">
+                <span class="inline-block h-6 w-1.5 rounded-full bg-current"></span>
+                {{ product.stock ?? 0 }}
+              </span>
+            </td>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              {{ product.sold_count ?? 0 }}</td>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              <div class="min-w-32">
+                <span class="mb-1.5 block text-xs font-extrabold text-[#9a9389]">{{ stockProgress(product) }}%</span>
+                <div class="h-[0.45rem] overflow-hidden rounded-full bg-[#eeeae4]">
+                  <span class="block h-full min-w-1 rounded-full bg-current" [style.width.%]="stockProgress(product)"
+                    [ngClass]="stockClass(product)"></span>
+                </div>
+              </div>
+            </td>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              <strong>{{ formatCurrency(unitPrice(product)) }}</strong>
+            </td>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              <span class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-black"
+                [ngClass]="statusClass(product)">
+                <span class="h-[0.45rem] w-[0.45rem] rounded-full bg-current"></span>
+                {{ statusLabelKey(product) | translate }}
+              </span>
+            </td>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]">
+              <button type="button"
+                class="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-[0.9rem] border border-[#d3dfc8] bg-[#eef4e8] px-4 py-2.5 text-[13px] font-black text-[#5f6f43] transition hover:-translate-y-0.5"
+                (click)="openStockModal(product)">
+                <i class="pi pi-pencil"></i>
+                <span>{{ 'INVENTORY.UPDATE' | translate }}</span>
+              </button>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td
+              class="whitespace-nowrap border-b border-[#eee8df] px-5 py-5 align-middle text-[15px] font-bold text-[#342f29]"
+              colspan="9">
+              <div class="flex flex-col items-center gap-2 rounded-2xl bg-[#fbfaf8] p-12 text-center text-[#8d877e]">
+                <i class="pi pi-warehouse text-3xl text-[#5f6f43]"></i>
+                <strong class="text-base font-black text-[#1f2a1f]">{{ 'INVENTORY.EMPTY_TITLE' | translate }}</strong>
+                <span>{{ 'INVENTORY.EMPTY_TEXT' | translate }}</span>
+              </div>
+            </td>
+          </tr>
+          }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-admin-pagination [currentPage]="currentPage()" [totalItems]="filteredProducts().length" [pageSize]="pageSize()"
+      [pageSizeOptions]="[8, 16, 32]" [showPageSize]="false" [showSummary]="true" (pageChange)="setPage($event)"
+      (pageSizeChange)="setPageSize($event)" />
+  </section>
+
+  <section
+    class="mt-6 flex items-center gap-3 rounded-2xl border border-[#e5ded2] bg-[#f3eee7] px-5 py-4 text-sm font-bold text-[#675f55]">
+    <i class="pi pi-info-circle text-[#5f6f43]"></i>
+    <span>
+      {{ 'INVENTORY.FOOTER_NOTE' | translate: { limit: lowStockLimit, value: formatCurrency(stats().inventoryValue) } }}
+    </span>
+  </section>
+
+  <app-admin-form-modal [isOpen]="isStockModalOpen()" [title]="'INVENTORY.MODAL.TITLE'"
+    [subtitle]="'INVENTORY.MODAL.SUBTITLE'" size="md" submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL"
+    [loading]="saving()" (close)="closeStockModal()" (submit)="saveStockUpdate()">
+    @if (selectedProduct(); as product) {
+    <section class="mb-4 rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+      <strong class="block font-black text-[#182116]">{{ product.name }}</strong>
+      <span class="mt-1 block text-sm font-bold text-[#8d877e]">
+        {{ 'INVENTORY.MODAL.CURRENT_STOCK' | translate: { stock: product.stock ?? 0 } }}
+        · {{ statusLabelKey(product) | translate }}
+      </span>
+    </section>
+    }
+
+    <form class="grid grid-cols-1 gap-4">
+      <app-admin-form-field type="number" name="newStock" label="INVENTORY.MODAL.NEW_STOCK" [min]="0"
+        [value]="stockForm().newStock" (valueChange)="updateStockForm('newStock', $any($event))" />
+
+      <app-admin-form-field type="select" name="changeType" label="INVENTORY.MODAL.CHANGE_TYPE"
+        [value]="stockForm().changeType" [options]="changeTypeOptions" optionLabel="label" optionValue="value"
+        (valueChange)="updateStockForm('changeType', $any($event))" />
+
+      <app-admin-form-field type="textarea" name="note" label="INVENTORY.MODAL.NOTE" [rows]="4"
+        [value]="stockForm().note" (valueChange)="updateStockForm('note', $any($event))" />
+    </form>
+  </app-admin-form-modal>
+</main>

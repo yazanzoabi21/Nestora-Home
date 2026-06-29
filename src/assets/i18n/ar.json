@@ -249,6 +249,78 @@
       "RECENTLY_ADDED": "أضيفت حديثاً"
     }
   },
+  "INVENTORY": {
+    "TITLE": "المخزون",
+    "SUBTITLE": "تتبع وإدارة المخزون · {{ count }} منتج",
+    "SYNC_STOCK": "مزامنة المخزون",
+    "SEARCH_PLACEHOLDER": "ابحث باسم المنتج أو SKU...",
+    "SHOW_ALL": "عرض الكل",
+    "RESULTS": "{{ count }} نتيجة",
+    "RESTOCK": "إعادة تعبئة",
+    "TOP_UP": "زيادة المخزون",
+    "UPDATE": "تحديث",
+    "QUANTITY_LEFT": "{{ count }} متبقي",
+    "PRODUCT_VALUE": "القيمة: {{ value }}",
+    "UNCATEGORIZED": "بدون فئة",
+    "EMPTY_TITLE": "لم يتم العثور على منتجات مخزون",
+    "EMPTY_TEXT": "جرّب تعديل البحث أو الفلاتر.",
+    "FOOTER_NOTE": "حد المخزون المنخفض مضبوط على {{ limit }} وحدة. يتم تسجيل كل تعديلات المخزون للتدقيق. إجمالي قيمة المخزون: {{ value }}",
+    "KPI": {
+      "IN_STOCK": "متوفر",
+      "LOW_STOCK": "مخزون منخفض",
+      "OUT_OF_STOCK": "نفد المخزون",
+      "INVENTORY_VALUE": "قيمة المخزون"
+    },
+    "ALERTS": {
+      "OUT_OF_STOCK_TITLE": "{{ count }} منتج نفد من المخزون",
+      "LOW_STOCK_TITLE": "{{ count }} منتج بمخزون منخفض"
+    },
+    "FILTERS": {
+      "ALL_CATEGORIES": "كل الفئات",
+      "ALL_STATUSES": "كل الحالات"
+    },
+    "STATUS": {
+      "IN_STOCK": "متوفر",
+      "LOW_STOCK": "مخزون منخفض",
+      "OUT_OF_STOCK": "نفد المخزون"
+    },
+    "TABLE": {
+      "PRODUCT": "المنتج",
+      "SKU": "SKU",
+      "CATEGORY": "الفئة",
+      "STOCK": "المخزون",
+      "SOLD": "المباع",
+      "PROGRESS": "التقدم",
+      "UNIT_PRICE": "سعر الوحدة",
+      "STATUS": "الحالة",
+      "UPDATE": "تحديث"
+    },
+    "MODAL": {
+      "TITLE": "تحديث المخزون",
+      "SUBTITLE": "سجّل تغييراً في مخزون هذا المنتج.",
+      "CURRENT_STOCK": "المخزون الحالي: {{ stock }}",
+      "NEW_STOCK": "المخزون الجديد",
+      "CHANGE_TYPE": "نوع التغيير",
+      "NOTE": "ملاحظة"
+    },
+    "CHANGE_TYPES": {
+      "RESTOCK": "إعادة تعبئة",
+      "ADJUSTMENT": "تعديل",
+      "DAMAGE": "تلف",
+      "RETURN": "إرجاع",
+      "CORRECTION": "تصحيح"
+    },
+    "TOAST": {
+      "LOAD_FAILED_TITLE": "فشل تحميل المخزون.",
+      "LOAD_FAILED_DETAIL": "تعذر تحميل منتجات المخزون.",
+      "SYNC_STARTED": "تم تحديث المخزون.",
+      "INVALID_STOCK_TITLE": "قيمة المخزون غير صالحة.",
+      "INVALID_STOCK_DETAIL": "أدخل قيمة مخزون 0 أو أكثر.",
+      "STOCK_UPDATED": "تم تحديث المخزون بنجاح.",
+      "UPDATE_FAILED_TITLE": "فشل تحديث المخزون.",
+      "UPDATE_FAILED_DETAIL": "تعذر تحديث مخزون المنتج."
+    }
+  },
   "AUTH": {
     "BRAND": "نيستورا هوم",
     "ADMIN_PANEL": "لوحة الإدارة",

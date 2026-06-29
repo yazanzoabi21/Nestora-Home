@@ -249,6 +249,78 @@
       "RECENTLY_ADDED": "Recently Added"
     }
   },
+  "INVENTORY": {
+    "TITLE": "Inventory",
+    "SUBTITLE": "Stock tracking and management · {{ count }} products",
+    "SYNC_STOCK": "Sync Stock",
+    "SEARCH_PLACEHOLDER": "Search by product name or SKU...",
+    "SHOW_ALL": "Show All",
+    "RESULTS": "{{ count }} results",
+    "RESTOCK": "Restock",
+    "TOP_UP": "Top up",
+    "UPDATE": "Update",
+    "QUANTITY_LEFT": "{{ count }} left",
+    "PRODUCT_VALUE": "Value: {{ value }}",
+    "UNCATEGORIZED": "Uncategorized",
+    "EMPTY_TITLE": "No inventory products found",
+    "EMPTY_TEXT": "Try adjusting search or filters.",
+    "FOOTER_NOTE": "Low stock threshold is set at {{ limit }} units. All stock adjustments are logged for audit. Total inventory value: {{ value }}",
+    "KPI": {
+      "IN_STOCK": "In Stock",
+      "LOW_STOCK": "Low Stock",
+      "OUT_OF_STOCK": "Out of Stock",
+      "INVENTORY_VALUE": "Inventory Value"
+    },
+    "ALERTS": {
+      "OUT_OF_STOCK_TITLE": "{{ count }} products out of stock",
+      "LOW_STOCK_TITLE": "{{ count }} products running low"
+    },
+    "FILTERS": {
+      "ALL_CATEGORIES": "All categories",
+      "ALL_STATUSES": "All statuses"
+    },
+    "STATUS": {
+      "IN_STOCK": "In Stock",
+      "LOW_STOCK": "Low Stock",
+      "OUT_OF_STOCK": "Out of Stock"
+    },
+    "TABLE": {
+      "PRODUCT": "Product",
+      "SKU": "SKU",
+      "CATEGORY": "Category",
+      "STOCK": "Stock",
+      "SOLD": "Sold",
+      "PROGRESS": "Progress",
+      "UNIT_PRICE": "Unit Price",
+      "STATUS": "Status",
+      "UPDATE": "Update"
+    },
+    "MODAL": {
+      "TITLE": "Update Stock",
+      "SUBTITLE": "Record a stock change for this product.",
+      "CURRENT_STOCK": "Current stock: {{ stock }}",
+      "NEW_STOCK": "New Stock",
+      "CHANGE_TYPE": "Change Type",
+      "NOTE": "Note"
+    },
+    "CHANGE_TYPES": {
+      "RESTOCK": "Restock",
+      "ADJUSTMENT": "Adjustment",
+      "DAMAGE": "Damage",
+      "RETURN": "Return",
+      "CORRECTION": "Correction"
+    },
+    "TOAST": {
+      "LOAD_FAILED_TITLE": "Loading inventory failed.",
+      "LOAD_FAILED_DETAIL": "Unable to load inventory products.",
+      "SYNC_STARTED": "Inventory refreshed.",
+      "INVALID_STOCK_TITLE": "Invalid stock value.",
+      "INVALID_STOCK_DETAIL": "Enter a stock value of 0 or higher.",
+      "STOCK_UPDATED": "Stock updated successfully.",
+      "UPDATE_FAILED_TITLE": "Updating stock failed.",
+      "UPDATE_FAILED_DETAIL": "Unable to update product stock."
+    }
+  },
   "AUTH": {
     "BRAND": "Nestora Home",
     "ADMIN_PANEL": "Admin Panel",

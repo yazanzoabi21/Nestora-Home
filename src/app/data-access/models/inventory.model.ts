@@ -20,7 +20,11 @@ export interface InventoryLog {
     id: string;
     name: string;
     sku: string | null;
-  } | null;
+  } | {
+    id: string;
+    name: string;
+    sku: string | null;
+  }[] | null;
 }
 
 export interface InventoryStats {
