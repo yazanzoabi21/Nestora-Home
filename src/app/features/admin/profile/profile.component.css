@@ -56,6 +56,16 @@
   background: #53613b;
 }
 
+.primary-action:disabled,
+.secondary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.primary-action:disabled:hover {
+  background: #5f6f43;
+}
+
 .secondary-action {
   border: 1px solid #e5ded2;
   background: #fff;
@@ -64,6 +74,10 @@
 
 .secondary-action:hover {
   background: #f7f4ef;
+}
+
+.secondary-action:disabled:hover {
+  background: #fff;
 }
 
 .profile-field {
@@ -79,6 +93,20 @@
   color: #342f29;
   font-size: 0.9375rem;
   font-weight: 500;
+  outline: none;
+}
+
+.profile-field::placeholder {
+  color: #8d877e;
+}
+
+.profile-field:focus {
+  border-color: #cfc5b8;
+}
+
+.profile-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .toggle-on,

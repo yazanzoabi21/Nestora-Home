@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import {
+  CategoriesService,
+  Category,
   Product,
   ProductFormModel,
   ProductMutationPayload,
@@ -24,9 +26,10 @@ import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 
 type ViewMode = 'list' | 'grid';
 type ProductModalMode = 'add' | 'edit';
+type CategoryFilterValue = 'all' | 'uncategorized' | string;
 
 type ProductTableRow = AdminTableRow & ProductTableRowData;
-interface AdminSelectOption<T extends string = string> {
+interface AdminSelectOption<T extends string | null = string> {
   label: string;
   value: T;
 }
@@ -38,7 +41,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   name: '',
   slug: '',
   sku: '',
-  category: '',
+  categoryId: null,
   price: null,
   salePrice: null,
   stock: null,
@@ -71,15 +74,17 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
 })
 export class ProductsComponent implements OnInit {
   private readonly productsService = inject(ProductsService);
+  private readonly categoriesService = inject(CategoriesService);
   private readonly uploadService = inject(UploadService);
   private readonly toast = inject(ToastService);
 
   readonly products = signal<Product[]>([]);
+  readonly categoryRecords = signal<Category[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly imageUploadError = signal<string | null>(null);
   readonly searchTerm = signal('');
-  readonly selectedCategory = signal('all');
+  readonly selectedCategory = signal<CategoryFilterValue>('all');
   readonly selectedStatus = signal<ProductStatusFilter>('all');
   readonly selectedPriceRange = signal<ProductPriceRange>('all');
   readonly viewMode = signal<ViewMode>('list');
@@ -121,14 +126,23 @@ export class ProductsComponent implements OnInit {
     { key: 'actions', label: '', type: 'actions' },
   ];
 
-  readonly categories = computed(() => {
-    const labels = this.products().map((product) => this.categoryLabel(product));
-    return Array.from(new Set(labels)).sort((first, second) => first.localeCompare(second));
-  });
   readonly categoryFilterOptions = computed<AdminSelectOption[]>(() => [
     { label: 'PRODUCTS.ALL_CATEGORIES', value: 'all' },
-    ...this.categories().map((category) => ({ label: category, value: category })),
+    { label: 'Uncategorized', value: 'uncategorized' },
+    ...this.categoryHierarchyOptions(),
   ]);
+  readonly productCategoryOptions = computed<AdminSelectOption<string | null>[]>(() => [
+    { label: 'Uncategorized', value: null },
+    ...this.categoryHierarchyOptions(),
+  ]);
+  readonly categoryHierarchyOptions = computed<AdminSelectOption[]>(() =>
+    this.categoryRecords()
+      .map((category) => ({
+        label: this.categoryHierarchyLabel(category),
+        value: category.id,
+      }))
+      .sort((first, second) => first.label.localeCompare(second.label))
+  );
   readonly statusFilterOptions: AdminSelectOption<ProductStatusFilter>[] = [
     { label: 'PRODUCTS.ALL_STATUSES', value: 'all' },
     { label: 'PRODUCTS.STATUS.IN_STOCK', value: 'in_stock' },
@@ -151,7 +165,7 @@ export class ProductsComponent implements OnInit {
         (product.sku ?? '').toLowerCase().includes(searchTerm) ||
         (product.slug ?? '').toLowerCase().includes(searchTerm) ||
         category.toLowerCase().includes(searchTerm);
-      const matchesCategory = selectedCategory === 'all' || category === selectedCategory;
+      const matchesCategory = this.matchesCategoryFilter(product, selectedCategory);
       const matchesStatus = selectedStatus === 'all' || this.productStatus(product) === selectedStatus;
       const matchesPriceRange = this.matchesPriceRange(price, selectedPriceRange);
 
@@ -240,43 +254,72 @@ export class ProductsComponent implements OnInit {
       fileName: 'nestora-products-report',
       reportTitle: 'Nestora Home - Products Report',
       reportSubtitle: `${products.length} products exported`,
+      orientation: 'landscape',
+      summaryItems: [
+        { label: 'Total Products', value: products.length },
+        { label: 'In Stock', value: products.filter((product) => this.productStatus(product) === 'in_stock').length },
+        { label: 'Low Stock', value: products.filter((product) => this.productStatus(product) === 'low_stock').length },
+        { label: 'Out of Stock', value: products.filter((product) => this.productStatus(product) === 'out_of_stock').length },
+      ],
       sections: [
         {
           title: 'Products',
           headers: [
             'Name',
-            'Slug',
             'SKU',
             'Category',
             'Price',
             'Sale Price',
             'Stock',
             'Sold',
-            'Rating',
-            'Featured',
-            'New',
-            'Active',
             'Status',
+            'Active',
+            'Featured',
             'Created At',
+            'Slug',
+            'Rating',
+            'New',
             'Short Description',
             'Description',
             'Image URL',
           ],
+          excludedPdfColumns: [
+            'Slug',
+            'Rating',
+            'New',
+            'Short Description',
+            'Description',
+            'Image URL',
+          ],
+          truncateColumns: ['Name', 'Category'],
+          columnWidths: {
+            Name: 42,
+            SKU: 25,
+            Category: 38,
+            Price: 22,
+            'Sale Price': 22,
+            Stock: 16,
+            Sold: 16,
+            Status: 26,
+            Active: 18,
+            Featured: 20,
+            'Created At': 24,
+          },
           rows: products.map((product) => [
             product.name,
-            product.slug || '-',
             product.sku || '-',
             this.categoryLabel(product),
             this.formatCurrency(product.price),
             product.sale_price === null ? '-' : this.formatCurrency(product.sale_price),
             product.stock ?? 0,
             product.sold_count ?? 0,
-            product.rating ?? '-',
-            this.yesNo(product.is_featured),
-            this.yesNo(product.is_new),
-            this.yesNo(product.is_active),
             this.productStatus(product).replaceAll('_', ' '),
+            this.yesNo(product.is_active),
+            this.yesNo(product.is_featured),
             this.formatDate(product.created_at),
+            product.slug || '-',
+            product.rating ?? '-',
+            this.yesNo(product.is_new),
             product.short_description || '-',
             product.description || '-',
             product.image_url || '-',
@@ -295,7 +338,7 @@ export class ProductsComponent implements OnInit {
   );
 
   async ngOnInit(): Promise<void> {
-    await this.loadProducts();
+    await Promise.all([this.loadProducts(), this.loadCategories()]);
   }
 
   async loadProducts(): Promise<void> {
@@ -308,6 +351,15 @@ export class ProductsComponent implements OnInit {
       this.toast.failed('Loading products', this.errorDetail(error, 'Unable to load products.'));
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  async loadCategories(): Promise<void> {
+    try {
+      const categories = await this.categoriesService.getCategories();
+      this.categoryRecords.set(categories);
+    } catch (error) {
+      this.toast.failed('Loading categories', this.errorDetail(error, 'Unable to load categories.'));
     }
   }
 
@@ -360,7 +412,7 @@ export class ProductsComponent implements OnInit {
       name: product.name,
       slug: product.slug ?? '',
       sku: product.sku ?? '',
-      category: this.categoryLabel(product),
+      categoryId: product.category_id,
       price: product.price,
       salePrice: product.sale_price,
       stock: product.stock,
@@ -447,6 +499,7 @@ export class ProductsComponent implements OnInit {
       }
 
       await this.loadProducts();
+      await this.loadCategories();
       this.clearFilters();
       this.viewMode.set('list');
       if (isEdit) {
@@ -490,7 +543,27 @@ export class ProductsComponent implements OnInit {
   }
 
   categoryLabel(product: Product): string {
+    if (!product.category_id) {
+      return 'Uncategorized';
+    }
+
+    const category = this.categoryById(product.category_id);
+
+    if (category) {
+      return this.categoryHierarchyLabel(category);
+    }
+
     return product.categoryName ?? 'Uncategorized';
+  }
+
+  categoryHierarchyLabel(category: Category): string {
+    const parent = this.parentCategory(category);
+
+    if (!parent) {
+      return category.name;
+    }
+
+    return `${parent.name} / ${category.name}`;
   }
 
   productStatus(product: Product): ProductStatus {
@@ -660,6 +733,42 @@ export class ProductsComponent implements OnInit {
     }
   }
 
+  private matchesCategoryFilter(product: Product, selectedCategory: CategoryFilterValue): boolean {
+    if (selectedCategory === 'all') {
+      return true;
+    }
+
+    if (selectedCategory === 'uncategorized') {
+      return !product.category_id;
+    }
+
+    if (product.category_id === selectedCategory) {
+      return true;
+    }
+
+    return this.childCategoryIds(selectedCategory).has(product.category_id ?? '');
+  }
+
+  private categoryById(categoryId: string): Category | null {
+    return this.categoryRecords().find((category) => category.id === categoryId) ?? null;
+  }
+
+  private parentCategory(category: Category): Category | null {
+    if (!category.parent_id) {
+      return null;
+    }
+
+    return this.categoryById(category.parent_id);
+  }
+
+  private childCategoryIds(parentId: string): Set<string> {
+    return new Set(
+      this.categoryRecords()
+        .filter((category) => category.parent_id === parentId)
+        .map((category) => category.id)
+    );
+  }
+
   private validateImageFile(file: File): string | null {
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
       return 'PRODUCTS.IMAGE_TYPE_ERROR';
@@ -692,7 +801,7 @@ export class ProductsComponent implements OnInit {
     const form = this.productForm();
 
     return {
-      category_id: null,
+      category_id: form.categoryId,
       name: form.name.trim(),
       slug: form.slug.trim(),
       sku: form.sku.trim() || null,

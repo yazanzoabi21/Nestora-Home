@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
+import { OverlayOptions } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
 
 export type AdminFormFieldType =
@@ -24,6 +25,11 @@ export type AdminFormFieldValue = string | number | boolean | Date | File | null
   styleUrl: './admin-form-field.component.css',
 })
 export class AdminFormFieldComponent {
+  readonly selectOverlayOptions: OverlayOptions = {
+    appendTo: 'body',
+    baseZIndex: 12000,
+  };
+
   @Input() type: AdminFormFieldType = 'text';
   @Input() name = '';
   @Input() label = '';

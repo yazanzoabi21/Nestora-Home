@@ -13,9 +13,17 @@ export class UploadService {
   private readonly supabase = inject(SupabaseService).client;
 
   async uploadProductImage(file: File): Promise<string> {
+    return this.uploadImage(file, 'products');
+  }
+
+  async uploadCategoryImage(file: File): Promise<string> {
+    return this.uploadImage(file, 'categories');
+  }
+
+  private async uploadImage(file: File, folder: 'categories' | 'products'): Promise<string> {
     this.validateImage(file);
 
-    const path = `products/${Date.now()}-${this.randomId()}-${this.sanitizeFileName(file.name)}`;
+    const path = `${folder}/${Date.now()}-${this.randomId()}-${this.sanitizeFileName(file.name)}`;
     const { error } = await this.supabase.storage.from(PRODUCT_IMAGES_BUCKET).upload(path, file, {
       cacheControl: '3600',
       upsert: false,

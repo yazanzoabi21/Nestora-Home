@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, signal, SimpleChanges } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AdminPaginationComponent } from '../admin-pagination';
 
 export type AdminTableColumnType = 'text' | 'imageText' | 'badge' | 'price' | 'number' | 'stock' | 'status' | 'actions';
 
@@ -45,7 +46,7 @@ export type AdminTableRow = Record<string, unknown> & {
 @Component({
   selector: 'app-admin-table',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [AdminPaginationComponent, CommonModule, TranslatePipe],
   templateUrl: './admin-table.component.html',
   styleUrl: './admin-table.component.css',
 })
@@ -58,6 +59,9 @@ export class AdminTableComponent implements OnChanges {
   @Input() selectable = false;
   @Input() showActions = true;
   @Input() pageSize = 10;
+  @Input() pageSizeOptions: number[] = [10, 25, 50];
+  @Input() showPageSize = true;
+  @Input() showPaginationSummary = true;
   @Input() selectionResetKey = 0;
 
   @Output() rowView = new EventEmitter<AdminTableRow>();
@@ -65,6 +69,7 @@ export class AdminTableComponent implements OnChanges {
   @Output() rowDelete = new EventEmitter<AdminTableRow>();
   @Output() selectionChange = new EventEmitter<AdminTableRow[]>();
   @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   readonly currentPage = signal(1);
   readonly selectedIds = signal<Set<string>>(new Set());
@@ -104,6 +109,12 @@ export class AdminTableComponent implements OnChanges {
     const nextPage = Math.min(Math.max(page, 1), this.totalPages);
     this.currentPage.set(nextPage);
     this.pageChange.emit(nextPage);
+  }
+
+  setPageSize(size: number): void {
+    this.pageSize = size;
+    this.currentPage.set(1);
+    this.pageSizeChange.emit(size);
   }
 
   isSelected(row: AdminTableRow): boolean {
@@ -172,6 +183,10 @@ export class AdminTableComponent implements OnChanges {
   textCell(row: AdminTableRow, key: string): string {
     const value = row[key];
     return value === null || value === undefined ? '' : String(value);
+  }
+
+  isIconValue(value: string | null | undefined): boolean {
+    return !!value && (value.startsWith('pi ') || value.startsWith('fa ') || value.startsWith('fa-'));
   }
 
   cellValue(row: AdminTableRow, key: string): unknown {

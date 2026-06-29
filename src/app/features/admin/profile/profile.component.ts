@@ -1,13 +1,40 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { AppRoleName, AuthenticatedUserProfile, CurrentUserProfileUpdate } from '../../../core/models/auth';
+import { ToastService } from '../../../core/services';
+import { AuthService } from '../../../core/services/auth';
 
 interface ProfileSummaryItem {
   icon: string;
   value: string;
 }
 
+interface ProfileSummary {
+  initials: string;
+  name: string;
+  role: string;
+  status: string;
+  avatarUrl: string | null;
+  details: ProfileSummaryItem[];
+}
+
+type ProfileFormKey = 'firstName' | 'lastName' | 'email' | 'phone' | 'jobTitle' | 'location';
+
+interface ProfileFormState {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  jobTitle: string;
+  location: string;
+  avatarUrl: string | null;
+}
+
 interface FieldItem {
+  key: ProfileFormKey;
   label: string;
   value: string;
+  placeholder: string;
+  inputType?: string;
   hasChevron?: boolean;
 }
 
@@ -37,76 +64,138 @@ interface DangerAction {
   buttonClass: string;
 }
 
+const EMPTY_FORM_STATE: ProfileFormState = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  jobTitle: '',
+  location: '',
+  avatarUrl: null,
+};
+
+const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
+
 @Component({
   selector: 'app-profile',
   standalone: true,
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
-export class ProfileComponent {
-  readonly profileSummary = {
-    initials: 'AJ',
-    name: 'Alex Johnson',
-    role: 'Super Admin',
-    status: 'Active',
-    details: [
-      {
-        icon: 'pi pi-envelope',
-        value: 'alex.johnson@nestora.co.uk',
-      },
-      {
-        icon: 'pi pi-phone',
-        value: '+44 7700 900123',
-      },
-      {
-        icon: 'pi pi-map-marker',
-        value: 'London, United Kingdom',
-      },
-      {
-        icon: 'pi pi-calendar',
-        value: 'Joined 14 Mar 2023',
-      },
-    ] satisfies ProfileSummaryItem[],
-  };
+export class ProfileComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly toast = inject(ToastService);
 
-  readonly personalFields: FieldItem[] = [
-    {
-      label: 'First Name',
-      value: 'Alex',
-    },
-    {
-      label: 'Last Name',
-      value: 'Johnson',
-    },
-    {
-      label: 'Email Address',
-      value: 'alex.johnson@nestora.co.uk',
-    },
-    {
-      label: 'Phone Number',
-      value: '+44 7700 900123',
-    },
-    {
-      label: 'Job Title',
-      value: 'Super Admin',
-    },
-    {
-      label: 'Location',
-      value: 'London, United Kingdom',
-      hasChevron: true,
-    },
-  ];
+  readonly isLoading = signal(true);
+  readonly isSaving = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly loadedProfile = signal<AuthenticatedUserProfile | null>(null);
+  readonly originalFormState = signal<ProfileFormState>(cloneFormState(EMPTY_FORM_STATE));
+  readonly formState = signal<ProfileFormState>(cloneFormState(EMPTY_FORM_STATE));
+  readonly selectedAvatarFile = signal<File | null>(null);
+  readonly avatarPreviewUrl = signal<string | null>(null);
 
-  readonly securityFields: FieldItem[] = [
-    {
-      label: 'Username',
-      value: 'alex.johnson',
-    },
-    {
-      label: 'Password',
-      value: '••••••••••••••',
-    },
-  ];
+  readonly isDirty = computed(() => {
+    return !areFormStatesEqual(this.originalFormState(), this.formState()) || !!this.selectedAvatarFile();
+  });
+
+  readonly canSave = computed(() => this.isDirty() && !this.isLoading() && !this.isSaving());
+
+  readonly profileSummary = computed<ProfileSummary>(() => {
+    const profile = this.loadedProfile();
+    const form = this.formState();
+    const fullName = combineFullName(form.firstName, form.lastName);
+    const email = form.email || profile?.email || '';
+    const name = fullName || getNameFromEmail(email) || (this.isLoading() ? 'Loading user' : 'Not provided');
+    const avatarUrl = this.avatarPreviewUrl() || form.avatarUrl;
+
+    return {
+      initials: getInitials(fullName || email),
+      name,
+      role: profile ? formatRoleName(profile.roles?.name) : this.isLoading() ? 'Loading' : 'Not provided',
+      status: profile ? (profile.is_active ? 'Active' : 'Inactive') : this.isLoading() ? 'Loading' : 'Not provided',
+      avatarUrl,
+      details: [
+        {
+          icon: 'pi pi-envelope',
+          value: email || (this.isLoading() ? 'Loading' : 'Not provided'),
+        },
+        {
+          icon: 'pi pi-phone',
+          value: getProvidedValue(form.phone),
+        },
+        {
+          icon: 'pi pi-map-marker',
+          value: getProvidedValue(form.location),
+        },
+        {
+          icon: 'pi pi-calendar',
+          value: `Joined ${profile ? formatJoinedDate(profile.created_at) : 'Not provided'}`,
+        },
+      ],
+    };
+  });
+
+  readonly personalFields = computed<FieldItem[]>(() => {
+    const form = this.formState();
+
+    return [
+      {
+        key: 'firstName',
+        label: 'First Name',
+        value: form.firstName,
+        placeholder: 'Not provided',
+      },
+      {
+        key: 'lastName',
+        label: 'Last Name',
+        value: form.lastName,
+        placeholder: 'Not provided',
+      },
+      {
+        key: 'email',
+        label: 'Email Address',
+        value: form.email,
+        placeholder: 'Not provided',
+        inputType: 'email',
+      },
+      {
+        key: 'phone',
+        label: 'Phone Number',
+        value: form.phone,
+        placeholder: 'Not provided',
+        inputType: 'tel',
+      },
+      {
+        key: 'jobTitle',
+        label: 'Job Title',
+        value: form.jobTitle,
+        placeholder: 'Not provided',
+      },
+      {
+        key: 'location',
+        label: 'Location',
+        value: form.location,
+        placeholder: 'Not provided',
+        hasChevron: true,
+      },
+    ];
+  });
+
+  readonly securityFields = computed(() => {
+    const email = this.formState().email;
+
+    return [
+      {
+        label: 'Username',
+        value: getNameFromEmail(email) || 'Not provided',
+      },
+      {
+        label: 'Password',
+        value: '**************',
+      },
+    ];
+  });
 
   readonly securityToggles: ToggleItem[] = [
     {
@@ -122,7 +211,7 @@ export class ProfileComponent {
   ];
 
   readonly activeSession = {
-    device: 'MacBook Pro • Chrome • London, UK',
+    device: 'Current browser session',
     badge: 'Current Session',
   };
 
@@ -165,31 +254,19 @@ export class ProfileComponent {
   readonly activities: ActivityItem[] = [
     {
       title: 'Password changed',
-      date: '22 Apr 2026, 10:32 AM',
-      status: 'Success',
-      badgeClass: 'bg-[#eef4e8] text-[#5f6f43]',
+      date: 'Not provided',
+      status: 'Info',
+      badgeClass: 'bg-[#edf4ff] text-[#4f7dbd]',
     },
     {
-      title: 'Logged in from new device',
-      date: '22 Apr 2026, 09:15 AM',
+      title: 'Logged in from current device',
+      date: 'Not provided',
       status: 'Info',
       badgeClass: 'bg-[#edf4ff] text-[#4f7dbd]',
     },
     {
       title: 'Updated profile information',
-      date: '20 Apr 2026, 04:50 PM',
-      status: 'Success',
-      badgeClass: 'bg-[#eef4e8] text-[#5f6f43]',
-    },
-    {
-      title: 'Enabled two-factor authentication',
-      date: '18 Apr 2026, 11:20 AM',
-      status: 'Success',
-      badgeClass: 'bg-[#eef4e8] text-[#5f6f43]',
-    },
-    {
-      title: 'Logged in',
-      date: '18 Apr 2026, 09:08 AM',
+      date: 'Not provided',
       status: 'Info',
       badgeClass: 'bg-[#edf4ff] text-[#4f7dbd]',
     },
@@ -218,4 +295,255 @@ export class ProfileComponent {
       buttonClass: 'border-[#f1b9b4] text-[#dc3f35] hover:bg-[#fff1f0]',
     },
   ];
+
+  async ngOnInit(): Promise<void> {
+    await this.loadProfile();
+  }
+
+  updateField(key: ProfileFormKey, value: string): void {
+    this.formState.update((state) => ({
+      ...state,
+      [key]: value,
+    }));
+  }
+
+  onAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage.set('Please select a valid image file.');
+      this.toast.warn('Invalid avatar', 'Please select a valid image file.');
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_SIZE_BYTES) {
+      this.errorMessage.set('Avatar image must be 10 MB or smaller.');
+      this.toast.warn('Avatar too large', 'Avatar image must be 10 MB or smaller.');
+      return;
+    }
+
+    this.revokeAvatarPreview();
+    this.selectedAvatarFile.set(file);
+    this.avatarPreviewUrl.set(URL.createObjectURL(file));
+    this.errorMessage.set(null);
+  }
+
+  clearEdit(): void {
+    if (!this.isDirty() || this.isSaving()) {
+      return;
+    }
+
+    this.revokeAvatarPreview();
+    this.selectedAvatarFile.set(null);
+    this.formState.set(cloneFormState(this.originalFormState()));
+    this.errorMessage.set(null);
+  }
+
+  async saveChanges(): Promise<void> {
+    if (!this.canSave()) {
+      return;
+    }
+
+    this.isSaving.set(true);
+    this.errorMessage.set(null);
+
+    try {
+      const currentForm = this.formState();
+      let avatarUrl = currentForm.avatarUrl;
+
+      if (this.selectedAvatarFile()) {
+        avatarUrl = await this.authService.uploadCurrentUserAvatar(this.selectedAvatarFile() as File);
+      }
+
+      const savedProfile = await this.authService.updateCurrentUserProfile({
+        full_name: emptyToNull(combineFullName(currentForm.firstName, currentForm.lastName)),
+        email: currentForm.email.trim(),
+        phone: emptyToNull(currentForm.phone),
+        avatar_url: avatarUrl,
+      } satisfies CurrentUserProfileUpdate);
+
+      const savedForm = {
+        ...currentForm,
+        avatarUrl,
+      };
+
+      this.loadedProfile.set(savedProfile);
+      this.originalFormState.set(cloneFormState(savedForm));
+      this.formState.set(cloneFormState(savedForm));
+      this.revokeAvatarPreview();
+      this.selectedAvatarFile.set(null);
+      this.toast.updated('Profile');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to save profile.';
+      this.errorMessage.set(message);
+      this.toast.failed('Saving profile', message);
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  private async loadProfile(): Promise<void> {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    try {
+      const profile = await this.authService.getCurrentUserProfile();
+
+      if (!profile || !profile.is_active) {
+        await this.authService.logout();
+        return;
+      }
+
+      this.applyProfile(profile);
+      this.errorMessage.set(null);
+    } catch (error) {
+      this.errorMessage.set(error instanceof Error ? error.message : 'Unable to load profile.');
+      this.applyErrorState();
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private applyProfile(profile: AuthenticatedUserProfile): void {
+    const formState = toFormState(profile);
+
+    this.loadedProfile.set(profile);
+    this.originalFormState.set(cloneFormState(formState));
+    this.formState.set(cloneFormState(formState));
+    this.revokeAvatarPreview();
+    this.selectedAvatarFile.set(null);
+  }
+
+  private applyErrorState(): void {
+    this.loadedProfile.set(null);
+    this.originalFormState.set(cloneFormState(EMPTY_FORM_STATE));
+    this.formState.set(cloneFormState(EMPTY_FORM_STATE));
+    this.revokeAvatarPreview();
+    this.selectedAvatarFile.set(null);
+  }
+
+  private revokeAvatarPreview(): void {
+    const previewUrl = this.avatarPreviewUrl();
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      this.avatarPreviewUrl.set(null);
+    }
+  }
+}
+
+function toFormState(profile: AuthenticatedUserProfile): ProfileFormState {
+  const fullNameParts = getFullNameParts(profile.full_name);
+
+  return {
+    firstName: fullNameParts.firstName,
+    lastName: fullNameParts.lastName,
+    email: profile.email,
+    phone: profile.phone?.trim() ?? '',
+    // These fields are UI-only until matching columns exist in profiles.
+    jobTitle: formatRoleName(profile.roles?.name),
+    location: '',
+    avatarUrl: profile.avatar_url,
+  };
+}
+
+function cloneFormState(state: ProfileFormState): ProfileFormState {
+  return {
+    ...state,
+  };
+}
+
+function areFormStatesEqual(first: ProfileFormState, second: ProfileFormState): boolean {
+  return (
+    first.firstName.trim() === second.firstName.trim() &&
+    first.lastName.trim() === second.lastName.trim() &&
+    first.email.trim() === second.email.trim() &&
+    first.phone.trim() === second.phone.trim() &&
+    first.jobTitle.trim() === second.jobTitle.trim() &&
+    first.location.trim() === second.location.trim() &&
+    first.avatarUrl === second.avatarUrl
+  );
+}
+
+function getFullNameParts(fullName: string | null): { firstName: string; lastName: string } {
+  const parts = fullName?.trim().split(/\s+/).filter(Boolean) ?? [];
+
+  if (!parts.length) {
+    return {
+      firstName: '',
+      lastName: '',
+    };
+  }
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(' '),
+  };
+}
+
+function combineFullName(firstName: string, lastName: string): string {
+  return [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
+}
+
+function getInitials(value: string): string {
+  const cleanValue = value.trim();
+
+  if (!cleanValue) {
+    return '?';
+  }
+
+  const parts = cleanValue.includes('@')
+    ? [cleanValue.split('@')[0]]
+    : cleanValue.split(/\s+/).filter(Boolean);
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
+
+function getNameFromEmail(email: string): string {
+  return email.split('@')[0] || email;
+}
+
+function getProvidedValue(value: string | null): string {
+  return value?.trim() || 'Not provided';
+}
+
+function emptyToNull(value: string): string | null {
+  return value.trim() || null;
+}
+
+function formatRoleName(roleName: AppRoleName | undefined): string {
+  switch (roleName) {
+    case 'super_admin':
+      return 'Super Admin';
+    case 'admin':
+      return 'Admin';
+    case 'customer':
+      return 'Customer';
+    default:
+      return 'Not provided';
+  }
+}
+
+function formatJoinedDate(createdAt: string): string {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Not provided';
+  }
+
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
 }

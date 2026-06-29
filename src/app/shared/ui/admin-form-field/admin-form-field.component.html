@@ -95,7 +95,7 @@
     }
 
     @case ('select') {
-      <div class="admin-form-field">
+      <div class="admin-form-field admin-form-select-field">
         @if (label) {
           <span>{{ label | translate }}</span>
         }
@@ -103,6 +103,7 @@
           styleClass="admin-form-select"
           panelStyleClass="admin-form-select-panel"
           appendTo="body"
+          [overlayOptions]="selectOverlayOptions"
           [name]="name"
           [options]="options"
           [optionLabel]="optionLabel"

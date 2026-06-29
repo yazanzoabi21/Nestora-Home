@@ -9,6 +9,12 @@ export interface UserMenuUser {
   initials: string;
 }
 
+const USER_MENU_FALLBACK: UserMenuUser = {
+  name: 'Loading user',
+  role: 'Loading',
+  initials: '?',
+};
+
 @Component({
   selector: 'app-user-menu',
   standalone: true,
@@ -17,11 +23,7 @@ export interface UserMenuUser {
   styleUrl: './user-menu.component.css',
 })
 export class UserMenuComponent {
-  @Input() user: UserMenuUser = {
-    name: 'Alex Johnson',
-    role: 'Super Admin',
-    initials: 'AJ',
-  };
+  @Input() user: UserMenuUser = USER_MENU_FALLBACK;
 
   private readonly authService = inject(AuthService);
 

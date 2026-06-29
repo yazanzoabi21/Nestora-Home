@@ -5,6 +5,7 @@ export type ProductPriceRange = 'all' | 'under_25' | '25_50' | '50_75' | 'over_7
 export interface ProductCategoryRelation {
   id?: string;
   name: string | null;
+  slug?: string | null;
 }
 
 export interface ProductGalleryItem {
@@ -71,7 +72,7 @@ export interface ProductFormModel {
   name: string;
   slug: string;
   sku: string;
-  category: string;
+  categoryId: string | null;
   price: number | null;
   salePrice: number | null;
   stock: number | null;

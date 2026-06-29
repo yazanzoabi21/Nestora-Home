@@ -1,0 +1,15 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .category-tree-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .category-tree-scroll,
+  .category-details-scroll {
+    max-height: none;
+  }
+}
