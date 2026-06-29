@@ -49,6 +49,17 @@ export const ADMIN_ROUTES: Routes = [
           import('./inventory').then((m) => m.InventoryComponent),
       },
       {
+        path: 'promotions',
+        loadComponent: () =>
+          import('./promotions').then((m) => m.PromotionsComponent),
+      },
+      
+      // {
+      //   path: 'discounts',
+      //   redirectTo: 'promotions',
+      //   pathMatch: 'full',
+      // },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./profile').then((m) => m.ProfileComponent),

@@ -75,7 +75,8 @@
         @let children = childCategories(category.id);
         <div class="category-tree-group">
           <div class="category-tree-row" [class.category-tree-row-active]="isSelectedCategory(category)"
-            (click)="selectCategory(category)">
+            role="button" tabindex="0" (click)="selectCategory(category)" (keydown.enter)="selectCategory(category)"
+            (keydown.space)="selectCategory(category); $event.preventDefault()">
             @if (children.length > 0) {
             <button type="button" class="category-tree-chevron" (click)="toggleExpanded(category, $event)"
               [attr.aria-label]="(isExpanded(category) ? 'CATEGORIES.COLLAPSE_CATEGORY' : 'CATEGORIES.EXPAND_CATEGORY') | translate">
@@ -124,7 +125,9 @@
           <div class="category-tree-children">
             @for (child of children; track child.id) {
             <div class="category-tree-row category-tree-row-child"
-              [class.category-tree-row-active]="isSelectedCategory(child)" (click)="selectCategory(child)">
+              [class.category-tree-row-active]="isSelectedCategory(child)" role="button" tabindex="0"
+              (click)="selectCategory(child)" (keydown.enter)="selectCategory(child)"
+              (keydown.space)="selectCategory(child); $event.preventDefault()">
               <span class="category-tree-branch"></span>
               <span class="category-mini-icon">
                 @if (categoryImageUrl(child)) {

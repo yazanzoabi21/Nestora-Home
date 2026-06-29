@@ -44,6 +44,7 @@
     "CATEGORIES": "الفئات",
     "INVENTORY": "المخزون",
     "DISCOUNTS": "الخصومات",
+    "DISCOUNTS_PROMOTIONS": "Discounts & Promotions",
     "PROMOTIONS_ADS": "العروض والإعلانات",
     "PAYMENTS": "المدفوعات",
     "SHIPPING": "الشحن",
@@ -319,6 +320,104 @@
       "STOCK_UPDATED": "تم تحديث المخزون بنجاح.",
       "UPDATE_FAILED_TITLE": "فشل تحديث المخزون.",
       "UPDATE_FAILED_DETAIL": "تعذر تحديث مخزون المنتج."
+    }
+  },
+  "PROMOTIONS": {
+    "TITLE": "Discounts & Promotions",
+    "SUBTITLE": "Manage sales and promotional offers · {{ count }} codes total",
+    "CREATE_DISCOUNT": "Create Discount",
+    "SEARCH_PLACEHOLDER": "Search by name or code...",
+    "RESULTS": "{{ count }} discounts",
+    "EMPTY_TITLE": "No discounts found",
+    "EMPTY_TEXT": "Create a discount or adjust your filters.",
+    "PROMOTION": "promotion",
+    "ALL_PRODUCTS": "All Products",
+    "MINIMUM": "Min {{ value }}",
+    "PER_CUSTOMER": "{{ count }}x per customer",
+    "DELETE_TITLE": "Delete Promotion",
+    "DELETE_SUBTITLE": "This action cannot be undone.",
+    "DELETE_MESSAGE": "Are you sure you want to delete {{ name }}?",
+    "KPI": {
+      "ACTIVE_DISCOUNTS": "Active Discounts",
+      "TOTAL_CODES": "{{ count }} total codes",
+      "TOTAL_USES": "Total Uses",
+      "ALL_TIME": "All time",
+      "SCHEDULED": "Scheduled",
+      "AVG_USAGE": "Avg. Usage",
+      "PER_CODE": "per code"
+    },
+    "FILTERS": {
+      "ALL_STATUSES": "All",
+      "ALL_PLACEMENTS": "All"
+    },
+    "STATUS": {
+      "ACTIVE": "Active",
+      "SCHEDULED": "Scheduled",
+      "EXPIRED": "Expired",
+      "PAUSED": "Paused"
+    },
+    "TYPE": {
+      "FREE_SHIP": "Free Ship"
+    },
+    "APPLIES": {
+      "CATEGORY": "Category",
+      "PRODUCT": "Product"
+    },
+    "TABLE": {
+      "CODE_NAME": "Code / Name",
+      "TYPE_VALUE": "Type & Value",
+      "APPLIES_TO": "Applies To",
+      "USAGE": "Usage",
+      "VALIDITY": "Validity",
+      "STATUS": "Status",
+      "ACTIONS": "Actions"
+    },
+    "ACTIONS": {
+      "TOGGLE": "Toggle promotion status",
+      "EDIT": "Edit promotion",
+      "DELETE": "Delete promotion"
+    },
+    "SUMMARY": {
+      "MOST_USED_CODE": "Most Used Code",
+      "ACTIVE_UNTIL": "Active Until",
+      "COMING_SOON": "Coming Soon",
+      "USES": "{{ count }} uses"
+    },
+    "MODAL": {
+      "CREATE_TITLE": "Create Discount",
+      "CREATE_SUBTITLE": "Create a sales or promotional offer.",
+      "EDIT_TITLE": "Edit Discount",
+      "EDIT_SUBTITLE": "Update this promotion's details."
+    },
+    "FIELDS": {
+      "TITLE": "Title",
+      "DESCRIPTION": "Description",
+      "IMAGE_URL": "Image URL",
+      "BUTTON_TEXT": "Code / Button Text",
+      "BUTTON_LINK": "Button Link",
+      "PLACEMENT": "Placement",
+      "BACKGROUND_COLOR": "Background Color",
+      "TEXT_COLOR": "Text Color",
+      "IS_ACTIVE": "Is Active",
+      "START_DATE": "Start Date",
+      "END_DATE": "End Date"
+    },
+    "ERRORS": {
+      "TITLE_REQUIRED": "Title is required.",
+      "END_BEFORE_START": "End date cannot be before start date."
+    },
+    "TOAST": {
+      "LOAD_FAILED_TITLE": "Loading promotions failed.",
+      "LOAD_FAILED_DETAIL": "Unable to load promotions.",
+      "INVALID_TITLE": "Check promotion details.",
+      "MISSING_PROMOTION": "Promotion data is missing.",
+      "SAVE_FAILED_TITLE": "Saving promotion failed.",
+      "SAVE_FAILED_DETAIL": "Unable to save promotion.",
+      "DELETE_FAILED_TITLE": "Deleting promotion failed.",
+      "DELETE_FAILED_DETAIL": "Unable to delete promotion.",
+      "STATUS_UPDATED": "Promotion status updated.",
+      "STATUS_FAILED_TITLE": "Updating promotion status failed.",
+      "STATUS_FAILED_DETAIL": "Unable to update promotion status."
     }
   },
   "AUTH": {

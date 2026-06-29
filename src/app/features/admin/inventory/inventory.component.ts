@@ -15,13 +15,15 @@ import {
 import { ToastService } from '../../../core/services';
 import { AdminFormFieldComponent } from '../../../shared/ui/admin-form-field';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
-import { AdminPaginationComponent } from '../../../shared/ui/admin-pagination';
+import { AdminTableColumn, AdminTableComponent, AdminTableRow } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 
 interface AdminSelectOption<T extends string | number | null = string> {
   label: string;
   value: T;
 }
+
+type InventoryTableRow = AdminTableRow;
 
 const DEFAULT_STOCK_FORM: StockUpdateFormModel = {
   newStock: null,
@@ -35,7 +37,7 @@ const DEFAULT_STOCK_FORM: StockUpdateFormModel = {
   imports: [
     AdminFormFieldComponent,
     AdminFormModalComponent,
-    AdminPaginationComponent,
+    AdminTableComponent,
     CommonModule,
     FormsModule,
     KpiCardComponent,
@@ -62,6 +64,19 @@ export class InventoryComponent implements OnInit {
   readonly selectedProduct = signal<InventoryProduct | null>(null);
   readonly isStockModalOpen = signal(false);
   readonly stockForm = signal<StockUpdateFormModel>({ ...DEFAULT_STOCK_FORM });
+
+  readonly inventoryTableColumns: AdminTableColumn[] = [
+    { key: 'createdAt', label: 'PRODUCTS.TABLE.CREATED_AT', type: 'text' },
+    { key: 'product', label: 'INVENTORY.TABLE.PRODUCT', type: 'imageText' },
+    { key: 'sku', label: 'INVENTORY.TABLE.SKU', type: 'text' },
+    { key: 'category', label: 'INVENTORY.TABLE.CATEGORY', type: 'text' },
+    { key: 'stock', label: 'INVENTORY.TABLE.STOCK', type: 'stock' },
+    { key: 'sold', label: 'INVENTORY.TABLE.SOLD', type: 'number' },
+    { key: 'progress', label: 'INVENTORY.TABLE.PROGRESS', type: 'progress' },
+    { key: 'unitPrice', label: 'INVENTORY.TABLE.UNIT_PRICE', type: 'price' },
+    { key: 'status', label: 'INVENTORY.TABLE.STATUS', type: 'status' },
+    { key: 'actions', label: '', type: 'actions' },
+  ];
 
   readonly categoryOptions = computed<AdminSelectOption[]>(() => {
     const categories = Array.from(
@@ -167,6 +182,10 @@ export class InventoryComponent implements OnInit {
     const start = (this.currentPage() - 1) * this.pageSize();
     return this.filteredProducts().slice(start, start + this.pageSize());
   });
+
+  readonly tableRows = computed<InventoryTableRow[]>(() =>
+    this.filteredProducts().map((product) => this.toTableRow(product))
+  );
 
   async ngOnInit(): Promise<void> {
     await this.loadInventory();
@@ -277,6 +296,21 @@ export class InventoryComponent implements OnInit {
     this.currentPage.set(1);
   }
 
+  openStockModalFromRow(value: InventoryProduct | AdminTableRow): void {
+    const row = value as AdminTableRow;
+    const product = (row.raw as InventoryProduct | undefined) ?? (value as InventoryProduct);
+
+    if (!product?.id) {
+      this.toast.failed(
+        this.translate.instant('INVENTORY.TOAST.UPDATE_FAILED_TITLE'),
+        this.translate.instant('INVENTORY.TOAST.UPDATE_FAILED_DETAIL')
+      );
+      return;
+    }
+
+    this.openStockModal(product);
+  }
+
   productStatus(product: InventoryProduct): ProductStatus {
     return this.inventoryService.getProductStatus(product.stock);
   }
@@ -353,6 +387,69 @@ export class InventoryComponent implements OnInit {
     }
 
     return 'bg-[#e9f8ef] text-[#117047]';
+  }
+
+  private toTableRow(product: InventoryProduct): InventoryTableRow {
+    const status = this.productStatus(product);
+    const progress = this.stockProgress(product);
+
+    return {
+      id: product.id,
+      raw: product,
+      product: {
+        imageUrl: product.image_url,
+        title: product.name,
+        subtitle: this.translate.instant('INVENTORY.PRODUCT_VALUE', {
+          value: this.formatCurrency(this.productValue(product)),
+        }),
+        initials: this.productInitials(product),
+      },
+      sku: product.sku || '-',
+      category: this.categoryLabel(product),
+      stock: {
+        value: product.stock ?? 0,
+        status,
+      },
+      sold: product.sold_count ?? 0,
+      progress: {
+        value: progress,
+        label: `${progress}%`,
+        barClass: this.progressBarClass(product),
+      },
+      createdAt: this.formatDate(product.created_at),
+      unitPrice: this.formatCurrency(this.unitPrice(product)),
+      status: {
+        labelKey: this.statusLabelKey(product),
+        className: this.statusClass(product),
+      },
+      actions: null,
+    };
+  }
+
+  formatDate(value: string | null): string {
+    if (!value) {
+      return '-';
+    }
+
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(value));
+  }
+
+  private progressBarClass(product: InventoryProduct): string {
+    const status = this.productStatus(product);
+
+    if (status === 'out_of_stock') {
+      return 'bg-[#dc3f35]';
+    }
+
+    if (status === 'low_stock') {
+      return 'bg-[#d98916]';
+    }
+
+    return 'bg-[#43b374]';
   }
 
   private errorDetail(error: unknown, fallback: string): string {

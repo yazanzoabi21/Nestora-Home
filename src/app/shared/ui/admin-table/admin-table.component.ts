@@ -3,7 +3,16 @@ import { Component, EventEmitter, Input, OnChanges, Output, signal, SimpleChange
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminPaginationComponent } from '../admin-pagination';
 
-export type AdminTableColumnType = 'text' | 'imageText' | 'badge' | 'price' | 'number' | 'stock' | 'status' | 'actions';
+export type AdminTableColumnType =
+  | 'text'
+  | 'imageText'
+  | 'badge'
+  | 'price'
+  | 'number'
+  | 'stock'
+  | 'progress'
+  | 'status'
+  | 'actions';
 
 export interface AdminTableColumn {
   key: string;
@@ -38,6 +47,12 @@ export interface AdminTablePriceCell {
   originalValue?: number | string | null;
 }
 
+export interface AdminTableProgressCell {
+  value: number;
+  label?: string;
+  barClass?: string;
+}
+
 export type AdminTableRow = Record<string, unknown> & {
   id: string;
   raw?: unknown;
@@ -58,6 +73,7 @@ export class AdminTableComponent implements OnChanges {
   @Input() emptyText = 'Items will appear here when available.';
   @Input() selectable = false;
   @Input() showActions = true;
+  @Input() actionsMode: 'crud' | 'editOnly' = 'crud';
   @Input() pageSize = 10;
   @Input() pageSizeOptions: number[] = [10, 25, 50];
   @Input() showPageSize = true;
@@ -178,6 +194,10 @@ export class AdminTableComponent implements OnChanges {
 
   isPriceCellObject(value: AdminTablePriceCell | number | string): value is AdminTablePriceCell {
     return typeof value === 'object' && value !== null && 'value' in value;
+  }
+
+  progressCell(row: AdminTableRow, key: string): AdminTableProgressCell {
+    return row[key] as AdminTableProgressCell;
   }
 
   textCell(row: AdminTableRow, key: string): string {

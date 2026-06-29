@@ -69,9 +69,9 @@ export const ADMIN_NAVIGATION_SECTIONS: AdminNavigationSection[] = [
         icon: 'pi pi-warehouse',
       },
       {
-        label: 'Discounts',
-        labelKey: 'SIDEBAR.DISCOUNTS',
-        route: '/admin/discounts',
+        label: 'Discounts & Promotions',
+        labelKey: 'SIDEBAR.DISCOUNTS_PROMOTIONS',
+        route: '/admin/promotions',
         icon: 'pi pi-percentage',
       },
     ],
@@ -84,7 +84,7 @@ export const ADMIN_NAVIGATION_SECTIONS: AdminNavigationSection[] = [
       {
         label: 'Promotions & Ads',
         labelKey: 'SIDEBAR.PROMOTIONS_ADS',
-        route: '/admin/promotions',
+        route: '',
         icon: 'pi pi-megaphone',
       },
     ],

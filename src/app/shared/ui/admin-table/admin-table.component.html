@@ -151,6 +151,20 @@
                       }
                     }
 
+                    @case ('progress') {
+                      @let cell = progressCell(row, column.key);
+                      <div class="min-w-32">
+                        <span class="mb-1.5 block text-xs font-extrabold text-[#9a9389]">{{ cell.label ?? (cell.value + '%') }}</span>
+                        <div class="h-[0.45rem] overflow-hidden rounded-full bg-[#eeeae4]">
+                          <span
+                            class="block h-full min-w-1 rounded-full"
+                            [ngClass]="cell.barClass || 'bg-[#43b374]'"
+                            [style.width.%]="cell.value"
+                          ></span>
+                        </div>
+                      </div>
+                    }
+
                     @case ('status') {
                       @let badge = badgeCell(row, column.key);
                       @let status = cellValue(row, column.key);
@@ -169,15 +183,19 @@
 
                     @case ('actions') {
                       <div class="admin-table-actions flex items-center justify-end gap-2">
+                        @if (actionsMode === 'crud') {
                         <button type="button" class="admin-table-icon-button text-[#3b78d8]" (click)="rowView.emit(actionPayload(row))" aria-label="View row">
                           <i class="pi pi-eye"></i>
                         </button>
+                        }
                         <button type="button" class="admin-table-icon-button text-[#5f6f43]" (click)="rowEdit.emit(actionPayload(row))" aria-label="Edit row">
                           <i class="pi pi-pencil"></i>
                         </button>
+                        @if (actionsMode === 'crud') {
                         <button type="button" class="admin-table-icon-button text-[#dc3f35]" (click)="rowDelete.emit(actionPayload(row))" aria-label="Delete row">
                           <i class="pi pi-trash"></i>
                         </button>
+                        }
                       </div>
                     }
 
