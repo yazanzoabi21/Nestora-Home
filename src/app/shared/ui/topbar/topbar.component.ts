@@ -7,12 +7,14 @@ export interface TopbarUser {
   name: string;
   role: string;
   initials: string;
+  avatarUrl: string | null;
 }
 
 export const TOPBAR_USER_FALLBACK: TopbarUser = {
   name: 'Loading user',
   role: 'Loading',
   initials: '?',
+  avatarUrl: null,
 };
 
 @Component({

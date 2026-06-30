@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { AppRoleName, AuthenticatedUserProfile, CurrentUserProfileUpdate } from '../../../core/models/auth';
 import { ToastService } from '../../../core/services';
 import { AuthService } from '../../../core/services/auth';
@@ -75,6 +75,7 @@ const EMPTY_FORM_STATE: ProfileFormState = {
 };
 
 const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
+const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
 
 @Component({
   selector: 'app-profile',
@@ -94,6 +95,7 @@ export class ProfileComponent implements OnInit {
   readonly formState = signal<ProfileFormState>(cloneFormState(EMPTY_FORM_STATE));
   readonly selectedAvatarFile = signal<File | null>(null);
   readonly avatarPreviewUrl = signal<string | null>(null);
+  readonly isAvatarPreviewOpen = signal(false);
 
   readonly isDirty = computed(() => {
     return !areFormStatesEqual(this.originalFormState(), this.formState()) || !!this.selectedAvatarFile();
@@ -101,13 +103,15 @@ export class ProfileComponent implements OnInit {
 
   readonly canSave = computed(() => this.isDirty() && !this.isLoading() && !this.isSaving());
 
+  readonly hasCustomAvatar = computed(() => !!this.formState().avatarUrl || !!this.selectedAvatarFile());
+
   readonly profileSummary = computed<ProfileSummary>(() => {
     const profile = this.loadedProfile();
     const form = this.formState();
     const fullName = combineFullName(form.firstName, form.lastName);
     const email = form.email || profile?.email || '';
     const name = fullName || getNameFromEmail(email) || (this.isLoading() ? 'Loading user' : 'Not provided');
-    const avatarUrl = this.avatarPreviewUrl() || form.avatarUrl;
+    const avatarUrl = this.avatarPreviewUrl() || form.avatarUrl || DEFAULT_AVATAR_URL;
 
     return {
       initials: getInitials(fullName || email),
@@ -300,6 +304,11 @@ export class ProfileComponent implements OnInit {
     await this.loadProfile();
   }
 
+  @HostListener('document:keydown.escape')
+  closeAvatarPreviewOnEscape(): void {
+    this.closeAvatarPreview();
+  }
+
   updateField(key: ProfileFormKey, value: string): void {
     this.formState.update((state) => ({
       ...state,
@@ -332,6 +341,76 @@ export class ProfileComponent implements OnInit {
     this.selectedAvatarFile.set(file);
     this.avatarPreviewUrl.set(URL.createObjectURL(file));
     this.errorMessage.set(null);
+  }
+
+  async clearAvatar(): Promise<void> {
+    if (!this.hasCustomAvatar() || this.isLoading() || this.isSaving()) {
+      return;
+    }
+
+    const previousFormState = cloneFormState(this.formState());
+    const previousOriginalState = cloneFormState(this.originalFormState());
+    const previousProfile = this.loadedProfile();
+    const previousSelectedAvatar = this.selectedAvatarFile();
+    const previousPreviewUrl = this.avatarPreviewUrl();
+
+    this.isSaving.set(true);
+    this.errorMessage.set(null);
+    this.selectedAvatarFile.set(null);
+    this.avatarPreviewUrl.set(null);
+    this.formState.update((state) => ({
+      ...state,
+      avatarUrl: null,
+    }));
+
+    try {
+      const savedProfile = await this.authService.updateCurrentUserProfile({
+        avatar_url: null,
+      });
+      const savedOriginalState = toFormState(savedProfile);
+
+      this.loadedProfile.set(savedProfile);
+      this.originalFormState.set(savedOriginalState);
+      this.formState.update((state) => ({
+        ...state,
+        avatarUrl: null,
+      }));
+
+      if (previousPreviewUrl) {
+        URL.revokeObjectURL(previousPreviewUrl);
+      }
+
+      this.toast.updated('Profile photo');
+    } catch (error) {
+      this.loadedProfile.set(previousProfile);
+      this.originalFormState.set(previousOriginalState);
+      this.formState.set(previousFormState);
+      this.selectedAvatarFile.set(previousSelectedAvatar);
+      this.avatarPreviewUrl.set(previousPreviewUrl);
+
+      const message = error instanceof Error ? error.message : 'Unable to clear profile photo.';
+      this.errorMessage.set(message);
+      this.toast.failed('Clearing profile photo', message);
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  openAvatarPreview(): void {
+    this.isAvatarPreviewOpen.set(true);
+  }
+
+  closeAvatarPreview(): void {
+    this.isAvatarPreviewOpen.set(false);
+  }
+
+  avatarSrc(): string {
+    return this.profileSummary().avatarUrl || DEFAULT_AVATAR_URL;
+  }
+
+  onAvatarError(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    image.src = DEFAULT_AVATAR_URL;
   }
 
   clearEdit(): void {

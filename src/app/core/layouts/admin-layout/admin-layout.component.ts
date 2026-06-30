@@ -53,6 +53,7 @@ export class AdminLayoutComponent implements OnInit {
       name,
       role: formatRoleName(profile.roles?.name),
       initials: getInitials(profile.full_name || profile.email),
+      avatarUrl: profile.avatar_url,
     };
   }
 }

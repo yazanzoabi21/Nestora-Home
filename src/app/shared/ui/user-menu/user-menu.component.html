@@ -6,8 +6,8 @@
     [attr.aria-expanded]="isOpen()"
     (click)="toggleMenu()"
   >
-    <span class="flex h-11 w-11 items-center justify-center rounded-full bg-[#6f7d42] text-sm font-bold text-white">
-      {{ user.initials }}
+    <span class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[#6f7d42] text-sm font-bold text-white">
+      <img [src]="avatarSrc()" [alt]="user.name" class="h-full w-full object-cover" (error)="onAvatarError($event)" />
     </span>
 
     <span class="hidden text-left sm:block">

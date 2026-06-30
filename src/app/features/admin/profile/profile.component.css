@@ -178,3 +178,78 @@
   font-weight: 700;
   transition: background-color 160ms ease;
 }
+
+.avatar-preview-trigger {
+  position: relative;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+}
+
+.avatar-preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background: rgba(31, 42, 31, 0.48);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.avatar-preview-trigger:hover .avatar-preview-overlay,
+.avatar-preview-trigger:focus-visible .avatar-preview-overlay {
+  opacity: 1;
+}
+
+.avatar-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(31, 42, 31, 0.68);
+  padding: 1.5rem;
+}
+
+.avatar-lightbox-panel {
+  position: relative;
+  max-height: min(78vh, 680px);
+  max-width: min(86vw, 680px);
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(229, 222, 210, 0.8);
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(31, 42, 31, 0.3);
+}
+
+.avatar-lightbox-image {
+  display: block;
+  max-height: min(78vh, 680px);
+  max-width: min(86vw, 680px);
+  object-fit: contain;
+}
+
+.avatar-lightbox-close {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #342f29;
+  box-shadow: 0 8px 20px rgba(31, 42, 31, 0.16);
+  transition: background-color 160ms ease;
+}
+
+.avatar-lightbox-close:hover {
+  background: #f7f4ef;
+}
