@@ -1,0 +1,252 @@
+﻿<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'PROMOTIONS.TITLE' | translate }}</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        {{ 'PROMOTIONS.SUBTITLE' | translate: { count: discounts().length } }}
+      </p>
+    </div>
+
+    <button type="button"
+      class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-5 text-sm font-extrabold text-white shadow-[0_12px_26px_rgba(95,111,67,0.22)] transition hover:bg-[#526139] sm:w-auto"
+      (click)="openCreateDiscountModal()">
+      <i class="pi pi-plus text-sm"></i>
+      <span>{{ 'PROMOTIONS.CREATE_DISCOUNT' | translate }}</span>
+    </button>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.titleKey) {
+    <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="grid gap-3 xl:grid-cols-[minmax(260px,1fr)_140px_170px_auto] xl:items-center">
+      <app-admin-form-field type="search" name="discountSearch" placeholder="PROMOTIONS.SEARCH_PLACEHOLDER"
+        [value]="searchTerm()" (valueChange)="searchTerm.set($any($event));" />
+
+      <app-admin-form-field type="select" name="discountStatusFilter" [value]="selectedStatus()"
+        [options]="statusOptions" optionLabel="label" optionValue="value"
+        (valueChange)="selectedStatus.set($any($event));" />
+
+      <app-admin-form-field type="select" name="discountAppliesToFilter" [value]="selectedAppliesTo()"
+        [options]="appliesToFilterOptions" optionLabel="label" optionValue="value"
+        (valueChange)="selectedAppliesTo.set($any($event));" />
+
+      <span class="px-2 text-sm font-semibold text-[#8d877e]">
+        {{ 'PROMOTIONS.RESULTS' | translate: { count: filteredDiscounts().length } }}
+      </span>
+    </div>
+  </section>
+
+  <app-admin-table class="mt-6 block" [columns]="discountTableColumns" [rows]="tableRows()" [loading]="loading()"
+    [emptyTitle]="discounts().length === 0 ? 'PROMOTIONS.EMPTY_TITLE' : 'PROMOTIONS.NO_MATCHING_TITLE'"
+    [emptyText]="discounts().length === 0 ? 'PROMOTIONS.EMPTY_TEXT' : 'PROMOTIONS.NO_MATCHING_TEXT'"
+    [selectable]="false" [showActions]="true" [pageSize]="7" [showPageSize]="false"
+    (rowView)="toggleDiscountActive($event)" (rowEdit)="openEditDiscountModal($event)"
+    (rowDelete)="openDeleteDiscountModal($event)">
+  </app-admin-table>
+
+  <section class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
+    <article class="flex items-center gap-4 rounded-2xl border border-[#e5ded2] bg-white p-5 shadow-sm">
+      <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef4e8] text-[#5f6f43]">
+        <i class="pi pi-chart-line"></i>
+      </span>
+      <div class="min-w-0">
+        <span class="text-xs font-bold uppercase tracking-[0.08em] text-[#9a9389]">{{
+          'PROMOTIONS.SUMMARY.MOST_USED_CODE' | translate }}</span>
+        @if (mostUsedDiscount(); as discount) {
+        <strong class="mt-1 block truncate text-lg font-black text-[#182116]">{{ discount.code }}</strong>
+        <small class="text-sm font-semibold text-[#5f6f43]">
+          {{ 'PROMOTIONS.SUMMARY.USES' | translate: { count: discount.usage_count } }}
+        </small>
+        } @else {
+        <strong class="mt-1 block truncate text-lg font-black text-[#182116]">-</strong>
+        <small class="text-sm font-semibold text-[#5f6f43]">-</small>
+        }
+      </div>
+    </article>
+
+    <article class="flex items-center gap-4 rounded-2xl border border-[#e5ded2] bg-white p-5 shadow-sm">
+      <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf2ff] text-[#3b78d8]">
+        <i class="pi pi-calendar"></i>
+      </span>
+      <div class="min-w-0">
+        <span class="text-xs font-bold uppercase tracking-[0.08em] text-[#9a9389]">{{ 'PROMOTIONS.SUMMARY.ACTIVE_UNTIL'
+          | translate }}</span>
+        @if (activeUntilDiscount(); as discount) {
+        <strong class="mt-1 block truncate text-lg font-black text-[#182116]">{{ formatDate(discount.end_date)
+          }}</strong>
+        <small class="text-sm font-semibold text-[#2f6fd0]">{{ discount.name }}</small>
+        } @else {
+        <strong class="mt-1 block truncate text-lg font-black text-[#182116]">-</strong>
+        <small class="text-sm font-semibold text-[#2f6fd0]">-</small>
+        }
+      </div>
+    </article>
+
+    <article class="flex items-center gap-4 rounded-2xl border border-[#e5ded2] bg-white p-5 shadow-sm">
+      <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff6e7] text-[#d98916]">
+        <i class="pi pi-bolt"></i>
+      </span>
+      <div class="min-w-0">
+        <span class="text-xs font-bold uppercase tracking-[0.08em] text-[#9a9389]">{{ 'PROMOTIONS.SUMMARY.COMING_SOON' |
+          translate }}</span>
+        @if (comingSoonDiscount(); as discount) {
+        <strong class="mt-1 block truncate text-lg font-black text-[#182116]">{{ discount.code }}</strong>
+        <small class="text-sm font-semibold text-[#d98916]">{{ discount.name }}</small>
+        } @else {
+        <strong class="mt-1 block truncate text-lg font-black text-[#182116]">-</strong>
+        <small class="text-sm font-semibold text-[#d98916]">-</small>
+        }
+      </div>
+    </article>
+  </section>
+
+  <app-admin-form-modal [isOpen]="isDiscountModalOpen()" [title]="modalTitle()" [subtitle]="modalSubtitle()" size="lg"
+    submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL" [loading]="saving()" (close)="closeDiscountModal()"
+    (submit)="saveDiscount()">
+    @if (formError()) {
+    <p class="mb-4 rounded-xl border border-[#f1b9b4] bg-[#fff1f0] px-4 py-3 text-sm font-bold text-[#b42318]">
+      {{ formError()! | translate }}
+    </p>
+    }
+
+    <form class="space-y-6">
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+        <h3 class="mb-4 text-sm font-black uppercase tracking-[0.08em] text-[#8d877e]">
+          {{ 'PROMOTIONS.SECTIONS.BASIC_INFO' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <app-admin-form-field type="text" name="discountName" label="PROMOTIONS.FIELDS.NAME" [required]="true"
+            [value]="discountForm().name" (valueChange)="updateDiscountForm('name', $any($event))" />
+
+          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
+            <app-admin-form-field type="text" name="discountCode" label="PROMOTIONS.FIELDS.CODE" [required]="true"
+              [value]="discountForm().code" (valueChange)="updateDiscountForm('code', $any($event))" />
+            <button type="button"
+              class="mb-1 h-12 rounded-xl border border-[#d8d0c3] bg-white px-4 text-sm font-extrabold text-[#5f6f43] transition hover:bg-[#f7f4ef]"
+              (click)="generateDiscountCode()">
+              {{ 'PROMOTIONS.FIELDS.GENERATE_CODE' | translate }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+        <h3 class="mb-4 text-sm font-black uppercase tracking-[0.08em] text-[#8d877e]">
+          {{ 'PROMOTIONS.SECTIONS.DISCOUNT_TYPE' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <app-admin-form-field type="select" name="discountType" label="PROMOTIONS.FIELDS.DISCOUNT_TYPE"
+            [value]="discountForm().discountType" [options]="discountTypeOptions" optionLabel="label"
+            optionValue="value" (valueChange)="updateDiscountForm('discountType', $any($event))" />
+
+          @if (discountForm().discountType !== 'free_shipping') {
+          <app-admin-form-field type="number" name="discountValue" label="PROMOTIONS.FIELDS.DISCOUNT_VALUE"
+            [required]="true" [min]="discountForm().discountType === 'percentage' ? 1 : 0.01"
+            [max]="discountForm().discountType === 'percentage' ? 100 : null"
+            [step]="discountForm().discountType === 'percentage' ? 1 : 0.01" [value]="discountForm().discountValue"
+            (valueChange)="updateDiscountForm('discountValue', $any($event))" />
+          }
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+        <h3 class="mb-4 text-sm font-black uppercase tracking-[0.08em] text-[#8d877e]">
+          {{ 'PROMOTIONS.SECTIONS.CONDITIONS' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <app-admin-form-field type="select" name="appliesTo" label="PROMOTIONS.FIELDS.APPLIES_TO"
+            [value]="discountForm().appliesTo" [options]="appliesToOptions" optionLabel="label" optionValue="value"
+            (valueChange)="updateDiscountForm('appliesTo', $any($event))" />
+
+          <app-admin-form-field type="number" name="minimumOrderAmount" label="PROMOTIONS.FIELDS.MINIMUM_ORDER_AMOUNT"
+            [min]="0" [step]="0.01" [value]="discountForm().minimumOrderAmount"
+            (valueChange)="updateDiscountForm('minimumOrderAmount', $any($event))" />
+
+          @if (discountForm().appliesTo === 'product') {
+          <app-admin-form-field class="md:col-span-2" type="select" name="discountProduct"
+            label="PROMOTIONS.FIELDS.PRODUCT" [required]="true" [value]="discountForm().productId"
+            [options]="productOptions()" optionLabel="label" optionValue="value"
+            (valueChange)="updateDiscountForm('productId', $any($event))" />
+          }
+
+          @if (discountForm().appliesTo === 'category') {
+          <app-admin-form-field class="md:col-span-2" type="select" name="discountCategory"
+            label="PROMOTIONS.FIELDS.CATEGORY" [required]="true" [value]="discountForm().categoryId"
+            [options]="categoryOptions()" optionLabel="label" optionValue="value"
+            (valueChange)="updateDiscountForm('categoryId', $any($event))" />
+          }
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+        <h3 class="mb-4 text-sm font-black uppercase tracking-[0.08em] text-[#8d877e]">
+          {{ 'PROMOTIONS.SECTIONS.USAGE_LIMITS' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <app-admin-form-field type="number" name="usageLimit" label="PROMOTIONS.FIELDS.USAGE_LIMIT" [min]="0"
+            helperText="PROMOTIONS.FIELDS.USAGE_LIMIT_HELPER" [value]="discountForm().usageLimit"
+            (valueChange)="updateDiscountForm('usageLimit', $any($event))" />
+
+          <app-admin-form-field type="number" name="usagePerCustomer" label="PROMOTIONS.FIELDS.USAGE_PER_CUSTOMER"
+            [min]="1" [value]="discountForm().usagePerCustomer"
+            (valueChange)="updateDiscountForm('usagePerCustomer', $any($event))" />
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+        <h3 class="mb-4 text-sm font-black uppercase tracking-[0.08em] text-[#8d877e]">
+          {{ 'PROMOTIONS.SECTIONS.VALIDITY_PERIOD' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <app-admin-form-field type="date" name="discountStartDate" label="PROMOTIONS.FIELDS.START_DATE"
+            [value]="discountForm().startDate" (valueChange)="updateDiscountForm('startDate', $any($event))" />
+
+          <app-admin-form-field type="date" name="discountEndDate" label="PROMOTIONS.FIELDS.END_DATE"
+            [value]="discountForm().endDate" (valueChange)="updateDiscountForm('endDate', $any($event))" />
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+        <h3 class="mb-4 text-sm font-black uppercase tracking-[0.08em] text-[#8d877e]">
+          {{ 'PROMOTIONS.SECTIONS.STATUS' | translate }}
+        </h3>
+
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          @for (option of formStatusOptions; track option.value) {
+          <button type="button"
+            class="flex h-14 items-center gap-3 rounded-2xl border px-5 text-left text-base font-bold transition"
+            [class.border-[#a8d8bd]]="currentFormStatus() === option.value"
+            [class.bg-[#e9f8ef]]="currentFormStatus() === option.value"
+            [class.text-[#117047]]="currentFormStatus() === option.value"
+            [class.border-[#e5ded2]]="currentFormStatus() !== option.value"
+            [class.bg-white]="currentFormStatus() !== option.value"
+            [class.text-[#8d877e]]="currentFormStatus() !== option.value" (click)="selectFormStatus(option.value)">
+            <span class="h-2.5 w-2.5 rounded-full" [class.bg-[#2fba72]]="currentFormStatus() === option.value"
+              [class.bg-[#a6a19a]]="currentFormStatus() !== option.value">
+            </span>
+
+            <span>{{ option.labelKey | translate }}</span>
+          </button>
+          }
+        </div>
+      </section>
+    </form>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="isDeleteModalOpen()" variant="delete" title="PROMOTIONS.DELETE_TITLE"
+    subtitle="PROMOTIONS.DELETE_SUBTITLE" [message]="deleteDiscountMessage()" submitLabel="COMMON.DELETE"
+    cancelLabel="COMMON.CANCEL" [loading]="saving()" (close)="closeDeleteDiscountModal()"
+    (submit)="confirmDeleteDiscount()">
+    @if (discountPendingDelete()) {
+    <p class="mt-3 rounded-xl bg-[#f7f4ef] px-4 py-3 text-sm font-extrabold text-[#1f2a1f]">
+      {{ discountPendingDelete()?.name }}
+    </p>
+    }
+  </app-admin-form-modal>
+</main>

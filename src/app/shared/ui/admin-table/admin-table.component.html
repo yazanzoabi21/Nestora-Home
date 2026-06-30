@@ -72,6 +72,76 @@
               @for (column of visibleColumns; track column.key) {
                 <td class="px-4 py-4">
                   @switch (column.type) {
+                    @case ('codeName') {
+                      @let cell = codeNameCell(row, column.key);
+                      <div class="min-w-[240px]">
+                        <h2 class="text-base font-black text-[#182116]">{{ cell.title }}</h2>
+                        <span class="mt-2 inline-flex items-center gap-2 rounded-full border border-[#e5ded2] bg-[#f7f4ef] px-3 py-2 text-sm font-black uppercase text-[#182116]">
+                          <i class="pi pi-copy text-xs text-[#675f55]"></i>
+                          {{ cell.code }}
+                        </span>
+                      </div>
+                    }
+
+                    @case ('discountValue') {
+                      @let cell = discountValueCell(row, column.key);
+                      <div class="flex min-w-[160px] items-center gap-3">
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" [ngClass]="cell.iconClass">
+                          <i [class]="cell.icon"></i>
+                        </span>
+                        <div class="min-w-0">
+                          <strong class="block text-base font-black text-[#182116]">{{ cell.value }}</strong>
+                          @if (cell.helper) {
+                            <small class="mt-1 block text-sm font-semibold text-[#8d877e]">{{ cell.helper }}</small>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    @case ('appliesTo') {
+                      @let cell = appliesToCell(row, column.key);
+                      <div class="min-w-[170px]">
+                        <strong class="block text-sm font-black text-[#182116]">{{ cell.main }}</strong>
+                        @if (cell.sub) {
+                          <small class="mt-1 block max-w-[180px] truncate text-sm font-semibold text-[#8d877e]">
+                            <span class="text-[#9a9389]">↳</span>
+                            {{ cell.sub }}
+                          </small>
+                        }
+                      </div>
+                    }
+
+                    @case ('usageProgress') {
+                      @let cell = usageProgressCell(row, column.key);
+                      <div class="min-w-[170px]">
+                        <div class="flex items-center justify-between gap-4 text-sm font-bold">
+                          <span class="text-[#8d877e]">{{ cell.current }}/{{ cell.limit || 'Unlimited' }}</span>
+                          @if (cell.limit) {
+                            <span class="text-[#5f6f43]">{{ cell.percent }}%</span>
+                          }
+                        </div>
+                        @if (cell.limit) {
+                          <div class="mt-2 h-2 overflow-hidden rounded-full bg-[#eeeae4]">
+                            <span class="block h-full rounded-full bg-[#6f805b]" [style.width.%]="cell.percent"></span>
+                          </div>
+                        }
+                        @if (cell.helper) {
+                          <small class="mt-1 block text-xs font-semibold text-[#8d877e]">{{ cell.helper }}</small>
+                        }
+                      </div>
+                    }
+
+                    @case ('dateRange') {
+                      @let cell = dateRangeCell(row, column.key);
+                      <div class="min-w-[150px] text-sm font-semibold text-[#182116]">
+                        <span class="flex items-center gap-2">
+                          <i class="pi pi-calendar text-xs text-[#9a9389]"></i>
+                          {{ cell.start }}
+                        </span>
+                        <span class="mt-2 block text-[#8d877e]">→ {{ cell.end }}</span>
+                      </div>
+                    }
+
                     @case ('imageText') {
                       @let cell = imageTextCell(row, column.key);
                       <div class="admin-table-product-cell flex min-w-[260px] items-center gap-4">
@@ -80,6 +150,8 @@
                             <i [class]="cell.imageUrl"></i>
                           } @else if (cell.imageUrl) {
                             <img class="h-full w-full object-cover" [src]="cell.imageUrl" [alt]="cell.title" />
+                          } @else if (cell.initials) {
+                            <span>{{ cell.initials }}</span>
                           } @else {
                             <i class="pi pi-box"></i>
                           }
@@ -101,11 +173,13 @@
                     @case ('badge') {
                       @let badge = badgeCell(row, column.key);
                       @if (badge.label || badge.labelKey || badge.className) {
-                        <span class="admin-table-badge inline-flex rounded-full px-3 py-1 text-sm font-semibold" [ngClass]="badge.className || 'bg-[#f0ebe4] text-[#675f55]'">
+                        <span class="admin-table-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold" [ngClass]="badge.className || 'bg-[#f0ebe4] text-[#675f55]'">
+                          <span class="h-2 w-2 rounded-full bg-current"></span>
                           {{ (badge.labelKey ?? badge.label ?? '') | translate }}
                         </span>
                       } @else {
-                        <span class="admin-table-badge inline-flex rounded-full bg-[#f0ebe4] px-3 py-1 text-sm font-semibold text-[#675f55]">
+                        <span class="admin-table-badge inline-flex items-center gap-2 rounded-full bg-[#f0ebe4] px-3 py-1.5 text-sm font-bold text-[#675f55]">
+                          <span class="h-2 w-2 rounded-full bg-current"></span>
                           {{ textCell(row, column.key) }}
                         </span>
                       }

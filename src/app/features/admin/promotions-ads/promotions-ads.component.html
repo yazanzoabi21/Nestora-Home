@@ -1,0 +1,352 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'PROMOTIONS_ADS.TITLE' | translate }}</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">{{ 'PROMOTIONS_ADS.SUBTITLE' | translate }}</p>
+    </div>
+
+    <button type="button"
+      class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-5 text-sm font-extrabold text-white shadow-[0_12px_26px_rgba(95,111,67,0.22)] transition hover:bg-[#526139] sm:w-auto"
+      (click)="openCreatePromotionModal()">
+      <i class="pi pi-plus text-sm"></i>
+      <span>{{ 'PROMOTIONS_ADS.CREATE' | translate }}</span>
+    </button>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.titleKey) {
+    <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    }
+  </section>
+
+  @if (livePromotions().length > 0) {
+  <section class="mt-6 rounded-[1.25rem] border border-[#cfe7d8] bg-[#f0faf3] p-5">
+    <h2 class="flex items-center gap-2.5 text-base font-black text-[#117047]">
+      <i class="pi pi-bolt"></i>
+      {{ 'PROMOTIONS_ADS.LIVE_NOW' | translate: { count: livePromotions().length } }}
+    </h2>
+    <div class="mt-4 flex flex-wrap gap-3">
+      @for (promotion of livePromotions(); track promotion.id) {
+      <article
+        class="flex min-w-0 w-full items-center gap-3 rounded-2xl bg-[#fffdfa] px-3 py-2.5 shadow-[0_8px_18px_rgba(52,47,41,0.06)] sm:w-auto sm:max-w-[24rem]">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] bg-[#eef4e8] text-[#5f6f43]">
+          @if (promotion.icon) {
+          <span>{{ promotion.icon }}</span>
+          } @else {
+          <i class="pi pi-megaphone"></i>
+          }
+        </span>
+        <span class="min-w-0 flex-1">
+          <strong class="block truncate text-sm font-black text-[#182116]">{{ promotion.title }}</strong>
+          <small class="mt-0.5 block text-xs font-bold text-[#8d877e]">
+            {{ typeLabelKey(promotionType(promotion)) | translate }}
+          </small>
+        </span>
+      </article>
+      }
+    </div>
+  </section>
+  }
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="grid gap-3 xl:grid-cols-[minmax(260px,1fr)_170px_180px_auto] xl:items-center">
+      <app-admin-form-field type="search" name="promotionSearch" placeholder="PROMOTIONS_ADS.SEARCH_PLACEHOLDER"
+        [value]="searchTerm()" (valueChange)="searchTerm.set($any($event))" />
+
+      <app-admin-form-field type="select" name="promotionTypeFilter" [value]="selectedType()" [options]="typeOptions"
+        optionLabel="label" optionValue="value" (valueChange)="selectedType.set($any($event))" />
+
+      <app-admin-form-field type="select" name="promotionStatusFilter" [value]="selectedStatus()"
+        [options]="statusOptions" optionLabel="label" optionValue="value"
+        (valueChange)="selectedStatus.set($any($event))" />
+
+      <span class="px-2 text-sm font-semibold text-[#8d877e]">
+        {{ 'PROMOTIONS_ADS.RESULTS' | translate: { shown: filteredPromotions().length, total: promotions().length } }}
+      </span>
+    </div>
+  </section>
+
+  <app-admin-table class="mt-6 block" [columns]="promotionTableColumns" [rows]="tableRows()" [loading]="loading()"
+    [emptyTitle]="promotions().length === 0 ? 'PROMOTIONS_ADS.EMPTY_TITLE' : 'PROMOTIONS_ADS.NO_MATCHING_TITLE'"
+    [emptyText]="promotions().length === 0 ? 'PROMOTIONS_ADS.EMPTY_TEXT' : 'PROMOTIONS_ADS.NO_MATCHING_TEXT'"
+    [selectable]="false" [showActions]="true" [pageSize]="7" [showPageSize]="false"
+    (rowView)="togglePromotionActive($event)" (rowEdit)="openEditPromotionModal($event)"
+    (rowDelete)="openDeletePromotionModal($event)">
+  </app-admin-table>
+
+  <section class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
+    <article class="flex items-center gap-4 rounded-2xl border border-[#e5ded2] bg-white p-5 shadow-sm">
+      <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef4e8] text-[#5f6f43]">
+        <i class="pi pi-map-marker"></i>
+      </span>
+      <div class="min-w-0">
+        <span class="text-xs font-bold uppercase tracking-[0.08em] text-[#9a9389]">
+          {{ 'PROMOTIONS_ADS.SUMMARY.ACTIVE_PLACEMENTS' | translate }}
+        </span>
+        <strong class="mt-1 block text-lg font-black text-[#182116]">{{ activePlacementsCount() }}</strong>
+      </div>
+    </article>
+
+    <article class="flex items-center gap-4 rounded-2xl border border-[#e5ded2] bg-white p-5 shadow-sm">
+      <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf2ff] text-[#2f6fd0]">
+        <i class="pi pi-chart-pie"></i>
+      </span>
+      <div class="min-w-0">
+        <span class="text-xs font-bold uppercase tracking-[0.08em] text-[#9a9389]">
+          {{ 'PROMOTIONS_ADS.SUMMARY.TYPE_BREAKDOWN' | translate }}
+        </span>
+        <strong class="mt-1 block text-lg font-black text-[#182116]">
+          {{ typeBreakdown().bar }} / {{ typeBreakdown().banner }} / {{ typeBreakdown().popup }}
+        </strong>
+        <small class="text-sm font-semibold text-[#8d877e]">
+          {{ 'PROMOTIONS_ADS.SUMMARY.BAR_BANNER_POPUP' | translate }}
+        </small>
+      </div>
+    </article>
+
+    <article class="flex items-center gap-4 rounded-2xl border border-[#e5ded2] bg-white p-5 shadow-sm">
+      <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff6e7] text-[#d98916]">
+        <i class="pi pi-calendar"></i>
+      </span>
+      <div class="min-w-0">
+        <span class="text-xs font-bold uppercase tracking-[0.08em] text-[#9a9389]">
+          {{ 'PROMOTIONS_ADS.SUMMARY.UPCOMING' | translate }}
+        </span>
+        @if (upcomingPromotion(); as promotion) {
+        <strong class="mt-1 block truncate text-lg font-black text-[#182116]">{{ promotion.title }}</strong>
+        <small class="text-sm font-semibold text-[#d98916]">{{ formatDate(promotion.start_date) }}</small>
+        } @else {
+        <strong class="mt-1 block truncate text-lg font-black text-[#182116]">-</strong>
+        <small class="text-sm font-semibold text-[#d98916]">-</small>
+        }
+      </div>
+    </article>
+  </section>
+
+  <app-admin-form-modal [isOpen]="isPromotionModalOpen()" [title]="modalTitle()" [subtitle]="modalSubtitle()" size="lg"
+    [submitLabel]="modalMode() === 'edit' ? 'PROMOTIONS_ADS.EDIT_PROMOTION' : 'PROMOTIONS_ADS.CREATE_PROMOTION'"
+    cancelLabel="COMMON.CANCEL" [loading]="saving()" (close)="closePromotionModal()"
+    (submit)="savePromotion()">
+    @if (formError()) {
+    <p class="mb-4 rounded-xl border border-[#f1b9b4] bg-[#fff1f0] px-4 py-3 text-sm font-bold text-[#b42318]">
+      {{ formError()! | translate }}
+    </p>
+    }
+
+    <form class="space-y-8">
+      <section class="space-y-4">
+        <h3 class="text-sm font-black uppercase tracking-[0.08em] text-[#77736d]">
+          {{ 'PROMOTIONS_ADS.SECTIONS.BASIC_INFO' | translate }}
+        </h3>
+        <app-admin-form-field type="text" name="promotionTitle" label="PROMOTIONS_ADS.FIELDS.PROMOTION_TITLE"
+          placeholder="PROMOTIONS_ADS.PLACEHOLDERS.TITLE" [required]="true" [value]="promotionForm().title"
+          (valueChange)="updatePromotionForm('title', $any($event))" />
+
+        <app-admin-form-field type="textarea" name="description" label="PROMOTIONS_ADS.FIELDS.MESSAGE_TEXT"
+          placeholder="PROMOTIONS_ADS.PLACEHOLDERS.MESSAGE" [required]="true" [rows]="5"
+          [value]="promotionForm().description" (valueChange)="updatePromotionForm('description', $any($event))" />
+      </section>
+
+      <section class="space-y-5 border-t border-[#e5ded2] pt-8">
+        <h3 class="text-sm font-black uppercase tracking-[0.08em] text-[#77736d]">
+          {{ 'PROMOTIONS_ADS.SECTIONS.DISPLAY_TYPE' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+          @for (option of displayTypeOptions; track option.value) {
+          <button type="button"
+            class="flex min-h-[96px] flex-col items-center justify-center gap-3 rounded-2xl border px-4 text-center text-sm font-extrabold transition"
+            [class.border-[#b8c9ad]]="promotionForm().displayType === option.value"
+            [class.bg-[#eef4e8]]="promotionForm().displayType === option.value"
+            [class.text-[#5f6f43]]="promotionForm().displayType === option.value"
+            [class.border-[#e5ded2]]="promotionForm().displayType !== option.value"
+            [class.bg-[#fbfaf8]]="promotionForm().displayType !== option.value"
+            [class.text-[#9a9389]]="promotionForm().displayType !== option.value"
+            (click)="selectDisplayType(option.value)">
+            <i [class]="option.icon" class="text-xl"></i>
+            <span>{{ option.labelKey | translate }}</span>
+          </button>
+          }
+        </div>
+      </section>
+
+      <section class="space-y-5 border-t border-[#e5ded2] pt-8">
+        <h3 class="text-sm font-black uppercase tracking-[0.08em] text-[#77736d]">
+          {{ 'PROMOTIONS_ADS.SECTIONS.PLACEMENT' | translate }}
+        </h3>
+        <div class="grid gap-3">
+          @for (option of currentPlacementOptions(); track option.value) {
+          <button type="button"
+            class="flex items-start gap-4 rounded-2xl border px-5 py-4 text-left transition"
+            [class.border-[#b8c9ad]]="promotionForm().placement === option.value"
+            [class.bg-[#eef4e8]]="promotionForm().placement === option.value"
+            [class.border-[#e5ded2]]="promotionForm().placement !== option.value"
+            [class.bg-[#fbfaf8]]="promotionForm().placement !== option.value"
+            (click)="selectPlacement(option.value)">
+            <span class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2"
+              [class.border-[#6b7d5e]]="promotionForm().placement === option.value"
+              [class.border-[#aaa39a]]="promotionForm().placement !== option.value">
+              @if (promotionForm().placement === option.value) {
+              <span class="h-2.5 w-2.5 rounded-full bg-[#6b7d5e]"></span>
+              }
+            </span>
+            <span class="min-w-0">
+              <strong class="block text-base font-extrabold text-[#5f6f43]">{{ option.labelKey | translate }}</strong>
+              <small class="mt-1 block text-sm font-semibold text-[#9a9389]">{{ option.helperKey | translate }}</small>
+            </span>
+          </button>
+          }
+        </div>
+      </section>
+
+      <section class="space-y-4 border-t border-[#e5ded2] pt-8">
+        <h3 class="text-sm font-black uppercase tracking-[0.08em] text-[#77736d]">
+          {{ 'PROMOTIONS_ADS.SECTIONS.ACTION_CTA' | translate }}
+        </h3>
+        <app-admin-form-field type="text" name="buttonText" label="PROMOTIONS_ADS.FIELDS.BUTTON_TEXT"
+          placeholder="PROMOTIONS_ADS.PLACEHOLDERS.BUTTON_TEXT" [value]="promotionForm().buttonText"
+          (valueChange)="updatePromotionForm('buttonText', $any($event))" />
+
+        <app-admin-form-field type="text" name="buttonLink" label="PROMOTIONS_ADS.FIELDS.BUTTON_LINK"
+          placeholder="PROMOTIONS_ADS.PLACEHOLDERS.BUTTON_LINK" [value]="promotionForm().buttonLink"
+          (valueChange)="updatePromotionForm('buttonLink', $any($event))" />
+
+        @if (promotionForm().displayType !== 'bar') {
+        <app-admin-form-field type="text" name="imageUrl" label="PROMOTIONS_ADS.FIELDS.IMAGE_URL"
+          placeholder="PROMOTIONS_ADS.PLACEHOLDERS.IMAGE_URL" [value]="promotionForm().imageUrl"
+          (valueChange)="updatePromotionForm('imageUrl', $any($event))" />
+        }
+      </section>
+
+      <section class="space-y-5 border-t border-[#e5ded2] pt-8">
+        <h3 class="text-sm font-black uppercase tracking-[0.08em] text-[#77736d]">
+          {{ 'PROMOTIONS_ADS.SECTIONS.SCHEDULE' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <app-admin-form-field type="date" name="startDate" label="PROMOTIONS_ADS.FIELDS.START_DATE"
+            [value]="promotionForm().startDate" (valueChange)="updatePromotionForm('startDate', $any($event))" />
+
+          <app-admin-form-field type="date" name="endDate" label="PROMOTIONS_ADS.FIELDS.END_DATE"
+            [value]="promotionForm().endDate" (valueChange)="updatePromotionForm('endDate', $any($event))" />
+        </div>
+      </section>
+
+      <section class="space-y-5 border-t border-[#e5ded2] pt-8">
+        <h3 class="text-sm font-black uppercase tracking-[0.08em] text-[#77736d]">
+          {{ 'PROMOTIONS_ADS.SECTIONS.STATUS' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <button type="button"
+            class="flex min-h-14 items-center gap-3 rounded-2xl border px-5 text-left text-base font-bold transition"
+            [class.border-[#a8d8bd]]="currentFormStatus() === 'active'"
+            [class.bg-[#e9f8ef]]="currentFormStatus() === 'active'"
+            [class.text-[#117047]]="currentFormStatus() === 'active'"
+            [class.border-[#e5ded2]]="currentFormStatus() !== 'active'"
+            [class.bg-[#fbfaf8]]="currentFormStatus() !== 'active'"
+            [class.text-[#9a9389]]="currentFormStatus() !== 'active'"
+            (click)="selectFormStatus('active')">
+            <span class="h-2.5 w-2.5 rounded-full bg-current"></span>
+            <span>{{ 'PROMOTIONS_ADS.STATUS.ACTIVE' | translate }}</span>
+          </button>
+
+          <button type="button"
+            class="flex min-h-14 items-center gap-3 rounded-2xl border px-5 text-left text-base font-bold transition"
+            [class.border-[#e5ded2]]="currentFormStatus() !== 'inactive'"
+            [class.bg-[#fbfaf8]]="currentFormStatus() !== 'inactive'"
+            [class.text-[#9a9389]]="currentFormStatus() !== 'inactive'"
+            [class.border-[#d8d0c3]]="currentFormStatus() === 'inactive'"
+            [class.bg-[#f0ebe4]]="currentFormStatus() === 'inactive'"
+            [class.text-[#675f55]]="currentFormStatus() === 'inactive'"
+            (click)="selectFormStatus('inactive')">
+            <span class="h-2.5 w-2.5 rounded-full bg-current"></span>
+            <span>{{ 'PROMOTIONS_ADS.STATUS.INACTIVE' | translate }}</span>
+          </button>
+
+          <button type="button"
+            class="flex min-h-14 items-center gap-3 rounded-2xl border px-5 text-left text-base font-bold transition"
+            [class.border-[#b9d1f4]]="currentFormStatus() === 'scheduled'"
+            [class.bg-[#eaf2ff]]="currentFormStatus() === 'scheduled'"
+            [class.text-[#2f6fd0]]="currentFormStatus() === 'scheduled'"
+            [class.border-[#e5ded2]]="currentFormStatus() !== 'scheduled'"
+            [class.bg-[#fbfaf8]]="currentFormStatus() !== 'scheduled'"
+            [class.text-[#9a9389]]="currentFormStatus() !== 'scheduled'"
+            (click)="selectFormStatus('scheduled')">
+            <span class="h-2.5 w-2.5 rounded-full bg-current"></span>
+            <span>{{ 'PROMOTIONS_ADS.STATUS.SCHEDULED' | translate }}</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="space-y-5 border-t border-[#e5ded2] pt-8">
+        <h3 class="text-sm font-black uppercase tracking-[0.08em] text-[#77736d]">
+          {{ 'PROMOTIONS_ADS.SECTIONS.DESIGN_OPTIONS' | translate }}
+        </h3>
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div class="grid grid-cols-[52px_minmax(0,1fr)] items-end gap-3">
+            <span class="h-[50px] w-[50px] rounded-2xl border-2 border-[#e5ded2]" [style.background]="promotionForm().backgroundColor"></span>
+            <app-admin-form-field type="text" name="backgroundColor" label="PROMOTIONS_ADS.FIELDS.BACKGROUND_COLOUR"
+              [value]="promotionForm().backgroundColor"
+              (valueChange)="updatePromotionForm('backgroundColor', $any($event))" />
+          </div>
+          <div class="grid grid-cols-[52px_minmax(0,1fr)] items-end gap-3">
+            <span class="h-[50px] w-[50px] rounded-2xl border-2 border-[#e5ded2]" [style.background]="promotionForm().textColor"></span>
+            <app-admin-form-field type="text" name="textColor" label="PROMOTIONS_ADS.FIELDS.TEXT_COLOUR"
+              [value]="promotionForm().textColor" (valueChange)="updatePromotionForm('textColor', $any($event))" />
+          </div>
+        </div>
+
+        <div class="rounded-2xl px-5 py-4 text-center text-base font-black"
+          [style.background]="promotionForm().backgroundColor" [style.color]="promotionForm().textColor">
+          {{ 'PROMOTIONS_ADS.COLOUR_PREVIEW' | translate: { background: promotionForm().backgroundColor, text: promotionForm().textColor } }}
+        </div>
+
+        <div>
+          <p class="mb-3 text-sm font-semibold text-[#9a9389]">{{ 'PROMOTIONS_ADS.QUICK_PALETTES' | translate }}</p>
+          <div class="flex flex-wrap gap-2.5">
+            @for (palette of paletteOptions; track palette.labelKey) {
+            <button type="button" class="rounded-xl px-4 py-2 text-sm font-extrabold shadow-sm transition hover:-translate-y-0.5"
+              [style.background]="palette.backgroundColor" [style.color]="palette.textColor"
+              (click)="applyPalette(palette)">
+              {{ palette.labelKey | translate }}
+            </button>
+            }
+          </div>
+        </div>
+
+        <div>
+          <p class="mb-3 text-base font-extrabold text-[#4f4a43]">{{ 'PROMOTIONS_ADS.ICON_OPTIONAL' | translate }}</p>
+          <div class="flex flex-wrap gap-3">
+            @for (icon of iconOptions; track icon) {
+            <button type="button"
+              class="flex h-12 w-12 items-center justify-center rounded-2xl border text-xl transition hover:bg-[#f7f4ef]"
+              [class.border-[#a8c39a]]="promotionForm().icon === icon"
+              [class.bg-[#eef4e8]]="promotionForm().icon === icon"
+              [class.border-[#e5ded2]]="promotionForm().icon !== icon"
+              [class.bg-[#f7f4ef]]="promotionForm().icon !== icon"
+              (click)="selectIcon(icon)">
+              {{ icon }}
+            </button>
+            }
+            <button type="button"
+              class="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#a8c39a] bg-[#f7f4ef] text-lg text-[#9a9389] transition hover:bg-[#eef4e8]"
+              (click)="clearIcon()">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+    </form>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="isDeleteModalOpen()" variant="delete" title="PROMOTIONS_ADS.DELETE_TITLE"
+    subtitle="PROMOTIONS_ADS.DELETE_SUBTITLE" [message]="deletePromotionMessage()" submitLabel="COMMON.DELETE"
+    cancelLabel="COMMON.CANCEL" [loading]="saving()" (close)="closeDeletePromotionModal()"
+    (submit)="confirmDeletePromotion()">
+    @if (promotionPendingDelete()) {
+    <p class="mt-3 rounded-xl bg-[#f7f4ef] px-4 py-3 text-sm font-extrabold text-[#1f2a1f]">
+      {{ promotionPendingDelete()?.title }}
+    </p>
+    }
+  </app-admin-form-modal>
+</main>

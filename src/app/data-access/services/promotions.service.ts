@@ -6,6 +6,7 @@ import {
   PromotionMutationPayload,
   PromotionStats,
   PromotionStatus,
+  PromotionType,
 } from '../models';
 
 const PROMOTION_SELECT = `
@@ -16,6 +17,8 @@ const PROMOTION_SELECT = `
   button_text,
   button_link,
   placement,
+  display_type,
+  icon,
   background_color,
   text_color,
   is_active,
@@ -107,24 +110,26 @@ export class PromotionsService {
         const status = this.getPromotionStatus(promotion);
 
         stats.totalPromotions += 1;
-        stats.activePromotions += status === 'active' ? 1 : 0;
-        stats.scheduledPromotions += status === 'scheduled' ? 1 : 0;
-        stats.expiredPromotions += status === 'expired' ? 1 : 0;
+        stats.activeNow += status === 'active' ? 1 : 0;
+        stats.scheduled += status === 'scheduled' ? 1 : 0;
+        stats.inactive += status === 'inactive' ? 1 : 0;
+        stats.expired += status === 'expired' ? 1 : 0;
 
         return stats;
       },
       {
         totalPromotions: 0,
-        activePromotions: 0,
-        scheduledPromotions: 0,
-        expiredPromotions: 0,
+        activeNow: 0,
+        scheduled: 0,
+        inactive: 0,
+        expired: 0,
       }
     );
   }
 
   getPromotionStatus(promotion: Promotion, now = new Date()): PromotionStatus {
     if (promotion.is_active === false) {
-      return 'paused';
+      return 'inactive';
     }
 
     const startDate = this.parseDate(promotion.start_date);
@@ -141,6 +146,24 @@ export class PromotionsService {
     return 'active';
   }
 
+  getPromotionType(promotion: Promotion): PromotionType {
+    if (promotion.display_type === 'bar' || promotion.display_type === 'banner' || promotion.display_type === 'popup') {
+      return promotion.display_type;
+    }
+
+    const placement = (promotion.placement ?? '').toLowerCase();
+
+    if (placement.includes('popup')) {
+      return 'popup';
+    }
+
+    if (placement.includes('banner') || placement.includes('homepage') || placement.includes('product')) {
+      return 'banner';
+    }
+
+    return 'bar';
+  }
+
   private mapPromotion(promotion: Promotion): Promotion {
     return {
       ...promotion,
@@ -150,6 +173,8 @@ export class PromotionsService {
       button_text: promotion.button_text ?? null,
       button_link: promotion.button_link ?? null,
       placement: promotion.placement ?? null,
+      display_type: promotion.display_type ?? 'bar',
+      icon: promotion.icon ?? null,
       background_color: promotion.background_color ?? null,
       text_color: promotion.text_color ?? null,
       is_active: promotion.is_active ?? true,
@@ -183,6 +208,14 @@ export class PromotionsService {
 
     if (payload.placement !== undefined) {
       record.placement = payload.placement?.trim() || null;
+    }
+
+    if (payload.display_type !== undefined) {
+      record.display_type = payload.display_type ?? null;
+    }
+
+    if (payload.icon !== undefined) {
+      record.icon = payload.icon?.trim() || null;
     }
 
     if (payload.background_color !== undefined) {

@@ -12,7 +12,12 @@ export type AdminTableColumnType =
   | 'stock'
   | 'progress'
   | 'status'
-  | 'actions';
+  | 'actions'
+  | 'codeName'
+  | 'discountValue'
+  | 'appliesTo'
+  | 'usageProgress'
+  | 'dateRange';
 
 export interface AdminTableColumn {
   key: string;
@@ -33,6 +38,35 @@ export interface AdminTableBadgeCell {
   label?: string;
   labelKey?: string;
   className?: string;
+}
+
+export interface AdminTableCodeNameCell {
+  title: string;
+  code: string;
+}
+
+export interface AdminTableDiscountValueCell {
+  icon: string;
+  iconClass: string;
+  value: string;
+  helper?: string;
+}
+
+export interface AdminTableAppliesToCell {
+  main: string;
+  sub?: string | null;
+}
+
+export interface AdminTableUsageProgressCell {
+  current: number;
+  limit: number | null;
+  percent: number;
+  helper?: string;
+}
+
+export interface AdminTableDateRangeCell {
+  start: string;
+  end: string;
 }
 
 export interface AdminTableNumberCell {
@@ -178,6 +212,26 @@ export class AdminTableComponent implements OnChanges {
 
   badgeCell(row: AdminTableRow, key: string): AdminTableBadgeCell {
     return row[key] as AdminTableBadgeCell;
+  }
+
+  codeNameCell(row: AdminTableRow, key: string): AdminTableCodeNameCell {
+    return row[key] as AdminTableCodeNameCell;
+  }
+
+  discountValueCell(row: AdminTableRow, key: string): AdminTableDiscountValueCell {
+    return row[key] as AdminTableDiscountValueCell;
+  }
+
+  appliesToCell(row: AdminTableRow, key: string): AdminTableAppliesToCell {
+    return row[key] as AdminTableAppliesToCell;
+  }
+
+  usageProgressCell(row: AdminTableRow, key: string): AdminTableUsageProgressCell {
+    return row[key] as AdminTableUsageProgressCell;
+  }
+
+  dateRangeCell(row: AdminTableRow, key: string): AdminTableDateRangeCell {
+    return row[key] as AdminTableDateRangeCell;
   }
 
   numberCell(row: AdminTableRow, key: string): AdminTableNumberCell | number | string {
