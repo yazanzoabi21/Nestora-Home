@@ -26,13 +26,17 @@
       <div class="mt-6 flex flex-col items-center text-center">
         <button type="button"
           class="avatar-preview-trigger group flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-[#5f6f43] text-5xl font-bold text-white shadow-inner"
-          [attr.aria-label]="'View ' + profileSummary().name + ' avatar'" (click)="openAvatarPreview()">
+          [class.is-previewable]="hasPreviewableCustomAvatar()"
+          [attr.aria-label]="hasPreviewableCustomAvatar() ? 'View ' + profileSummary().name + ' avatar' : profileSummary().name + ' avatar'"
+          (click)="openAvatarPreview()">
           <img [src]="avatarSrc()" [alt]="profileSummary().name" class="h-full w-full object-cover"
             (error)="onAvatarError($event)" />
-          <span class="avatar-preview-overlay">
-            <i class="pi pi-eye text-xl"></i>
-            <span class="text-sm font-bold">View</span>
-          </span>
+          @if (hasPreviewableCustomAvatar()) {
+            <span class="avatar-preview-overlay">
+              <i class="pi pi-eye text-xl"></i>
+              <span class="text-sm font-bold">View</span>
+            </span>
+          }
         </button>
         <h3 class="mt-4 text-2xl font-bold text-[#1f2a1f]">{{ profileSummary().name }}</h3>
         <p class="text-base font-medium text-[#8d877e]">{{ profileSummary().role }}</p>
@@ -59,11 +63,11 @@
         <i class="pi pi-upload text-sm"></i>
         Change Avatar
       </button>
-      @if (hasCustomAvatar()) {
-        <button type="button" [disabled]="isLoading() || isSaving()" (click)="clearAvatar()"
+      @if (canClearPhoto()) {
+        <button type="button" [disabled]="isLoading() || isSaving()" (click)="openClearPhotoModal()"
           class="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white text-sm font-semibold text-[#8a4b43] transition hover:bg-[#fff7f5] disabled:cursor-not-allowed disabled:opacity-60">
           <i class="pi pi-times-circle text-sm"></i>
-          Clear Photo
+          Delete Photo
         </button>
       }
     </article>
@@ -261,4 +265,10 @@
       </div>
     </div>
   }
+
+  <app-admin-form-modal [isOpen]="isClearPhotoModalOpen()" variant="delete" title="Remove Profile Photo"
+    message="Are you sure you want to remove your profile photo? The default avatar will be used instead."
+    submitLabel="Remove Photo" cancelLabel="Cancel" [loading]="isSaving()" (close)="closeClearPhotoModal()"
+    (submit)="confirmClearPhoto()">
+  </app-admin-form-modal>
 </main>

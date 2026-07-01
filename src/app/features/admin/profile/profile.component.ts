@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit, computed, inject, signal } from '@angu
 import { AppRoleName, AuthenticatedUserProfile, CurrentUserProfileUpdate } from '../../../core/models/auth';
 import { ToastService } from '../../../core/services';
 import { AuthService } from '../../../core/services/auth';
+import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 
 interface ProfileSummaryItem {
   icon: string;
@@ -80,6 +81,7 @@ const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
 @Component({
   selector: 'app-profile',
   standalone: true,
+  imports: [AdminFormModalComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -96,6 +98,8 @@ export class ProfileComponent implements OnInit {
   readonly selectedAvatarFile = signal<File | null>(null);
   readonly avatarPreviewUrl = signal<string | null>(null);
   readonly isAvatarPreviewOpen = signal(false);
+  readonly isClearPhotoModalOpen = signal(false);
+  readonly avatarImageFailed = signal(false);
 
   readonly isDirty = computed(() => {
     return !areFormStatesEqual(this.originalFormState(), this.formState()) || !!this.selectedAvatarFile();
@@ -103,7 +107,9 @@ export class ProfileComponent implements OnInit {
 
   readonly canSave = computed(() => this.isDirty() && !this.isLoading() && !this.isSaving());
 
-  readonly hasCustomAvatar = computed(() => !!this.formState().avatarUrl || !!this.selectedAvatarFile());
+  readonly hasPreviewableCustomAvatar = computed(() => !!this.formState().avatarUrl && !this.avatarImageFailed());
+
+  readonly canClearPhoto = computed(() => !!this.formState().avatarUrl && !this.avatarImageFailed());
 
   readonly profileSummary = computed<ProfileSummary>(() => {
     const profile = this.loadedProfile();
@@ -340,11 +346,31 @@ export class ProfileComponent implements OnInit {
     this.revokeAvatarPreview();
     this.selectedAvatarFile.set(file);
     this.avatarPreviewUrl.set(URL.createObjectURL(file));
+    this.avatarImageFailed.set(false);
     this.errorMessage.set(null);
   }
 
-  async clearAvatar(): Promise<void> {
-    if (!this.hasCustomAvatar() || this.isLoading() || this.isSaving()) {
+  openClearPhotoModal(): void {
+    if (!this.canClearPhoto() || this.isLoading() || this.isSaving()) {
+      return;
+    }
+
+    this.isClearPhotoModalOpen.set(true);
+  }
+
+  closeClearPhotoModal(): void {
+    if (!this.isSaving()) {
+      this.isClearPhotoModalOpen.set(false);
+    }
+  }
+
+  async confirmClearPhoto(): Promise<void> {
+    await this.clearAvatar();
+  }
+
+  private async clearAvatar(): Promise<void> {
+    if (!this.canClearPhoto() || this.isLoading() || this.isSaving()) {
+      this.isClearPhotoModalOpen.set(false);
       return;
     }
 
@@ -353,11 +379,13 @@ export class ProfileComponent implements OnInit {
     const previousProfile = this.loadedProfile();
     const previousSelectedAvatar = this.selectedAvatarFile();
     const previousPreviewUrl = this.avatarPreviewUrl();
+    const previousImageFailed = this.avatarImageFailed();
 
     this.isSaving.set(true);
     this.errorMessage.set(null);
     this.selectedAvatarFile.set(null);
     this.avatarPreviewUrl.set(null);
+    this.avatarImageFailed.set(false);
     this.formState.update((state) => ({
       ...state,
       avatarUrl: null,
@@ -381,12 +409,14 @@ export class ProfileComponent implements OnInit {
       }
 
       this.toast.updated('Profile photo');
+      this.isClearPhotoModalOpen.set(false);
     } catch (error) {
       this.loadedProfile.set(previousProfile);
       this.originalFormState.set(previousOriginalState);
       this.formState.set(previousFormState);
       this.selectedAvatarFile.set(previousSelectedAvatar);
       this.avatarPreviewUrl.set(previousPreviewUrl);
+      this.avatarImageFailed.set(previousImageFailed);
 
       const message = error instanceof Error ? error.message : 'Unable to clear profile photo.';
       this.errorMessage.set(message);
@@ -397,7 +427,9 @@ export class ProfileComponent implements OnInit {
   }
 
   openAvatarPreview(): void {
-    this.isAvatarPreviewOpen.set(true);
+    if (this.hasPreviewableCustomAvatar()) {
+      this.isAvatarPreviewOpen.set(true);
+    }
   }
 
   closeAvatarPreview(): void {
@@ -405,11 +437,13 @@ export class ProfileComponent implements OnInit {
   }
 
   avatarSrc(): string {
-    return this.profileSummary().avatarUrl || DEFAULT_AVATAR_URL;
+    return this.avatarImageFailed() ? DEFAULT_AVATAR_URL : this.profileSummary().avatarUrl || DEFAULT_AVATAR_URL;
   }
 
   onAvatarError(event: Event): void {
     const image = event.target as HTMLImageElement;
+    this.avatarImageFailed.set(true);
+    this.isAvatarPreviewOpen.set(false);
     image.src = DEFAULT_AVATAR_URL;
   }
 
@@ -422,6 +456,7 @@ export class ProfileComponent implements OnInit {
     this.selectedAvatarFile.set(null);
     this.formState.set(cloneFormState(this.originalFormState()));
     this.errorMessage.set(null);
+    this.avatarImageFailed.set(false);
   }
 
   async saveChanges(): Promise<void> {
@@ -457,6 +492,7 @@ export class ProfileComponent implements OnInit {
       this.formState.set(cloneFormState(savedForm));
       this.revokeAvatarPreview();
       this.selectedAvatarFile.set(null);
+      this.avatarImageFailed.set(false);
       this.toast.updated('Profile');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to save profile.';
@@ -497,6 +533,7 @@ export class ProfileComponent implements OnInit {
     this.formState.set(cloneFormState(formState));
     this.revokeAvatarPreview();
     this.selectedAvatarFile.set(null);
+    this.avatarImageFailed.set(false);
   }
 
   private applyErrorState(): void {
@@ -505,6 +542,7 @@ export class ProfileComponent implements OnInit {
     this.formState.set(cloneFormState(EMPTY_FORM_STATE));
     this.revokeAvatarPreview();
     this.selectedAvatarFile.set(null);
+    this.avatarImageFailed.set(false);
   }
 
   private revokeAvatarPreview(): void {

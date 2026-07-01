@@ -181,9 +181,13 @@
 
 .avatar-preview-trigger {
   position: relative;
-  cursor: pointer;
+  cursor: default;
   border: 0;
   padding: 0;
+}
+
+.avatar-preview-trigger.is-previewable {
+  cursor: pointer;
 }
 
 .avatar-preview-overlay {
@@ -200,8 +204,8 @@
   transition: opacity 160ms ease;
 }
 
-.avatar-preview-trigger:hover .avatar-preview-overlay,
-.avatar-preview-trigger:focus-visible .avatar-preview-overlay {
+.avatar-preview-trigger.is-previewable:hover .avatar-preview-overlay,
+.avatar-preview-trigger.is-previewable:focus-visible .avatar-preview-overlay {
   opacity: 1;
 }
 
