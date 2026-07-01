@@ -22,7 +22,8 @@
       "NAME": "Name",
       "SLUG": "Slug",
       "LESS": "Less",
-      "MORE": "More"
+      "MORE": "More",
+      "DELETE": "Yes, Delete"
     },
     "TOPBAR": {
       "DATE": "Wednesday, 22 April 2026",
@@ -483,11 +484,19 @@
       "RESULTS": "{{shown}} of {{total}} promotions",
       "LIVE_NOW": "{{count}} promotions currently live",
       "NOT_SET": "Not set",
+      "IMAGE_OPTIONAL": "Optional",
       "KPI": {
+        "TOTAL": "Total Promotions",
         "TOTAL_PROMOTIONS": "Total Promotions",
         "ACTIVE_NOW": "Active Now",
         "SCHEDULED": "Scheduled",
-        "INACTIVE": "Inactive"
+        "INACTIVE": "Inactive",
+        "EXPIRED": "Expired",
+        "DISPLAY_TYPES": "Display Types"
+      },
+      "LIVE_SECTION": {
+        "TITLE": "{{count}} promotions currently live",
+        "EMPTY": "No promotions are live right now."
       },
       "FILTERS": {
         "ALL_TYPES": "All Types",
@@ -528,7 +537,12 @@
         "PROMOTION_TITLE": "Promotion Title",
         "MESSAGE_TEXT": "Message Text",
         "BACKGROUND_COLOUR": "Background Colour",
-        "TEXT_COLOUR": "Text Colour"
+        "TEXT_COLOUR": "Text Colour",
+        "IMAGE_UPLOAD": "PNG, JPG, WebP, or GIF up to 10MB.",
+        "UPLOAD_IMAGE": "Upload promotion image",
+        "CHANGE_IMAGE": "Change promotion image",
+        "CLEAR_IMAGE": "Clear image",
+        "PASTE_IMAGE_URL": "Or paste image URL"
       },
       "SECTIONS": {
         "CONTENT": "Content",
@@ -572,7 +586,14 @@
       "NO_MATCHING_TEXT": "Try changing your search or filters.",
       "SUMMARY": {
         "ACTIVE_PLACEMENTS": "Active Placements",
+        "ACTIVE_PLACEMENTS_SUBTITLE": "Live areas using promotions",
         "TYPE_BREAKDOWN": "Type Breakdown",
+        "TYPE_BREAKDOWN_SUBTITLE": "Across all promotions",
+        "NEXT_SCHEDULED": "Next Scheduled Promotion",
+        "NO_SCHEDULED": "No scheduled promotions",
+        "CAMPAIGN_HEALTH": "Campaign Health",
+        "CAMPAIGN_HEALTH_VALUE": "{{active}} active of {{total}}",
+        "CAMPAIGN_HEALTH_SUBTITLE": "Current promotion coverage",
         "BAR_BANNER_POPUP": "Bar / Banner / Popup",
         "UPCOMING": "Upcoming"
       },
@@ -587,6 +608,7 @@
         "STATUS_FAILED_DETAIL": "Unable to update promotion status.",
         "STATUS_UPDATED": "Promotion status updated.",
         "INVALID_TITLE": "Invalid promotion",
+        "INVALID_DETAIL": "Unable to resolve the selected promotion.",
         "MISSING_PROMOTION": "Promotion data is missing."
       },
       "ERRORS": {
@@ -596,7 +618,10 @@
         "INVALID_COLOR": "Color values must be valid hex colors.",
         "MESSAGE_REQUIRED": "Message text is required.",
         "DISPLAY_TYPE_REQUIRED": "Display type is required.",
-        "PLACEMENT_REQUIRED": "Placement is required."
+        "PLACEMENT_REQUIRED": "Placement is required.",
+        "INVALID_IMAGE_TYPE": "Please upload a valid image file.",
+        "IMAGE_TOO_LARGE": "Image must be 10MB or smaller.",
+        "IMAGE_UPLOAD_FAILED": "Unable to upload promotion image."
       },
       "COLOUR_PREVIEW": "Colour preview · {{background}} / {{text}}",
       "QUICK_PALETTES": "Quick palettes:",
@@ -835,7 +860,8 @@
       "NAME": "الاسم",
       "SLUG": "المعرف",
       "LESS": "أقل",
-      "MORE": "المزيد"
+      "MORE": "المزيد",
+      "DELETE": "نعم احذف"
     },
     "TOPBAR": {
       "DATE": "الأربعاء، 22 أبريل 2026",
@@ -1465,11 +1491,19 @@
       "RESULTS": "{{shown}} من {{total}} عروض",
       "LIVE_NOW": "{{count}} عروض نشطة حالياً",
       "NOT_SET": "غير محدد",
+      "IMAGE_OPTIONAL": "اختياري",
       "KPI": {
+        "TOTAL": "إجمالي العروض",
         "TOTAL_PROMOTIONS": "إجمالي العروض",
         "ACTIVE_NOW": "نشطة الآن",
         "SCHEDULED": "مجدولة",
-        "INACTIVE": "غير نشطة"
+        "INACTIVE": "غير نشطة",
+        "EXPIRED": "منتهية",
+        "DISPLAY_TYPES": "أنواع العرض"
+      },
+      "LIVE_SECTION": {
+        "TITLE": "{{count}} عروض نشطة حالياً",
+        "EMPTY": "لا توجد عروض نشطة حالياً."
       },
       "FILTERS": {
         "ALL_TYPES": "كل الأنواع",
@@ -1510,7 +1544,12 @@
         "PROMOTION_TITLE": "عنوان العرض",
         "MESSAGE_TEXT": "نص الرسالة",
         "BACKGROUND_COLOUR": "لون الخلفية",
-        "TEXT_COLOUR": "لون النص"
+        "TEXT_COLOUR": "لون النص",
+        "IMAGE_UPLOAD": "PNG أو JPG أو WebP أو GIF حتى 10MB.",
+        "UPLOAD_IMAGE": "رفع صورة العرض",
+        "CHANGE_IMAGE": "تغيير صورة العرض",
+        "CLEAR_IMAGE": "مسح الصورة",
+        "PASTE_IMAGE_URL": "أو الصق رابط الصورة"
       },
       "SECTIONS": {
         "CONTENT": "المحتوى",
@@ -1554,7 +1593,14 @@
       "NO_MATCHING_TEXT": "جرّب تغيير البحث أو الفلاتر.",
       "SUMMARY": {
         "ACTIVE_PLACEMENTS": "المواضع النشطة",
+        "ACTIVE_PLACEMENTS_SUBTITLE": "مناطق نشطة تستخدم العروض",
         "TYPE_BREAKDOWN": "توزيع الأنواع",
+        "TYPE_BREAKDOWN_SUBTITLE": "عبر جميع العروض",
+        "NEXT_SCHEDULED": "العرض المجدول التالي",
+        "NO_SCHEDULED": "لا توجد عروض مجدولة",
+        "CAMPAIGN_HEALTH": "حالة الحملات",
+        "CAMPAIGN_HEALTH_VALUE": "{{active}} نشطة من {{total}}",
+        "CAMPAIGN_HEALTH_SUBTITLE": "تغطية العروض الحالية",
         "BAR_BANNER_POPUP": "شريط / بانر / نافذة",
         "UPCOMING": "القادم"
       },
@@ -1569,6 +1615,7 @@
         "STATUS_FAILED_DETAIL": "تعذر تحديث حالة العرض.",
         "STATUS_UPDATED": "تم تحديث حالة العرض.",
         "INVALID_TITLE": "بيانات العرض غير صحيحة",
+        "INVALID_DETAIL": "تعذر تحديد العرض المحدد.",
         "MISSING_PROMOTION": "بيانات العرض غير موجودة."
       },
       "ERRORS": {
@@ -1578,7 +1625,10 @@
         "INVALID_COLOR": "يجب أن تكون قيم الألوان بصيغة hex صحيحة.",
         "MESSAGE_REQUIRED": "نص الرسالة مطلوب.",
         "DISPLAY_TYPE_REQUIRED": "نوع العرض مطلوب.",
-        "PLACEMENT_REQUIRED": "الموضع مطلوب."
+        "PLACEMENT_REQUIRED": "الموضع مطلوب.",
+        "INVALID_IMAGE_TYPE": "يرجى رفع ملف صورة صالح.",
+        "IMAGE_TOO_LARGE": "يجب أن يكون حجم الصورة 10MB أو أقل.",
+        "IMAGE_UPLOAD_FAILED": "تعذر رفع صورة العرض."
       },
       "COLOUR_PREVIEW": "معاينة اللون · {{background}} / {{text}}",
       "QUICK_PALETTES": "لوحات ألوان سريعة:",

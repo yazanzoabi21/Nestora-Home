@@ -28,6 +28,7 @@ export interface AdminTableColumn {
 
 export interface AdminTableImageTextCell {
   imageUrl?: string | null;
+  imageFallbackLabel?: string;
   title: string;
   subtitle?: string;
   initials?: string;
@@ -123,10 +124,15 @@ export class AdminTableComponent implements OnChanges {
 
   readonly currentPage = signal(1);
   readonly selectedIds = signal<Set<string>>(new Set());
+  readonly failedImageKeys = signal<Set<string>>(new Set());
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selectionResetKey'] && !changes['selectionResetKey'].firstChange) {
       this.clearSelection();
+    }
+
+    if (changes['rows']) {
+      this.failedImageKeys.set(new Set());
     }
   }
 
@@ -208,6 +214,26 @@ export class AdminTableComponent implements OnChanges {
 
   imageTextCell(row: AdminTableRow, key: string): AdminTableImageTextCell {
     return row[key] as AdminTableImageTextCell;
+  }
+
+  hasImageTextCellImage(row: AdminTableRow, cell: AdminTableImageTextCell): boolean {
+    const imageUrl = cell.imageUrl?.trim();
+
+    return !!imageUrl && !this.failedImageKeys().has(this.imageFailureKey(row, imageUrl));
+  }
+
+  handleImageTextCellError(row: AdminTableRow, cell: AdminTableImageTextCell): void {
+    const imageUrl = cell.imageUrl?.trim();
+
+    if (!imageUrl) {
+      return;
+    }
+
+    this.failedImageKeys.update((current) => {
+      const next = new Set(current);
+      next.add(this.imageFailureKey(row, imageUrl));
+      return next;
+    });
   }
 
   badgeCell(row: AdminTableRow, key: string): AdminTableBadgeCell {
@@ -309,6 +335,10 @@ export class AdminTableComponent implements OnChanges {
       default:
         return 'text-[#182116]';
     }
+  }
+
+  private imageFailureKey(row: AdminTableRow, imageUrl: string): string {
+    return `${row.id}:${imageUrl}`;
   }
 
   private emitSelection(): void {

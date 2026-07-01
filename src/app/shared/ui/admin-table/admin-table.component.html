@@ -148,8 +148,13 @@
                         <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#e5ded2] bg-[#f7f4ef] text-sm font-extrabold text-[#5f6f43]">
                           @if (isIconValue(cell.imageUrl)) {
                             <i [class]="cell.imageUrl"></i>
-                          } @else if (cell.imageUrl) {
-                            <img class="h-full w-full object-cover" [src]="cell.imageUrl" [alt]="cell.title" />
+                          } @else if (hasImageTextCellImage(row, cell)) {
+                            <img class="h-full w-full object-cover" [src]="cell.imageUrl" [alt]="cell.title" (error)="handleImageTextCellError(row, cell)" />
+                          } @else if (cell.imageFallbackLabel) {
+                            <span class="flex h-full w-full flex-col items-center justify-center gap-0.5 bg-[#fbfaf8] text-center">
+                              <i class="pi pi-image text-base"></i>
+                              <span class="text-[10px] font-extrabold leading-none text-[#8d877e]">{{ cell.imageFallbackLabel | translate }}</span>
+                            </span>
                           } @else if (cell.initials) {
                             <span>{{ cell.initials }}</span>
                           } @else {
@@ -258,15 +263,15 @@
                     @case ('actions') {
                       <div class="admin-table-actions flex items-center justify-end gap-2">
                         @if (actionsMode === 'crud') {
-                        <button type="button" class="admin-table-icon-button text-[#3b78d8]" (click)="rowView.emit(actionPayload(row))" aria-label="View row">
+                        <button type="button" class="admin-table-icon-button text-[#3b78d8]" (click)="$event.stopPropagation(); rowView.emit(row)" aria-label="View row">
                           <i class="pi pi-eye"></i>
                         </button>
                         }
-                        <button type="button" class="admin-table-icon-button text-[#5f6f43]" (click)="rowEdit.emit(actionPayload(row))" aria-label="Edit row">
+                        <button type="button" class="admin-table-icon-button text-[#5f6f43]" (click)="$event.stopPropagation(); rowEdit.emit(row)" aria-label="Edit row">
                           <i class="pi pi-pencil"></i>
                         </button>
                         @if (actionsMode === 'crud') {
-                        <button type="button" class="admin-table-icon-button text-[#dc3f35]" (click)="rowDelete.emit(actionPayload(row))" aria-label="Delete row">
+                        <button type="button" class="admin-table-icon-button text-[#dc3f35]" (click)="$event.stopPropagation(); rowDelete.emit(row)" aria-label="Delete row">
                           <i class="pi pi-trash"></i>
                         </button>
                         }

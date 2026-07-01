@@ -1,3 +1,18 @@
+.admin-topbar {
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+}
+
+@media (min-width: 1024px) {
+  .admin-topbar.sidebar-expanded {
+    inset-inline-start: 260px;
+  }
+
+  .admin-topbar.sidebar-collapsed {
+    inset-inline-start: 76px;
+  }
+}
+
 .topbar-search input::-webkit-search-cancel-button {
   appearance: none;
 }

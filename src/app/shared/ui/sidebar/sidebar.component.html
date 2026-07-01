@@ -1,5 +1,5 @@
 <aside
-  class="admin-sidebar fixed left-0 top-0 z-[100] flex h-screen w-[260px] max-w-[82vw] -translate-x-full flex-col border-r border-[#2f352c] bg-[#1f241d] text-white transition-[width,transform] duration-300 lg:z-[60] lg:max-w-none lg:translate-x-0"
+  class="admin-sidebar fixed top-0 z-[100] flex h-screen w-[260px] max-w-[82vw] flex-col border-[#2f352c] bg-[#1f241d] text-white transition-[width,transform] duration-300 lg:z-[60] lg:max-w-none lg:translate-x-0"
   [class.sidebar-mobile-open]="mobileOpen"
   [class.translate-x-0]="mobileOpen"
   [class.lg:w-[260px]]="!collapsed"
@@ -33,7 +33,7 @@
       <div class="mb-3">
         <button
           type="button"
-          class="section-header flex h-10 w-full items-center rounded-xl text-left transition duration-200 hover:bg-[#2b3128]"
+          class="section-header flex h-10 w-full items-center rounded-xl text-start transition duration-200 hover:bg-[#2b3128]"
           [class.justify-center]="isCollapsedView()"
           [class.justify-between]="!isCollapsedView()"
           [class.px-4]="!isCollapsedView()"
@@ -87,7 +87,7 @@
                     </span>
                   }
                 } @else if (item.badge) {
-                  <span class="absolute right-2 top-2 rounded-full bg-[#dc3f35] px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                  <span class="absolute end-2 top-2 rounded-full bg-[#dc3f35] px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
                     {{ item.badge }}
                   </span>
                 }
@@ -128,7 +128,7 @@
       [attr.aria-label]="'SIDEBAR.TOGGLE_SIDEBAR' | translate"
       (click)="toggleCollapsed()"
     >
-      <i class="pi text-sm transition" [class.pi-angle-left]="!collapsed" [class.pi-angle-right]="collapsed"></i>
+      <i class="sidebar-collapse-icon pi text-sm transition" [class.pi-angle-left]="!collapsed" [class.pi-angle-right]="collapsed"></i>
     </button>
   </div>
 </aside>

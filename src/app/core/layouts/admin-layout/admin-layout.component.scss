@@ -1,1 +1,19 @@
 ﻿
+:host {
+  --admin-sidebar-width: 260px;
+  --admin-sidebar-collapsed-width: 76px;
+}
+
+.admin-main {
+  margin-inline-start: 0;
+}
+
+@media (min-width: 1024px) {
+  .admin-main.sidebar-expanded {
+    margin-inline-start: var(--admin-sidebar-width);
+  }
+
+  .admin-main.sidebar-collapsed {
+    margin-inline-start: var(--admin-sidebar-collapsed-width);
+  }
+}

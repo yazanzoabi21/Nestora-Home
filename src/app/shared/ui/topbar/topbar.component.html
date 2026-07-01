@@ -1,6 +1,6 @@
 <header
-  class="fixed left-0 right-0 top-0 z-[70] flex h-[72px] max-w-full min-w-0 items-center justify-between gap-3 overflow-visible border-b border-[#e5ded2] bg-[#f8f7f5] px-4 transition-[left] duration-300 sm:px-6 lg:h-[88px] lg:px-8"
-  [class.lg:left-[260px]]="!sidebarCollapsed" [class.lg:left-[76px]]="sidebarCollapsed">
+  class="admin-topbar fixed inset-x-0 top-0 z-[70] flex h-[72px] max-w-full min-w-0 items-center justify-between gap-3 overflow-visible border-b border-[#e5ded2] bg-[#f8f7f5] px-4 transition-[inset] duration-300 sm:px-6 lg:h-[88px] lg:px-8"
+  [class.sidebar-expanded]="!sidebarCollapsed" [class.sidebar-collapsed]="sidebarCollapsed">
   <div class="flex min-w-0 items-center gap-3 sm:gap-5 lg:gap-7">
     <button type="button"
       class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#6f675e] transition hover:bg-[#efeae2] hover:text-[#37322d] lg:hidden"
@@ -36,7 +36,7 @@
       [attr.aria-label]="'TOPBAR.NOTIFICATIONS' | translate">
       <i class="pi pi-bell text-xl"></i>
       <span
-        class="absolute right-2 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#dc3f35] px-1 text-[11px] font-bold leading-none text-white ring-2 ring-[#f8f7f5]">
+        class="absolute end-2 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#dc3f35] px-1 text-[11px] font-bold leading-none text-white ring-2 ring-[#f8f7f5]">
         {{ notificationCount }}
       </span>
     </button>

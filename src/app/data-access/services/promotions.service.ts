@@ -26,6 +26,8 @@ const PROMOTION_SELECT = `
   end_date,
   created_at
 `;
+const PROMOTION_IMAGES_BUCKET = 'product-images';
+const MAX_PROMOTION_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
 @Injectable({
   providedIn: 'root',
@@ -94,6 +96,42 @@ export class PromotionsService {
       .from('promotions')
       .delete()
       .eq('id', id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async uploadPromotionImage(file: File): Promise<string> {
+    this.validatePromotionImage(file);
+
+    const path = `promotions/${this.currentYearMonth()}/${this.randomId()}.${this.fileExtension(file.name)}`;
+    const { error } = await this.supabase.storage.from(PROMOTION_IMAGES_BUCKET).upload(path, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const { data } = this.supabase.storage.from(PROMOTION_IMAGES_BUCKET).getPublicUrl(path);
+
+    if (!data.publicUrl) {
+      throw new Error('Unable to get uploaded promotion image URL.');
+    }
+
+    return data.publicUrl;
+  }
+
+  async deletePromotionImageByUrl(imageUrl: string): Promise<void> {
+    const path = this.storagePathFromPublicUrl(imageUrl);
+
+    if (!path) {
+      return;
+    }
+
+    const { error } = await this.supabase.storage.from(PROMOTION_IMAGES_BUCKET).remove([path]);
 
     if (error) {
       throw new Error(error.message);
@@ -248,5 +286,47 @@ export class PromotionsService {
 
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private validatePromotionImage(file: File): void {
+    if (!file) {
+      throw new Error('No promotion image selected.');
+    }
+
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Unsupported promotion image type.');
+    }
+
+    if (file.size > MAX_PROMOTION_IMAGE_SIZE_BYTES) {
+      throw new Error('Promotion image is too large.');
+    }
+  }
+
+  private currentYearMonth(): string {
+    return new Date().toISOString().slice(0, 7);
+  }
+
+  private randomId(): string {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+      return crypto.randomUUID();
+    }
+
+    return Math.random().toString(36).slice(2, 12);
+  }
+
+  private fileExtension(fileName: string): string {
+    const extension = fileName.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return extension || 'webp';
+  }
+
+  private storagePathFromPublicUrl(imageUrl: string): string | null {
+    const marker = `/storage/v1/object/public/${PROMOTION_IMAGES_BUCKET}/`;
+    const index = imageUrl.indexOf(marker);
+
+    if (index === -1) {
+      return null;
+    }
+
+    return decodeURIComponent(imageUrl.slice(index + marker.length));
   }
 }

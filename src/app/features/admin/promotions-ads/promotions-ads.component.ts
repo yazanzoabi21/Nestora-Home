@@ -44,6 +44,7 @@ interface PromotionFormModel {
 type PromotionTableRow = AdminTableRow & {
   promotion: {
     imageUrl?: string | null;
+    imageFallbackLabel?: string;
     title: string;
     subtitle?: string;
     initials?: string;
@@ -128,6 +129,11 @@ export class PromotionsAdsComponent implements OnInit {
   readonly isDeleteModalOpen = signal(false);
   readonly formError = signal<string | null>(null);
   readonly promotionForm = signal<PromotionFormModel>({ ...EMPTY_PROMOTION_FORM });
+  readonly selectedPromotionImageFile = signal<File | null>(null);
+  readonly promotionImagePreview = signal<string | null>(null);
+  readonly imageUploading = signal(false);
+  readonly imageError = signal<string | null>(null);
+  readonly imageWasCleared = signal(false);
 
   readonly displayTypeOptions: DisplayTypeOption[] = [
     { labelKey: 'PROMOTIONS_ADS.DISPLAY.ANNOUNCEMENT_BAR', value: 'bar', icon: 'pi pi-minus' },
@@ -245,14 +251,32 @@ export class PromotionsAdsComponent implements OnInit {
 
   readonly stats = computed(() => this.promotionsService.getStatsFromPromotions(this.promotions()));
 
+  readonly statusCounts = computed(() => {
+    const counts: Record<PromotionStatus, number> = {
+      active: 0,
+      scheduled: 0,
+      expired: 0,
+      inactive: 0,
+    };
+
+    for (const promotion of this.promotions()) {
+      counts[this.promotionStatus(promotion)] += 1;
+    }
+
+    return counts;
+  });
+
   readonly kpiCards = computed<KpiCardData[]>(() => {
-    const stats = this.stats();
+    const promotions = this.promotions();
+    const statusCounts = this.statusCounts();
+    const typeBreakdown = this.typeBreakdown();
+    const displayTypeCount = Object.values(typeBreakdown).filter((count) => count > 0).length;
 
     return [
       {
         title: 'Total Promotions',
-        titleKey: 'PROMOTIONS_ADS.KPI.TOTAL_PROMOTIONS',
-        value: stats.totalPromotions.toString(),
+        titleKey: 'PROMOTIONS_ADS.KPI.TOTAL',
+        value: promotions.length.toString(),
         icon: 'pi pi-megaphone',
         iconColor: '#5f6f43',
         iconBg: '#eef4e8',
@@ -261,7 +285,7 @@ export class PromotionsAdsComponent implements OnInit {
       {
         title: 'Active Now',
         titleKey: 'PROMOTIONS_ADS.KPI.ACTIVE_NOW',
-        value: stats.activeNow.toString(),
+        value: statusCounts.active.toString(),
         icon: 'pi pi-bolt',
         iconColor: '#20a464',
         iconBg: '#e9f8ef',
@@ -270,7 +294,7 @@ export class PromotionsAdsComponent implements OnInit {
       {
         title: 'Scheduled',
         titleKey: 'PROMOTIONS_ADS.KPI.SCHEDULED',
-        value: stats.scheduled.toString(),
+        value: statusCounts.scheduled.toString(),
         icon: 'pi pi-calendar',
         iconColor: '#3b78d8',
         iconBg: '#eaf2ff',
@@ -279,10 +303,28 @@ export class PromotionsAdsComponent implements OnInit {
       {
         title: 'Inactive',
         titleKey: 'PROMOTIONS_ADS.KPI.INACTIVE',
-        value: stats.inactive.toString(),
+        value: statusCounts.inactive.toString(),
         icon: 'pi pi-pause',
         iconColor: '#8d877e',
         iconBg: '#f0ebe4',
+        showChart: false,
+      },
+      {
+        title: 'Expired',
+        titleKey: 'PROMOTIONS_ADS.KPI.EXPIRED',
+        value: statusCounts.expired.toString(),
+        icon: 'pi pi-clock',
+        iconColor: '#b42318',
+        iconBg: '#fff1f0',
+        showChart: false,
+      },
+      {
+        title: 'Display Types',
+        titleKey: 'PROMOTIONS_ADS.KPI.DISPLAY_TYPES',
+        value: displayTypeCount.toString(),
+        icon: 'pi pi-th-large',
+        iconColor: '#d98916',
+        iconBg: '#fff6e7',
         showChart: false,
       },
     ];
@@ -367,20 +409,29 @@ export class PromotionsAdsComponent implements OnInit {
     this.modalMode.set('add');
     this.selectedPromotion.set(null);
     this.formError.set(null);
+    this.resetImageState();
     this.promotionForm.set({ ...EMPTY_PROMOTION_FORM });
     this.isPromotionModalOpen.set(true);
   }
 
-  openEditPromotionModal(row: AdminTableRow): void {
-    const promotion = row.raw as Promotion | null;
+  openEditPromotionModal(event: AdminTableRow | Promotion | string): void {
+    const promotion = this.resolvePromotionFromTableEvent(event);
+
     if (!promotion) {
-      this.toast.failed(this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_TITLE'));
+      this.toast.failed(
+        this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_TITLE'),
+        this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_DETAIL')
+      );
       return;
     }
 
     this.modalMode.set('edit');
     this.selectedPromotion.set(promotion);
     this.formError.set(null);
+    this.selectedPromotionImageFile.set(null);
+    this.imageError.set(null);
+    this.imageWasCleared.set(false);
+    this.promotionImagePreview.set(promotion.image_url ?? null);
     this.promotionForm.set({
       title: promotion.title,
       description: promotion.description ?? '',
@@ -407,12 +458,18 @@ export class PromotionsAdsComponent implements OnInit {
     this.isPromotionModalOpen.set(false);
     this.selectedPromotion.set(null);
     this.formError.set(null);
+    this.resetImageState();
     this.promotionForm.set({ ...EMPTY_PROMOTION_FORM });
   }
 
-  openDeletePromotionModal(row: AdminTableRow): void {
-    const promotion = row.raw as Promotion | null;
+  openDeletePromotionModal(event: AdminTableRow | Promotion | string): void {
+    const promotion = this.resolvePromotionFromTableEvent(event);
+
     if (!promotion) {
+      this.toast.failed(
+        this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_TITLE'),
+        this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_DETAIL')
+      );
       return;
     }
 
@@ -441,7 +498,12 @@ export class PromotionsAdsComponent implements OnInit {
       ...form,
       displayType,
       placement: this.firstPlacementForType(displayType),
+      imageUrl: displayType === 'bar' ? '' : form.imageUrl,
     }));
+
+    if (displayType === 'bar') {
+      this.clearPromotionImage();
+    }
   }
 
   selectPlacement(placement: string): void {
@@ -462,6 +524,67 @@ export class PromotionsAdsComponent implements OnInit {
 
   clearIcon(): void {
     this.updatePromotionForm('icon', null);
+  }
+
+  openPromotionImagePicker(input: HTMLInputElement, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (this.saving() || this.imageUploading()) {
+      return;
+    }
+
+    input.value = '';
+    input.click();
+  }
+
+  onPromotionImageSelected(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.imageError.set('PROMOTIONS_ADS.ERRORS.INVALID_IMAGE_TYPE');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      this.imageError.set('PROMOTIONS_ADS.ERRORS.IMAGE_TOO_LARGE');
+      return;
+    }
+
+    this.revokeObjectPreview();
+    this.selectedPromotionImageFile.set(file);
+    this.promotionImagePreview.set(URL.createObjectURL(file));
+    this.imageWasCleared.set(false);
+    this.imageError.set(null);
+  }
+
+  clearPromotionImage(): void {
+    this.revokeObjectPreview();
+    this.selectedPromotionImageFile.set(null);
+    this.promotionImagePreview.set(null);
+    this.imageWasCleared.set(true);
+    this.imageError.set(null);
+    this.updatePromotionForm('imageUrl', '');
+  }
+
+  updatePromotionImageUrl(value: AdminFormFieldValue): void {
+    const imageUrl = typeof value === 'string' ? value : '';
+
+    this.revokeObjectPreview();
+    this.selectedPromotionImageFile.set(null);
+    this.promotionImagePreview.set(imageUrl || null);
+    this.imageWasCleared.set(!imageUrl);
+    this.imageError.set(null);
+    this.updatePromotionForm('imageUrl', imageUrl);
   }
 
   currentFormStatus(): PromotionStatus {
@@ -513,6 +636,15 @@ export class PromotionsAdsComponent implements OnInit {
     this.saving.set(true);
 
     try {
+      const selectedImageFile = this.selectedPromotionImageFile();
+
+      if (selectedImageFile) {
+        this.imageUploading.set(true);
+        payload.image_url = await this.promotionsService.uploadPromotionImage(selectedImageFile);
+      } else if (this.imageWasCleared() || payload.display_type === 'bar') {
+        payload.image_url = null;
+      }
+
       if (this.modalMode() === 'edit') {
         const promotion = this.selectedPromotion();
 
@@ -525,6 +657,7 @@ export class PromotionsAdsComponent implements OnInit {
         this.promotions.update((items) =>
           items.map((item) => (item.id === updatedPromotion.id ? updatedPromotion : item))
         );
+        await this.deleteOldPromotionImageIfNeeded(promotion.image_url, updatedPromotion.image_url);
         this.toast.updated(this.translate.instant('PROMOTIONS_ADS.PROMOTION'));
       } else {
         const createdPromotion = await this.promotionsService.createPromotion(payload);
@@ -539,9 +672,10 @@ export class PromotionsAdsComponent implements OnInit {
     } catch (error) {
       this.toast.failed(
         this.translate.instant('PROMOTIONS_ADS.TOAST.SAVE_FAILED_TITLE'),
-        this.errorDetail(error, this.translate.instant('PROMOTIONS_ADS.TOAST.SAVE_FAILED_DETAIL'))
+        this.errorDetail(error, this.translate.instant('PROMOTIONS_ADS.ERRORS.IMAGE_UPLOAD_FAILED'))
       );
     } finally {
+      this.imageUploading.set(false);
       this.saving.set(false);
     }
   }
@@ -644,9 +778,10 @@ export class PromotionsAdsComponent implements OnInit {
       id: promotion.id,
       raw: promotion,
       promotion: {
-        imageUrl: promotion.image_url,
+        imageUrl: promotion.image_url?.trim() || null,
+        imageFallbackLabel: 'PROMOTIONS_ADS.IMAGE_OPTIONAL',
         title: promotion.title,
-        subtitle: this.promotionSubtitle(promotion),
+        subtitle: this.promotionTableSubtitle(promotion),
         initials: promotion.icon ?? this.initials(promotion.title),
       },
       type: {
@@ -664,6 +799,45 @@ export class PromotionsAdsComponent implements OnInit {
     };
   }
 
+  private resolvePromotionFromTableEvent(event: AdminTableRow | Promotion | string | null | undefined): Promotion | null {
+    if (!event) {
+      return null;
+    }
+
+    if (typeof event === 'string') {
+      return this.promotions().find((promotion) => promotion.id === event) ?? null;
+    }
+
+    const maybePromotion = event as Promotion;
+
+    if (maybePromotion.id && maybePromotion.title && 'display_type' in maybePromotion) {
+      return maybePromotion;
+    }
+
+    const row = event as AdminTableRow & { raw?: Promotion | null; id?: string };
+
+    if (row.raw?.id) {
+      return row.raw;
+    }
+
+    if (row.id) {
+      return this.promotions().find((promotion) => promotion.id === row.id) ?? null;
+    }
+
+    return null;
+  }
+
+  private promotionTableSubtitle(promotion: Promotion): string {
+    const type = this.translate.instant(this.typeLabelKey(this.promotionType(promotion)));
+    const placement = this.placementLabel(promotion.placement);
+    const meta = [type, placement].filter(Boolean).join(' · ');
+    const details = [promotion.description, meta]
+      .map((value) => value?.trim())
+      .filter(Boolean);
+
+    return details.join(' · ');
+  }
+
   private promotionSubtitle(promotion: Promotion): string {
     const details = [promotion.description, promotion.button_text, promotion.button_link]
       .map((value) => value?.trim())
@@ -672,7 +846,7 @@ export class PromotionsAdsComponent implements OnInit {
     return details.join(' · ');
   }
 
-  private placementLabel(value: string | null | undefined): string {
+  placementLabel(value: string | null | undefined): string {
     if (!value) {
       return this.translate.instant('PROMOTIONS_ADS.NOT_SET');
     }
@@ -783,6 +957,23 @@ export class PromotionsAdsComponent implements OnInit {
     return date.toISOString().slice(0, 10);
   }
 
+  private resetImageState(): void {
+    this.revokeObjectPreview();
+    this.selectedPromotionImageFile.set(null);
+    this.promotionImagePreview.set(null);
+    this.imageUploading.set(false);
+    this.imageError.set(null);
+    this.imageWasCleared.set(false);
+  }
+
+  private revokeObjectPreview(): void {
+    const preview = this.promotionImagePreview();
+
+    if (preview?.startsWith('blob:')) {
+      URL.revokeObjectURL(preview);
+    }
+  }
+
   private initials(value: string): string {
     return value
       .split(/\s+/)
@@ -792,7 +983,7 @@ export class PromotionsAdsComponent implements OnInit {
       .join('');
   }
 
-  private typeBadgeClass(type: PromotionType): string {
+  typeBadgeClass(type: PromotionType): string {
     const classes: Record<PromotionType, string> = {
       bar: 'bg-[#f0ebe4] text-[#675f55]',
       banner: 'bg-[#eaf2ff] text-[#2f6fd0]',
@@ -819,5 +1010,20 @@ export class PromotionsAdsComponent implements OnInit {
 
   private errorDetail(error: unknown, fallback: string): string {
     return error instanceof Error ? error.message : fallback;
+  }
+
+  private async deleteOldPromotionImageIfNeeded(
+    previousImageUrl: string | null | undefined,
+    nextImageUrl: string | null | undefined
+  ): Promise<void> {
+    if (!previousImageUrl || previousImageUrl === nextImageUrl) {
+      return;
+    }
+
+    try {
+      await this.promotionsService.deletePromotionImageByUrl(previousImageUrl);
+    } catch {
+      // Image cleanup should not roll back an already-saved promotion update.
+    }
   }
 }
