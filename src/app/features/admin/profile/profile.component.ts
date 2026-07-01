@@ -50,13 +50,6 @@ interface ToggleItem {
   enabled: boolean;
 }
 
-interface ActivityItem {
-  title: string;
-  date: string;
-  status: 'Success' | 'Info';
-  badgeClass: string;
-}
-
 interface DangerAction {
   icon: string;
   title: string;
@@ -194,56 +187,7 @@ export class ProfileComponent implements OnInit {
     ];
   });
 
-  readonly securityFields = computed(() => {
-    const email = this.formState().email;
-
-    return [
-      {
-        label: 'Username',
-        value: getNameFromEmail(email) || 'Not provided',
-      },
-      {
-        label: 'Password',
-        value: '**************',
-      },
-    ];
-  });
-
-  readonly securityToggles: ToggleItem[] = [
-    {
-      label: 'Two-Factor Authentication',
-      description: 'Add an extra layer of security to your account.',
-      enabled: true,
-    },
-    {
-      label: 'Login Verification',
-      description: 'Verify new logins via email or app for added security.',
-      enabled: true,
-    },
-  ];
-
-  readonly activeSession = {
-    device: 'Current browser session',
-    badge: 'Current Session',
-  };
-
   readonly preferences: PreferenceItem[] = [
-    {
-      label: 'Language',
-      value: 'English (UK)',
-    },
-    {
-      label: 'Theme',
-      value: 'Light',
-    },
-    {
-      label: 'Time Zone',
-      value: 'GMT+0 London',
-    },
-    {
-      label: 'Date Format',
-      value: 'DD/MM/YYYY',
-    },
     {
       label: 'Currency',
       value: 'USD ($)',
@@ -260,27 +204,6 @@ export class ProfileComponent implements OnInit {
       label: 'SMS Alerts',
       description: 'Receive important alerts via SMS.',
       enabled: false,
-    },
-  ];
-
-  readonly activities: ActivityItem[] = [
-    {
-      title: 'Password changed',
-      date: 'Not provided',
-      status: 'Info',
-      badgeClass: 'bg-[#edf4ff] text-[#4f7dbd]',
-    },
-    {
-      title: 'Logged in from current device',
-      date: 'Not provided',
-      status: 'Info',
-      badgeClass: 'bg-[#edf4ff] text-[#4f7dbd]',
-    },
-    {
-      title: 'Updated profile information',
-      date: 'Not provided',
-      status: 'Info',
-      badgeClass: 'bg-[#edf4ff] text-[#4f7dbd]',
     },
   ];
 
