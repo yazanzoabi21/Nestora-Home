@@ -76,6 +76,8 @@ const EMPTY_FORM_STATE: ProfileFormState = {
 };
 
 const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
+const AVATAR_UPLOAD_SIZE = 512;
+const AVATAR_UPLOAD_QUALITY = 0.82;
 const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
 
 @Component({
@@ -322,7 +324,7 @@ export class ProfileComponent implements OnInit {
     }));
   }
 
-  onAvatarSelected(event: Event): void {
+  async onAvatarSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
     input.value = '';
@@ -331,9 +333,11 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      this.errorMessage.set('Please select a valid image file.');
-      this.toast.warn('Invalid avatar', 'Please select a valid image file.');
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      this.errorMessage.set('Please select a PNG, JPG, or WebP image.');
+      this.toast.warn('Invalid avatar', 'Please select a PNG, JPG, or WebP image.');
       return;
     }
 
@@ -343,11 +347,18 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    this.revokeAvatarPreview();
-    this.selectedAvatarFile.set(file);
-    this.avatarPreviewUrl.set(URL.createObjectURL(file));
-    this.avatarImageFailed.set(false);
-    this.errorMessage.set(null);
+    try {
+      const optimizedAvatar = await resizeAvatarImage(file);
+
+      this.revokeAvatarPreview();
+      this.selectedAvatarFile.set(optimizedAvatar);
+      this.avatarPreviewUrl.set(URL.createObjectURL(optimizedAvatar));
+      this.avatarImageFailed.set(false);
+      this.errorMessage.set(null);
+    } catch {
+      this.errorMessage.set('Unable to process avatar image.');
+      this.toast.failed('Avatar image', 'Unable to process avatar image.');
+    }
   }
 
   openClearPhotoModal(): void {
@@ -407,6 +418,12 @@ export class ProfileComponent implements OnInit {
       if (previousPreviewUrl) {
         URL.revokeObjectURL(previousPreviewUrl);
       }
+
+      window.dispatchEvent(
+        new CustomEvent('current-user-profile-updated', {
+          detail: savedProfile,
+        })
+      );
 
       this.toast.updated('Profile photo');
       this.isClearPhotoModalOpen.set(false);
@@ -469,23 +486,29 @@ export class ProfileComponent implements OnInit {
 
     try {
       const currentForm = this.formState();
+      const selectedAvatarFile = this.selectedAvatarFile();
       let avatarUrl = currentForm.avatarUrl;
 
-      if (this.selectedAvatarFile()) {
-        avatarUrl = await this.authService.uploadCurrentUserAvatar(this.selectedAvatarFile() as File);
+      if (selectedAvatarFile) {
+        avatarUrl = await withTimeout(
+          this.authService.uploadCurrentUserAvatar(selectedAvatarFile),
+          20000,
+          'Avatar upload is taking too long. Please try again with a smaller image.'
+        );
       }
 
-      const savedProfile = await this.authService.updateCurrentUserProfile({
-        full_name: emptyToNull(combineFullName(currentForm.firstName, currentForm.lastName)),
-        email: currentForm.email.trim(),
-        phone: emptyToNull(currentForm.phone),
-        avatar_url: avatarUrl,
-      } satisfies CurrentUserProfileUpdate);
+      const savedProfile = await withTimeout(
+        this.authService.updateCurrentUserProfile({
+          full_name: emptyToNull(combineFullName(currentForm.firstName, currentForm.lastName)),
+          email: currentForm.email.trim(),
+          phone: emptyToNull(currentForm.phone),
+          avatar_url: avatarUrl,
+        } satisfies CurrentUserProfileUpdate),
+        15000,
+        'Profile update is taking too long. Please try again.'
+      );
 
-      const savedForm = {
-        ...currentForm,
-        avatarUrl,
-      };
+      const savedForm = toFormState(savedProfile);
 
       this.loadedProfile.set(savedProfile);
       this.originalFormState.set(cloneFormState(savedForm));
@@ -493,6 +516,13 @@ export class ProfileComponent implements OnInit {
       this.revokeAvatarPreview();
       this.selectedAvatarFile.set(null);
       this.avatarImageFailed.set(false);
+
+      window.dispatchEvent(
+        new CustomEvent('current-user-profile-updated', {
+          detail: savedProfile,
+        })
+      );
+
       this.toast.updated('Profile');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to save profile.';
@@ -636,6 +666,86 @@ function getProvidedValue(value: string | null): string {
 
 function emptyToNull(value: string): string | null {
   return value.trim() || null;
+}
+
+function resizeAvatarImage(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = AVATAR_UPLOAD_SIZE;
+      canvas.height = AVATAR_UPLOAD_SIZE;
+
+      const context = canvas.getContext('2d');
+
+      if (!context) {
+        reject(new Error('Canvas is not supported.'));
+        return;
+      }
+
+      const sourceSize = Math.min(image.width, image.height);
+      const sourceX = (image.width - sourceSize) / 2;
+      const sourceY = (image.height - sourceSize) / 2;
+
+      context.drawImage(
+        image,
+        sourceX,
+        sourceY,
+        sourceSize,
+        sourceSize,
+        0,
+        0,
+        AVATAR_UPLOAD_SIZE,
+        AVATAR_UPLOAD_SIZE
+      );
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Unable to create optimized avatar.'));
+            return;
+          }
+
+          resolve(
+            new File([blob], `avatar-${Date.now()}.webp`, {
+              type: 'image/webp',
+            })
+          );
+        },
+        'image/webp',
+        AVATAR_UPLOAD_QUALITY
+      );
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Unable to load image.'));
+    };
+
+    image.src = objectUrl;
+  });
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error(message));
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        window.clearTimeout(timeoutId);
+        resolve(value);
+      })
+      .catch((error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
 }
 
 function formatRoleName(roleName: AppRoleName | undefined): string {

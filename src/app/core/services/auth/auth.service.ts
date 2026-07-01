@@ -14,6 +14,8 @@ import {
 
 const AVATAR_STORAGE_BUCKET = 'avatars';
 const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
+const AVATAR_UPLOAD_SIZE = 512;
+const AVATAR_UPLOAD_QUALITY = 0.82;
 const MISSING_AVATAR_BUCKET_MESSAGE =
     'Avatar storage bucket is missing. Please create a Supabase Storage bucket named avatars.';
 
