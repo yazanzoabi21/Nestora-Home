@@ -9,6 +9,8 @@
 <div
   class="admin-main min-h-screen w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] pt-[72px] transition-[margin] duration-300 lg:w-auto lg:pt-[88px]"
   [class.sidebar-expanded]="!sidebarCollapsed()" [class.sidebar-collapsed]="sidebarCollapsed()">
+  <app-topbar [user]="currentUser()" [sidebarCollapsed]="sidebarCollapsed()"
+    (menuClick)="mobileSidebarOpen.set(true)"></app-topbar>
   <app-topbar [sidebarCollapsed]="sidebarCollapsed()" (menuClick)="mobileSidebarOpen.set(true)"></app-topbar>
   <router-outlet></router-outlet>
 </div>

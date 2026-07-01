@@ -7,7 +7,15 @@ export interface TopbarUser {
   name: string;
   role: string;
   initials: string;
+  avatarUrl: string | null;
 }
+
+export const TOPBAR_USER_FALLBACK: TopbarUser = {
+  name: 'Loading user',
+  role: 'Loading',
+  initials: '?',
+  avatarUrl: null,
+};
 
 @Component({
   selector: 'app-topbar',
@@ -19,11 +27,7 @@ export interface TopbarUser {
 export class TopbarComponent {
   readonly translation = inject(TranslationService);
 
-  @Input() user: TopbarUser = {
-    name: 'Alex Johnson',
-    role: 'Super Admin',
-    initials: 'AJ',
-  };
+  @Input() user: TopbarUser = TOPBAR_USER_FALLBACK;
   @Input() sidebarCollapsed = false;
   @Output() menuClick = new EventEmitter<void>();
 

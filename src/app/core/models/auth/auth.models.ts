@@ -16,14 +16,26 @@ export interface UserProfile {
     id: string;
     role_id: string | null;
     full_name: string | null;
-    email: string | null;
+    email: string;
     phone: string | null;
     avatar_url: string | null;
-    is_active: boolean | null;
-    created_at?: string | null;
+    is_active: boolean;
+    created_at: string;
 }
 
 export interface UserRole {
     id: string;
     name: AppRoleName;
+    description?: string | null;
+}
+
+export interface AuthenticatedUserProfile extends UserProfile {
+    roles?: UserRole | null;
+}
+
+export interface CurrentUserProfileUpdate {
+    full_name?: string | null;
+    email?: string;
+    phone?: string | null;
+    avatar_url?: string | null;
 }

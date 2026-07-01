@@ -5,11 +5,17 @@
       <p class="mt-1 max-w-3xl text-sm font-medium text-[#8d877e] md:text-base">
         Manage your personal information, security, preferences, and account controls in one place.
       </p>
+      @if (errorMessage()) {
+        <p class="mt-2 text-sm font-semibold text-[#dc3f35]">{{ errorMessage() }}</p>
+      }
     </div>
 
     <div class="flex items-center gap-3">
-      <button type="button" class="secondary-action">Cancel</button>
-      <button type="button" class="primary-action">Save Changes</button>
+      <button type="button" class="secondary-action" [disabled]="!isDirty() || isSaving() || isLoading()"
+        (click)="clearEdit()">Clear Edit</button>
+      <button type="button" class="primary-action" [disabled]="!canSave()" (click)="saveChanges()">
+        {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+      </button>
     </div>
   </section>
 
@@ -18,21 +24,32 @@
       <h2 class="card-title">Profile Summary</h2>
 
       <div class="mt-6 flex flex-col items-center text-center">
-        <div class="flex h-32 w-32 items-center justify-center rounded-full bg-[#5f6f43] text-5xl font-bold text-white shadow-inner">
-          {{ profileSummary.initials }}
-        </div>
-        <h3 class="mt-4 text-2xl font-bold text-[#1f2a1f]">{{ profileSummary.name }}</h3>
-        <p class="text-base font-medium text-[#8d877e]">{{ profileSummary.role }}</p>
+        <button type="button"
+          class="avatar-preview-trigger group flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-[#5f6f43] text-5xl font-bold text-white shadow-inner"
+          [class.is-previewable]="hasPreviewableCustomAvatar()"
+          [attr.aria-label]="hasPreviewableCustomAvatar() ? 'View ' + profileSummary().name + ' avatar' : profileSummary().name + ' avatar'"
+          (click)="openAvatarPreview()">
+          <img [src]="avatarSrc()" [alt]="profileSummary().name" class="h-full w-full object-cover"
+            (error)="onAvatarError($event)" />
+          @if (hasPreviewableCustomAvatar()) {
+            <span class="avatar-preview-overlay">
+              <i class="pi pi-eye text-xl"></i>
+              <span class="text-sm font-bold">View</span>
+            </span>
+          }
+        </button>
+        <h3 class="mt-4 text-2xl font-bold text-[#1f2a1f]">{{ profileSummary().name }}</h3>
+        <p class="text-base font-medium text-[#8d877e]">{{ profileSummary().role }}</p>
         <span class="mt-3 inline-flex items-center gap-2 rounded-full bg-[#eef4e8] px-3 py-1 text-sm font-medium text-[#5f6f43]">
           <span class="h-2 w-2 rounded-full bg-[#8fc263]"></span>
-          {{ profileSummary.status }}
+          {{ profileSummary().status }}
         </span>
       </div>
 
       <div class="my-6 h-px bg-[#e5ded2]"></div>
 
       <div class="space-y-4">
-        @for (detail of profileSummary.details; track detail.value) {
+        @for (detail of profileSummary().details; track detail.value) {
           <div class="flex items-center gap-3 text-sm font-medium text-[#8d877e]">
             <i class="{{ detail.icon }} text-base text-[#7d756b]"></i>
             <span>{{ detail.value }}</span>
@@ -40,10 +57,19 @@
         }
       </div>
 
-      <button type="button" class="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white text-sm font-semibold text-[#5f6f43] transition hover:bg-[#f7f4ef]">
+      <input #avatarFileInput type="file" accept="image/*" class="hidden" (change)="onAvatarSelected($event)" />
+      <button type="button" [disabled]="isLoading() || isSaving()" (click)="avatarFileInput.click()"
+        class="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white text-sm font-semibold text-[#5f6f43] transition hover:bg-[#f7f4ef] disabled:cursor-not-allowed disabled:opacity-60">
         <i class="pi pi-upload text-sm"></i>
         Change Avatar
       </button>
+      @if (canClearPhoto()) {
+        <button type="button" [disabled]="isLoading() || isSaving()" (click)="openClearPhotoModal()"
+          class="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white text-sm font-semibold text-[#8a4b43] transition hover:bg-[#fff7f5] disabled:cursor-not-allowed disabled:opacity-60">
+          <i class="pi pi-times-circle text-sm"></i>
+          Delete Photo
+        </button>
+      }
     </article>
 
     <div class="space-y-6">
@@ -56,13 +82,15 @@
         </div>
 
         <div class="grid gap-5 md:grid-cols-2">
-          @for (field of personalFields; track field.label) {
+          @for (field of personalFields(); track field.label) {
             <div class="space-y-2 text-sm font-medium text-[#342f29]">
               <span>{{ field.label }}</span>
-              <div class="profile-field" [class.pr-10]="field.hasChevron">
-                {{ field.value }}
+              <div class="relative">
+                <input [type]="field.inputType || 'text'" class="profile-field" [class.pr-10]="field.hasChevron"
+                  [value]="field.value" [placeholder]="field.placeholder" [disabled]="isLoading() || isSaving()"
+                  (input)="updateField(field.key, $any($event.target).value)" />
                 @if (field.hasChevron) {
-                  <i class="pi pi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#8d877e]"></i>
+                  <i class="pi pi-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#8d877e]"></i>
                 }
               </div>
             </div>
@@ -79,7 +107,7 @@
         </div>
 
         <div class="grid gap-5 lg:grid-cols-[1fr_1.25fr_auto]">
-          @for (field of securityFields; track field.label) {
+          @for (field of securityFields(); track field.label) {
             <div class="space-y-2 text-sm font-medium text-[#342f29]">
               <span>{{ field.label }}</span>
               <div class="profile-field">{{ field.value }}</div>
@@ -223,4 +251,24 @@
       </article>
     </div>
   </section>
+
+  @if (isAvatarPreviewOpen()) {
+    <div class="avatar-lightbox" role="dialog" aria-modal="true" [attr.aria-label]="profileSummary().name + ' avatar preview'"
+      (click)="closeAvatarPreview()">
+      <div class="avatar-lightbox-panel" (click)="$event.stopPropagation()">
+        <button type="button" class="avatar-lightbox-close" aria-label="Close avatar preview"
+          (click)="closeAvatarPreview()">
+          <i class="pi pi-times"></i>
+        </button>
+        <img [src]="avatarSrc()" [alt]="profileSummary().name" class="avatar-lightbox-image"
+          (error)="onAvatarError($event)" />
+      </div>
+    </div>
+  }
+
+  <app-admin-form-modal [isOpen]="isClearPhotoModalOpen()" variant="delete" title="Remove Profile Photo"
+    message="Are you sure you want to remove your profile photo? The default avatar will be used instead."
+    submitLabel="Remove Photo" cancelLabel="Cancel" [loading]="isSaving()" (close)="closeClearPhotoModal()"
+    (submit)="confirmClearPhoto()">
+  </app-admin-form-modal>
 </main>
