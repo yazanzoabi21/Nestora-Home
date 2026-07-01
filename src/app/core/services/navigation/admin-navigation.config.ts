@@ -108,19 +108,19 @@ export const ADMIN_NAVIGATION_SECTIONS: AdminNavigationSection[] = [
       },
     ],
   },
-  {
-    key: 'people',
-    label: 'PEOPLE',
-    labelKey: 'SIDEBAR.PEOPLE',
-    items: [
-      {
-        label: 'Admin Users',
-        labelKey: 'SIDEBAR.ADMIN_USERS',
-        route: '/admin/admin-users',
-        icon: 'pi pi-user-plus',
-      },
-    ],
-  },
+  // {
+  //   key: 'people',
+  //   label: 'PEOPLE',
+  //   labelKey: 'SIDEBAR.PEOPLE',
+  //   items: [
+  //     {
+  //       label: 'Admin Users',
+  //       labelKey: 'SIDEBAR.ADMIN_USERS',
+  //       route: '/admin/admin-users',
+  //       icon: 'pi pi-user-plus',
+  //     },
+  //   ],
+  // },
   {
     key: 'system',
     label: 'SYSTEM',

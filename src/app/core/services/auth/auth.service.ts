@@ -229,6 +229,7 @@ export class AuthService {
         full_name,
         email,
         phone,
+        avatar_media_id,
         avatar_url,
         is_active,
         created_at,

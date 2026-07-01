@@ -6,6 +6,7 @@ export interface Promotion {
   id: string;
   title: string;
   description?: string | null;
+  media_id?: string | null;
   image_url?: string | null;
   button_text?: string | null;
   button_link?: string | null;
@@ -23,6 +24,7 @@ export interface Promotion {
 export interface PromotionMutationPayload {
   title: string;
   description: string | null;
+  media_id?: string | null;
   image_url: string | null;
   button_text: string | null;
   button_link: string | null;

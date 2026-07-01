@@ -18,6 +18,7 @@ export type ProductGallery = string[] | ProductGalleryItem[] | null;
 export interface Product {
   id: string;
   category_id: string | null;
+  media_id?: string | null;
   name: string;
   slug: string | null;
   description: string | null;
@@ -51,6 +52,7 @@ export interface ProductStats {
 
 export interface ProductMutationPayload {
   category_id?: string | null;
+  media_id?: string | null;
   name: string;
   slug: string;
   description?: string | null;
@@ -73,6 +75,7 @@ export interface ProductFormModel {
   slug: string;
   sku: string;
   categoryId: string | null;
+  mediaId: string | null;
   price: number | null;
   salePrice: number | null;
   stock: number | null;

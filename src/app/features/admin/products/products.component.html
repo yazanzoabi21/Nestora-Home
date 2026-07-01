@@ -228,6 +228,15 @@
         [helperText]="'PRODUCTS.UPLOAD_HELPER'" [fileName]="selectedImageFile()?.name ?? null"
         (fileChange)="onImageSelected($event)" (removeFile)="removeSelectedImage()" />
 
+      <div class="md:col-span-2">
+        <button type="button"
+          class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#d8d0c3] bg-white px-4 text-sm font-extrabold text-[#5f6f43] transition hover:border-[#5f6f43] hover:bg-[#eef4e8] sm:w-auto"
+          (click)="openProductMediaPicker()">
+          <i class="pi pi-images text-sm"></i>
+          <span>{{ 'COMMON.CHOOSE_FROM_MEDIA_LIBRARY' | translate }}</span>
+        </button>
+      </div>
+
       <div class="grid gap-3 md:col-span-2 md:grid-cols-3">
         <app-admin-form-field type="checkbox" name="isFeatured" [label]="'PRODUCTS.FIELDS.IS_FEATURED'"
           [value]="productForm().isFeatured" (valueChange)="updateProductForm('isFeatured', $any($event))" />
@@ -258,5 +267,14 @@
       {{ selectedProductsLabel() }}
     </p>
   </app-admin-form-modal>
+
+  <app-media-picker-modal
+    [isOpen]="isProductMediaPickerOpen()"
+    title="MEDIA_PICKER.TITLE"
+    categoryFilter="product"
+    [allowedFileTypes]="productMediaFileTypes"
+    [selectedMediaId]="productForm().mediaId"
+    (close)="closeProductMediaPicker()"
+    (selectMedia)="selectProductMedia($event)" />
 
 </main>

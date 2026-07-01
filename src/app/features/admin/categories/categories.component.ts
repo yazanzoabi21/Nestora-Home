@@ -3,12 +3,21 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { CategoriesService, Category, CategoryMutationPayload, UploadService } from '../../../data-access';
+import {
+  CategoriesService,
+  Category,
+  CategoryMutationPayload,
+  MediaAsset,
+  MediaFileType,
+  MediaLibraryService,
+  UploadService,
+} from '../../../data-access';
 import { ToastService } from '../../../core/services';
 import { AdminFormFieldComponent } from '../../../shared/ui/admin-form-field';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { AdminTableRow } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
+import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
 
 type CategoryModalMode = 'add-parent' | 'add-child' | 'edit';
 type ViewMode = 'tree' | 'grid';
@@ -18,6 +27,7 @@ interface CategoryFormModel {
   name: string;
   slug: string;
   description: string;
+  mediaId: string | null;
   imageUrl: string;
 }
 
@@ -25,6 +35,7 @@ const EMPTY_CATEGORY_FORM: CategoryFormModel = {
   name: '',
   slug: '',
   description: '',
+  mediaId: null,
   imageUrl: '',
 };
 
@@ -97,6 +108,7 @@ const MORE_CATEGORY_ICON_OPTIONS = [
     CommonModule,
     FormsModule,
     KpiCardComponent,
+    MediaPickerModalComponent,
     TranslatePipe,
   ],
   templateUrl: './categories.component.html',
@@ -104,6 +116,7 @@ const MORE_CATEGORY_ICON_OPTIONS = [
 })
 export class CategoriesComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
+  private readonly mediaLibraryService = inject(MediaLibraryService);
   private readonly uploadService = inject(UploadService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -123,6 +136,8 @@ export class CategoriesComponent implements OnInit {
   readonly slugEdited = signal(false);
   readonly assetMode = signal<CategoryAssetMode>('icon');
   readonly selectedCategoryImageFile = signal<File | null>(null);
+  readonly selectedMediaAsset = signal<MediaAsset | null>(null);
+  readonly isMediaPickerOpen = signal(false);
   readonly imagePreviewUrl = signal<string | null>(null);
   readonly selectedIcon = signal(DEFAULT_CATEGORY_ICON);
   readonly expandedCategoryIds = signal<Set<string>>(new Set());
@@ -134,6 +149,7 @@ export class CategoriesComponent implements OnInit {
 
   readonly categoryImageAccept = CATEGORY_IMAGE_ACCEPT;
   readonly defaultCategoryIcon = DEFAULT_CATEGORY_ICON;
+  readonly mediaPickerFileTypes: MediaFileType[] = ['image', 'logo'];
 
   readonly filteredCategories = computed(() => {
     const searchTerm = this.searchTerm().trim().toLowerCase();
@@ -295,7 +311,7 @@ export class CategoriesComponent implements OnInit {
     this.categoryForm.set({ ...EMPTY_CATEGORY_FORM });
     this.resetAssetState();
     this.selectedIcon.set(DEFAULT_CATEGORY_ICON);
-    this.categoryForm.update((form) => ({ ...form, imageUrl: DEFAULT_CATEGORY_ICON }));
+    this.categoryForm.update((form) => ({ ...form, mediaId: null, imageUrl: DEFAULT_CATEGORY_ICON }));
     this.isCategoryModalOpen.set(true);
   }
 
@@ -307,7 +323,7 @@ export class CategoriesComponent implements OnInit {
     this.categoryForm.set({ ...EMPTY_CATEGORY_FORM });
     this.resetAssetState();
     this.selectedIcon.set(DEFAULT_CATEGORY_ICON);
-    this.categoryForm.update((form) => ({ ...form, imageUrl: DEFAULT_CATEGORY_ICON }));
+    this.categoryForm.update((form) => ({ ...form, mediaId: null, imageUrl: DEFAULT_CATEGORY_ICON }));
     this.isCategoryModalOpen.set(true);
   }
 
@@ -330,6 +346,7 @@ export class CategoriesComponent implements OnInit {
       name: category.name,
       slug: category.slug,
       description: category.description ?? '',
+      mediaId: category.media_id ?? null,
       imageUrl: category.image_url ?? '',
     });
     this.loadAssetState(category.image_url);
@@ -373,6 +390,8 @@ export class CategoriesComponent implements OnInit {
     }
 
     this.selectedCategoryImageFile.set(null);
+    this.selectedMediaAsset.set(null);
+    this.categoryForm.update((form) => ({ ...form, mediaId: null }));
     this.imagePreviewUrl.set(null);
     const icon = this.selectedIcon() || DEFAULT_CATEGORY_ICON;
     this.selectedIcon.set(icon);
@@ -399,16 +418,44 @@ export class CategoriesComponent implements OnInit {
     this.assetMode.set('upload');
     this.selectedIcon.set('');
     this.selectedCategoryImageFile.set(file);
+    this.selectedMediaAsset.set(null);
     this.imagePreviewUrl.set(URL.createObjectURL(file));
-    this.categoryForm.update((form) => ({ ...form, imageUrl: form.imageUrl }));
+    this.categoryForm.update((form) => ({ ...form, mediaId: null, imageUrl: form.imageUrl }));
   }
 
   selectIcon(icon: string): void {
     this.assetMode.set('icon');
     this.selectedCategoryImageFile.set(null);
+    this.selectedMediaAsset.set(null);
     this.imagePreviewUrl.set(null);
     this.selectedIcon.set(icon);
-    this.categoryForm.update((form) => ({ ...form, imageUrl: icon }));
+    this.categoryForm.update((form) => ({ ...form, mediaId: null, imageUrl: icon }));
+  }
+
+  openMediaPicker(): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.isMediaPickerOpen.set(true);
+  }
+
+  closeMediaPicker(): void {
+    this.isMediaPickerOpen.set(false);
+  }
+
+  selectMediaAsset(asset: MediaAsset): void {
+    this.selectedCategoryImageFile.set(null);
+    this.selectedMediaAsset.set(asset);
+    this.assetMode.set('upload');
+    this.selectedIcon.set('');
+    this.imagePreviewUrl.set(asset.file_url);
+    this.categoryForm.update((form) => ({
+      ...form,
+      mediaId: asset.id,
+      imageUrl: asset.file_url,
+    }));
+    this.isMediaPickerOpen.set(false);
   }
 
   async saveCategory(): Promise<void> {
@@ -435,16 +482,20 @@ export class CategoriesComponent implements OnInit {
       const imageUrl = imageFile
         ? await this.uploadService.uploadCategoryImage(imageFile)
         : this.resolveCategoryImageValue(isEdit ? selectedCategory?.image_url ?? null : null);
-      const payloadWithImage = {
+      const payloadWithImage: CategoryMutationPayload = {
         ...payload,
+        media_id: imageFile ? null : this.categoryForm().mediaId,
         image_url: imageUrl,
       };
+      let savedCategory: Category;
 
       if (isEdit) {
-        await this.categoriesService.updateCategory(selectedCategory.id, payloadWithImage);
+        savedCategory = await this.categoriesService.updateCategory(selectedCategory.id, payloadWithImage);
       } else {
-        await this.categoriesService.createCategory(payloadWithImage);
+        savedCategory = await this.categoriesService.createCategory(payloadWithImage);
       }
+
+      await this.saveCategoryMediaUsage(savedCategory, payloadWithImage.media_id);
 
       await this.loadCategories();
       this.isCategoryModalOpen.set(false);
@@ -658,6 +709,7 @@ export class CategoriesComponent implements OnInit {
       parent_id: this.resolveParentIdForPayload(),
       slug: form.slug.trim() || this.categoriesService.createSlug(form.name),
       description: form.description.trim() || null,
+      media_id: form.mediaId,
       image_url: this.resolveCategoryImageValue(null),
     };
   }
@@ -672,6 +724,7 @@ export class CategoriesComponent implements OnInit {
 
   private loadAssetState(value: string | null | undefined): void {
     this.selectedCategoryImageFile.set(null);
+    this.selectedMediaAsset.set(null);
 
     if (this.isIconValue(value)) {
       this.assetMode.set('icon');
@@ -695,6 +748,8 @@ export class CategoriesComponent implements OnInit {
   private resetAssetState(): void {
     this.assetMode.set('icon');
     this.selectedCategoryImageFile.set(null);
+    this.selectedMediaAsset.set(null);
+    this.isMediaPickerOpen.set(false);
     this.imagePreviewUrl.set(null);
     this.selectedIcon.set(DEFAULT_CATEGORY_ICON);
   }
@@ -717,6 +772,26 @@ export class CategoriesComponent implements OnInit {
     }
 
     return null;
+  }
+
+  private async saveCategoryMediaUsage(category: Category, mediaId: string | null | undefined): Promise<void> {
+    if (!mediaId) {
+      return;
+    }
+
+    try {
+      await this.mediaLibraryService.setPrimaryMediaUsage({
+        media_id: mediaId,
+        entity_type: 'category',
+        entity_id: category.id,
+        usage_type: 'main_image',
+      });
+    } catch {
+      this.toast.warn(
+        this.translate.instant('MEDIA_PICKER.USAGE_SAVE_FAILED_TITLE'),
+        this.translate.instant('MEDIA_PICKER.USAGE_SAVE_FAILED_DETAIL')
+      );
+    }
   }
 
   private errorDetail(error: unknown, fallback: string): string {

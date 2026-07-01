@@ -2,7 +2,9 @@ import { Component, HostListener, OnInit, computed, inject, signal } from '@angu
 import { AppRoleName, AuthenticatedUserProfile, CurrentUserProfileUpdate } from '../../../core/models/auth';
 import { ToastService } from '../../../core/services';
 import { AuthService } from '../../../core/services/auth';
+import { MediaAsset, MediaFileType, MediaLibraryService } from '../../../data-access';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
+import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
 
 interface ProfileSummaryItem {
   icon: string;
@@ -27,6 +29,7 @@ interface ProfileFormState {
   phone: string;
   jobTitle: string;
   location: string;
+  avatarMediaId: string | null;
   avatarUrl: string | null;
 }
 
@@ -72,6 +75,7 @@ const EMPTY_FORM_STATE: ProfileFormState = {
   phone: '',
   jobTitle: '',
   location: '',
+  avatarMediaId: null,
   avatarUrl: null,
 };
 
@@ -83,12 +87,13 @@ const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [AdminFormModalComponent],
+  imports: [AdminFormModalComponent, MediaPickerModalComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
 export class ProfileComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly mediaLibraryService = inject(MediaLibraryService);
   private readonly toast = inject(ToastService);
 
   readonly isLoading = signal(true);
@@ -98,10 +103,13 @@ export class ProfileComponent implements OnInit {
   readonly originalFormState = signal<ProfileFormState>(cloneFormState(EMPTY_FORM_STATE));
   readonly formState = signal<ProfileFormState>(cloneFormState(EMPTY_FORM_STATE));
   readonly selectedAvatarFile = signal<File | null>(null);
+  readonly selectedAvatarMedia = signal<MediaAsset | null>(null);
+  readonly isAvatarMediaPickerOpen = signal(false);
   readonly avatarPreviewUrl = signal<string | null>(null);
   readonly isAvatarPreviewOpen = signal(false);
   readonly isClearPhotoModalOpen = signal(false);
   readonly avatarImageFailed = signal(false);
+  readonly avatarMediaFileTypes: MediaFileType[] = ['image', 'avatar'];
 
   readonly isDirty = computed(() => {
     return !areFormStatesEqual(this.originalFormState(), this.formState()) || !!this.selectedAvatarFile();
@@ -352,8 +360,10 @@ export class ProfileComponent implements OnInit {
 
       this.revokeAvatarPreview();
       this.selectedAvatarFile.set(optimizedAvatar);
+      this.selectedAvatarMedia.set(null);
       this.avatarPreviewUrl.set(URL.createObjectURL(optimizedAvatar));
       this.avatarImageFailed.set(false);
+      this.formState.update((state) => ({ ...state, avatarMediaId: null }));
       this.errorMessage.set(null);
     } catch {
       this.errorMessage.set('Unable to process avatar image.');
@@ -367,6 +377,31 @@ export class ProfileComponent implements OnInit {
     }
 
     this.isClearPhotoModalOpen.set(true);
+  }
+
+  openAvatarMediaPicker(): void {
+    if (this.isLoading() || this.isSaving()) {
+      return;
+    }
+
+    this.isAvatarMediaPickerOpen.set(true);
+  }
+
+  closeAvatarMediaPicker(): void {
+    this.isAvatarMediaPickerOpen.set(false);
+  }
+
+  selectAvatarMedia(asset: MediaAsset): void {
+    this.revokeAvatarPreview();
+    this.selectedAvatarFile.set(null);
+    this.selectedAvatarMedia.set(asset);
+    this.avatarImageFailed.set(false);
+    this.formState.update((state) => ({
+      ...state,
+      avatarMediaId: asset.id,
+      avatarUrl: asset.file_url,
+    }));
+    this.isAvatarMediaPickerOpen.set(false);
   }
 
   closeClearPhotoModal(): void {
@@ -395,16 +430,19 @@ export class ProfileComponent implements OnInit {
     this.isSaving.set(true);
     this.errorMessage.set(null);
     this.selectedAvatarFile.set(null);
+    this.selectedAvatarMedia.set(null);
     this.avatarPreviewUrl.set(null);
     this.avatarImageFailed.set(false);
     this.formState.update((state) => ({
       ...state,
+      avatarMediaId: null,
       avatarUrl: null,
     }));
 
     try {
       const savedProfile = await this.authService.updateCurrentUserProfile({
         avatar_url: null,
+        avatar_media_id: null,
       });
       const savedOriginalState = toFormState(savedProfile);
 
@@ -413,6 +451,7 @@ export class ProfileComponent implements OnInit {
       this.formState.update((state) => ({
         ...state,
         avatarUrl: null,
+        avatarMediaId: null,
       }));
 
       if (previousPreviewUrl) {
@@ -471,6 +510,7 @@ export class ProfileComponent implements OnInit {
 
     this.revokeAvatarPreview();
     this.selectedAvatarFile.set(null);
+    this.selectedAvatarMedia.set(null);
     this.formState.set(cloneFormState(this.originalFormState()));
     this.errorMessage.set(null);
     this.avatarImageFailed.set(false);
@@ -488,6 +528,7 @@ export class ProfileComponent implements OnInit {
       const currentForm = this.formState();
       const selectedAvatarFile = this.selectedAvatarFile();
       let avatarUrl = currentForm.avatarUrl;
+      let avatarMediaId = currentForm.avatarMediaId;
 
       if (selectedAvatarFile) {
         avatarUrl = await withTimeout(
@@ -495,6 +536,7 @@ export class ProfileComponent implements OnInit {
           20000,
           'Avatar upload is taking too long. Please try again with a smaller image.'
         );
+        avatarMediaId = null;
       }
 
       const savedProfile = await withTimeout(
@@ -502,6 +544,7 @@ export class ProfileComponent implements OnInit {
           full_name: emptyToNull(combineFullName(currentForm.firstName, currentForm.lastName)),
           email: currentForm.email.trim(),
           phone: emptyToNull(currentForm.phone),
+          avatar_media_id: avatarMediaId,
           avatar_url: avatarUrl,
         } satisfies CurrentUserProfileUpdate),
         15000,
@@ -515,7 +558,9 @@ export class ProfileComponent implements OnInit {
       this.formState.set(cloneFormState(savedForm));
       this.revokeAvatarPreview();
       this.selectedAvatarFile.set(null);
+      this.selectedAvatarMedia.set(null);
       this.avatarImageFailed.set(false);
+      await this.saveAvatarMediaUsage(savedProfile, avatarMediaId);
 
       window.dispatchEvent(
         new CustomEvent('current-user-profile-updated', {
@@ -563,6 +608,7 @@ export class ProfileComponent implements OnInit {
     this.formState.set(cloneFormState(formState));
     this.revokeAvatarPreview();
     this.selectedAvatarFile.set(null);
+    this.selectedAvatarMedia.set(null);
     this.avatarImageFailed.set(false);
   }
 
@@ -572,6 +618,7 @@ export class ProfileComponent implements OnInit {
     this.formState.set(cloneFormState(EMPTY_FORM_STATE));
     this.revokeAvatarPreview();
     this.selectedAvatarFile.set(null);
+    this.selectedAvatarMedia.set(null);
     this.avatarImageFailed.set(false);
   }
 
@@ -581,6 +628,26 @@ export class ProfileComponent implements OnInit {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       this.avatarPreviewUrl.set(null);
+    }
+  }
+
+  private async saveAvatarMediaUsage(
+    profile: AuthenticatedUserProfile,
+    mediaId: string | null | undefined
+  ): Promise<void> {
+    if (!mediaId) {
+      return;
+    }
+
+    try {
+      await this.mediaLibraryService.setPrimaryMediaUsage({
+        media_id: mediaId,
+        entity_type: 'profile',
+        entity_id: profile.id,
+        usage_type: 'avatar',
+      });
+    } catch {
+      this.toast.warn('Media usage', 'Profile was saved, but media usage tracking could not be updated.');
     }
   }
 }
@@ -596,6 +663,7 @@ function toFormState(profile: AuthenticatedUserProfile): ProfileFormState {
     // These fields are UI-only until matching columns exist in profiles.
     jobTitle: formatRoleName(profile.roles?.name),
     location: '',
+    avatarMediaId: profile.avatar_media_id ?? null,
     avatarUrl: profile.avatar_url,
   };
 }
@@ -614,6 +682,7 @@ function areFormStatesEqual(first: ProfileFormState, second: ProfileFormState): 
     first.phone.trim() === second.phone.trim() &&
     first.jobTitle.trim() === second.jobTitle.trim() &&
     first.location.trim() === second.location.trim() &&
+    first.avatarMediaId === second.avatarMediaId &&
     first.avatarUrl === second.avatarUrl
   );
 }

@@ -14,6 +14,7 @@ const LOW_STOCK_LIMIT = 25;
 const PRODUCT_SELECT = `
   id,
   category_id,
+  media_id,
   name,
   slug,
   description,
@@ -157,6 +158,7 @@ export class ProductsService {
       ...product,
       slug: product.slug || this.createSlug(product.name),
       sku: product.sku ?? null,
+      media_id: product.media_id ?? null,
       stock: product.stock ?? null,
       sold_count: product.sold_count ?? null,
       is_featured: product.is_featured ?? null,
@@ -183,6 +185,7 @@ export class ProductsService {
 
     return {
       category_id: payload.category_id ?? null,
+      media_id: payload.media_id ?? null,
       name,
       slug,
       description: payload.description ?? null,

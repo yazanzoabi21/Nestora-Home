@@ -3,6 +3,7 @@ export interface Category {
   name: string;
   slug: string;
   parent_id?: string | null;
+  media_id?: string | null;
   image_url?: string | null;
   description?: string | null;
   is_active?: boolean | null;
@@ -15,6 +16,7 @@ export interface CategoryMutationPayload {
   parent_id?: string | null;
   name: string;
   slug: string;
+  media_id?: string | null;
   image_url?: string | null;
   description?: string | null;
 }

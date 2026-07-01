@@ -18,6 +18,7 @@ export interface UserProfile {
     full_name: string | null;
     email: string;
     phone: string | null;
+    avatar_media_id?: string | null;
     avatar_url: string | null;
     is_active: boolean;
     created_at: string;
@@ -37,5 +38,6 @@ export interface CurrentUserProfileUpdate {
     full_name?: string | null;
     email?: string;
     phone?: string | null;
+    avatar_media_id?: string | null;
     avatar_url?: string | null;
 }

@@ -58,6 +58,11 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () =>
           import('./promotions-ads').then((m) => m.PromotionsAdsComponent),
       },
+      {
+        path: 'media-library',
+        loadComponent: () =>
+          import('./media-library').then((m) => m.MediaLibraryComponent),
+      },
       
       // {
       //   path: 'discounts',

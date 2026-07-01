@@ -15,6 +15,7 @@ interface SupabaseColumnError {
 const CATEGORY_SELECT_WITH_PARENT = `
   id,
   parent_id,
+  media_id,
   name,
   slug,
   image_url,
@@ -24,6 +25,7 @@ const CATEGORY_SELECT_WITH_PARENT = `
 
 const CATEGORY_SELECT = `
   id,
+  media_id,
   name,
   slug,
   image_url,
@@ -219,6 +221,7 @@ export class CategoriesService {
     return {
       ...category,
       parent_id: category.parent_id ?? null,
+      media_id: category.media_id ?? null,
       name,
       slug: category.slug || this.createSlug(name),
       image_url: category.image_url ?? null,
@@ -236,6 +239,7 @@ export class CategoriesService {
     const record: CategoryMutationPayload = {
       name,
       slug: payload.slug?.trim() || this.createSlug(name),
+      media_id: payload.media_id ?? null,
       image_url: payload.image_url?.trim() || null,
       description: payload.description?.trim() || null,
     };
