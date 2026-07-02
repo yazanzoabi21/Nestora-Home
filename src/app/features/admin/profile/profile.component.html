@@ -19,8 +19,8 @@
     </div>
   </section>
 
-  <section class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)_360px] 2xl:grid-cols-[280px_minmax(520px,1fr)_380px] xl:items-start">
-    <article class="profile-card">
+  <section class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)_360px] 2xl:grid-cols-[280px_minmax(520px,1fr)_380px] xl:items-stretch">
+    <article class="profile-card xl:row-span-2 xl:h-full">
       <h2 class="card-title">Profile Summary</h2>
 
       <div class="mt-6 flex flex-col items-center text-center">
@@ -97,72 +97,71 @@
       </div>
     </article>
 
-    <div class="space-y-6">
-      <article class="profile-card">
-        <div class="card-heading">
-          <span class="icon-box">
-            <i class="pi pi-sliders-h text-lg"></i>
-          </span>
-          <h2 class="card-title">Preferences</h2>
-        </div>
+    <article class="profile-card xl:col-start-2 xl:row-start-2">
+      <div class="card-heading">
+        <span class="icon-box">
+          <i class="pi pi-sliders-h text-lg"></i>
+        </span>
+        <h2 class="card-title">Preferences</h2>
+      </div>
 
-        <div class="space-y-4">
-          @for (preference of preferences; track preference.label) {
-            <div class="flex items-center justify-between gap-5">
-              <h3 class="text-sm font-bold text-[#342f29]">{{ preference.label }}</h3>
-              <button class="select-pill" type="button">
-                {{ preference.value }}
-                <i class="pi pi-chevron-down text-xs"></i>
-              </button>
+      <div class="space-y-4">
+        @for (preference of preferences; track preference.label) {
+          <div class="flex items-center justify-between gap-5">
+            <h3 class="text-sm font-bold text-[#342f29]">{{ preference.label }}</h3>
+            <button class="select-pill" type="button">
+              {{ preference.value }}
+              <i class="pi pi-chevron-down text-xs"></i>
+            </button>
+          </div>
+        }
+
+        @for (toggle of preferenceToggles; track toggle.label) {
+          <div class="flex items-center justify-between gap-5 pt-1">
+            <div>
+              <h3 class="text-sm font-bold text-[#342f29]">{{ toggle.label }}</h3>
+              <p class="mt-1 text-xs font-medium text-[#8d877e]">{{ toggle.description }}</p>
             </div>
-          }
+            <button
+              type="button"
+              [class]="toggle.enabled ? 'toggle-on' : 'toggle-off'"
+              [attr.aria-label]="toggle.label + (toggle.enabled ? ' enabled' : ' disabled')"
+            >
+              <span></span>
+            </button>
+          </div>
+        }
+      </div>
+    </article>
 
-          @for (toggle of preferenceToggles; track toggle.label) {
-            <div class="flex items-center justify-between gap-5 pt-1">
+    <article class="profile-card flex flex-col border-[#f1c7c2] xl:col-start-3 xl:row-start-1 xl:row-span-2 xl:h-full">
+      <div class="mb-5 flex items-center gap-3 text-[#dc3f35]">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff1f0]">
+          <i class="pi pi-exclamation-triangle text-lg"></i>
+        </span>
+        <h2 class="card-title text-[#dc3f35]">Danger Zone</h2>
+      </div>
+
+      <div class="flex flex-1 flex-col gap-3">
+        @for (action of dangerActions; track action.title) {
+          <div class="flex flex-col gap-3 rounded-xl border border-[#f1e3df] bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+            [class.mt-auto]="action.title === 'Delete Account'">
+            <div class="flex items-center gap-3">
+              <i class="{{ action.icon }} text-base text-[#dc3f35]"></i>
               <div>
-                <h3 class="text-sm font-bold text-[#342f29]">{{ toggle.label }}</h3>
-                <p class="mt-1 text-xs font-medium text-[#8d877e]">{{ toggle.description }}</p>
+                <h3 class="text-sm font-bold" [class.text-[#dc3f35]]="action.title === 'Delete Account'" [class.text-[#342f29]]="action.title !== 'Delete Account'">
+                  {{ action.title }}
+                </h3>
+                <p class="text-xs font-medium text-[#8d877e]">{{ action.description }}</p>
               </div>
-              <button
-                type="button"
-                [class]="toggle.enabled ? 'toggle-on' : 'toggle-off'"
-                [attr.aria-label]="toggle.label + (toggle.enabled ? ' enabled' : ' disabled')"
-              >
-                <span></span>
-              </button>
             </div>
-          }
-        </div>
-      </article>
-
-      <article class="profile-card border-[#f1c7c2]">
-        <div class="mb-5 flex items-center gap-3 text-[#dc3f35]">
-          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff1f0]">
-            <i class="pi pi-exclamation-triangle text-lg"></i>
-          </span>
-          <h2 class="card-title text-[#dc3f35]">Danger Zone</h2>
-        </div>
-
-        <div class="space-y-3">
-          @for (action of dangerActions; track action.title) {
-            <div class="flex flex-col gap-3 rounded-xl border border-[#f1e3df] bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex items-center gap-3">
-                <i class="{{ action.icon }} text-base text-[#dc3f35]"></i>
-                <div>
-                  <h3 class="text-sm font-bold" [class.text-[#dc3f35]]="action.title === 'Delete Account'" [class.text-[#342f29]]="action.title !== 'Delete Account'">
-                    {{ action.title }}
-                  </h3>
-                  <p class="text-xs font-medium text-[#8d877e]">{{ action.description }}</p>
-                </div>
-              </div>
-              <button type="button" [class]="'danger-action ' + action.buttonClass">
-                {{ action.buttonLabel }}
-              </button>
-            </div>
-          }
-        </div>
-      </article>
-    </div>
+            <button type="button" [class]="'danger-action ' + action.buttonClass">
+              {{ action.buttonLabel }}
+            </button>
+          </div>
+        }
+      </div>
+    </article>
   </section>
 
   @if (isAvatarPreviewOpen()) {
