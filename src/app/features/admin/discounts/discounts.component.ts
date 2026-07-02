@@ -524,8 +524,8 @@ export class DiscountsComponent implements OnInit {
     this.isDeleteModalOpen.set(true);
   }
 
-  closeDeleteDiscountModal(): void {
-    if (this.saving()) {
+  closeDeleteDiscountModal(force = false): void {
+    if (this.saving() && !force) {
       return;
     }
 
@@ -536,7 +536,7 @@ export class DiscountsComponent implements OnInit {
   async confirmDeleteDiscount(): Promise<void> {
     const discount = this.discountPendingDelete();
 
-    if (!discount) {
+    if (!discount || this.saving()) {
       return;
     }
 
@@ -545,7 +545,7 @@ export class DiscountsComponent implements OnInit {
     try {
       await this.discountsService.deleteDiscount(discount.id);
       this.discounts.update((items) => items.filter((item) => item.id !== discount.id));
-      this.closeDeleteDiscountModal();
+      this.closeDeleteDiscountModal(true);
       this.toast.deleted('Discount');
     } catch (error) {
       this.toast.failed(

@@ -1,5 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, signal, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  ContentChildren,
+  Directive,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  QueryList,
+  signal,
+  SimpleChanges,
+  TemplateRef,
+} from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminPaginationComponent } from '../admin-pagination';
 
@@ -93,6 +105,23 @@ export type AdminTableRow = Record<string, unknown> & {
   raw?: unknown;
 };
 
+export interface AdminTableCellTemplateContext {
+  $implicit: AdminTableRow;
+  row: AdminTableRow;
+  column: AdminTableColumn;
+  value: unknown;
+}
+
+@Directive({
+  selector: 'ng-template[adminTableCell]',
+  standalone: true,
+})
+export class AdminTableCellTemplateDirective {
+  @Input('adminTableCell') columnKey = '';
+
+  constructor(readonly templateRef: TemplateRef<AdminTableCellTemplateContext>) {}
+}
+
 @Component({
   selector: 'app-admin-table',
   standalone: true,
@@ -101,6 +130,9 @@ export type AdminTableRow = Record<string, unknown> & {
   styleUrl: './admin-table.component.css',
 })
 export class AdminTableComponent implements OnChanges {
+  @ContentChildren(AdminTableCellTemplateDirective)
+  private readonly cellTemplates?: QueryList<AdminTableCellTemplateDirective>;
+
   @Input() columns: AdminTableColumn[] = [];
   @Input() rows: AdminTableRow[] = [];
   @Input() loading = false;
@@ -291,6 +323,19 @@ export class AdminTableComponent implements OnChanges {
 
   cellValue(row: AdminTableRow, key: string): unknown {
     return row[key];
+  }
+
+  customCellTemplate(columnKey: string): TemplateRef<AdminTableCellTemplateContext> | null {
+    return this.cellTemplates?.find((template) => template.columnKey === columnKey)?.templateRef ?? null;
+  }
+
+  customCellContext(row: AdminTableRow, column: AdminTableColumn): AdminTableCellTemplateContext {
+    return {
+      $implicit: row,
+      row,
+      column,
+      value: this.cellValue(row, column.key),
+    };
   }
 
   actionPayload(row: AdminTableRow): AdminTableRow {

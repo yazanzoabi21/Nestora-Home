@@ -49,6 +49,11 @@ export const ADMIN_ROUTES: Routes = [
           import('./inventory').then((m) => m.InventoryComponent),
       },
       {
+        path: 'reviews',
+        loadComponent: () =>
+          import('./reviews').then((m) => m.ReviewsComponent),
+      },
+      {
         path: 'discounts',
         loadComponent: () =>
           import('./discounts').then((m) => m.DiscountsComponent),
@@ -62,6 +67,16 @@ export const ADMIN_ROUTES: Routes = [
         path: 'media-library',
         loadComponent: () =>
           import('./media-library').then((m) => m.MediaLibraryComponent),
+      },
+      {
+        path: 'shipping',
+        loadComponent: () =>
+          import('./shipping').then((m) => m.ShippingComponent),
+      },
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./payments').then((m) => m.PaymentsComponent),
       },
       
       // {

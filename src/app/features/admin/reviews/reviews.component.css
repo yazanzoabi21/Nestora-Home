@@ -1,0 +1,29 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.review-action-button {
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid #e5ded2;
+  background: #fffdfa;
+  color: #675f55;
+  transition: transform 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.review-action-button:hover {
+  transform: translateY(-1px);
+  background: #f7f4ef;
+  color: #1f2a1f;
+}
+
+.review-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}

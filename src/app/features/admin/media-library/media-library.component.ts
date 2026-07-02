@@ -321,8 +321,8 @@ export class MediaLibraryComponent implements OnInit {
     });
   }
 
-  closeEditModal(): void {
-    if (this.saving()) {
+  closeEditModal(force = false): void {
+    if (this.saving() && !force) {
       return;
     }
 
@@ -334,8 +334,8 @@ export class MediaLibraryComponent implements OnInit {
     this.deletingAsset.set(this.resolveAsset(asset));
   }
 
-  closeDeleteModal(): void {
-    if (this.saving()) {
+  closeDeleteModal(force = false): void {
+    if (this.saving() && !force) {
       return;
     }
 
@@ -345,7 +345,7 @@ export class MediaLibraryComponent implements OnInit {
   async saveAsset(): Promise<void> {
     const asset = this.editingAsset();
 
-    if (!asset) {
+    if (!asset || this.saving()) {
       return;
     }
 
@@ -365,7 +365,7 @@ export class MediaLibraryComponent implements OnInit {
       const updatedAsset = await this.mediaLibraryService.updateMediaAsset(asset.id, payload);
       this.assets.update((items) => items.map((item) => (item.id === updatedAsset.id ? updatedAsset : item)));
       this.toast.updated(this.translate.instant('MEDIA_LIBRARY.MEDIA_ASSET'));
-      this.closeEditModal();
+      this.closeEditModal(true);
     } catch (error) {
       this.toast.failed(
         this.translate.instant('MEDIA_LIBRARY.TOAST.SAVE_FAILED_TITLE'),
@@ -379,7 +379,7 @@ export class MediaLibraryComponent implements OnInit {
   async confirmDeleteAsset(): Promise<void> {
     const asset = this.deletingAsset();
 
-    if (!asset) {
+    if (!asset || this.saving()) {
       return;
     }
 
@@ -389,7 +389,7 @@ export class MediaLibraryComponent implements OnInit {
       await this.mediaLibraryService.softDeleteMediaAsset(asset.id);
       this.assets.update((items) => items.filter((item) => item.id !== asset.id));
       this.toast.success(this.translate.instant('MEDIA_LIBRARY.TOAST.DELETE_SUCCESS'));
-      this.closeDeleteModal();
+      this.closeDeleteModal(true);
     } catch (error) {
       this.toast.failed(
         this.translate.instant('MEDIA_LIBRARY.TOAST.DELETE_FAILED_TITLE'),

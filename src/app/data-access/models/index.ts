@@ -3,5 +3,8 @@ export * from './category.model';
 export * from './discount.model';
 export * from './inventory.model';
 export * from './media.model';
+export * from './payment.model';
 export * from './product.model';
 export * from './promotion.model';
+export * from './review.model';
+export * from './shipping.model';

@@ -1,0 +1,162 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'PAYMENTS.TITLE' | translate }}</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">{{ 'PAYMENTS.SUBTITLE' | translate }}</p>
+    </div>
+
+    <button type="button"
+      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-4 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:w-auto"
+      (click)="openMethodModal()">
+      <i class="pi pi-plus text-sm"></i>
+      <span>{{ 'PAYMENTS.ADD_METHOD' | translate }}</span>
+    </button>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.titleKey) {
+    <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-sm">
+    <header
+      class="flex flex-col gap-3 border-b border-[#e5ded2] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0">
+        <h2 class="text-lg font-black text-[#182116]">{{ 'PAYMENTS.METHODS_TITLE' | translate }}</h2>
+        <p class="mt-1 text-sm font-medium text-[#8d877e]">{{ 'PAYMENTS.METHODS_SUBTITLE' | translate }}</p>
+      </div>
+    </header>
+
+    <app-admin-table [columns]="paymentMethodColumns" [rows]="paymentMethodRows()" [loading]="loading()"
+      emptyTitle="PAYMENTS.EMPTY.TITLE" emptyText="PAYMENTS.EMPTY.TEXT" [selectable]="false" [showActions]="true"
+      [pageSize]="10" [showPageSize]="false">
+      <ng-template adminTableCell="method" let-row>
+        @let method = paymentMethodFromRow(row);
+        <div class="flex min-w-[300px] items-center gap-4">
+          <span
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eef4e8] text-xl text-[#5f6f43]">
+            <i [ngClass]="method.icon || 'pi pi-credit-card'"></i>
+          </span>
+          <div class="min-w-0">
+            <p class="truncate text-base font-black text-[#182116]">{{ method.name }}</p>
+            <p class="mt-1 text-xs font-black uppercase tracking-wide text-[#8d877e]">{{ method.code }}</p>
+            @if (method.description) {
+            <p class="mt-1 max-w-[320px] truncate text-xs font-semibold text-[#9a9389]">{{ method.description }}</p>
+            }
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template adminTableCell="provider" let-row>
+        <span class="text-sm font-bold text-[#675f55]">{{ row['provider'] }}</span>
+      </ng-template>
+
+      <ng-template adminTableCell="type" let-row>
+        @let method = paymentMethodFromRow(row);
+        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black"
+          [ngClass]="typeBadgeClass(method.type)">
+          <span class="h-2 w-2 rounded-full bg-current"></span>
+          {{ typeLabelKey(method.type) | translate }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="fees" let-row>
+        @let method = paymentMethodFromRow(row);
+        <span class="text-sm font-black" [ngClass]="method.fee_fixed > 0 || method.fee_percentage > 0 ? 'text-[#342f29]' : 'text-[#2f9f69]'">
+          {{ row['fees'] }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="limits" let-row>
+        <span class="text-sm font-bold text-[#675f55]">{{ row['limits'] }}</span>
+      </ng-template>
+
+      <ng-template adminTableCell="status" let-row>
+        @let method = paymentMethodFromRow(row);
+        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black"
+          [ngClass]="statusClass(method.is_active)">
+          <span class="h-2 w-2 rounded-full" [ngClass]="method.is_active ? 'bg-[#2f9f69]' : 'bg-[#dc3f35]'"></span>
+          {{ (method.is_active ? 'PAYMENTS.STATUS.ACTIVE' : 'PAYMENTS.STATUS.INACTIVE') | translate }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="actions" let-row>
+        @let method = paymentMethodFromRow(row);
+        <div class="flex items-center justify-end gap-3">
+          <button type="button" role="switch" dir="ltr"
+            class="relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#5f6f43]/25 disabled:cursor-not-allowed disabled:opacity-60"
+            [attr.aria-checked]="method.is_active" [title]="'PAYMENTS.ACTIONS.TOGGLE_STATUS' | translate"
+            [ngClass]="method.is_active ? 'bg-[#5f6f43]' : 'bg-[#d8d0c5]'" [disabled]="saving()"
+            (click)="toggleMethod(method)">
+            <span
+              class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200 ease-out"
+              [ngClass]="method.is_active ? 'translate-x-5' : 'translate-x-0'"></span>
+          </button>
+          <button type="button" class="payments-action-button" [title]="'PAYMENTS.ACTIONS.EDIT' | translate"
+            [disabled]="saving()" (click)="openMethodModal(method)">
+            <i class="pi pi-pencil"></i>
+          </button>
+          <button type="button" class="payments-action-button hover:bg-[#fff1f0] hover:text-[#dc3f35]"
+            [title]="'PAYMENTS.ACTIONS.DELETE' | translate" [disabled]="saving()" (click)="openDelete(method)">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      </ng-template>
+    </app-admin-table>
+  </section>
+
+  <app-admin-form-modal [isOpen]="methodModalOpen()" [title]="modalTitle()" [subtitle]="modalSubtitle()" size="xl"
+    submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL" [loading]="saving()" (close)="closeModals()"
+    (submit)="saveMethod()">
+    <form class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <app-admin-form-field type="text" name="paymentName" label="PAYMENTS.FIELDS.NAME"
+        [value]="methodForm().name" (valueChange)="updateMethodName(textValue($event))" />
+      <app-admin-form-field type="text" name="paymentCode" label="PAYMENTS.FIELDS.CODE"
+        [value]="methodForm().code" (valueChange)="updateMethodForm('code', textValue($event))" />
+      <app-admin-form-field type="text" name="paymentProvider" label="PAYMENTS.FIELDS.PROVIDER"
+        [value]="methodForm().provider" (valueChange)="updateMethodForm('provider', textValue($event))" />
+      <app-admin-form-field type="select" name="paymentType" label="PAYMENTS.FIELDS.TYPE"
+        [value]="methodForm().type" [options]="paymentTypeOptions" optionLabel="label" optionValue="value"
+        (valueChange)="updateMethodForm('type', $any($event))" />
+      <app-admin-form-field type="text" name="paymentIcon" label="PAYMENTS.FIELDS.ICON"
+        placeholder="PAYMENTS.PLACEHOLDERS.ICON" [value]="methodForm().icon"
+        (valueChange)="updateMethodForm('icon', textValue($event))" />
+      <app-admin-form-field type="number" name="paymentSortOrder" label="PAYMENTS.FIELDS.SORT_ORDER"
+        [value]="methodForm().sort_order" (valueChange)="updateMethodForm('sort_order', numberValue($event))" />
+      <app-admin-form-field type="number" name="paymentFixedFee" label="PAYMENTS.FIELDS.FIXED_FEE" [min]="0"
+        [value]="methodForm().fee_fixed" (valueChange)="updateMethodForm('fee_fixed', numberValue($event))" />
+      <app-admin-form-field type="number" name="paymentPercentageFee" label="PAYMENTS.FIELDS.PERCENTAGE_FEE"
+        [min]="0" [step]="0.01" [value]="methodForm().fee_percentage"
+        (valueChange)="updateMethodForm('fee_percentage', numberValue($event))" />
+      <app-admin-form-field type="number" name="paymentMinAmount" label="PAYMENTS.FIELDS.MIN_AMOUNT" [min]="0"
+        [value]="methodForm().min_amount" (valueChange)="updateMethodForm('min_amount', numberValue($event))" />
+      <app-admin-form-field type="number" name="paymentMaxAmount" label="PAYMENTS.FIELDS.MAX_AMOUNT" [min]="0"
+        [value]="methodForm().max_amount" (valueChange)="updateMethodForm('max_amount', numberValue($event))" />
+      <app-admin-form-field type="textarea" name="paymentDescription" label="PAYMENTS.FIELDS.DESCRIPTION" [rows]="3"
+        [value]="methodForm().description" (valueChange)="updateMethodForm('description', textValue($event))"
+        colSpan="2" />
+      <app-admin-form-field type="textarea" name="paymentInstructionsEn" label="PAYMENTS.FIELDS.INSTRUCTIONS_EN"
+        [rows]="3" [value]="methodForm().instructions_en"
+        (valueChange)="updateMethodForm('instructions_en', textValue($event))" />
+      <app-admin-form-field type="textarea" name="paymentInstructionsAr" label="PAYMENTS.FIELDS.INSTRUCTIONS_AR"
+        [rows]="3" [value]="methodForm().instructions_ar"
+        (valueChange)="updateMethodForm('instructions_ar', textValue($event))" />
+      <app-admin-form-field type="textarea" name="paymentConfig" label="PAYMENTS.FIELDS.CONFIG" [rows]="5"
+        helperText="PAYMENTS.HELPERS.CONFIG_JSON" [value]="methodForm().config"
+        (valueChange)="updateMethodForm('config', textValue($event))" colSpan="2" />
+      <app-admin-form-field type="checkbox" name="paymentActive" label="PAYMENTS.FIELDS.ACTIVE"
+        [value]="methodForm().is_active" (valueChange)="updateMethodForm('is_active', booleanValue($event))" />
+    </form>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="deleteModalOpen()" title="PAYMENTS.MODAL.DELETE_TITLE"
+    message="PAYMENTS.MODAL.DELETE_MESSAGE" variant="delete" submitLabel="COMMON.DELETE" cancelLabel="COMMON.CANCEL"
+    [loading]="saving()" (close)="closeModals()" (submit)="confirmDelete()">
+    @if (pendingDelete(); as method) {
+    <p class="mt-3 rounded-xl bg-[#f7f4ef] px-4 py-3 text-sm font-extrabold text-[#1f2a1f]">{{ method.name }}</p>
+    }
+  </app-admin-form-modal>
+</main>

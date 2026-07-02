@@ -222,8 +222,8 @@ export class InventoryComponent implements OnInit {
     this.isStockModalOpen.set(true);
   }
 
-  closeStockModal(): void {
-    if (this.saving()) {
+  closeStockModal(force = false): void {
+    if (this.saving() && !force) {
       return;
     }
 
@@ -242,6 +242,10 @@ export class InventoryComponent implements OnInit {
   async saveStockUpdate(): Promise<void> {
     const product = this.selectedProduct();
     const form = this.stockForm();
+
+    if (this.saving()) {
+      return;
+    }
 
     if (!product || form.newStock === null || form.newStock === undefined || Number(form.newStock) < 0) {
       this.toast.warn(
@@ -262,7 +266,7 @@ export class InventoryComponent implements OnInit {
         form.note.trim() || null
       );
       await this.loadInventory();
-      this.closeStockModal();
+      this.closeStockModal(true);
       this.toast.success(this.translate.instant('INVENTORY.TOAST.STOCK_UPDATED'));
     } catch (error) {
       this.toast.failed(

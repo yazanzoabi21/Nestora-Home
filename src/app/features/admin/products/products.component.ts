@@ -119,7 +119,6 @@ export class ProductsComponent implements OnInit {
   readonly productMediaFileTypes: MediaFileType[] = ['image', 'banner'];
 
   readonly productTableColumns: AdminTableColumn[] = [
-    { key: 'createdAt', label: 'PRODUCTS.TABLE.CREATED_AT', type: 'text' },
     { key: 'product', label: 'PRODUCTS.TABLE.PRODUCT', type: 'imageText' },
     { key: 'slug', label: 'PRODUCTS.TABLE.SLUG', type: 'text' },
     { key: 'category', label: 'PRODUCTS.TABLE.CATEGORY', type: 'badge' },
@@ -132,6 +131,7 @@ export class ProductsComponent implements OnInit {
     { key: 'newProduct', label: 'PRODUCTS.TABLE.NEW', type: 'badge' },
     { key: 'active', label: 'PRODUCTS.TABLE.ACTIVE', type: 'badge' },
     { key: 'status', label: 'PRODUCTS.TABLE.STATUS', type: 'status' },
+    { key: 'createdAt', label: 'PRODUCTS.TABLE.CREATED_AT', type: 'text' },
     { key: 'actions', label: '', type: 'actions' },
   ];
 
