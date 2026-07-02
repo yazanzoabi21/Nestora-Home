@@ -3,6 +3,9 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import {
+  MediaAsset,
+  MediaFileType,
+  MediaLibraryService,
   Promotion,
   PromotionDisplayType,
   PromotionMutationPayload,
@@ -15,6 +18,7 @@ import { AdminFormFieldComponent, AdminFormFieldValue } from '../../../shared/ui
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { AdminTableColumn, AdminTableComponent, AdminTableRow } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
+import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
 
 type PromotionModalMode = 'add' | 'edit';
 type PromotionStatusFilter = 'all' | PromotionStatus;
@@ -28,6 +32,7 @@ interface SelectOption<T extends string | null = string> {
 interface PromotionFormModel {
   title: string;
   description: string;
+  mediaId: string | null;
   imageUrl: string;
   buttonText: string;
   buttonLink: string;
@@ -58,8 +63,12 @@ type PromotionTableRow = AdminTableRow & {
     labelKey: string;
     className: string;
   };
-  startDate: string;
-  endDate: string;
+  validity: {
+    start: string;
+    end: string;
+  };
+  // startDate: string;
+  // endDate: string;
   actions: null;
 };
 
@@ -84,6 +93,7 @@ interface PaletteOption {
 const EMPTY_PROMOTION_FORM: PromotionFormModel = {
   title: '',
   description: '',
+  mediaId: null,
   imageUrl: '',
   buttonText: '',
   buttonLink: '',
@@ -106,6 +116,7 @@ const EMPTY_PROMOTION_FORM: PromotionFormModel = {
     AdminTableComponent,
     CommonModule,
     KpiCardComponent,
+    MediaPickerModalComponent,
     TranslatePipe,
   ],
   templateUrl: './promotions-ads.component.html',
@@ -113,6 +124,7 @@ const EMPTY_PROMOTION_FORM: PromotionFormModel = {
 })
 export class PromotionsAdsComponent implements OnInit {
   private readonly promotionsService = inject(PromotionsService);
+  private readonly mediaLibraryService = inject(MediaLibraryService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
 
@@ -130,10 +142,13 @@ export class PromotionsAdsComponent implements OnInit {
   readonly formError = signal<string | null>(null);
   readonly promotionForm = signal<PromotionFormModel>({ ...EMPTY_PROMOTION_FORM });
   readonly selectedPromotionImageFile = signal<File | null>(null);
+  readonly selectedPromotionMedia = signal<MediaAsset | null>(null);
+  readonly isPromotionMediaPickerOpen = signal(false);
   readonly promotionImagePreview = signal<string | null>(null);
   readonly imageUploading = signal(false);
   readonly imageError = signal<string | null>(null);
   readonly imageWasCleared = signal(false);
+  readonly promotionMediaFileTypes: MediaFileType[] = ['image', 'banner'];
 
   readonly displayTypeOptions: DisplayTypeOption[] = [
     { labelKey: 'PROMOTIONS_ADS.DISPLAY.ANNOUNCEMENT_BAR', value: 'bar', icon: 'pi pi-minus' },
@@ -244,9 +259,11 @@ export class PromotionsAdsComponent implements OnInit {
     { key: 'type', label: 'PROMOTIONS_ADS.TABLE.TYPE', type: 'badge' },
     { key: 'placement', label: 'PROMOTIONS_ADS.TABLE.PLACEMENT', type: 'text' },
     { key: 'status', label: 'PROMOTIONS_ADS.TABLE.STATUS', type: 'badge' },
-    { key: 'startDate', label: 'PROMOTIONS_ADS.TABLE.START_DATE', type: 'text' },
-    { key: 'endDate', label: 'PROMOTIONS_ADS.TABLE.END_DATE', type: 'text' },
-    { key: 'actions', label: 'PROMOTIONS_ADS.TABLE.ACTIONS', type: 'actions' },
+    // { key: 'startDate', label: 'PROMOTIONS_ADS.TABLE.START_DATE', type: 'text' },
+    // { key: 'endDate', label: 'PROMOTIONS_ADS.TABLE.END_DATE', type: 'text' },
+    { key: 'validity', label: 'PROMOTIONS_ADS.TABLE.VALIDITY', type: 'dateRange' as any },
+    { key: 'createdAt', label: 'PRODUCTS.TABLE.CREATED_AT', type: 'text' },
+    { key: 'actions', label: '', type: 'actions' },
   ];
 
   readonly stats = computed(() => this.promotionsService.getStatsFromPromotions(this.promotions()));
@@ -429,12 +446,14 @@ export class PromotionsAdsComponent implements OnInit {
     this.selectedPromotion.set(promotion);
     this.formError.set(null);
     this.selectedPromotionImageFile.set(null);
+    this.selectedPromotionMedia.set(null);
     this.imageError.set(null);
     this.imageWasCleared.set(false);
     this.promotionImagePreview.set(promotion.image_url ?? null);
     this.promotionForm.set({
       title: promotion.title,
       description: promotion.description ?? '',
+      mediaId: promotion.media_id ?? null,
       imageUrl: promotion.image_url ?? '',
       buttonText: promotion.button_text ?? '',
       buttonLink: promotion.button_link ?? '',
@@ -562,18 +581,21 @@ export class PromotionsAdsComponent implements OnInit {
 
     this.revokeObjectPreview();
     this.selectedPromotionImageFile.set(file);
+    this.selectedPromotionMedia.set(null);
     this.promotionImagePreview.set(URL.createObjectURL(file));
     this.imageWasCleared.set(false);
     this.imageError.set(null);
+    this.promotionForm.update((form) => ({ ...form, mediaId: null }));
   }
 
   clearPromotionImage(): void {
     this.revokeObjectPreview();
     this.selectedPromotionImageFile.set(null);
+    this.selectedPromotionMedia.set(null);
     this.promotionImagePreview.set(null);
     this.imageWasCleared.set(true);
     this.imageError.set(null);
-    this.updatePromotionForm('imageUrl', '');
+    this.promotionForm.update((form) => ({ ...form, mediaId: null, imageUrl: '' }));
   }
 
   updatePromotionImageUrl(value: AdminFormFieldValue): void {
@@ -581,10 +603,38 @@ export class PromotionsAdsComponent implements OnInit {
 
     this.revokeObjectPreview();
     this.selectedPromotionImageFile.set(null);
+    this.selectedPromotionMedia.set(null);
     this.promotionImagePreview.set(imageUrl || null);
     this.imageWasCleared.set(!imageUrl);
     this.imageError.set(null);
-    this.updatePromotionForm('imageUrl', imageUrl);
+    this.promotionForm.update((form) => ({ ...form, mediaId: null, imageUrl }));
+  }
+
+  openPromotionMediaPicker(): void {
+    if (this.saving() || this.imageUploading()) {
+      return;
+    }
+
+    this.isPromotionMediaPickerOpen.set(true);
+  }
+
+  closePromotionMediaPicker(): void {
+    this.isPromotionMediaPickerOpen.set(false);
+  }
+
+  selectPromotionMedia(asset: MediaAsset): void {
+    this.revokeObjectPreview();
+    this.selectedPromotionImageFile.set(null);
+    this.selectedPromotionMedia.set(asset);
+    this.promotionImagePreview.set(asset.file_url);
+    this.imageWasCleared.set(false);
+    this.imageError.set(null);
+    this.promotionForm.update((form) => ({
+      ...form,
+      mediaId: asset.id,
+      imageUrl: asset.file_url,
+    }));
+    this.isPromotionMediaPickerOpen.set(false);
   }
 
   currentFormStatus(): PromotionStatus {
@@ -641,8 +691,10 @@ export class PromotionsAdsComponent implements OnInit {
       if (selectedImageFile) {
         this.imageUploading.set(true);
         payload.image_url = await this.promotionsService.uploadPromotionImage(selectedImageFile);
+        payload.media_id = null;
       } else if (this.imageWasCleared() || payload.display_type === 'bar') {
         payload.image_url = null;
+        payload.media_id = null;
       }
 
       if (this.modalMode() === 'edit') {
@@ -657,10 +709,12 @@ export class PromotionsAdsComponent implements OnInit {
         this.promotions.update((items) =>
           items.map((item) => (item.id === updatedPromotion.id ? updatedPromotion : item))
         );
+        await this.savePromotionMediaUsage(updatedPromotion, payload.media_id);
         await this.deleteOldPromotionImageIfNeeded(promotion.image_url, updatedPromotion.image_url);
         this.toast.updated(this.translate.instant('PROMOTIONS_ADS.PROMOTION'));
       } else {
         const createdPromotion = await this.promotionsService.createPromotion(payload);
+        await this.savePromotionMediaUsage(createdPromotion, payload.media_id);
         this.promotions.update((items) => [createdPromotion, ...items]);
         this.searchTerm.set('');
         this.selectedStatus.set('all');
@@ -779,10 +833,10 @@ export class PromotionsAdsComponent implements OnInit {
       raw: promotion,
       promotion: {
         imageUrl: promotion.image_url?.trim() || null,
-        imageFallbackLabel: 'PROMOTIONS_ADS.IMAGE_OPTIONAL',
+        imageFallbackLabel: promotion.icon ? undefined : 'PROMOTIONS_ADS.IMAGE_OPTIONAL',
         title: promotion.title,
         subtitle: this.promotionTableSubtitle(promotion),
-        initials: promotion.icon ?? this.initials(promotion.title),
+        initials: promotion.icon?.trim() || this.initials(promotion.title),
       },
       type: {
         labelKey: this.typeLabelKey(type),
@@ -793,8 +847,13 @@ export class PromotionsAdsComponent implements OnInit {
         labelKey: `PROMOTIONS_ADS.STATUS.${status.toUpperCase()}`,
         className: this.statusBadgeClass(status),
       },
-      startDate: this.formatDate(promotion.start_date),
-      endDate: this.formatDate(promotion.end_date),
+      // startDate: this.formatDate(promotion.start_date),
+      // endDate: this.formatDate(promotion.end_date),
+      validity: {
+        start: this.formatDate(promotion.start_date),
+        end: this.formatDate(promotion.end_date),
+      },
+      createdAt: this.formatDate(promotion.created_at),
       actions: null,
     };
   }
@@ -907,6 +966,7 @@ export class PromotionsAdsComponent implements OnInit {
     return {
       title,
       description,
+      media_id: form.mediaId,
       image_url: form.imageUrl.trim() || null,
       button_text: form.buttonText.trim() || null,
       button_link: buttonLink || null,
@@ -960,6 +1020,8 @@ export class PromotionsAdsComponent implements OnInit {
   private resetImageState(): void {
     this.revokeObjectPreview();
     this.selectedPromotionImageFile.set(null);
+    this.selectedPromotionMedia.set(null);
+    this.isPromotionMediaPickerOpen.set(false);
     this.promotionImagePreview.set(null);
     this.imageUploading.set(false);
     this.imageError.set(null);
@@ -1024,6 +1086,26 @@ export class PromotionsAdsComponent implements OnInit {
       await this.promotionsService.deletePromotionImageByUrl(previousImageUrl);
     } catch {
       // Image cleanup should not roll back an already-saved promotion update.
+    }
+  }
+
+  private async savePromotionMediaUsage(promotion: Promotion, mediaId: string | null | undefined): Promise<void> {
+    if (!mediaId) {
+      return;
+    }
+
+    try {
+      await this.mediaLibraryService.setPrimaryMediaUsage({
+        media_id: mediaId,
+        entity_type: 'promotion',
+        entity_id: promotion.id,
+        usage_type: this.promotionType(promotion) === 'popup' ? 'popup' : 'banner',
+      });
+    } catch {
+      this.toast.warn(
+        this.translate.instant('MEDIA_PICKER.USAGE_SAVE_FAILED_TITLE'),
+        this.translate.instant('MEDIA_PICKER.USAGE_SAVE_FAILED_DETAIL')
+      );
     }
   }
 }

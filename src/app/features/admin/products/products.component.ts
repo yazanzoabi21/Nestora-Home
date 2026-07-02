@@ -6,6 +6,9 @@ import { TranslatePipe } from '@ngx-translate/core';
 import {
   CategoriesService,
   Category,
+  MediaAsset,
+  MediaFileType,
+  MediaLibraryService,
   Product,
   ProductFormModel,
   ProductMutationPayload,
@@ -23,7 +26,7 @@ import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { AdminTableColumn, AdminTableRow, AdminTableComponent } from '../../../shared/ui/admin-table';
 import { ExportReportComponent, ExportReportConfig } from '../../../shared/ui/export-report';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
-
+import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
 type ViewMode = 'list' | 'grid';
 type ProductModalMode = 'add' | 'edit';
 type CategoryFilterValue = 'all' | 'uncategorized' | string;
@@ -42,6 +45,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   slug: '',
   sku: '',
   categoryId: null,
+  mediaId: null,
   price: null,
   salePrice: null,
   stock: null,
@@ -67,6 +71,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
     ExportReportComponent,
     FormsModule,
     KpiCardComponent,
+    MediaPickerModalComponent,
     TranslatePipe,
   ],
   templateUrl: './products.component.html',
@@ -75,6 +80,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
 export class ProductsComponent implements OnInit {
   private readonly productsService = inject(ProductsService);
   private readonly categoriesService = inject(CategoriesService);
+  private readonly mediaLibraryService = inject(MediaLibraryService);
   private readonly uploadService = inject(UploadService);
   private readonly toast = inject(ToastService);
 
@@ -107,10 +113,12 @@ export class ProductsComponent implements OnInit {
   readonly selectedProduct = signal<Product | null>(null);
   readonly productForm = signal<ProductFormModel>({ ...EMPTY_PRODUCT_FORM });
   readonly selectedImageFile = signal<File | null>(null);
+  readonly selectedProductMedia = signal<MediaAsset | null>(null);
+  readonly isProductMediaPickerOpen = signal(false);
   readonly imagePreviewUrl = signal<string | null>(null);
+  readonly productMediaFileTypes: MediaFileType[] = ['image', 'banner'];
 
   readonly productTableColumns: AdminTableColumn[] = [
-    { key: 'createdAt', label: 'PRODUCTS.TABLE.CREATED_AT', type: 'text' },
     { key: 'product', label: 'PRODUCTS.TABLE.PRODUCT', type: 'imageText' },
     { key: 'slug', label: 'PRODUCTS.TABLE.SLUG', type: 'text' },
     { key: 'category', label: 'PRODUCTS.TABLE.CATEGORY', type: 'badge' },
@@ -123,6 +131,7 @@ export class ProductsComponent implements OnInit {
     { key: 'newProduct', label: 'PRODUCTS.TABLE.NEW', type: 'badge' },
     { key: 'active', label: 'PRODUCTS.TABLE.ACTIVE', type: 'badge' },
     { key: 'status', label: 'PRODUCTS.TABLE.STATUS', type: 'status' },
+    { key: 'createdAt', label: 'PRODUCTS.TABLE.CREATED_AT', type: 'text' },
     { key: 'actions', label: '', type: 'actions' },
   ];
 
@@ -413,6 +422,7 @@ export class ProductsComponent implements OnInit {
       slug: product.slug ?? '',
       sku: product.sku ?? '',
       categoryId: product.category_id,
+      mediaId: product.media_id ?? null,
       price: product.price,
       salePrice: product.sale_price,
       stock: product.stock,
@@ -428,6 +438,7 @@ export class ProductsComponent implements OnInit {
     });
 
     this.selectedImageFile.set(null);
+    this.selectedProductMedia.set(null);
     this.imagePreviewUrl.set(product.image_url);
     this.imageUploadError.set(null);
     this.isProductModalOpen.set(true);
@@ -458,14 +469,42 @@ export class ProductsComponent implements OnInit {
 
     this.imageUploadError.set(null);
     this.selectedImageFile.set(file);
+    this.selectedProductMedia.set(null);
+    this.productForm.update((form) => ({ ...form, mediaId: null }));
     this.imagePreviewUrl.set(URL.createObjectURL(file));
   }
 
   removeSelectedImage(): void {
     this.selectedImageFile.set(null);
+    this.selectedProductMedia.set(null);
     this.imagePreviewUrl.set(null);
     this.imageUploadError.set(null);
-    this.updateProductForm('imageUrl', '');
+    this.productForm.update((form) => ({ ...form, mediaId: null, imageUrl: '' }));
+  }
+
+  openProductMediaPicker(): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.isProductMediaPickerOpen.set(true);
+  }
+
+  closeProductMediaPicker(): void {
+    this.isProductMediaPickerOpen.set(false);
+  }
+
+  selectProductMedia(asset: MediaAsset): void {
+    this.selectedImageFile.set(null);
+    this.selectedProductMedia.set(asset);
+    this.imagePreviewUrl.set(asset.file_url);
+    this.imageUploadError.set(null);
+    this.productForm.update((form) => ({
+      ...form,
+      mediaId: asset.id,
+      imageUrl: asset.file_url,
+    }));
+    this.isProductMediaPickerOpen.set(false);
   }
 
   async saveProduct(): Promise<void> {
@@ -483,6 +522,7 @@ export class ProductsComponent implements OnInit {
       if (selectedImageFile) {
         try {
           imageUrl = await this.uploadService.uploadProductImage(selectedImageFile);
+          this.productForm.update((form) => ({ ...form, mediaId: null }));
         } catch (error) {
           throw new Error('PRODUCTS.UPLOAD_FAILED', { cause: error });
         }
@@ -491,12 +531,15 @@ export class ProductsComponent implements OnInit {
       const payload = this.buildProductPayload(imageUrl);
       const selectedProduct = this.selectedProduct();
       const isEdit = this.productModalMode() === 'edit' && !!selectedProduct;
+      let savedProduct: Product;
 
       if (isEdit) {
-        await this.productsService.updateProduct(selectedProduct.id, payload);
+        savedProduct = await this.productsService.updateProduct(selectedProduct.id, payload);
       } else {
-        await this.productsService.createProduct(payload);
+        savedProduct = await this.productsService.createProduct(payload);
       }
+
+      await this.saveProductMediaUsage(savedProduct, payload.media_id);
 
       await this.loadProducts();
       await this.loadCategories();
@@ -787,6 +830,8 @@ export class ProductsComponent implements OnInit {
 
   private resetImageState(): void {
     this.selectedImageFile.set(null);
+    this.selectedProductMedia.set(null);
+    this.isProductMediaPickerOpen.set(false);
     this.imagePreviewUrl.set(null);
     this.imageUploadError.set(null);
   }
@@ -802,6 +847,7 @@ export class ProductsComponent implements OnInit {
 
     return {
       category_id: form.categoryId,
+      media_id: form.mediaId,
       name: form.name.trim(),
       slug: form.slug.trim(),
       sku: form.sku.trim() || null,
@@ -940,6 +986,26 @@ export class ProductsComponent implements OnInit {
       );
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  private async saveProductMediaUsage(product: Product, mediaId: string | null | undefined): Promise<void> {
+    if (!mediaId) {
+      return;
+    }
+
+    try {
+      await this.mediaLibraryService.setPrimaryMediaUsage({
+        media_id: mediaId,
+        entity_type: 'product',
+        entity_id: product.id,
+        usage_type: 'main_image',
+      });
+    } catch {
+      this.toast.warn(
+        'Media usage not linked',
+        'Product was saved, but media usage tracking could not be updated.'
+      );
     }
   }
 }

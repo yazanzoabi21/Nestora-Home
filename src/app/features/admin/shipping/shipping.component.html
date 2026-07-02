@@ -1,0 +1,473 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'SHIPPING.TITLE' | translate }}</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        {{ 'SHIPPING.SUBTITLE' | translate }}
+      </p>
+    </div>
+
+    <button type="button"
+      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-4 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:w-auto"
+      (click)="openMethodModal()">
+      <i class="pi pi-plus text-sm"></i>
+      <span>{{ 'SHIPPING.ADD_METHOD' | translate }}</span>
+    </button>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.title) {
+    <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-2 shadow-sm">
+    <div class="grid gap-2 md:grid-cols-3">
+      @for (tab of tabs; track tab.value) {
+      <button type="button" class="flex h-11 items-center justify-center rounded-xl px-4 text-sm font-black transition"
+        [ngClass]="activeTab() === tab.value ? 'bg-[#eef4e8] text-[#5f6f43]' : 'text-[#675f55] hover:bg-[#fbfaf8]'"
+        (click)="activeTab.set(tab.value)">
+        {{ tab.label | translate }}
+      </button>
+      }
+    </div>
+  </section>
+
+  @if (loading()) {
+  <section
+    class="mt-6 flex min-h-72 flex-col items-center justify-center gap-3 rounded-2xl border border-[#e5ded2] bg-white px-6 py-12 text-center">
+    <i class="pi pi-spin pi-spinner text-3xl text-[#5f6f43]"></i>
+    <p class="text-sm font-bold text-[#675f55]">{{ 'SHIPPING.LOADING' | translate }}</p>
+  </section>
+  } @else {
+  @if (activeTab() === 'methods') {
+  <section class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+    @if (methods().length === 0) {
+    <article
+      class="rounded-[22px] border border-[#e5ded2] bg-white p-8 text-center shadow-sm md:col-span-2 xl:col-span-3">
+      <i class="pi pi-truck text-3xl text-[#5f6f43]"></i>
+      <h2 class="mt-3 text-lg font-black text-[#182116]">{{ 'SHIPPING.EMPTY.NO_METHODS_TITLE' | translate }}</h2>
+      <p class="mt-2 text-sm font-semibold text-[#8d877e]">{{ 'SHIPPING.EMPTY.NO_METHODS_TEXT' | translate }}</p>
+    </article>
+    }
+
+    @for (method of methods(); track method.id) {
+    <article class="rounded-[22px] border border-[#e5ded2] bg-white p-5 shadow-[0_14px_34px_rgba(52,47,41,0.07)]">
+      <header class="flex items-start justify-between gap-4">
+        <div class="flex min-w-0 items-center gap-3">
+          <span
+            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] bg-[#eef4e8] text-2xl text-[#5f6f43]">
+            <i [ngClass]="method.icon || 'pi pi-truck'"></i>
+          </span>
+          <div class="min-w-0">
+            <h2 class="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-black text-[#182116]">{{
+              method.name }}</h2>
+            <p class="mt-1 text-sm font-bold text-[#8d877e]">{{ method.carrier_name || ('SHIPPING.CARD.NO_CARRIER_SET' |
+              translate) }}</p>
+          </div>
+        </div>
+
+        <button type="button" role="switch"
+          class="relative h-8 w-14 shrink-0 overflow-hidden rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#5f6f43]/25 disabled:cursor-not-allowed disabled:opacity-60"
+          [attr.aria-checked]="method.is_active"
+          [attr.aria-label]="'SHIPPING.ACTIONS.TOGGLE_METHOD' | translate:{ name: method.name }"
+          [ngClass]="method.is_active ? 'bg-[#5f6f43]' : 'bg-[#d8d0c5]'" [disabled]="togglingMethodIds().has(method.id)"
+          (click)="toggleMethod(method)">
+          <span
+            class="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200 ease-out"
+            [ngClass]="method.is_active ? 'translate-x-6' : 'translate-x-0'"></span>
+        </button>
+      </header>
+
+      <dl class="mt-5 grid grid-cols-2 gap-3">
+        <div class="rounded-[16px] border border-[#eee6da] bg-[#fbfaf8] p-4">
+          <dt class="text-[11px] font-black uppercase text-[#8d877e]">{{ 'SHIPPING.CARD.COST' | translate }}</dt>
+          <dd class="mt-1 text-lg font-black text-[#342f29]">{{ formatMoney(method.base_cost) }}</dd>
+        </div>
+        <div class="rounded-[16px] border border-[#eee6da] bg-[#fbfaf8] p-4">
+          <dt class="text-[11px] font-black uppercase text-[#8d877e]">{{ 'SHIPPING.CARD.ETA' | translate }}</dt>
+          <dd class="mt-1 text-lg font-black text-[#342f29]">{{ formatEta(method) }}</dd>
+        </div>
+      </dl>
+
+      @if (method.free_shipping_min_amount !== null) {
+      <div class="mt-4 flex items-center gap-2 rounded-[16px] bg-[#e9f8ef] px-4 py-3 text-sm font-black text-[#117047]">
+        <i class="pi pi-check-circle"></i>
+        <span>{{ 'SHIPPING.CARD.FREE_DELIVERY_OVER' | translate:{ amount: formatMoney(method.free_shipping_min_amount) }
+          }}</span>
+      </div>
+      }
+
+      <div class="mt-4">
+        <h3 class="text-[11px] font-black uppercase text-[#8d877e]">{{ 'SHIPPING.CARD.ZONES' | translate }}</h3>
+        @if (getMethodZones(method.id).length > 0) {
+        <div class="mt-2 flex flex-wrap gap-2">
+          @for (zone of getVisibleMethodZones(method.id); track zone.id) {
+          <span class="rounded-full bg-[#f3eee7] px-3 py-1 text-xs font-black text-[#675f55]">{{ zone.name }}</span>
+          }
+          @if (getRemainingZonesCount(method.id) > 0) {
+          <span class="rounded-full bg-[#eef4e8] px-3 py-1 text-xs font-black text-[#5f6f43]">{{
+            'SHIPPING.CARD.MORE_ZONES' | translate:{ count: getRemainingZonesCount(method.id) } }}</span>
+          }
+        </div>
+        } @else {
+        <p class="mt-2 text-sm font-bold text-[#8d877e]">{{ 'SHIPPING.CARD.NO_ZONES_ASSIGNED' | translate }}</p>
+        }
+      </div>
+
+      <footer class="mt-5 grid grid-cols-[1fr_auto] gap-2">
+        <button type="button"
+          class="flex h-11 items-center justify-center gap-2 rounded-[14px] bg-[#eef4e8] px-4 text-sm font-black text-[#5f6f43] transition hover:bg-[#e3edd8]"
+          [disabled]="saving()" (click)="openMethodModal(method)">
+          <i class="pi pi-pencil"></i>
+          <span>{{ 'SHIPPING.CARD.EDIT_METHOD' | translate }}</span>
+        </button>
+        <button type="button"
+          class="flex h-11 w-11 items-center justify-center rounded-[14px] border border-[#f1b9b4] bg-[#fff1f0] text-[#b42318] transition hover:bg-white"
+          [title]="'SHIPPING.ACTIONS.DELETE' | translate" [disabled]="saving()"
+          (click)="openDelete('method', method.id, method.name)">
+          <i class="pi pi-trash"></i>
+        </button>
+      </footer>
+    </article>
+    }
+  </section>
+  }
+
+  @if (activeTab() === 'zones') {
+  <section class="mt-6 overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-sm">
+    <header
+      class="flex flex-col gap-3 border-b border-[#e5ded2] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0">
+        <h2 class="text-lg font-black text-[#182116]">{{ 'SHIPPING.TABS.ZONES' | translate }}</h2>
+        <p class="mt-1 text-sm font-medium text-[#8d877e]">{{ 'SHIPPING.ZONE.TABLE_SUBTITLE' | translate }}</p>
+      </div>
+      <button type="button"
+        class="flex h-10 items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-black text-[#342f29] transition hover:bg-[#fbfaf8]"
+        (click)="openZoneModal()">
+        <i class="pi pi-plus"></i>
+        <span>{{ 'SHIPPING.ADD_ZONE' | translate }}</span>
+      </button>
+    </header>
+
+    <app-admin-table [columns]="deliveryZoneColumns" [rows]="deliveryZoneRows()" [loading]="false"
+      emptyTitle="SHIPPING.EMPTY.NO_ZONES_TITLE" emptyText="SHIPPING.EMPTY.NO_ZONES_TEXT" [selectable]="false"
+      [showActions]="true" [pageSize]="10" [showPageSize]="false">
+      <ng-template adminTableCell="zone" let-row>
+        @let zone = deliveryZoneFromRow(row);
+        <div class="flex min-w-[240px] items-center gap-3">
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#eef4e8] text-[#5f6f43]">
+            <i class="pi pi-map-marker"></i>
+          </span>
+          <div class="min-w-0">
+            <p class="truncate text-sm font-black text-[#182116]">{{ zone.name }}</p>
+            <p class="mt-1 truncate text-xs font-bold text-[#8d877e]">
+              {{ zone.country || ('SHIPPING.ZONE.NO_COUNTRY_SET' | translate) }}
+            </p>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template adminTableCell="regions" let-row>
+        @let zone = deliveryZoneFromRow(row);
+        @if (zoneRegions(zone).length > 0) {
+        <div class="flex min-w-[260px] flex-wrap gap-2">
+          @for (region of visibleZoneRegions(zone); track region) {
+          <span class="rounded-full bg-[#f3eee7] px-3 py-1 text-xs font-bold text-[#675f55]">{{ region }}</span>
+          }
+          @if (remainingZoneRegionsCount(zone) > 0) {
+          <span class="rounded-full bg-[#eef4e8] px-3 py-1 text-xs font-black text-[#5f6f43]">+{{
+            remainingZoneRegionsCount(zone) }}</span>
+          }
+        </div>
+        } @else {
+        <span class="text-sm font-bold text-[#8d877e]">-</span>
+        }
+      </ng-template>
+
+      <ng-template adminTableCell="surcharge" let-row>
+        @let zone = deliveryZoneFromRow(row);
+        @if (zone.extra_cost > 0) {
+        <span class="text-sm font-black text-[#d98916]">+{{ formatCurrency(zone.extra_cost) }}</span>
+        } @else {
+        <span class="text-sm font-black text-[#2f9f69]">{{ 'SHIPPING.ZONE.NO_SURCHARGE' | translate }}</span>
+        }
+      </ng-template>
+
+      <ng-template adminTableCell="status" let-row>
+        @let zone = deliveryZoneFromRow(row);
+        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black"
+          [ngClass]="statusClass(zone.is_active)">
+          <span class="h-2 w-2 rounded-full" [ngClass]="zone.is_active ? 'bg-[#2f9f69]' : 'bg-[#dc3f35]'"></span>
+          {{ (zone.is_active ? 'SHIPPING.STATUS.ACTIVE' : 'SHIPPING.STATUS.INACTIVE') | translate }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="actions" let-row>
+        @let zone = deliveryZoneFromRow(row);
+        <div class="flex items-center justify-end gap-3">
+          <button type="button" role="switch" dir="ltr"
+            class="relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#5f6f43]/25 disabled:cursor-not-allowed disabled:opacity-60"
+            [attr.aria-checked]="zone.is_active" [title]="'SHIPPING.ACTIONS.TOGGLE_STATUS' | translate"
+            [ngClass]="zone.is_active ? 'bg-[#5f6f43]' : 'bg-[#d8d0c5]'" [disabled]="saving()"
+            (click)="toggleZone(zone)">
+            <span
+              class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200 ease-out"
+              [ngClass]="zone.is_active ? 'translate-x-5' : 'translate-x-0'"></span>
+          </button>
+          <button type="button" class="shipping-action-button" [title]="'SHIPPING.ACTIONS.EDIT' | translate"
+            [disabled]="saving()" (click)="openZoneModal(zone)">
+            <i class="pi pi-pencil"></i>
+          </button>
+          <button type="button" class="shipping-action-button hover:bg-[#fff1f0] hover:text-[#dc3f35]"
+            [title]="'SHIPPING.ACTIONS.DELETE' | translate" [disabled]="saving()"
+            (click)="openDelete('zone', zone.id, zone.name)">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      </ng-template>
+    </app-admin-table>
+
+    <footer class="flex items-center gap-2 bg-[#fbfaf8] px-4 py-3 text-sm font-medium text-[#675f55]">
+      <i class="pi pi-info-circle text-[#8d877e]"></i>
+      <span>{{ 'SHIPPING.ZONE.FOOTER_NOTE' | translate }}</span>
+    </footer>
+  </section>
+  }
+
+  @if (activeTab() === 'methodZones') {
+  <section class="mt-6 overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-sm">
+    <header
+      class="flex flex-col gap-3 border-b border-[#e5ded2] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <h2 class="text-lg font-black text-[#182116]">{{ 'SHIPPING.TABS.METHOD_ZONES' | translate }}</h2>
+      <button type="button"
+        class="flex h-10 items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-black text-[#342f29] transition hover:bg-[#fbfaf8]"
+        (click)="openMethodZoneModal()">
+        <i class="pi pi-plus"></i>
+        <span>{{ 'SHIPPING.ADD_METHOD_ZONE' | translate }}</span>
+      </button>
+    </header>
+
+    <app-admin-table [columns]="methodZoneColumns" [rows]="methodZoneRows()" [loading]="false"
+      emptyTitle="SHIPPING.EMPTY.NO_METHOD_ZONES_TITLE" emptyText="SHIPPING.EMPTY.NO_METHOD_ZONES_TEXT"
+      [selectable]="false" [showActions]="true" [pageSize]="10" [showPageSize]="false">
+      <ng-template adminTableCell="shippingMethod" let-row>
+        <span class="text-sm font-black text-[#182116]">{{ row['shippingMethod'] }}</span>
+      </ng-template>
+
+      <ng-template adminTableCell="deliveryZone" let-row>
+        <span class="text-sm font-bold text-[#675f55]">{{ row['deliveryZone'] }}</span>
+      </ng-template>
+
+      <ng-template adminTableCell="costOverride" let-row>
+        <span class="text-sm font-bold text-[#675f55]">{{ row['costOverride'] }}</span>
+      </ng-template>
+
+      <ng-template adminTableCell="freeShippingOverride" let-row>
+        <span class="text-sm font-bold text-[#675f55]">{{ row['freeShippingOverride'] }}</span>
+      </ng-template>
+
+      <ng-template adminTableCell="etaOverride" let-row>
+        <span class="text-sm font-bold text-[#675f55]">{{ row['etaOverride'] }}</span>
+      </ng-template>
+
+      <ng-template adminTableCell="status" let-row>
+        @let item = methodZoneFromRow(row);
+        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black"
+          [ngClass]="statusClass(item.is_active)">
+          <span class="h-2 w-2 rounded-full" [ngClass]="item.is_active ? 'bg-[#2f9f69]' : 'bg-[#dc3f35]'"></span>
+          {{ (item.is_active ? 'SHIPPING.STATUS.ACTIVE' : 'SHIPPING.STATUS.INACTIVE') | translate }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="actions" let-row>
+        @let item = methodZoneFromRow(row);
+        <div class="flex items-center justify-end gap-3">
+          <button type="button" role="switch" dir="ltr"
+            class="relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#5f6f43]/25 disabled:cursor-not-allowed disabled:opacity-60"
+            [attr.aria-checked]="item.is_active" [title]="'SHIPPING.ACTIONS.TOGGLE_STATUS' | translate"
+            [ngClass]="item.is_active ? 'bg-[#5f6f43]' : 'bg-[#d8d0c5]'" [disabled]="saving()"
+            (click)="toggleMethodZone(item)">
+            <span
+              class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200 ease-out"
+              [ngClass]="item.is_active ? 'translate-x-5' : 'translate-x-0'"></span>
+          </button>
+          <button type="button" class="shipping-action-button" [title]="'SHIPPING.ACTIONS.EDIT' | translate"
+            [disabled]="saving()" (click)="openMethodZoneModal(item)">
+            <i class="pi pi-pencil"></i>
+          </button>
+          <button type="button" class="shipping-action-button hover:bg-[#fff1f0] hover:text-[#dc3f35]"
+            [title]="'SHIPPING.ACTIONS.DELETE' | translate" [disabled]="saving()"
+            (click)="openDelete('methodZone', item.id, (item.shipping_method?.name || methodName(item.shipping_method_id)) + ' / ' + (item.delivery_zone?.name || zoneName(item.delivery_zone_id)))">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      </ng-template>
+    </app-admin-table>
+  </section>
+  }
+  }
+
+  @if (methodModalOpen()) {
+  <div class="fixed inset-0 z-[10000] overflow-y-auto overflow-x-hidden bg-black/50 px-4 py-6 backdrop-blur-sm sm:px-6"
+    (click)="$event.target === $event.currentTarget ? closeModals() : null">
+    <section class="mx-auto flex min-h-full w-full max-w-3xl items-center justify-center">
+      <div class="w-full overflow-hidden rounded-[22px] border border-[#e5ded2] bg-white shadow-xl" role="dialog"
+        aria-modal="true">
+        <header class="flex items-start justify-between gap-4 border-b border-[#e5ded2] px-5 py-4 sm:px-6">
+          <div class="flex min-w-0 items-center gap-3">
+            <span
+              class="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] bg-[#eef4e8] text-2xl text-[#5f6f43]">
+              <i [ngClass]="methodForm().icon || 'pi pi-truck'"></i>
+            </span>
+            <div class="min-w-0">
+              <h2 class="text-xl font-extrabold text-[#1f2a1f]">{{ methodModalTitle() | translate }}</h2>
+              <p class="mt-1 text-sm font-bold text-[#8d877e]">{{ methodModalSubtitle() | translate }}</p>
+            </div>
+          </div>
+
+          <button type="button" class="shipping-modal-close-button" [disabled]="saving()" (click)="closeModals()"
+            [attr.aria-label]="'COMMON.CLOSE' | translate">
+            <i class="pi pi-times"></i>
+          </button>
+        </header>
+
+        <div class="max-h-[70vh] overflow-y-auto px-5 py-5 sm:px-6">
+          <form class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <app-admin-form-field type="text" name="methodName" [label]="'SHIPPING.FIELDS.METHOD_NAME'"
+              [value]="methodForm().name" (valueChange)="updateMethodName(textValue($event))" />
+            <app-admin-form-field type="text" name="methodCode" [label]="'SHIPPING.FIELDS.CODE'" [required]="true"
+              [value]="methodForm().code" (valueChange)="updateMethodForm('code', textValue($event))" />
+            <app-admin-form-field type="text" name="carrierName" [label]="'SHIPPING.FIELDS.CARRIER'"
+              [value]="methodForm().carrier_name" (valueChange)="updateMethodForm('carrier_name', textValue($event))" />
+
+            <div class="grid grid-cols-[auto_1fr] items-end gap-3">
+              <span
+                class="mb-1 flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#eef4e8] text-xl text-[#5f6f43]">
+                <i [ngClass]="methodForm().icon || 'pi pi-truck'"></i>
+              </span>
+              <app-admin-form-field type="text" name="methodIcon" [label]="'SHIPPING.FIELDS.ICON'"
+                [placeholder]="'SHIPPING.PLACEHOLDERS.ICON'" [value]="methodForm().icon"
+                (valueChange)="updateMethodForm('icon', textValue($event))" />
+            </div>
+
+            <app-admin-form-field type="number" name="baseCost" [label]="'SHIPPING.FIELDS.PRICE'" [min]="0"
+              [value]="methodForm().base_cost" (valueChange)="updateMethodForm('base_cost', numberValue($event))" />
+            <app-admin-form-field type="number" name="freeMinimum" [label]="'SHIPPING.FIELDS.FREE_OVER'" [min]="0"
+              [placeholder]="'SHIPPING.PLACEHOLDERS.FREE_OVER'" [value]="methodForm().free_shipping_min_amount"
+              (valueChange)="updateMethodForm('free_shipping_min_amount', numberValue($event))" />
+            <app-admin-form-field type="text" name="methodEtaLabel" [label]="'SHIPPING.FIELDS.ESTIMATED_DELIVERY'"
+              [placeholder]="'SHIPPING.PLACEHOLDERS.ETA_LABEL'" [value]="methodForm().eta_label"
+              (valueChange)="updateMethodForm('eta_label', textValue($event))" />
+            <app-admin-form-field type="number" name="methodEtaMin" [label]="'SHIPPING.FIELDS.ETA_MIN_DAYS'" [min]="0"
+              [value]="methodForm().eta_min_days"
+              (valueChange)="updateMethodForm('eta_min_days', numberValue($event))" />
+            <app-admin-form-field type="number" name="methodEtaMax" [label]="'SHIPPING.FIELDS.ETA_MAX_DAYS'" [min]="0"
+              [value]="methodForm().eta_max_days"
+              (valueChange)="updateMethodForm('eta_max_days', numberValue($event))" />
+            <app-admin-form-field type="number" name="sortOrder" [label]="'SHIPPING.FIELDS.SORT_ORDER'"
+              [value]="methodForm().sort_order" (valueChange)="updateMethodForm('sort_order', numberValue($event))" />
+            <app-admin-form-field type="textarea" name="methodDescription" [label]="'SHIPPING.FIELDS.DESCRIPTION'"
+              [rows]="4" [value]="methodForm().description"
+              (valueChange)="updateMethodForm('description', textValue($event))" colSpan="2" />
+          </form>
+
+          <button type="button"
+            class="mt-5 flex w-full items-center justify-between gap-4 rounded-[18px] border border-[#d7ead8] bg-[#f3fbf5] px-4 py-3 text-start"
+            (click)="updateMethodForm('is_active', !methodForm().is_active)">
+            <span>
+              <strong class="block text-sm font-black text-[#117047]">{{ 'SHIPPING.HELPERS.METHOD_ENABLED' | translate
+                }}</strong>
+              <small class="mt-1 block text-xs font-bold text-[#6e8d74]">{{ 'SHIPPING.HELPERS.AVAILABLE_AT_CHECKOUT' |
+                translate }}</small>
+            </span>
+            <span class="flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition"
+              [ngClass]="methodForm().is_active ? 'bg-[#5f6f43]' : 'bg-[#d8d0c5]'">
+              <span class="h-6 w-6 rounded-full bg-white shadow-sm transition"
+                [ngClass]="methodForm().is_active ? 'translate-x-6' : 'translate-x-0'"></span>
+            </span>
+          </button>
+        </div>
+
+        <footer
+          class="flex flex-col-reverse gap-3 border-t border-[#e5ded2] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <button type="button"
+            class="h-11 rounded-[14px] border border-[#e5ded2] bg-white px-5 text-sm font-black text-[#675f55] transition hover:bg-[#fbfaf8]"
+            [disabled]="saving()" (click)="closeModals()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+          <button type="button"
+            class="flex h-11 items-center justify-center gap-2 rounded-[14px] bg-[#5f6f43] px-5 text-sm font-black text-white transition hover:bg-[#4f5e36] disabled:cursor-not-allowed disabled:opacity-60"
+            [disabled]="saving()" (click)="saveMethod()">
+            @if (saving()) {
+            <i class="pi pi-spin pi-spinner text-sm"></i>
+            }
+            <span>{{ (methodForm().id ? 'COMMON.SAVE_CHANGES' : 'SHIPPING.CREATE_METHOD') | translate }}</span>
+          </button>
+        </footer>
+      </div>
+    </section>
+  </div>
+  }
+
+  <app-admin-form-modal [isOpen]="zoneModalOpen()" title="SHIPPING.MODAL.DELIVERY_ZONE_TITLE"
+    subtitle="SHIPPING.MODAL.DELIVERY_ZONE_SUBTITLE" size="lg" submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL"
+    [loading]="saving()" (close)="closeModals()" (submit)="saveZone()">
+    <form class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <app-admin-form-field type="text" name="zoneName" [label]="'SHIPPING.FIELDS.NAME'" [value]="zoneForm().name"
+        (valueChange)="updateZoneForm('name', textValue($event))" />
+      <app-admin-form-field type="text" name="zoneCountry" [label]="'SHIPPING.FIELDS.COUNTRY'"
+        [value]="zoneForm().country" (valueChange)="updateZoneForm('country', textValue($event))" />
+      <app-admin-form-field type="textarea" name="zoneCities" [label]="'SHIPPING.FIELDS.CITIES'" [rows]="3"
+        [value]="zoneForm().cities" [helperText]="'SHIPPING.HELPERS.COMMA_SEPARATED'"
+        (valueChange)="updateZoneForm('cities', textValue($event))" />
+      <app-admin-form-field type="textarea" name="zoneAreas" [label]="'SHIPPING.FIELDS.AREAS'" [rows]="3"
+        [value]="zoneForm().areas" [helperText]="'SHIPPING.HELPERS.COMMA_SEPARATED'"
+        (valueChange)="updateZoneForm('areas', textValue($event))" />
+      <app-admin-form-field type="number" name="zoneExtraCost" [label]="'SHIPPING.FIELDS.EXTRA_COST'"
+        [value]="zoneForm().extra_cost" (valueChange)="updateZoneForm('extra_cost', numberValue($event))" />
+      <app-admin-form-field type="checkbox" name="zoneActive" [label]="'SHIPPING.FIELDS.ACTIVE'"
+        [value]="zoneForm().is_active" (valueChange)="updateZoneForm('is_active', booleanValue($event))" />
+    </form>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="methodZoneModalOpen()" title="SHIPPING.MODAL.METHOD_ZONE_TITLE"
+    subtitle="SHIPPING.MODAL.METHOD_ZONE_SUBTITLE" size="lg" submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL"
+    [loading]="saving()" (close)="closeModals()" (submit)="saveMethodZone()">
+    <form class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <app-admin-form-field type="select" name="methodZoneMethod" [label]="'SHIPPING.FIELDS.SHIPPING_METHOD'"
+        [value]="methodZoneForm().shipping_method_id" [options]="methodOptions()" optionLabel="label"
+        optionValue="value" (valueChange)="updateMethodZoneForm('shipping_method_id', $any($event))" />
+      <app-admin-form-field type="select" name="methodZoneZone" [label]="'SHIPPING.FIELDS.DELIVERY_ZONE'"
+        [value]="methodZoneForm().delivery_zone_id" [options]="zoneOptions()" optionLabel="label" optionValue="value"
+        (valueChange)="updateMethodZoneForm('delivery_zone_id', $any($event))" />
+      <app-admin-form-field type="number" name="costOverride" [label]="'SHIPPING.FIELDS.COST_OVERRIDE'"
+        [value]="methodZoneForm().cost_override"
+        (valueChange)="updateMethodZoneForm('cost_override', numberValue($event))" />
+      <app-admin-form-field type="number" name="freeOverride" [label]="'SHIPPING.FIELDS.FREE_SHIPPING_OVERRIDE'"
+        [value]="methodZoneForm().free_shipping_min_amount_override"
+        (valueChange)="updateMethodZoneForm('free_shipping_min_amount_override', numberValue($event))" />
+      <app-admin-form-field type="number" name="etaMinOverride" [label]="'SHIPPING.FIELDS.ETA_MIN_DAYS_OVERRIDE'"
+        [value]="methodZoneForm().eta_min_days_override"
+        (valueChange)="updateMethodZoneForm('eta_min_days_override', numberValue($event))" />
+      <app-admin-form-field type="number" name="etaMaxOverride" [label]="'SHIPPING.FIELDS.ETA_MAX_DAYS_OVERRIDE'"
+        [value]="methodZoneForm().eta_max_days_override"
+        (valueChange)="updateMethodZoneForm('eta_max_days_override', numberValue($event))" />
+      <app-admin-form-field type="text" name="etaLabelOverride" [label]="'SHIPPING.FIELDS.ETA_LABEL_OVERRIDE'"
+        [value]="methodZoneForm().eta_label_override"
+        (valueChange)="updateMethodZoneForm('eta_label_override', textValue($event))" />
+      <app-admin-form-field type="checkbox" name="methodZoneActive" [label]="'SHIPPING.FIELDS.ACTIVE'"
+        [value]="methodZoneForm().is_active" (valueChange)="updateMethodZoneForm('is_active', booleanValue($event))" />
+    </form>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="deleteModalOpen()" title="SHIPPING.MODAL.DELETE_TITLE"
+    message="SHIPPING.MODAL.DELETE_MESSAGE" variant="delete" submitLabel="COMMON.DELETE" cancelLabel="COMMON.CANCEL"
+    [loading]="saving()" (close)="closeModals()" (submit)="confirmDelete()">
+    @if (pendingDelete(); as target) {
+    <p class="mt-3 max-w-sm text-sm font-bold text-[#8d877e]">{{ target.label }}</p>
+    }
+  </app-admin-form-modal>
+</main>

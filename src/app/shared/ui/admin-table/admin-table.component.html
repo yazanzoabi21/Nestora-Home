@@ -71,6 +71,12 @@
 
               @for (column of visibleColumns; track column.key) {
                 <td class="px-4 py-4">
+                  @if (customCellTemplate(column.key); as template) {
+                    <ng-container
+                      [ngTemplateOutlet]="template"
+                      [ngTemplateOutletContext]="customCellContext(row, column)"
+                    ></ng-container>
+                  } @else {
                   @switch (column.type) {
                     @case ('codeName') {
                       @let cell = codeNameCell(row, column.key);
@@ -281,6 +287,7 @@
                     @default {
                       <span class="admin-table-text text-sm font-semibold text-[#342f29]">{{ textCell(row, column.key) }}</span>
                     }
+                  }
                   }
                 </td>
               }

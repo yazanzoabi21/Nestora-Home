@@ -1,0 +1,92 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">Orders</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        {{ stats().totalOrders }} total orders · {{ stats().processing }} processing
+      </p>
+    </div>
+
+    <button type="button"
+      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-semibold text-[#342f29] shadow-sm transition hover:bg-[#f7f4ef] sm:w-auto"
+      (click)="exportCsv()">
+      <i class="pi pi-download text-sm text-[#5f6f43]"></i>
+      <span>Export CSV</span>
+    </button>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.title) {
+      <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_180px_180px_180px] xl:items-center">
+      <app-admin-form-field type="search" name="orderSearch" placeholder="Search by order ID or customer..."
+        [value]="searchTerm()" (valueChange)="updateSearch($event)" />
+
+      <app-admin-form-field type="select" name="orderStatusFilter" [value]="selectedDelivery()"
+        [options]="deliveryOptions" optionLabel="label" optionValue="value" (valueChange)="updateDelivery($event)" />
+
+      <app-admin-form-field type="select" name="orderPaymentFilter" [value]="selectedPayment()"
+        [options]="paymentOptions" optionLabel="label" optionValue="value" (valueChange)="updatePayment($event)" />
+
+      <app-admin-form-field type="select" name="orderDateFilter" [value]="selectedDate()" [options]="dateOptions"
+        optionLabel="label" optionValue="value" (valueChange)="updateDate($event)" />
+    </div>
+  </section>
+
+  <app-admin-table class="mt-6 block" [columns]="orderTableColumns" [rows]="tableRows()" [loading]="loading()"
+    emptyTitle="No orders found" emptyText="Orders matching your filters will appear here." [selectable]="false"
+    [showActions]="true" actionsMode="crud" [pageSize]="8" [pageSizeOptions]="[8, 16, 32]" [showPageSize]="false"
+    [showPaginationSummary]="true" (rowView)="openOrderDetails($event)">
+    <ng-template adminTableCell="orderId" let-row="row">
+      <span class="text-sm font-black text-[#5f6f43]">{{ row.orderId }}</span>
+    </ng-template>
+
+    <ng-template adminTableCell="customer" let-value="value">
+      <div class="min-w-[220px]">
+        <p class="truncate text-base font-extrabold text-[#182116]">{{ value.title }}</p>
+        <p class="mt-1 truncate text-sm font-medium text-[#9a9389]">{{ value.subtitle }}</p>
+      </div>
+    </ng-template>
+
+    <ng-template adminTableCell="actions" let-row="row">
+      <div class="flex items-center justify-end">
+        <button type="button"
+          class="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[#dfe7d5] bg-[#f7faf3] px-3 text-sm font-bold text-[#5f6f43] transition hover:bg-[#eef4e8]"
+          (click)="openOrderDetails(row)">
+          <i class="pi pi-eye text-xs"></i>
+          <span>View</span>
+        </button>
+      </div>
+    </ng-template>
+  </app-admin-table>
+
+  <app-admin-form-modal [isOpen]="!!selectedOrder()" title="Order Details" subtitle="Review the selected order"
+    size="md" submitLabel="Close" cancelLabel="Cancel" (close)="closeOrderDetails()" (submit)="closeOrderDetails()">
+    @if (selectedOrder(); as order) {
+      <section class="grid gap-3 text-sm font-semibold text-[#342f29]">
+        <div class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.08em] text-[#9a9389]">Order</p>
+          <h2 class="mt-1 text-xl font-black text-[#182116]">{{ order.id }}</h2>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Customer</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.customerName }}</p>
+            <p class="mt-1 text-[#8d877e]">{{ order.customerEmail }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Summary</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.items }} items · {{ order.total }}</p>
+            <p class="mt-1 text-[#8d877e]">{{ order.date }}</p>
+          </div>
+        </div>
+      </section>
+    }
+  </app-admin-form-modal>
+</main>

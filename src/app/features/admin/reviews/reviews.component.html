@@ -1,0 +1,296 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'REVIEWS.TITLE' | translate }}</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        {{ 'REVIEWS.SUBTITLE' | translate }}
+      </p>
+    </div>
+
+    <button type="button"
+      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-semibold text-[#342f29] shadow-sm transition hover:bg-[#f7f4ef] sm:w-auto"
+      [disabled]="loading()" (click)="refreshReviews()">
+      <i class="pi pi-refresh text-sm text-[#5f6f43]" [class.pi-spin]="loading()"></i>
+      <span>{{ 'REVIEWS.REFRESH' | translate }}</span>
+    </button>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.titleKey) {
+    <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="grid gap-3 xl:grid-cols-[minmax(260px,1fr)_180px_160px_220px_auto] xl:items-center">
+      <app-admin-form-field type="search" name="reviewSearch" placeholder="REVIEWS.SEARCH_PLACEHOLDER"
+        [value]="filters().search" (valueChange)="updateFilter('search', textValue($event))" />
+
+      <app-admin-form-field type="select" name="reviewStatusFilter" [value]="filters().status" [options]="statusOptions"
+        optionLabel="label" optionValue="value" (valueChange)="updateFilter('status', $any($event))" />
+
+      <app-admin-form-field type="select" name="reviewRatingFilter" [value]="filters().rating" [options]="ratingOptions"
+        optionLabel="label" optionValue="value" (valueChange)="updateFilter('rating', $any($event))" />
+
+      <app-admin-form-field type="select" name="reviewProductFilter" [value]="filters().productId"
+        [options]="productOptions()" optionLabel="label" optionValue="value"
+        (valueChange)="updateFilter('productId', $any($event))" />
+
+      <button type="button"
+        class="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-[#fbfaf8] px-4 text-sm font-semibold text-[#342f29] transition hover:bg-white"
+        (click)="clearFilters()">
+        <i class="pi pi-filter-slash text-sm text-[#8d877e]"></i>
+        <span>{{ 'COMMON.CLEAR' | translate }}</span>
+      </button>
+    </div>
+
+    <p class="mt-3 px-1 text-sm font-semibold text-[#8d877e]">
+      {{ 'REVIEWS.RESULTS' | translate: { count: filteredReviews().length } }}
+    </p>
+  </section>
+
+  <section class="mt-6 overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-sm">
+    @if (loading()) {
+    <div class="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+      <i class="pi pi-spin pi-spinner text-3xl text-[#5f6f43]"></i>
+      <p class="text-sm font-bold text-[#675f55]">{{ 'COMMON.LOADING' | translate }}</p>
+    </div>
+    } @else if (reviews().length === 0) {
+    <div class="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+      <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eef4e8] text-2xl text-[#5f6f43]">
+        <i class="pi pi-star"></i>
+      </span>
+      <h2 class="text-lg font-black text-[#1f2a1f]">{{ 'REVIEWS.NO_REVIEWS' | translate }}</h2>
+      <p class="max-w-md text-sm font-semibold text-[#8d877e]">{{ 'REVIEWS.NO_REVIEWS_TEXT' | translate }}</p>
+    </div>
+    } @else if (filteredReviews().length === 0) {
+    <div class="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+      <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f3eee7] text-2xl text-[#675f55]">
+        <i class="pi pi-search"></i>
+      </span>
+      <h2 class="text-lg font-black text-[#1f2a1f]">{{ 'REVIEWS.NO_RESULTS' | translate }}</h2>
+      <p class="max-w-md text-sm font-semibold text-[#8d877e]">{{ 'REVIEWS.NO_RESULTS_TEXT' | translate }}</p>
+    </div>
+    } @else {
+    <div class="w-full overflow-x-auto">
+      <table class="min-w-[1100px] w-full border-collapse text-left">
+        <thead class="bg-[#fbfaf8]">
+          <tr class="border-b border-[#e5ded2] text-xs font-black uppercase tracking-wide text-[#8d877e]">
+            <th class="px-4 py-3">{{ 'REVIEWS.PRODUCT' | translate }}</th>
+            <th class="px-4 py-3">{{ 'REVIEWS.CUSTOMER' | translate }}</th>
+            <th class="px-4 py-3">{{ 'REVIEWS.RATING' | translate }}</th>
+            <th class="px-4 py-3">{{ 'REVIEWS.COMMENT' | translate }}</th>
+            <th class="px-4 py-3">{{ 'REVIEWS.STATUS' | translate }}</th>
+            <th class="px-4 py-3">{{ 'REVIEWS.ADMIN_REPLY' | translate }}</th>
+            <th class="px-4 py-3">{{ 'REVIEWS.CREATED_AT' | translate }}</th>
+            <th class="px-4 py-3 text-right">{{ 'REVIEWS.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (review of filteredReviews(); track review.id) {
+          <tr class="border-b border-[#f0ebe4] align-top transition hover:bg-[#fffdfa]">
+            <td class="px-4 py-4">
+              <div class="flex min-w-0 items-center gap-3">
+                <span
+                  class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e5ded2] bg-[#f7f4ef] text-sm font-black text-[#5f6f43]">
+                  @if (review.product?.image_url) {
+                  <img class="h-full w-full object-cover" [src]="review.product?.image_url"
+                    [alt]="productName(review)" />
+                  } @else {
+                  <span>{{ initials(productName(review)) }}</span>
+                  }
+                </span>
+                <span class="min-w-0">
+                  <strong
+                    class="block max-w-[14rem] overflow-hidden text-ellipsis whitespace-nowrap text-sm font-black text-[#182116]">
+                    {{ productName(review) }}
+                  </strong>
+                  <small class="mt-1 block text-xs font-bold text-[#8d877e]">{{ review.product?.slug || '-' }}</small>
+                </span>
+              </div>
+            </td>
+
+            <td class="px-4 py-4">
+              <div class="flex min-w-0 items-center gap-3">
+                <span
+                  class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#e5ded2] bg-[#eef4e8] text-xs font-black text-[#5f6f43]">
+                  @if (review.customer?.avatar_url) {
+                  <img class="h-full w-full object-cover" [src]="review.customer?.avatar_url"
+                    [alt]="customerName(review)" />
+                  } @else {
+                  <span>{{ initials(customerName(review)) }}</span>
+                  }
+                </span>
+                <span class="min-w-0">
+                  <strong
+                    class="block max-w-[13rem] overflow-hidden text-ellipsis whitespace-nowrap text-sm font-black text-[#182116]">
+                    {{ customerName(review) }}
+                  </strong>
+                  <small
+                    class="mt-1 block max-w-[13rem] overflow-hidden text-ellipsis whitespace-nowrap text-xs font-bold text-[#8d877e]">
+                    {{ customerSubtitle(review) }}
+                  </small>
+                </span>
+              </div>
+            </td>
+
+            <td class="px-4 py-4">
+              <div class="flex items-center gap-1 text-[#d98916]">
+                @for (star of stars(review.rating); track $index) {
+                <i class="pi text-sm" [ngClass]="star"></i>
+                }
+              </div>
+              <span class="mt-1 block text-xs font-bold text-[#8d877e]">{{ review.rating || '-' }}/5</span>
+            </td>
+
+            <td class="px-4 py-4">
+              <p class="line-clamp-3 max-w-[18rem] text-sm font-semibold leading-6 text-[#342f29]">
+                {{ shortComment(review) }}
+              </p>
+            </td>
+
+            <td class="px-4 py-4">
+              <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-black"
+                [ngClass]="statusClass(review.status)">
+                {{ statusLabelKey(review.status) | translate }}
+              </span>
+            </td>
+
+            <td class="px-4 py-4">
+              @if (review.admin_reply) {
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full bg-[#e9f8ef] px-2.5 py-1 text-xs font-black text-[#117047]">
+                <i class="pi pi-check-circle"></i>
+                {{ 'REVIEWS.REPLIED' | translate }}
+              </span>
+              } @else {
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full bg-[#f3eee7] px-2.5 py-1 text-xs font-black text-[#675f55]">
+                <i class="pi pi-minus-circle"></i>
+                {{ 'REVIEWS.NO_REPLY' | translate }}
+              </span>
+              }
+            </td>
+
+            <td class="px-4 py-4 text-sm font-bold text-[#675f55]">
+              {{ formatDate(review.created_at) }}
+            </td>
+
+            <td class="px-4 py-4">
+              <div class="flex justify-end gap-2">
+                <button type="button" class="review-action-button" [title]="'REVIEWS.VIEW_DETAILS' | translate"
+                  [disabled]="saving()" (click)="openDetails(review)">
+                  <i class="pi pi-eye"></i>
+                </button>
+                <button type="button" class="review-action-button"
+                  [title]="(review.admin_reply ? 'REVIEWS.EDIT_REPLY' : 'REVIEWS.REPLY') | translate"
+                  [disabled]="saving()" (click)="openReply(review)">
+                  <i class="pi pi-reply"></i>
+                </button>
+                <button type="button" class="review-action-button"
+                  [title]="(review.is_liked_by_admin ? 'REVIEWS.UNLIKE' : 'REVIEWS.LIKE') | translate"
+                  [disabled]="saving()" (click)="toggleAdminLike(review)"
+                  [ngClass]="review.is_liked_by_admin ? 'bg-[#fff1f0] text-[#dc3f35]' : ''">
+                  <i class="pi" [ngClass]="review.is_liked_by_admin ? 'pi-heart-fill' : 'pi-heart'"></i>
+                </button>
+                <button type="button" class="review-action-button"
+                  [title]="(review.is_featured ? 'REVIEWS.UNFEATURE' : 'REVIEWS.FEATURE') | translate"
+                  [disabled]="saving()" (click)="toggleFeatured(review)"
+                  [ngClass]="review.is_featured ? 'bg-[#fff6e7] text-[#d98916]' : ''">
+                  <i class="pi" [ngClass]="review.is_featured ? 'pi-bookmark-fill' : 'pi-bookmark'"></i>
+                </button>
+                <button type="button" class="review-action-button" [title]="'REVIEWS.PUBLISH' | translate"
+                  [disabled]="saving() || review.status === 'published'" (click)="updateStatus(review, 'published')">
+                  <i class="pi pi-check"></i>
+                </button>
+                <button type="button" class="review-action-button" [title]="'REVIEWS.HIDE' | translate"
+                  [disabled]="saving() || review.status === 'hidden'" (click)="updateStatus(review, 'hidden')">
+                  <i class="pi pi-eye-slash"></i>
+                </button>
+                <button type="button" class="review-action-button hover:bg-[#fff1f0] hover:text-[#dc3f35]"
+                  [title]="'REVIEWS.DELETE_REVIEW' | translate" [disabled]="saving()" (click)="openDelete(review)">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </section>
+
+  <app-admin-form-modal [isOpen]="detailsOpen()" title="REVIEWS.DETAILS_TITLE" subtitle="REVIEWS.DETAILS_SUBTITLE"
+    size="lg" submitLabel="COMMON.CLOSE" cancelLabel="COMMON.CANCEL" (close)="closeDetails()" (submit)="closeDetails()">
+    @if (selectedReview(); as review) {
+    <div class="grid gap-4 lg:grid-cols-[1fr_1fr]">
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+        <h3 class="text-sm font-black uppercase text-[#8d877e]">{{ 'REVIEWS.PRODUCT' | translate }}</h3>
+        <p class="mt-2 text-lg font-black text-[#182116]">{{ productName(review) }}</p>
+        <p class="mt-1 text-sm font-bold text-[#8d877e]">{{ review.product?.slug || '-' }}</p>
+      </section>
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+        <h3 class="text-sm font-black uppercase text-[#8d877e]">{{ 'REVIEWS.CUSTOMER' | translate }}</h3>
+        <p class="mt-2 text-lg font-black text-[#182116]">{{ customerName(review) }}</p>
+        <p class="mt-1 text-sm font-bold text-[#8d877e]">{{ customerSubtitle(review) }}</p>
+      </section>
+      <section class="rounded-2xl border border-[#e5ded2] bg-white p-4 lg:col-span-2">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-1 text-[#d98916]">
+            @for (star of stars(review.rating); track $index) {
+            <i class="pi" [ngClass]="star"></i>
+            }
+          </div>
+          <span class="rounded-full px-2.5 py-1 text-xs font-black" [ngClass]="statusClass(review.status)">
+            {{ statusLabelKey(review.status) | translate }}
+          </span>
+        </div>
+        <p class="mt-4 whitespace-pre-line text-sm font-semibold leading-7 text-[#342f29]">{{ shortComment(review) }}
+        </p>
+        <p class="mt-4 text-xs font-bold text-[#8d877e]">{{ formatDate(review.created_at) }}</p>
+      </section>
+      @if (review.admin_reply) {
+      <section class="rounded-2xl border border-[#d7ead8] bg-[#f3fbf5] p-4 lg:col-span-2">
+        <h3 class="text-sm font-black text-[#117047]">{{ 'REVIEWS.ADMIN_REPLY' | translate }}</h3>
+        <p class="mt-2 whitespace-pre-line text-sm font-semibold leading-7 text-[#342f29]">{{ review.admin_reply }}</p>
+        <p class="mt-3 text-xs font-bold text-[#8d877e]">{{ formatDate(review.admin_reply_at) }}</p>
+      </section>
+      }
+    </div>
+    }
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="replyOpen()" title="REVIEWS.REPLY_MODAL_TITLE" subtitle="REVIEWS.REPLY_MODAL_SUBTITLE"
+    size="md" submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL" [loading]="saving()" (close)="closeReply()"
+    (submit)="saveReply()">
+    @if (selectedReview(); as review) {
+    <section class="mb-4 rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+      <strong class="block font-black text-[#182116]">{{ productName(review) }}</strong>
+      <p class="mt-2 line-clamp-3 text-sm font-semibold leading-6 text-[#675f55]">{{ shortComment(review) }}</p>
+    </section>
+    }
+    <app-admin-form-field type="textarea" name="adminReply" label="REVIEWS.ADMIN_REPLY" [rows]="6"
+      [value]="replyDraft()" (valueChange)="replyDraft.set(textValue($event))" />
+    @if (selectedReview()?.admin_reply) {
+    <button type="button"
+      class="mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-[#f1b9b4] bg-[#fff1f0] px-4 text-sm font-black text-[#b42318] transition hover:bg-white"
+      [disabled]="saving()" (click)="clearReply()">
+      <i class="pi pi-times-circle"></i>
+      <span>{{ 'REVIEWS.CLEAR_REPLY' | translate }}</span>
+    </button>
+    }
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="deleteOpen()" title="REVIEWS.DELETE_REVIEW" message="REVIEWS.DELETE_CONFIRMATION"
+    variant="delete" submitLabel="COMMON.DELETE" cancelLabel="COMMON.CANCEL" [loading]="saving()"
+    (close)="closeDelete()" (submit)="confirmDelete()">
+    @if (reviewToDelete(); as review) {
+    <p class="mt-3 max-w-sm text-sm font-bold text-[#8d877e]">
+      {{ productName(review) }} &middot; {{ customerName(review) }}
+    </p>
+    }
+  </app-admin-form-modal>
+</main>

@@ -354,6 +354,13 @@
               </div>
             </div>
 
+            <button type="button"
+              class="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#d8d0c3] bg-white px-4 text-sm font-extrabold text-[#5f6f43] transition hover:border-[#5f6f43] hover:bg-[#eef4e8] sm:w-auto"
+              (click)="openMediaPicker()">
+              <i class="pi pi-images text-sm"></i>
+              <span>{{ 'COMMON.CHOOSE_FROM_MEDIA_LIBRARY' | translate }}</span>
+            </button>
+
             @if (assetMode() === 'upload') {
             <label
               class="mt-4 flex min-h-16 cursor-pointer items-center justify-center gap-3 rounded-2xl border border-dashed border-[#d8d0c3] bg-white p-4 text-center text-sm font-extrabold text-[#675f55] transition hover:border-[#5f6f43] hover:bg-[#f7f4ef] hover:text-[#342f29]">
@@ -403,4 +410,13 @@
     </p>
     }
   </app-admin-form-modal>
+
+  <app-media-picker-modal
+    [isOpen]="isMediaPickerOpen()"
+    title="MEDIA_PICKER.TITLE"
+    categoryFilter="category"
+    [allowedFileTypes]="mediaPickerFileTypes"
+    [selectedMediaId]="categoryForm().mediaId"
+    (close)="closeMediaPicker()"
+    (selectMedia)="selectMediaAsset($event)" />
 </main>

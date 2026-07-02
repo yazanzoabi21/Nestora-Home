@@ -278,6 +278,13 @@
           }
 
           <div class="flex flex-wrap gap-3">
+            <button type="button"
+              class="inline-flex h-10 items-center gap-2 rounded-xl border border-[#d8d0c3] bg-white px-4 text-sm font-extrabold text-[#5f6f43] transition hover:border-[#5f6f43] hover:bg-[#eef4e8]"
+              (click)="openPromotionMediaPicker()">
+              <i class="pi pi-images text-xs"></i>
+              <span>{{ 'COMMON.CHOOSE_FROM_MEDIA_LIBRARY' | translate }}</span>
+            </button>
+
             @if (promotionImagePreview() || promotionForm().imageUrl) {
             <button type="button"
               class="inline-flex h-10 items-center gap-2 rounded-xl border border-[#f1b9b4] bg-[#fff1f0] px-4 text-sm font-extrabold text-[#b42318] transition hover:bg-white"
@@ -425,4 +432,13 @@
     </p>
     }
   </app-admin-form-modal>
+
+  <app-media-picker-modal
+    [isOpen]="isPromotionMediaPickerOpen()"
+    title="MEDIA_PICKER.TITLE"
+    categoryFilter="promotion"
+    [allowedFileTypes]="promotionMediaFileTypes"
+    [selectedMediaId]="promotionForm().mediaId"
+    (close)="closePromotionMediaPicker()"
+    (selectMedia)="selectPromotionMedia($event)" />
 </main>

@@ -13,6 +13,7 @@ const PROMOTION_SELECT = `
   id,
   title,
   description,
+  media_id,
   image_url,
   button_text,
   button_link,
@@ -207,6 +208,7 @@ export class PromotionsService {
       ...promotion,
       title: promotion.title.trim(),
       description: promotion.description ?? null,
+      media_id: promotion.media_id ?? null,
       image_url: promotion.image_url ?? null,
       button_text: promotion.button_text ?? null,
       button_link: promotion.button_link ?? null,
@@ -230,6 +232,10 @@ export class PromotionsService {
 
     if (payload.description !== undefined) {
       record.description = payload.description?.trim() || null;
+    }
+
+    if (payload.media_id !== undefined) {
+      record.media_id = payload.media_id ?? null;
     }
 
     if (payload.image_url !== undefined) {

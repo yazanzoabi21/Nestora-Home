@@ -4,6 +4,8 @@
       "SEARCH": "Search...",
       "CANCEL": "Cancel",
       "SAVE": "Save",
+      "YES": "Yes",
+      "NO": "No",
       "CLOSE": "Close",
       "LOADING": "Loading...",
       "SAVE_CHANGES": "Save Changes",
@@ -23,7 +25,11 @@
       "SLUG": "Slug",
       "LESS": "Less",
       "MORE": "More",
-      "DELETE": "Yes, Delete"
+      "DELETE": "Yes, Delete",
+      "CHOOSE_FROM_MEDIA_LIBRARY": "Choose from Media Library",
+      "CLEAR": "Clear",
+      "SELECT": "Select",
+      "SELECTED": "Selected"
     },
     "TOPBAR": {
       "DATE": "Wednesday, 22 April 2026",
@@ -48,6 +54,7 @@
       "ANALYTICS": "Analytics",
       "CATEGORIES": "Categories",
       "INVENTORY": "Inventory",
+      "REVIEWS": "Reviews",
       "DISCOUNTS": "Discounts",
       "PROMOTIONS_ADS": "Promotions & Ads",
       "PAYMENTS": "Payments",
@@ -509,6 +516,7 @@
         "STATUS": "Status",
         "START_DATE": "Start Date",
         "END_DATE": "End Date",
+        "VALIDITY": "Validity",
         "ACTIONS": "Actions"
       },
       "TYPE": {
@@ -744,6 +752,106 @@
         "RECENTLY_ADDED": "Recently Added"
       }
     },
+    "MEDIA_LIBRARY": {
+      "TITLE": "Media Library",
+      "SUBTITLE": "Manage all product images and assets · {{count}} files",
+      "UPLOAD_IMAGES": "Upload Images",
+      "MEDIA_ASSET": "Media asset",
+      "DRAG_DROP_TITLE": "Drag & drop images",
+      "DRAG_DROP_TEXT": "or click to browse · PNG, JPG, WebP · max 10MB each",
+      "SEARCH_PLACEHOLDER": "Search by filename or tag...",
+      "FILES_COUNT": "{{count}} files",
+      "IMAGE_FALLBACK": "No image",
+      "FILTERS": {
+        "ALL": "All",
+        "PRODUCTS": "Products",
+        "MARKETING": "Marketing",
+        "BRAND": "Brand"
+      },
+      "VIEWS": {
+        "GRID": "Grid view",
+        "LIST": "List view"
+      },
+      "KPI": {
+        "TOTAL_FILES": "Total Files",
+        "TOTAL_SIZE": "Total Size",
+        "PRODUCT_IMAGES": "Product Images",
+        "MARKETING_ASSETS": "Marketing Assets"
+      },
+      "CARD": {
+        "UPLOAD": "Upload"
+      },
+      "TABLE": {
+        "ASSET": "Asset",
+        "CATEGORY": "Category",
+        "TYPE": "Type",
+        "SIZE": "Size",
+        "DIMENSIONS": "Dimensions",
+        "CREATED_AT": "Created At",
+        "ACTIONS": "Actions"
+      },
+      "ACTIONS": {
+        "VIEW": "View asset",
+        "COPY_URL": "Copy URL",
+        "EDIT": "Edit asset",
+        "DELETE": "Delete asset",
+        "OPEN": "Open in new tab"
+      },
+      "MODAL": {
+        "PREVIEW_TITLE": "Asset Preview",
+        "EDIT_TITLE": "Edit Media Asset",
+        "DELETE_TITLE": "Delete Media Asset",
+        "DELETE_SUBTITLE": "This action will remove the asset from the library.",
+        "DELETE_MESSAGE": "Are you sure you want to delete {{name}}?"
+      },
+      "FIELDS": {
+        "TITLE": "Title",
+        "ALT_TEXT": "Alt Text",
+        "DESCRIPTION": "Description",
+        "CATEGORY": "Category",
+        "FILE_TYPE": "File Type",
+        "IS_ACTIVE": "Is Active"
+      },
+      "CATEGORIES": {
+        "PRODUCT": "Products",
+        "CATEGORY": "Categories",
+        "PROMOTION": "Marketing",
+        "BRAND": "Brand",
+        "AVATAR": "Avatars",
+        "REVIEW": "Reviews",
+        "GENERAL": "General"
+      },
+      "FILE_TYPES": {
+        "IMAGE": "Image",
+        "VIDEO": "Video",
+        "DOCUMENT": "Document",
+        "LOGO": "Logo",
+        "BANNER": "Banner",
+        "AVATAR": "Avatar",
+        "OTHER": "Other"
+      },
+      "EMPTY_TITLE": "No media files yet",
+      "EMPTY_TEXT": "Upload your first asset to start building your media library.",
+      "NO_MATCHING_TITLE": "No media files found",
+      "NO_MATCHING_TEXT": "Try changing your search or filters.",
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "Loading media failed",
+        "LOAD_FAILED_DETAIL": "Unable to load media files.",
+        "UPLOAD_SUCCESS": "Media uploaded successfully.",
+        "UPLOAD_FAILED_TITLE": "Upload failed",
+        "UPLOAD_FAILED_DETAIL": "Unable to upload media file.",
+        "SAVE_FAILED_TITLE": "Saving media failed",
+        "SAVE_FAILED_DETAIL": "Unable to save media file.",
+        "DELETE_SUCCESS": "Media deleted successfully.",
+        "DELETE_FAILED_TITLE": "Delete failed",
+        "DELETE_FAILED_DETAIL": "Unable to delete media file.",
+        "COPY_SUCCESS": "URL copied to clipboard."
+      },
+      "ERRORS": {
+        "INVALID_TYPE": "Please upload PNG, JPG, WebP, or GIF files only.",
+        "MAX_SIZE": "File must be 10MB or smaller."
+      }
+    },
     "INVENTORY": {
       "TITLE": "Inventory",
       "SUBTITLE": "Track stock levels and inventory movements · {{count}} products total",
@@ -835,6 +943,349 @@
         "SYNC_FAILED_TITLE": "Inventory sync failed",
         "SYNC_FAILED_DETAIL": "Unable to sync inventory."
       }
+    },
+    "PAYMENTS": {
+      "TITLE": "Payments & Transactions",
+      "SUBTITLE": "Manage payment methods and payment setup",
+      "METHODS_TITLE": "Payment Methods",
+      "METHODS_SUBTITLE": "Configure checkout payment options for customers",
+      "ADD_METHOD": "Add Method",
+      "NO_FEES": "No fees",
+      "NO_LIMITS": "No limits",
+      "MIN_LIMIT": "From {{amount}}",
+      "MAX_LIMIT": "Up to {{amount}}",
+      "KPI": {
+        "ACTIVE_METHODS": "Active Methods",
+        "ONLINE_METHODS": "Online Methods",
+        "MANUAL_METHODS": "Manual Methods",
+        "DISABLED_METHODS": "Disabled Methods"
+      },
+      "TABLE": {
+        "METHOD": "Method",
+        "PROVIDER": "Provider",
+        "TYPE": "Type",
+        "FEES": "Fees",
+        "LIMITS": "Limits",
+        "STATUS": "Status",
+        "ACTIONS": "Actions"
+      },
+      "TYPE": {
+        "MANUAL": "Manual",
+        "ONLINE": "Online",
+        "BANK_TRANSFER": "Bank Transfer",
+        "WALLET": "Wallet"
+      },
+      "STATUS": {
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive"
+      },
+      "ACTIONS": {
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "TOGGLE_STATUS": "Toggle status"
+      },
+      "EMPTY": {
+        "TITLE": "No payment methods yet",
+        "TEXT": "Add Cash on Delivery, Whish, or another payment method to configure checkout."
+      },
+      "MODAL": {
+        "CREATE_TITLE": "Add Payment Method",
+        "CREATE_SUBTITLE": "Configure a checkout payment option.",
+        "EDIT_TITLE": "Edit Payment Method",
+        "EDIT_SUBTITLE": "Update this payment option.",
+        "DELETE_TITLE": "Delete payment method",
+        "DELETE_MESSAGE": "This payment method will be permanently deleted."
+      },
+      "FIELDS": {
+        "NAME": "Name",
+        "CODE": "Code",
+        "PROVIDER": "Provider",
+        "TYPE": "Type",
+        "ICON": "Icon",
+        "DESCRIPTION": "Description",
+        "INSTRUCTIONS_EN": "Instructions EN",
+        "INSTRUCTIONS_AR": "Instructions AR",
+        "FIXED_FEE": "Fixed Fee",
+        "PERCENTAGE_FEE": "Percentage Fee",
+        "MIN_AMOUNT": "Min Amount",
+        "MAX_AMOUNT": "Max Amount",
+        "SORT_ORDER": "Sort Order",
+        "ACTIVE": "Active",
+        "CONFIG": "Config JSON"
+      },
+      "PLACEHOLDERS": {
+        "ICON": "pi pi-wallet"
+      },
+      "HELPERS": {
+        "CONFIG_JSON": "Optional JSON configuration for future integrations."
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "Loading payment methods failed",
+        "LOAD_FAILED_DETAIL": "Unable to load payment methods.",
+        "VALIDATION_TITLE": "Payment method needs attention",
+        "SAVE_SUCCESS": "Payment method saved.",
+        "SAVE_FAILED_TITLE": "Saving payment method failed",
+        "SAVE_FAILED_DETAIL": "Unable to save payment method.",
+        "DELETE_SUCCESS": "Payment method deleted.",
+        "DELETE_FAILED_TITLE": "Deleting payment method failed",
+        "DELETE_FAILED_DETAIL": "Unable to delete payment method.",
+        "STATUS_UPDATED": "Payment method status updated.",
+        "STATUS_FAILED_TITLE": "Updating payment status failed",
+        "STATUS_FAILED_DETAIL": "Unable to update payment method status."
+      },
+      "ERRORS": {
+        "NAME_REQUIRED": "Name is required.",
+        "CODE_REQUIRED": "Code is required.",
+        "CODE_INVALID": "Code must be lowercase and slug-like, such as cod, whish, stripe, or paypal.",
+        "TYPE_REQUIRED": "Type is required.",
+        "FEES_INVALID": "Fees cannot be negative.",
+        "MIN_AMOUNT_INVALID": "Min amount cannot be negative.",
+        "MAX_AMOUNT_INVALID": "Max amount cannot be negative.",
+        "MAX_LESS_THAN_MIN": "Max amount cannot be less than min amount.",
+        "CONFIG_INVALID": "Config must be valid JSON."
+      }
+    },
+    "REVIEWS": {
+      "TITLE": "Reviews",
+      "SUBTITLE": "Manage product reviews and customer feedback",
+      "REFRESH": "Refresh",
+      "RESULTS": "{{count}} reviews",
+      "TOTAL_REVIEWS": "Total Reviews",
+      "AVG_RATING": "Average Rating",
+      "PENDING_REVIEWS": "Pending Reviews",
+      "WITH_REPLIES": "With Replies",
+      "SEARCH_PLACEHOLDER": "Search by product, customer, email, or comment...",
+      "ALL_STATUSES": "All Statuses",
+      "ALL_RATINGS": "All Ratings",
+      "ALL_PRODUCTS": "All Products",
+      "PRODUCT": "Product",
+      "CUSTOMER": "Customer",
+      "RATING": "Rating",
+      "COMMENT": "Comment",
+      "STATUS": "Status",
+      "ADMIN_REPLY": "Admin Reply",
+      "CREATED_AT": "Created At",
+      "ACTIONS": "Actions",
+      "REPLY": "Reply",
+      "EDIT_REPLY": "Edit reply",
+      "CLEAR_REPLY": "Clear reply",
+      "DELETE_REVIEW": "Delete review",
+      "NO_REVIEWS": "No reviews yet",
+      "NO_REVIEWS_TEXT": "Product reviews will appear here once customers leave feedback.",
+      "NO_RESULTS": "No results",
+      "NO_RESULTS_TEXT": "Try changing the search or filters.",
+      "NO_COMMENT": "No comment provided.",
+      "NO_REPLY": "No reply",
+      "REPLIED": "Replied",
+      "VIEW_DETAILS": "View details",
+      "LIKE": "Like",
+      "UNLIKE": "Unlike",
+      "FEATURE": "Feature",
+      "UNFEATURE": "Unfeature",
+      "PUBLISH": "Publish",
+      "HIDE": "Hide",
+      "UNKNOWN_PRODUCT": "Unknown product",
+      "UNKNOWN_CUSTOMER": "Unknown customer",
+      "REGISTERED_CUSTOMER": "Registered customer",
+      "GUEST_CUSTOMER": "Guest customer",
+      "DETAILS_TITLE": "Review Details",
+      "DETAILS_SUBTITLE": "Full product review and moderation status.",
+      "REPLY_MODAL_TITLE": "Admin Reply",
+      "REPLY_MODAL_SUBTITLE": "Write or update the public admin response.",
+      "DELETE_CONFIRMATION": "This review will be permanently deleted.",
+      "STATUS_PENDING": "Pending",
+      "STATUS_PUBLISHED": "Published",
+      "STATUS_HIDDEN": "Hidden",
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "Loading reviews failed",
+        "LOAD_FAILED_DETAIL": "Unable to load reviews.",
+        "REFRESHED": "Reviews refreshed.",
+        "EMPTY_REPLY_TITLE": "Reply is empty",
+        "EMPTY_REPLY_DETAIL": "Enter a reply before saving.",
+        "REPLY_SAVED": "Reply saved successfully.",
+        "REPLY_CLEARED": "Reply cleared successfully.",
+        "LIKED": "Review liked.",
+        "UNLIKED": "Review unliked.",
+        "FEATURED": "Review featured.",
+        "UNFEATURED": "Review unfeatured.",
+        "STATUS_UPDATED": "Review status updated.",
+        "DELETED": "Review deleted successfully.",
+        "SAVE_FAILED_TITLE": "Updating review",
+        "SAVE_FAILED_DETAIL": "Unable to update review."
+      }
+    },
+    "MEDIA_PICKER": {
+      "TITLE": "Choose from Media Library",
+      "SEARCH_PLACEHOLDER": "Search media...",
+      "SELECT": "Select Media",
+      "CANCEL": "Cancel",
+      "NO_MEDIA_TITLE": "No media found",
+      "NO_MEDIA_TEXT": "Upload media first or change your filters.",
+      "FILTER_ALL": "All",
+      "FILTER_PRODUCT": "Products",
+      "FILTER_CATEGORY": "Categories",
+      "FILTER_PROMOTION": "Promotions",
+      "FILTER_BRAND": "Brand",
+      "FILTER_AVATAR": "Avatars",
+      "LOAD_FAILED": "Unable to load media assets.",
+      "USAGE_SAVE_FAILED_TITLE": "Media usage not linked",
+      "USAGE_SAVE_FAILED_DETAIL": "The item was saved, but media usage tracking could not be updated.",
+      "SELECTED_FROM_LIBRARY": "Selected from Media Library"
+    },
+    "SHIPPING": {
+      "TITLE": "Shipping & Delivery",
+      "SUBTITLE": "Manage shipping methods, delivery zones and delivery costs",
+      "ADD_METHOD": "Add Method",
+      "ADD_ZONE": "Add Zone",
+      "ADD_METHOD_ZONE": "Add Method Zone",
+      "CREATE_METHOD": "Create Method",
+      "LOADING": "Loading shipping data...",
+      "UNKNOWN_METHOD": "Unknown method",
+      "UNKNOWN_ZONE": "Unknown zone",
+      "TABS": {
+        "METHODS": "Shipping Methods",
+        "ZONES": "Delivery Zones",
+        "METHOD_ZONES": "Method Zones"
+      },
+      "KPI": {
+        "ACTIVE_METHODS": "Active Methods",
+        "AVERAGE_SHIPPING_COST": "Average Shipping Cost",
+        "ACTIVE_ZONES": "Active Zones",
+        "DISABLED_METHODS": "Disabled Methods"
+      },
+      "EMPTY": {
+        "NO_METHODS_TITLE": "No shipping methods yet",
+        "NO_METHODS_TEXT": "Create a method to start configuring delivery options.",
+        "NO_ZONES_TITLE": "No delivery zones yet",
+        "NO_ZONES_TEXT": "Create zones to apply city, area, and cost rules.",
+        "NO_METHOD_ZONES_TITLE": "No method-zone rules yet",
+        "NO_METHOD_ZONES_TEXT": "Connect a shipping method to a delivery zone."
+      },
+      "CARD": {
+        "NO_CARRIER_SET": "No carrier set",
+        "COST": "Cost",
+        "ETA": "ETA",
+        "ZONES": "Zones",
+        "NO_ZONES_ASSIGNED": "No zones assigned",
+        "FREE_DELIVERY_OVER": "Free delivery on orders over {{amount}}",
+        "MORE_ZONES": "+{{count}} more",
+        "EDIT_METHOD": "Edit Method"
+      },
+      "ZONE": {
+        "NO_COUNTRY_SET": "No country set",
+        "CITIES": "Cities",
+        "AREAS": "Areas",
+        "EXTRA_COST": "Extra Cost",
+        "TABLE_SUBTITLE": "Define where you ship and apply surcharges",
+        "NO_SURCHARGE": "No surcharge",
+        "FOOTER_NOTE": "Surcharges are added on top of the base shipping cost at checkout."
+      },
+      "TABLE": {
+        "ZONE": "Zone",
+        "REGIONS": "Regions",
+        "SURCHARGE": "Surcharge",
+        "SHIPPING_METHOD": "Shipping Method",
+        "DELIVERY_ZONE": "Delivery Zone",
+        "COST_OVERRIDE": "Cost Override",
+        "FREE_SHIPPING_OVERRIDE": "Free Shipping Override",
+        "ETA_OVERRIDE": "ETA Override",
+        "STATUS": "Status",
+        "ACTIONS": "Actions"
+      },
+      "STATUS": {
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive"
+      },
+      "ACTIONS": {
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "TOGGLE_STATUS": "Toggle status",
+        "TOGGLE_METHOD": "Toggle {{name}}"
+      },
+      "MODAL": {
+        "CREATE_METHOD_TITLE": "Add Shipping Method",
+        "CREATE_METHOD_SUBTITLE": "Create a new shipping method.",
+        "EDIT_METHOD_TITLE": "Edit Shipping Method",
+        "EDIT_METHOD_SUBTITLE": "Update this shipping method.",
+        "EXISTING_METHOD": "Existing method",
+        "NEW_METHOD": "New method",
+        "DELIVERY_ZONE_TITLE": "Delivery Zone",
+        "DELIVERY_ZONE_SUBTITLE": "Add or edit a delivery zone.",
+        "METHOD_ZONE_TITLE": "Shipping Method Zone",
+        "METHOD_ZONE_SUBTITLE": "Override delivery cost and timing for a zone.",
+        "DELETE_TITLE": "Delete shipping record",
+        "DELETE_MESSAGE": "This record will be permanently deleted."
+      },
+      "FIELDS": {
+        "METHOD_NAME": "Method Name",
+        "CODE": "Code",
+        "CARRIER": "Carrier",
+        "ICON": "Icon",
+        "PRICE": "Price",
+        "FREE_OVER": "Free over",
+        "ESTIMATED_DELIVERY": "Estimated Delivery",
+        "ETA_MIN_DAYS": "ETA Min Days",
+        "ETA_MAX_DAYS": "ETA Max Days",
+        "SORT_ORDER": "Sort Order",
+        "DESCRIPTION": "Description",
+        "NAME": "Name",
+        "COUNTRY": "Country",
+        "CITIES": "Cities",
+        "AREAS": "Areas",
+        "EXTRA_COST": "Extra Cost",
+        "ACTIVE": "Active",
+        "SHIPPING_METHOD": "Shipping Method",
+        "DELIVERY_ZONE": "Delivery Zone",
+        "COST_OVERRIDE": "Cost Override",
+        "FREE_SHIPPING_OVERRIDE": "Free Shipping Override",
+        "ETA_MIN_DAYS_OVERRIDE": "ETA Min Days Override",
+        "ETA_MAX_DAYS_OVERRIDE": "ETA Max Days Override",
+        "ETA_LABEL_OVERRIDE": "ETA Label Override"
+      },
+      "PLACEHOLDERS": {
+        "ICON": "pi pi-truck",
+        "FREE_OVER": "Leave blank to disable",
+        "ETA_LABEL": "1-2 days / Next day / Same day"
+      },
+      "HELPERS": {
+        "COMMA_SEPARATED": "Comma separated",
+        "METHOD_ENABLED": "Method Enabled",
+        "AVAILABLE_AT_CHECKOUT": "Available at checkout"
+      },
+      "ETA": {
+        "SAME_DAY": "Same day",
+        "RANGE_DAYS": "{{min}}-{{max}} days",
+        "MIN_PLUS_DAYS": "{{min}}+ days"
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "Loading shipping failed",
+        "LOAD_FAILED_DETAIL": "Unable to load shipping data.",
+        "VALIDATION_TITLE": "Shipping needs attention",
+        "METHOD_SAVE_SUCCESS": "Shipping method saved.",
+        "ZONE_SAVE_SUCCESS": "Delivery zone saved.",
+        "METHOD_ZONE_SAVE_SUCCESS": "Method zone saved.",
+        "SAVE_FAILED_TITLE": "Shipping update failed",
+        "SAVE_FAILED_DETAIL": "Unable to update shipping data.",
+        "DELETE_SUCCESS": "Shipping record deleted.",
+        "DELETE_FAILED_TITLE": "Deleting shipping record failed",
+        "DELETE_FAILED_DETAIL": "Unable to delete shipping record.",
+        "STATUS_UPDATED": "Shipping method status updated.",
+        "ZONE_STATUS_UPDATED": "Delivery zone status updated.",
+        "METHOD_ZONE_STATUS_UPDATED": "Method zone status updated.",
+        "STATUS_FAILED_TITLE": "Updating shipping status failed",
+        "STATUS_FAILED_DETAIL": "Unable to update shipping status."
+      },
+      "ERRORS": {
+        "METHOD_NAME_REQUIRED": "Method name is required.",
+        "METHOD_CODE_REQUIRED": "Code is required.",
+        "ZONE_NAME_REQUIRED": "Enter a name before saving.",
+        "METHOD_ZONE_REQUIRED": "Choose a shipping method and delivery zone.",
+        "INVALID_PRICE": "Price must be 0 or more.",
+        "INVALID_FREE_OVER": "Free over must be 0 or more.",
+        "INVALID_ETA_MIN": "ETA min days must be 0 or more.",
+        "INVALID_ETA_MAX": "ETA max days must be 0 or more.",
+        "INVALID_ETA_RANGE": "ETA max days must be greater than or equal to ETA min days."
+      }
     }
   },
   "ar": {
@@ -842,6 +1293,8 @@
       "SEARCH": "بحث...",
       "CANCEL": "إلغاء",
       "SAVE": "حفظ",
+      "YES": "نعم",
+      "NO": "لا",
       "CLOSE": "إغلاق",
       "LOADING": "جار التحميل...",
       "SAVE_CHANGES": "حفظ التغييرات",
@@ -861,7 +1314,11 @@
       "SLUG": "المعرف",
       "LESS": "أقل",
       "MORE": "المزيد",
-      "DELETE": "نعم احذف"
+      "DELETE": "نعم احذف",
+      "CHOOSE_FROM_MEDIA_LIBRARY": "اختر من مكتبة الوسائط",
+      "CLEAR": "مسح",
+      "SELECT": "اختيار",
+      "SELECTED": "تم الاختيار"
     },
     "TOPBAR": {
       "DATE": "الأربعاء، 22 أبريل 2026",
@@ -902,7 +1359,8 @@
       "STORE_URL": "nestora.co.uk",
       "CLOSE_SIDEBAR": "إغلاق القائمة الجانبية",
       "TOGGLE_SIDEBAR": "طي القائمة الجانبية",
-      "DISCOUNTS_PROMOTIONS": "الخصومات والعروض"
+      "DISCOUNTS_PROMOTIONS": "الخصومات والعروض",
+      "REVIEWS": "Reviews"
     },
     "DASHBOARD": {
       "TITLE": "لوحة التحكم",
@@ -1390,6 +1848,106 @@
         "RECENTLY_ADDED": "أضيفت حديثاً"
       }
     },
+    "MEDIA_LIBRARY": {
+      "TITLE": "مكتبة الوسائط",
+      "SUBTITLE": "إدارة صور المنتجات والأصول · {{count}} ملف",
+      "UPLOAD_IMAGES": "رفع الصور",
+      "MEDIA_ASSET": "ملف وسائط",
+      "DRAG_DROP_TITLE": "اسحب الصور وأفلتها",
+      "DRAG_DROP_TEXT": "أو انقر للتصفح · PNG و JPG و WebP · الحد الأقصى 10MB لكل ملف",
+      "SEARCH_PLACEHOLDER": "ابحث باسم الملف أو الوسم...",
+      "FILES_COUNT": "{{count}} ملفات",
+      "IMAGE_FALLBACK": "لا توجد صورة",
+      "FILTERS": {
+        "ALL": "الكل",
+        "PRODUCTS": "المنتجات",
+        "MARKETING": "التسويق",
+        "BRAND": "العلامة التجارية"
+      },
+      "VIEWS": {
+        "GRID": "عرض الشبكة",
+        "LIST": "عرض القائمة"
+      },
+      "KPI": {
+        "TOTAL_FILES": "إجمالي الملفات",
+        "TOTAL_SIZE": "الحجم الإجمالي",
+        "PRODUCT_IMAGES": "صور المنتجات",
+        "MARKETING_ASSETS": "أصول التسويق"
+      },
+      "CARD": {
+        "UPLOAD": "رفع"
+      },
+      "TABLE": {
+        "ASSET": "الأصل",
+        "CATEGORY": "الفئة",
+        "TYPE": "النوع",
+        "SIZE": "الحجم",
+        "DIMENSIONS": "الأبعاد",
+        "CREATED_AT": "تاريخ الإنشاء",
+        "ACTIONS": "الإجراءات"
+      },
+      "ACTIONS": {
+        "VIEW": "عرض الأصل",
+        "COPY_URL": "نسخ الرابط",
+        "EDIT": "تعديل الأصل",
+        "DELETE": "حذف الأصل",
+        "OPEN": "فتح في تبويب جديد"
+      },
+      "MODAL": {
+        "PREVIEW_TITLE": "معاينة الأصل",
+        "EDIT_TITLE": "تعديل ملف الوسائط",
+        "DELETE_TITLE": "حذف ملف الوسائط",
+        "DELETE_SUBTITLE": "سيؤدي هذا الإجراء إلى إزالة الأصل من المكتبة.",
+        "DELETE_MESSAGE": "هل أنت متأكد أنك تريد حذف {{name}}؟"
+      },
+      "FIELDS": {
+        "TITLE": "العنوان",
+        "ALT_TEXT": "النص البديل",
+        "DESCRIPTION": "الوصف",
+        "CATEGORY": "الفئة",
+        "FILE_TYPE": "نوع الملف",
+        "IS_ACTIVE": "نشط"
+      },
+      "CATEGORIES": {
+        "PRODUCT": "المنتجات",
+        "CATEGORY": "الفئات",
+        "PROMOTION": "التسويق",
+        "BRAND": "العلامة التجارية",
+        "AVATAR": "الصور الشخصية",
+        "REVIEW": "المراجعات",
+        "GENERAL": "عام"
+      },
+      "FILE_TYPES": {
+        "IMAGE": "صورة",
+        "VIDEO": "فيديو",
+        "DOCUMENT": "مستند",
+        "LOGO": "شعار",
+        "BANNER": "بانر",
+        "AVATAR": "صورة شخصية",
+        "OTHER": "أخرى"
+      },
+      "EMPTY_TITLE": "لا توجد ملفات وسائط بعد",
+      "EMPTY_TEXT": "ارفع أول أصل لبدء بناء مكتبة الوسائط.",
+      "NO_MATCHING_TITLE": "لا توجد ملفات وسائط مطابقة",
+      "NO_MATCHING_TEXT": "جرّب تغيير البحث أو الفلاتر.",
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "فشل تحميل الوسائط",
+        "LOAD_FAILED_DETAIL": "تعذر تحميل ملفات الوسائط.",
+        "UPLOAD_SUCCESS": "تم رفع الوسائط بنجاح.",
+        "UPLOAD_FAILED_TITLE": "فشل الرفع",
+        "UPLOAD_FAILED_DETAIL": "تعذر رفع ملف الوسائط.",
+        "SAVE_FAILED_TITLE": "فشل حفظ الوسائط",
+        "SAVE_FAILED_DETAIL": "تعذر حفظ ملف الوسائط.",
+        "DELETE_SUCCESS": "تم حذف الوسائط بنجاح.",
+        "DELETE_FAILED_TITLE": "فشل الحذف",
+        "DELETE_FAILED_DETAIL": "تعذر حذف ملف الوسائط.",
+        "COPY_SUCCESS": "تم نسخ الرابط."
+      },
+      "ERRORS": {
+        "INVALID_TYPE": "يرجى رفع ملفات PNG أو JPG أو WebP أو GIF فقط.",
+        "MAX_SIZE": "يجب أن يكون حجم الملف 10MB أو أقل."
+      }
+    },
     "INVENTORY": {
       "TITLE": "المخزون",
       "SUBTITLE": "متابعة مستويات المخزون وحركاته · {{count}} منتج إجمالاً",
@@ -1516,6 +2074,7 @@
         "STATUS": "الحالة",
         "START_DATE": "تاريخ البداية",
         "END_DATE": "تاريخ النهاية",
+        "VALIDITY": "الصلاحية",
         "ACTIONS": "الإجراءات"
       },
       "TYPE": {
@@ -1672,6 +2231,349 @@
         "TAUPE": "تاوب",
         "CREAM": "كريمي",
         "FOREST": "غابي"
+      }
+    },
+    "MEDIA_PICKER": {
+      "TITLE": "اختر من مكتبة الوسائط",
+      "SEARCH_PLACEHOLDER": "ابحث في الوسائط...",
+      "SELECT": "اختيار الوسائط",
+      "CANCEL": "إلغاء",
+      "NO_MEDIA_TITLE": "لا توجد وسائط",
+      "NO_MEDIA_TEXT": "ارفع وسائط أولاً أو غيّر عوامل التصفية.",
+      "FILTER_ALL": "الكل",
+      "FILTER_PRODUCT": "المنتجات",
+      "FILTER_CATEGORY": "الفئات",
+      "FILTER_PROMOTION": "العروض",
+      "FILTER_BRAND": "العلامة التجارية",
+      "FILTER_AVATAR": "الصور الشخصية",
+      "LOAD_FAILED": "تعذر تحميل ملفات الوسائط.",
+      "USAGE_SAVE_FAILED_TITLE": "لم يتم ربط استخدام الوسائط",
+      "USAGE_SAVE_FAILED_DETAIL": "تم حفظ العنصر، لكن تعذر تحديث تتبع استخدام الوسائط.",
+      "SELECTED_FROM_LIBRARY": "تم الاختيار من مكتبة الوسائط"
+    },
+    "SHIPPING": {
+      "TITLE": "الشحن والتوصيل",
+      "SUBTITLE": "إدارة طرق الشحن ومناطق التوصيل وتكاليف التسليم",
+      "ADD_METHOD": "إضافة طريقة",
+      "ADD_ZONE": "إضافة منطقة",
+      "ADD_METHOD_ZONE": "إضافة ربط طريقة بمنطقة",
+      "CREATE_METHOD": "إنشاء طريقة",
+      "LOADING": "جار تحميل بيانات الشحن...",
+      "UNKNOWN_METHOD": "طريقة غير معروفة",
+      "UNKNOWN_ZONE": "منطقة غير معروفة",
+      "TABS": {
+        "METHODS": "طرق الشحن",
+        "ZONES": "مناطق التوصيل",
+        "METHOD_ZONES": "ربط الطرق بالمناطق"
+      },
+      "KPI": {
+        "ACTIVE_METHODS": "الطرق النشطة",
+        "AVERAGE_SHIPPING_COST": "متوسط تكلفة الشحن",
+        "ACTIVE_ZONES": "المناطق النشطة",
+        "DISABLED_METHODS": "الطرق المعطلة"
+      },
+      "EMPTY": {
+        "NO_METHODS_TITLE": "لا توجد طرق شحن بعد",
+        "NO_METHODS_TEXT": "أنشئ طريقة لبدء إعداد خيارات التوصيل.",
+        "NO_ZONES_TITLE": "لا توجد مناطق توصيل بعد",
+        "NO_ZONES_TEXT": "أنشئ مناطق لتطبيق قواعد المدن والمناطق والتكلفة.",
+        "NO_METHOD_ZONES_TITLE": "لا توجد قواعد ربط بعد",
+        "NO_METHOD_ZONES_TEXT": "اربط طريقة شحن بمنطقة توصيل."
+      },
+      "CARD": {
+        "NO_CARRIER_SET": "لم يتم تحديد شركة شحن",
+        "COST": "التكلفة",
+        "ETA": "المدة",
+        "ZONES": "المناطق",
+        "NO_ZONES_ASSIGNED": "لا توجد مناطق مرتبطة",
+        "FREE_DELIVERY_OVER": "توصيل مجاني للطلبات فوق {{amount}}",
+        "MORE_ZONES": "+{{count}} أخرى",
+        "EDIT_METHOD": "تعديل الطريقة"
+      },
+      "ZONE": {
+        "NO_COUNTRY_SET": "لم يتم تحديد البلد",
+        "CITIES": "المدن",
+        "AREAS": "المناطق",
+        "EXTRA_COST": "تكلفة إضافية",
+        "TABLE_SUBTITLE": "حدد مناطق الشحن وطبّق الرسوم الإضافية",
+        "NO_SURCHARGE": "لا توجد رسوم إضافية",
+        "FOOTER_NOTE": "تُضاف الرسوم الإضافية فوق تكلفة الشحن الأساسية عند إتمام الطلب."
+      },
+      "TABLE": {
+        "ZONE": "المنطقة",
+        "REGIONS": "النطاقات",
+        "SURCHARGE": "الرسوم الإضافية",
+        "SHIPPING_METHOD": "طريقة الشحن",
+        "DELIVERY_ZONE": "منطقة التوصيل",
+        "COST_OVERRIDE": "تعديل التكلفة",
+        "FREE_SHIPPING_OVERRIDE": "تعديل حد الشحن المجاني",
+        "ETA_OVERRIDE": "تعديل مدة التوصيل",
+        "STATUS": "الحالة",
+        "ACTIONS": "الإجراءات"
+      },
+      "STATUS": {
+        "ACTIVE": "نشط",
+        "INACTIVE": "غير نشط"
+      },
+      "ACTIONS": {
+        "EDIT": "تعديل",
+        "DELETE": "حذف",
+        "TOGGLE_STATUS": "تبديل الحالة",
+        "TOGGLE_METHOD": "تبديل حالة {{name}}"
+      },
+      "MODAL": {
+        "CREATE_METHOD_TITLE": "إضافة طريقة شحن",
+        "CREATE_METHOD_SUBTITLE": "إنشاء طريقة شحن جديدة.",
+        "EDIT_METHOD_TITLE": "تعديل طريقة الشحن",
+        "EDIT_METHOD_SUBTITLE": "تحديث طريقة الشحن هذه.",
+        "EXISTING_METHOD": "طريقة موجودة",
+        "NEW_METHOD": "طريقة جديدة",
+        "DELIVERY_ZONE_TITLE": "منطقة التوصيل",
+        "DELIVERY_ZONE_SUBTITLE": "إضافة أو تعديل منطقة توصيل.",
+        "METHOD_ZONE_TITLE": "ربط طريقة شحن بمنطقة",
+        "METHOD_ZONE_SUBTITLE": "تجاوز تكلفة ومدة التوصيل لمنطقة محددة.",
+        "DELETE_TITLE": "حذف سجل الشحن",
+        "DELETE_MESSAGE": "سيتم حذف هذا السجل نهائياً."
+      },
+      "FIELDS": {
+        "METHOD_NAME": "اسم الطريقة",
+        "CODE": "الرمز",
+        "CARRIER": "شركة الشحن",
+        "ICON": "الأيقونة",
+        "PRICE": "السعر",
+        "FREE_OVER": "مجاني فوق",
+        "ESTIMATED_DELIVERY": "مدة التوصيل المتوقعة",
+        "ETA_MIN_DAYS": "أقل عدد أيام",
+        "ETA_MAX_DAYS": "أعلى عدد أيام",
+        "SORT_ORDER": "ترتيب العرض",
+        "DESCRIPTION": "الوصف",
+        "NAME": "الاسم",
+        "COUNTRY": "البلد",
+        "CITIES": "المدن",
+        "AREAS": "المناطق",
+        "EXTRA_COST": "تكلفة إضافية",
+        "ACTIVE": "نشط",
+        "SHIPPING_METHOD": "طريقة الشحن",
+        "DELIVERY_ZONE": "منطقة التوصيل",
+        "COST_OVERRIDE": "تعديل التكلفة",
+        "FREE_SHIPPING_OVERRIDE": "تعديل حد الشحن المجاني",
+        "ETA_MIN_DAYS_OVERRIDE": "تعديل أقل عدد أيام",
+        "ETA_MAX_DAYS_OVERRIDE": "تعديل أعلى عدد أيام",
+        "ETA_LABEL_OVERRIDE": "تعديل نص مدة التوصيل"
+      },
+      "PLACEHOLDERS": {
+        "ICON": "pi pi-truck",
+        "FREE_OVER": "اتركه فارغاً للتعطيل",
+        "ETA_LABEL": "1-2 أيام / اليوم التالي / نفس اليوم"
+      },
+      "HELPERS": {
+        "COMMA_SEPARATED": "افصل القيم بفواصل",
+        "METHOD_ENABLED": "الطريقة مفعّلة",
+        "AVAILABLE_AT_CHECKOUT": "متاحة عند إتمام الطلب"
+      },
+      "ETA": {
+        "SAME_DAY": "نفس اليوم",
+        "RANGE_DAYS": "{{min}}-{{max}} أيام",
+        "MIN_PLUS_DAYS": "{{min}}+ أيام"
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "فشل تحميل الشحن",
+        "LOAD_FAILED_DETAIL": "تعذر تحميل بيانات الشحن.",
+        "VALIDATION_TITLE": "بيانات الشحن تحتاج إلى مراجعة",
+        "METHOD_SAVE_SUCCESS": "تم حفظ طريقة الشحن.",
+        "ZONE_SAVE_SUCCESS": "تم حفظ منطقة التوصيل.",
+        "METHOD_ZONE_SAVE_SUCCESS": "تم حفظ ربط الطريقة بالمنطقة.",
+        "SAVE_FAILED_TITLE": "فشل تحديث الشحن",
+        "SAVE_FAILED_DETAIL": "تعذر تحديث بيانات الشحن.",
+        "DELETE_SUCCESS": "تم حذف سجل الشحن.",
+        "DELETE_FAILED_TITLE": "فشل حذف سجل الشحن",
+        "DELETE_FAILED_DETAIL": "تعذر حذف سجل الشحن.",
+        "STATUS_UPDATED": "تم تحديث حالة طريقة الشحن.",
+        "ZONE_STATUS_UPDATED": "تم تحديث حالة منطقة التوصيل.",
+        "METHOD_ZONE_STATUS_UPDATED": "تم تحديث حالة ربط الطريقة بالمنطقة.",
+        "STATUS_FAILED_TITLE": "فشل تحديث حالة الشحن",
+        "STATUS_FAILED_DETAIL": "تعذر تحديث حالة الشحن."
+      },
+      "ERRORS": {
+        "METHOD_NAME_REQUIRED": "اسم الطريقة مطلوب.",
+        "METHOD_CODE_REQUIRED": "الرمز مطلوب.",
+        "ZONE_NAME_REQUIRED": "أدخل اسماً قبل الحفظ.",
+        "METHOD_ZONE_REQUIRED": "اختر طريقة شحن ومنطقة توصيل.",
+        "INVALID_PRICE": "يجب أن يكون السعر 0 أو أكثر.",
+        "INVALID_FREE_OVER": "يجب أن يكون حد المجاني 0 أو أكثر.",
+        "INVALID_ETA_MIN": "يجب أن يكون أقل عدد أيام 0 أو أكثر.",
+        "INVALID_ETA_MAX": "يجب أن يكون أعلى عدد أيام 0 أو أكثر.",
+        "INVALID_ETA_RANGE": "يجب أن يكون أعلى عدد أيام أكبر من أو مساوياً لأقل عدد أيام."
+      }
+    },
+    "REVIEWS": {
+      "TITLE": "Reviews",
+      "SUBTITLE": "Manage product reviews and customer feedback",
+      "REFRESH": "Refresh",
+      "RESULTS": "{{count}} reviews",
+      "TOTAL_REVIEWS": "Total Reviews",
+      "AVG_RATING": "Average Rating",
+      "PENDING_REVIEWS": "Pending Reviews",
+      "WITH_REPLIES": "With Replies",
+      "SEARCH_PLACEHOLDER": "Search by product, customer, email, or comment...",
+      "ALL_STATUSES": "All Statuses",
+      "ALL_RATINGS": "All Ratings",
+      "ALL_PRODUCTS": "All Products",
+      "PRODUCT": "Product",
+      "CUSTOMER": "Customer",
+      "RATING": "Rating",
+      "COMMENT": "Comment",
+      "STATUS": "Status",
+      "ADMIN_REPLY": "Admin Reply",
+      "CREATED_AT": "Created At",
+      "ACTIONS": "Actions",
+      "REPLY": "Reply",
+      "EDIT_REPLY": "Edit reply",
+      "CLEAR_REPLY": "Clear reply",
+      "DELETE_REVIEW": "Delete review",
+      "NO_REVIEWS": "No reviews yet",
+      "NO_REVIEWS_TEXT": "Product reviews will appear here once customers leave feedback.",
+      "NO_RESULTS": "No results",
+      "NO_RESULTS_TEXT": "Try changing the search or filters.",
+      "NO_COMMENT": "No comment provided.",
+      "NO_REPLY": "No reply",
+      "REPLIED": "Replied",
+      "VIEW_DETAILS": "View details",
+      "LIKE": "Like",
+      "UNLIKE": "Unlike",
+      "FEATURE": "Feature",
+      "UNFEATURE": "Unfeature",
+      "PUBLISH": "Publish",
+      "HIDE": "Hide",
+      "UNKNOWN_PRODUCT": "Unknown product",
+      "UNKNOWN_CUSTOMER": "Unknown customer",
+      "REGISTERED_CUSTOMER": "Registered customer",
+      "GUEST_CUSTOMER": "Guest customer",
+      "DETAILS_TITLE": "Review Details",
+      "DETAILS_SUBTITLE": "Full product review and moderation status.",
+      "REPLY_MODAL_TITLE": "Admin Reply",
+      "REPLY_MODAL_SUBTITLE": "Write or update the public admin response.",
+      "DELETE_CONFIRMATION": "This review will be permanently deleted.",
+      "STATUS_PENDING": "Pending",
+      "STATUS_PUBLISHED": "Published",
+      "STATUS_HIDDEN": "Hidden",
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "Loading reviews failed",
+        "LOAD_FAILED_DETAIL": "Unable to load reviews.",
+        "REFRESHED": "Reviews refreshed.",
+        "EMPTY_REPLY_TITLE": "Reply is empty",
+        "EMPTY_REPLY_DETAIL": "Enter a reply before saving.",
+        "REPLY_SAVED": "Reply saved successfully.",
+        "REPLY_CLEARED": "Reply cleared successfully.",
+        "LIKED": "Review liked.",
+        "UNLIKED": "Review unliked.",
+        "FEATURED": "Review featured.",
+        "UNFEATURED": "Review unfeatured.",
+        "STATUS_UPDATED": "Review status updated.",
+        "DELETED": "Review deleted successfully.",
+        "SAVE_FAILED_TITLE": "Updating review",
+        "SAVE_FAILED_DETAIL": "Unable to update review."
+      }
+    },
+    "PAYMENTS": {
+      "TITLE": "المدفوعات والمعاملات",
+      "SUBTITLE": "إدارة طرق الدفع وإعدادات التحصيل",
+      "METHODS_TITLE": "طرق الدفع",
+      "METHODS_SUBTITLE": "إعداد خيارات الدفع المتاحة للعملاء عند إتمام الطلب",
+      "ADD_METHOD": "إضافة طريقة",
+      "NO_FEES": "لا توجد رسوم",
+      "NO_LIMITS": "لا توجد حدود",
+      "MIN_LIMIT": "ابتداءً من {{amount}}",
+      "MAX_LIMIT": "حتى {{amount}}",
+      "KPI": {
+        "ACTIVE_METHODS": "الطرق النشطة",
+        "ONLINE_METHODS": "طرق الدفع الإلكترونية",
+        "MANUAL_METHODS": "طرق الدفع اليدوية",
+        "DISABLED_METHODS": "الطرق المعطلة"
+      },
+      "TABLE": {
+        "METHOD": "الطريقة",
+        "PROVIDER": "المزوّد",
+        "TYPE": "النوع",
+        "FEES": "الرسوم",
+        "LIMITS": "الحدود",
+        "STATUS": "الحالة",
+        "ACTIONS": "الإجراءات"
+      },
+      "TYPE": {
+        "MANUAL": "يدوي",
+        "ONLINE": "إلكتروني",
+        "BANK_TRANSFER": "تحويل بنكي",
+        "WALLET": "محفظة"
+      },
+      "STATUS": {
+        "ACTIVE": "نشط",
+        "INACTIVE": "غير نشط"
+      },
+      "ACTIONS": {
+        "EDIT": "تعديل",
+        "DELETE": "حذف",
+        "TOGGLE_STATUS": "تبديل الحالة"
+      },
+      "EMPTY": {
+        "TITLE": "لا توجد طرق دفع بعد",
+        "TEXT": "أضف الدفع عند الاستلام أو Whish أو أي طريقة دفع أخرى لإعداد الدفع."
+      },
+      "MODAL": {
+        "CREATE_TITLE": "إضافة طريقة دفع",
+        "CREATE_SUBTITLE": "إعداد خيار دفع لصفحة إتمام الطلب.",
+        "EDIT_TITLE": "تعديل طريقة الدفع",
+        "EDIT_SUBTITLE": "تحديث خيار الدفع هذا.",
+        "DELETE_TITLE": "حذف طريقة الدفع",
+        "DELETE_MESSAGE": "سيتم حذف طريقة الدفع هذه نهائياً."
+      },
+      "FIELDS": {
+        "NAME": "الاسم",
+        "CODE": "الرمز",
+        "PROVIDER": "المزوّد",
+        "TYPE": "النوع",
+        "ICON": "الأيقونة",
+        "DESCRIPTION": "الوصف",
+        "INSTRUCTIONS_EN": "التعليمات بالإنجليزية",
+        "INSTRUCTIONS_AR": "التعليمات بالعربية",
+        "FIXED_FEE": "رسوم ثابتة",
+        "PERCENTAGE_FEE": "رسوم بالنسبة المئوية",
+        "MIN_AMOUNT": "الحد الأدنى",
+        "MAX_AMOUNT": "الحد الأقصى",
+        "SORT_ORDER": "ترتيب العرض",
+        "ACTIVE": "نشط",
+        "CONFIG": "إعدادات JSON"
+      },
+      "PLACEHOLDERS": {
+        "ICON": "pi pi-wallet"
+      },
+      "HELPERS": {
+        "CONFIG_JSON": "إعدادات JSON اختيارية للتكاملات المستقبلية."
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "فشل تحميل طرق الدفع",
+        "LOAD_FAILED_DETAIL": "تعذر تحميل طرق الدفع.",
+        "VALIDATION_TITLE": "طريقة الدفع تحتاج إلى مراجعة",
+        "SAVE_SUCCESS": "تم حفظ طريقة الدفع.",
+        "SAVE_FAILED_TITLE": "فشل حفظ طريقة الدفع",
+        "SAVE_FAILED_DETAIL": "تعذر حفظ طريقة الدفع.",
+        "DELETE_SUCCESS": "تم حذف طريقة الدفع.",
+        "DELETE_FAILED_TITLE": "فشل حذف طريقة الدفع",
+        "DELETE_FAILED_DETAIL": "تعذر حذف طريقة الدفع.",
+        "STATUS_UPDATED": "تم تحديث حالة طريقة الدفع.",
+        "STATUS_FAILED_TITLE": "فشل تحديث حالة الدفع",
+        "STATUS_FAILED_DETAIL": "تعذر تحديث حالة طريقة الدفع."
+      },
+      "ERRORS": {
+        "NAME_REQUIRED": "الاسم مطلوب.",
+        "CODE_REQUIRED": "الرمز مطلوب.",
+        "CODE_INVALID": "يجب أن يكون الرمز بحروف صغيرة وبصيغة slug مثل cod أو whish أو stripe أو paypal.",
+        "TYPE_REQUIRED": "النوع مطلوب.",
+        "FEES_INVALID": "لا يمكن أن تكون الرسوم سالبة.",
+        "MIN_AMOUNT_INVALID": "لا يمكن أن يكون الحد الأدنى سالباً.",
+        "MAX_AMOUNT_INVALID": "لا يمكن أن يكون الحد الأقصى سالباً.",
+        "MAX_LESS_THAN_MIN": "لا يمكن أن يكون الحد الأقصى أقل من الحد الأدنى.",
+        "CONFIG_INVALID": "يجب أن تكون إعدادات JSON صالحة."
       }
     }
   }

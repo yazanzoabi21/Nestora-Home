@@ -5,8 +5,11 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { filter } from 'rxjs';
 import {
   ADMIN_NAVIGATION_SECTIONS,
+  AdminNavigationItem,
   AdminNavigationSection,
 } from '../../../core/services/navigation/admin-navigation.config';
+
+import { AdminSidebarBadgesService } from '../../../core/services/navigation/admin-sidebar-badges.service';
 
 type OpenSections = Record<string, boolean>;
 
@@ -26,7 +29,7 @@ export class SidebarComponent implements OnInit {
   readonly sections = ADMIN_NAVIGATION_SECTIONS;
   readonly openSections = signal<OpenSections>({
     main: true,
-    catalogue: false,
+    catalogue: true,
     marketing: true,
     operations: true,
     people: true,
@@ -36,9 +39,12 @@ export class SidebarComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly sidebarBadges = inject(AdminSidebarBadgesService);
 
   ngOnInit(): void {
     this.openActiveSection(this.router.url);
+
+    void this.sidebarBadges.refreshAll();
 
     this.router.events
       .pipe(
@@ -48,6 +54,14 @@ export class SidebarComponent implements OnInit {
       .subscribe((event) => {
         this.openActiveSection(event.urlAfterRedirects);
       });
+  }
+
+  getItemBadge(item: AdminNavigationItem): string | null {
+    if (item.badgeKey) {
+      return this.sidebarBadges.getBadge(item.badgeKey);
+    }
+
+    return item.badge ?? null;
   }
 
   toggleCollapsed(): void {
