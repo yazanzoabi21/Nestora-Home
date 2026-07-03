@@ -1114,6 +1114,12 @@
         "SAVE_FAILED_DETAIL": "Unable to update review."
       }
     },
+    "CUSTOMERS": {
+      "EXPORT": "Export"
+    },
+    "ORDERS": {
+      "EXPORT": "Export"
+    },
     "MEDIA_PICKER": {
       "TITLE": "Choose from Media Library",
       "SEARCH_PLACEHOLDER": "Search media...",
@@ -2474,6 +2480,12 @@
         "SAVE_FAILED_TITLE": "Updating review",
         "SAVE_FAILED_DETAIL": "Unable to update review."
       }
+    },
+    "CUSTOMERS": {
+      "EXPORT": "تصدير"
+    },
+    "ORDERS": {
+      "EXPORT": "تصدير"
     },
     "PAYMENTS": {
       "TITLE": "المدفوعات والمعاملات",

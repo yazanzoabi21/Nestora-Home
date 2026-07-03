@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import {
   AdminOrder,
@@ -17,6 +18,7 @@ import {
   AdminTableComponent,
   AdminTableRow,
 } from '../../../shared/ui/admin-table';
+import { ExportReportComponent, ExportReportConfig } from '../../../shared/ui/export-report';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 
 interface AdminSelectOption<T extends string = string> {
@@ -36,7 +38,9 @@ type PaymentStatusFilter = 'all' | OrderPaymentStatus;
     AdminTableCellTemplateDirective,
     AdminTableComponent,
     CommonModule,
+    ExportReportComponent,
     KpiCardComponent,
+    TranslatePipe,
   ],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css',
@@ -70,6 +74,7 @@ export class OrdersComponent implements OnInit {
     { label: 'Delivered', value: 'Delivered' },
     { label: 'Shipped', value: 'Shipped' },
     { label: 'Returned', value: 'Returned' },
+    { label: 'Pending', value: 'Pending' },
   ];
 
   readonly paymentOptions: AdminSelectOption<PaymentStatusFilter>[] = [
@@ -77,6 +82,7 @@ export class OrdersComponent implements OnInit {
     { label: 'Paid', value: 'Paid' },
     { label: 'Pending', value: 'Pending' },
     { label: 'Refunded', value: 'Refunded' },
+    { label: 'Unpaid', value: 'Unpaid' },
   ];
 
   readonly dateOptions: AdminSelectOption<OrderDateFilter>[] = [
@@ -87,6 +93,81 @@ export class OrdersComponent implements OnInit {
   ];
 
   readonly stats = computed(() => this.ordersService.getOrderStats(this.orders()));
+
+  readonly ordersExportConfig = computed<ExportReportConfig>(() => {
+    const orders = this.filteredOrders();
+
+    return {
+      fileName: 'nestora-orders-report',
+      reportTitle: 'Nestora Home - Orders Report',
+      reportSubtitle: `${orders.length} orders exported`,
+      orientation: 'landscape',
+      summaryItems: [
+        { label: 'Total Orders', value: orders.length },
+        { label: 'Processing', value: orders.filter((order) => order.delivery === 'Processing').length },
+        { label: 'Delivered', value: orders.filter((order) => order.delivery === 'Delivered').length },
+        { label: 'Total Revenue', value: this.formatCurrency(orders.reduce((sum, order) => sum + this.parseCurrency(order.total), 0)) },
+      ],
+      sections: [
+        {
+          title: 'Orders',
+          headers: [
+            'Order ID',
+            'Customer Name',
+            'Email',
+            'Phone',
+            'Address',
+            'City',
+            'Country',
+            'Items',
+            'Subtotal',
+            'Shipping',
+            'Total',
+            'Payment',
+            'Delivery',
+            'Date',
+          ],
+          excludedPdfColumns: [
+            'Phone',
+            'Address',
+          ],
+          truncateColumns: ['Customer Name', 'Email', 'Address'],
+          columnWidths: {
+            'Order ID': 28,
+            'Customer Name': 28,
+            'Email': 32,
+            'Phone': 20,
+            'Address': 32,
+            'City': 16,
+            'Country': 16,
+            'Items': 12,
+            'Subtotal': 16,
+            'Shipping': 16,
+            'Total': 16,
+            'Payment': 16,
+            'Delivery': 18,
+            'Date': 18,
+          },
+          rows: orders.map((order) => [
+            order.orderId,
+            order.customerName,
+            order.customerEmail ?? '-',
+            order.phone ?? '-',
+            order.address ?? '-',
+            order.city ?? '-',
+            order.country ?? '-',
+            String(order.items),
+            order.subtotal ?? '-',
+            order.shipping ?? '-',
+            order.total,
+            order.payment,
+            order.delivery,
+            order.date,
+          ]),
+        },
+      ],
+    };
+  });
 
   readonly kpiCards = computed<KpiCardData[]>(() => {
     const stats = this.stats();
@@ -137,8 +218,12 @@ export class OrdersComponent implements OnInit {
       const matchesSearch =
         !searchTerm ||
         order.id.toLowerCase().includes(searchTerm) ||
+        order.orderId.toLowerCase().includes(searchTerm) ||
         order.customerName.toLowerCase().includes(searchTerm) ||
-        order.customerEmail.toLowerCase().includes(searchTerm);
+        order.customerEmail.toLowerCase().includes(searchTerm) ||
+        (order.phone && order.phone.toLowerCase().includes(searchTerm)) ||
+        (order.city && order.city.toLowerCase().includes(searchTerm));
+
       const matchesDelivery = selectedDelivery === 'all' || order.delivery === selectedDelivery;
       const matchesPayment = selectedPayment === 'all' || order.payment === selectedPayment;
       const matchesDate = selectedDate === 'all' || this.matchesDateFilter(order, selectedDate);
@@ -211,6 +296,7 @@ export class OrdersComponent implements OnInit {
   paymentBadgeClass(status: OrderPaymentStatus): string {
     switch (status) {
       case 'Pending':
+      case 'Unpaid':
         return 'bg-[#fff6e7] text-[#a66309]';
       case 'Refunded':
         return 'bg-[#edf4ff] text-[#2f66b3]';
@@ -225,6 +311,7 @@ export class OrdersComponent implements OnInit {
       case 'Shipped':
         return 'bg-[#edf4ff] text-[#2f66b3]';
       case 'Processing':
+      case 'Pending':
         return 'bg-[#fff6e7] text-[#a66309]';
       case 'Returned':
         return 'bg-[#f5edff] text-[#7546a6]';
@@ -254,7 +341,7 @@ export class OrdersComponent implements OnInit {
     return {
       id: order.id,
       raw: order,
-      orderId: order.id,
+      orderId: order.orderId,
       customer: {
         title: order.customerName,
         subtitle: order.customerEmail,
@@ -278,14 +365,18 @@ export class OrdersComponent implements OnInit {
   }
 
   private matchesDateFilter(order: AdminOrder, filter: OrderDateFilter): boolean {
-    const date = this.parseOrderDate(order.date);
+    if (!order.createdAt) {
+      return true;
+    }
+
+    const date = this.parseOrderDate(order.createdAt);
 
     if (!date) {
       return true;
     }
 
-    const reference = new Date(2026, 3, 22);
-    const startOfDay = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     if (filter === 'today') {
       return date.getTime() === startOfDay.getTime();
@@ -298,7 +389,7 @@ export class OrdersComponent implements OnInit {
     }
 
     if (filter === 'this_month') {
-      return date.getFullYear() === reference.getFullYear() && date.getMonth() === reference.getMonth();
+      return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
     }
 
     return true;
@@ -307,6 +398,15 @@ export class OrdersComponent implements OnInit {
   private parseOrderDate(value: string): Date | null {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private formatCurrency(value: number): string {
+    return `£${Number(value ?? 0).toFixed(2)}`;
+  }
+
+  private parseCurrency(value: string): number {
+    const match = value.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : 0;
   }
 
   private csvCell(value: string): string {

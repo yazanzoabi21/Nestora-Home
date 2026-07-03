@@ -9,12 +9,11 @@
       </p>
     </div>
 
-    <button type="button"
-      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-semibold text-[#342f29] shadow-sm transition hover:bg-[#f7f4ef] sm:w-auto"
-      (click)="exportCsv()">
-      <i class="pi pi-download text-sm text-[#5f6f43]"></i>
-      <span>Export CSV</span>
-    </button>
+    <app-export-report
+      [config]="ordersExportConfig()"
+      [buttonLabel]="'ORDERS.EXPORT' | translate"
+      variant="secondary">
+    </app-export-report>
   </section>
 
   <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -48,7 +47,7 @@
     </ng-template>
 
     <ng-template adminTableCell="customer" let-value="value">
-      <div class="min-w-[220px]">
+      <div class="min-w-55">
         <p class="truncate text-base font-extrabold text-[#182116]">{{ value.title }}</p>
         <p class="mt-1 truncate text-sm font-medium text-[#9a9389]">{{ value.subtitle }}</p>
       </div>
@@ -71,21 +70,85 @@
     @if (selectedOrder(); as order) {
       <section class="grid gap-3 text-sm font-semibold text-[#342f29]">
         <div class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
-          <p class="text-xs font-black uppercase tracking-[0.08em] text-[#9a9389]">Order</p>
-          <h2 class="mt-1 text-xl font-black text-[#182116]">{{ order.id }}</h2>
+          <p class="text-xs font-black uppercase tracking-[0.08em] text-[#9a9389]">Order Number</p>
+          <h2 class="mt-1 text-xl font-black text-[#182116]">{{ order.orderId }}</h2>
         </div>
+
         <div class="grid gap-3 sm:grid-cols-2">
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Customer</p>
+            <p class="text-xs font-bold text-[#8d877e]">Customer Name</p>
             <p class="mt-1 font-black text-[#182116]">{{ order.customerName }}</p>
-            <p class="mt-1 text-[#8d877e]">{{ order.customerEmail }}</p>
           </div>
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Summary</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.items }} items · {{ order.total }}</p>
-            <p class="mt-1 text-[#8d877e]">{{ order.date }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">Email</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.customerEmail || 'N/A' }}</p>
           </div>
         </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Phone</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.phone || 'N/A' }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Order Date</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.date }}</p>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+          <p class="text-xs font-bold text-[#8d877e]">Address</p>
+          <p class="mt-1 font-black text-[#182116]">{{ order.address || 'N/A' }}</p>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">City</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.city || 'N/A' }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Country</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.country || 'N/A' }}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Items</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.items }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Subtotal</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.subtotal || 'N/A' }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Shipping</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.shipping || 'N/A' }}</p>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+          <p class="text-xs font-bold text-[#8d877e]">Total</p>
+          <p class="mt-2 text-xl font-black text-[#5f6f43]">{{ order.total }}</p>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Payment Status</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.payment }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Delivery Status</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.delivery }}</p>
+          </div>
+        </div>
+
+        @if (order.notes) {
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Notes</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.notes }}</p>
+          </div>
+        }
       </section>
     }
   </app-admin-form-modal>

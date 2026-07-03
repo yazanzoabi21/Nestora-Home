@@ -14,6 +14,8 @@ export type AdminNavigationBadgeKey =
   | 'shipping.activeZones'
   | 'orders.pending'
   | 'notifications.unread'
+  | 'customers.total'
+  | 'orders.total'
   | 'media.total';
   
 export interface AdminNavigationItem {
@@ -50,6 +52,7 @@ export const ADMIN_NAVIGATION_SECTIONS: AdminNavigationSection[] = [
         labelKey: 'SIDEBAR.ORDERS',
         route: '/admin/orders',
         icon: 'pi pi-shopping-cart',
+        badgeKey: 'orders.total',
       },
       {
         label: 'Products',
@@ -63,6 +66,7 @@ export const ADMIN_NAVIGATION_SECTIONS: AdminNavigationSection[] = [
         labelKey: 'SIDEBAR.CUSTOMERS',
         route: '/admin/customers',
         icon: 'pi pi-users',
+        badgeKey: 'customers.total',
       },
       {
         label: 'Analytics',

@@ -30,6 +30,8 @@ export class AdminSidebarBadgesService {
             this.refreshBadge('orders.pending'),
             this.refreshBadge('notifications.unread'),
             this.refreshBadge('media.total'),
+            this.refreshBadge('customers.total'),
+            this.refreshBadge('orders.total'),
         ]);
     }
 
@@ -125,6 +127,12 @@ export class AdminSidebarBadgesService {
 
             case 'media.total':
                 return this.countTable('media_assets');
+
+            case 'customers.total':
+                return this.countTable('customers');
+                
+            case 'orders.total':
+                return this.countTable('orders');
 
             default:
                 return null;

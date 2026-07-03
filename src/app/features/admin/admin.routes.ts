@@ -83,6 +83,11 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () =>
           import('./orders').then((m) => m.OrdersComponent),
       },
+      {
+        path: 'customers',
+        loadComponent: () =>
+          import('./customers/customers.component').then((m) => m.CustomersComponent),
+      },
       
       // {
       //   path: 'discounts',
