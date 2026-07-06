@@ -1,7 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 
 import { SupabaseService } from '../../core/services/supabase';
-import { PaymentMethod, PaymentMethodPayload, PaymentMethodStats, PaymentMethodType } from '../models';
+import {
+  PaymentMethod,
+  PaymentMethodPayload,
+  PaymentMethodStats,
+  PaymentMethodType,
+  PaymentTransaction,
+  PaymentTransactionStats,
+  PaymentTransactionStatus,
+} from '../models';
 
 const PAYMENT_METHOD_SELECT = `
   id,
@@ -24,6 +32,31 @@ const PAYMENT_METHOD_SELECT = `
   updated_at
 `;
 
+const PAYMENT_TRANSACTION_SELECT = `
+  id,
+  order_id,
+  payment_method_id,
+  transaction_code,
+  order_number,
+  customer_name,
+  customer_email,
+  method_code,
+  method_name,
+  provider,
+  amount,
+  fee_amount,
+  currency,
+  status,
+  reference,
+  provider_transaction_id,
+  notes,
+  paid_at,
+  refunded_at,
+  created_at,
+  updated_at,
+  config
+`;
+
 interface PaymentMethodRecord extends Omit<
   PaymentMethod,
   'type' | 'is_active' | 'sort_order' | 'min_amount' | 'max_amount' | 'fee_fixed' | 'fee_percentage' | 'config'
@@ -35,6 +68,16 @@ interface PaymentMethodRecord extends Omit<
   max_amount: number | string | null;
   fee_fixed: number | string | null;
   fee_percentage: number | string | null;
+  config: Record<string, unknown> | null;
+}
+
+interface PaymentTransactionRecord extends Omit<
+  PaymentTransaction,
+  'amount' | 'fee_amount' | 'status' | 'config'
+> {
+  amount: number | string | null;
+  fee_amount: number | string | null;
+  status: string | null;
   config: Record<string, unknown> | null;
 }
 
@@ -97,6 +140,91 @@ export class PaymentsService {
 
   async togglePaymentMethod(method: PaymentMethod): Promise<PaymentMethod> {
     return this.updatePaymentMethod(method.id, { is_active: !method.is_active });
+  }
+
+  async getPaymentTransactions(): Promise<PaymentTransaction[]> {
+    const { data, error } = await this.supabase
+      .from('payment_transactions')
+      .select(PAYMENT_TRANSACTION_SELECT)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Unable to load payment transactions. ${error.message}`);
+    }
+
+    return (data ?? []).map((transaction) =>
+      this.mapPaymentTransaction(transaction as PaymentTransactionRecord)
+    );
+  }
+
+  getPaymentStats(transactions: PaymentTransaction[]): PaymentTransactionStats {
+    return {
+      totalRevenue: transactions
+        .filter((transaction) => transaction.status === 'paid')
+        .reduce((total, transaction) => total + transaction.amount, 0),
+      gatewayFees: transactions.reduce((total, transaction) => total + transaction.fee_amount, 0),
+      failedPayments: transactions.filter((transaction) => transaction.status === 'failed').length,
+      refundedTotal: transactions
+        .filter((transaction) => transaction.status === 'refunded')
+        .reduce((total, transaction) => total + transaction.amount, 0),
+    };
+  }
+
+  async refundTransaction(id: string): Promise<PaymentTransaction> {
+    return this.updateTransactionStatus(id, {
+      status: 'refunded',
+      refunded_at: new Date().toISOString(),
+    });
+  }
+
+  async retryTransaction(id: string): Promise<PaymentTransaction> {
+    return this.updateTransactionStatus(id, {
+      status: 'pending',
+    });
+  }
+
+  async markCodAsPaid(id: string): Promise<PaymentTransaction> {
+    return this.updateTransactionStatus(id, {
+      status: 'paid',
+      paid_at: new Date().toISOString(),
+    });
+  }
+
+  exportTransactionsCsv(transactions: PaymentTransaction[]): string {
+    const header = [
+      'Transaction',
+      'Order',
+      'Customer',
+      'Email',
+      'Method',
+      'Provider',
+      'Amount',
+      'Fee',
+      'Currency',
+      'Status',
+      'Reference',
+      'Created At',
+    ];
+
+    return [
+      header,
+      ...transactions.map((transaction) => [
+        transaction.transaction_code,
+        transaction.order_number ?? '',
+        transaction.customer_name ?? '',
+        transaction.customer_email ?? '',
+        transaction.method_name,
+        transaction.provider ?? '',
+        transaction.amount.toFixed(2),
+        transaction.fee_amount.toFixed(2),
+        transaction.currency,
+        transaction.status,
+        transaction.reference ?? transaction.provider_transaction_id ?? '',
+        transaction.created_at ?? '',
+      ]),
+    ]
+      .map((row) => row.map((value) => this.csvCell(value)).join(','))
+      .join('\n');
   }
 
   getPaymentMethodStats(methods: PaymentMethod[]): PaymentMethodStats {
@@ -209,8 +337,66 @@ export class PaymentsService {
     };
   }
 
+  private async updateTransactionStatus(
+    id: string,
+    payload: Partial<Pick<PaymentTransaction, 'status' | 'paid_at' | 'refunded_at'>>
+  ): Promise<PaymentTransaction> {
+    const { data, error } = await this.supabase
+      .from('payment_transactions')
+      .update(payload)
+      .eq('id', id)
+      .select(PAYMENT_TRANSACTION_SELECT)
+      .single();
+
+    if (error) {
+      throw new Error(`Unable to update payment transaction. ${error.message}`);
+    }
+
+    return this.mapPaymentTransaction(data as PaymentTransactionRecord);
+  }
+
+  private mapPaymentTransaction(transaction: PaymentTransactionRecord): PaymentTransaction {
+    return {
+      id: transaction.id,
+      order_id: transaction.order_id ?? null,
+      payment_method_id: transaction.payment_method_id ?? null,
+      transaction_code: transaction.transaction_code ?? '',
+      order_number: transaction.order_number ?? null,
+      customer_name: transaction.customer_name ?? null,
+      customer_email: transaction.customer_email ?? null,
+      method_code: transaction.method_code ?? '',
+      method_name: transaction.method_name ?? '',
+      provider: transaction.provider ?? null,
+      amount: this.numberValue(transaction.amount),
+      fee_amount: this.numberValue(transaction.fee_amount),
+      currency: transaction.currency ?? 'USD',
+      status: this.transactionStatus(transaction.status),
+      reference: transaction.reference ?? null,
+      provider_transaction_id: transaction.provider_transaction_id ?? null,
+      notes: transaction.notes ?? null,
+      paid_at: transaction.paid_at ?? null,
+      refunded_at: transaction.refunded_at ?? null,
+      created_at: transaction.created_at ?? null,
+      updated_at: transaction.updated_at ?? null,
+      config: transaction.config ?? {},
+    };
+  }
+
   private paymentType(value: string | null): PaymentMethodType {
     return value === 'online' || value === 'bank_transfer' || value === 'wallet' ? value : 'manual';
+  }
+
+  private transactionStatus(value: string | null): PaymentTransactionStatus {
+    switch (value) {
+      case 'paid':
+      case 'failed':
+      case 'refunded':
+      case 'cancelled':
+        return value;
+      case 'pending':
+      default:
+        return 'pending';
+    }
   }
 
   private nullableNumber(value: number | string | null | undefined): number | null {
@@ -219,5 +405,11 @@ export class PaymentsService {
 
   private numberValue(value: number | string | null | undefined): number {
     return Number(value ?? 0);
+  }
+
+  private csvCell(value: string): string {
+    const escaped = value.replace(/"/g, '""');
+
+    return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
   }
 }

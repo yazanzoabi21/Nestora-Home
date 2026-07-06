@@ -946,7 +946,12 @@
     },
     "PAYMENTS": {
       "TITLE": "Payments & Transactions",
-      "SUBTITLE": "Manage payment methods and payment setup",
+      "SUBTITLE": "Track all payment transactions ? {{count}} total",
+      "EXPORT": "Export",
+      "TABS": {
+        "TRANSACTIONS": "Transactions",
+        "METHODS": "Payment Methods"
+      },
       "METHODS_TITLE": "Payment Methods",
       "METHODS_SUBTITLE": "Configure checkout payment options for customers",
       "ADD_METHOD": "Add Method",
@@ -955,19 +960,33 @@
       "MIN_LIMIT": "From {{amount}}",
       "MAX_LIMIT": "Up to {{amount}}",
       "KPI": {
-        "ACTIVE_METHODS": "Active Methods",
-        "ONLINE_METHODS": "Online Methods",
-        "MANUAL_METHODS": "Manual Methods",
-        "DISABLED_METHODS": "Disabled Methods"
+        "TOTAL_REVENUE": "Total Revenue",
+        "GATEWAY_FEES": "Gateway Fees",
+        "FAILED_PAYMENTS": "Failed Payments",
+        "REFUNDED_TOTAL": "Refunded Total"
+      },
+      "FILTERS": {
+        "SEARCH_PLACEHOLDER": "Search by transaction ID, customer, order...",
+        "ALL_STATUSES": "All",
+        "ALL_METHODS": "All",
+        "COUNT": "{{count}} transactions"
       },
       "TABLE": {
+        "TRANSACTION": "Transaction",
+        "CUSTOMER": "Customer",
+        "AMOUNT": "Amount",
+        "DATE": "Date",
         "METHOD": "Method",
         "PROVIDER": "Provider",
         "TYPE": "Type",
+        "NOTES": "Notes",
+        "PAID_AT": "Paid At",
+        "REFUNDED_AT": "Refunded At",
         "FEES": "Fees",
         "LIMITS": "Limits",
         "STATUS": "Status",
-        "ACTIONS": "Actions"
+        "ACTIONS": "Actions",
+        "FEE_VALUE": "fee: {{amount}}"
       },
       "TYPE": {
         "MANUAL": "Manual",
@@ -977,16 +996,27 @@
       },
       "STATUS": {
         "ACTIVE": "Active",
-        "INACTIVE": "Inactive"
+        "INACTIVE": "Inactive",
+        "PAID": "Paid",
+        "PENDING": "Pending",
+        "FAILED": "Failed",
+        "REFUNDED": "Refunded",
+        "CANCELLED": "Cancelled"
       },
       "ACTIONS": {
+        "VIEW": "View",
+        "REFUND": "Refund",
+        "RETRY": "Retry",
+        "MARK_PAID": "Mark as Paid",
         "EDIT": "Edit",
         "DELETE": "Delete",
         "TOGGLE_STATUS": "Toggle status"
       },
       "EMPTY": {
-        "TITLE": "No payment methods yet",
-        "TEXT": "Add Cash on Delivery, Whish, or another payment method to configure checkout."
+        "TRANSACTIONS_TITLE": "No payment transactions yet",
+        "TRANSACTIONS_TEXT": "Customer payment history will appear here when transactions are recorded.",
+        "METHODS_TITLE": "No payment methods yet",
+        "METHODS_TEXT": "Add Cash on Delivery, Whish, or another payment method to configure checkout."
       },
       "MODAL": {
         "CREATE_TITLE": "Add Payment Method",
@@ -1020,8 +1050,8 @@
         "CONFIG_JSON": "Optional JSON configuration for future integrations."
       },
       "TOAST": {
-        "LOAD_FAILED_TITLE": "Loading payment methods failed",
-        "LOAD_FAILED_DETAIL": "Unable to load payment methods.",
+        "LOAD_FAILED_TITLE": "Loading payments failed",
+        "LOAD_FAILED_DETAIL": "Unable to load payment data.",
         "VALIDATION_TITLE": "Payment method needs attention",
         "SAVE_SUCCESS": "Payment method saved.",
         "SAVE_FAILED_TITLE": "Saving payment method failed",
@@ -1031,7 +1061,12 @@
         "DELETE_FAILED_DETAIL": "Unable to delete payment method.",
         "STATUS_UPDATED": "Payment method status updated.",
         "STATUS_FAILED_TITLE": "Updating payment status failed",
-        "STATUS_FAILED_DETAIL": "Unable to update payment method status."
+        "STATUS_FAILED_DETAIL": "Unable to update payment method status.",
+        "REFUND_SUCCESS": "Payment refunded.",
+        "RETRY_SUCCESS": "Payment retry started.",
+        "MARK_PAID_SUCCESS": "COD payment marked as paid.",
+        "TRANSACTION_ACTION_FAILED_TITLE": "Updating transaction failed",
+        "TRANSACTION_ACTION_FAILED_DETAIL": "Unable to update payment transaction."
       },
       "ERRORS": {
         "NAME_REQUIRED": "Name is required.",
@@ -2477,7 +2512,12 @@
     },
     "PAYMENTS": {
       "TITLE": "المدفوعات والمعاملات",
-      "SUBTITLE": "إدارة طرق الدفع وإعدادات التحصيل",
+      "SUBTITLE": "تتبّع جميع معاملات الدفع · {{count}} إجمالاً",
+      "EXPORT": "تصدير",
+      "TABS": {
+        "TRANSACTIONS": "المعاملات",
+        "METHODS": "طرق الدفع"
+      },
       "METHODS_TITLE": "طرق الدفع",
       "METHODS_SUBTITLE": "إعداد خيارات الدفع المتاحة للعملاء عند إتمام الطلب",
       "ADD_METHOD": "إضافة طريقة",
@@ -2486,19 +2526,33 @@
       "MIN_LIMIT": "ابتداءً من {{amount}}",
       "MAX_LIMIT": "حتى {{amount}}",
       "KPI": {
-        "ACTIVE_METHODS": "الطرق النشطة",
-        "ONLINE_METHODS": "طرق الدفع الإلكترونية",
-        "MANUAL_METHODS": "طرق الدفع اليدوية",
-        "DISABLED_METHODS": "الطرق المعطلة"
+        "TOTAL_REVENUE": "إجمالي الإيرادات",
+        "GATEWAY_FEES": "رسوم بوابات الدفع",
+        "FAILED_PAYMENTS": "المدفوعات الفاشلة",
+        "REFUNDED_TOTAL": "إجمالي المبالغ المستردة"
+      },
+      "FILTERS": {
+        "SEARCH_PLACEHOLDER": "ابحث برقم المعاملة أو العميل أو الطلب...",
+        "ALL_STATUSES": "كل الحالات",
+        "ALL_METHODS": "كل الطرق",
+        "COUNT": "{{count}} معاملة"
       },
       "TABLE": {
-        "METHOD": "الطريقة",
+        "TRANSACTION": "المعاملة",
+        "CUSTOMER": "العميل",
+        "AMOUNT": "المبلغ",
+        "DATE": "التاريخ",
+        "METHOD": "طريقة الدفع",
         "PROVIDER": "المزوّد",
         "TYPE": "النوع",
+        "NOTES": "الملاحظات",
+        "PAID_AT": "تاريخ الدفع",
+        "REFUNDED_AT": "تاريخ الاسترداد",
         "FEES": "الرسوم",
         "LIMITS": "الحدود",
         "STATUS": "الحالة",
-        "ACTIONS": "الإجراءات"
+        "ACTIONS": "الإجراءات",
+        "FEE_VALUE": "الرسوم: {{amount}}"
       },
       "TYPE": {
         "MANUAL": "يدوي",
@@ -2508,16 +2562,27 @@
       },
       "STATUS": {
         "ACTIVE": "نشط",
-        "INACTIVE": "غير نشط"
+        "INACTIVE": "غير نشط",
+        "PAID": "مدفوع",
+        "PENDING": "قيد الانتظار",
+        "FAILED": "فشل",
+        "REFUNDED": "مسترد",
+        "CANCELLED": "ملغى"
       },
       "ACTIONS": {
+        "VIEW": "عرض",
+        "REFUND": "استرداد",
+        "RETRY": "إعادة المحاولة",
+        "MARK_PAID": "تحديد كمدفوع",
         "EDIT": "تعديل",
         "DELETE": "حذف",
-        "TOGGLE_STATUS": "تبديل الحالة"
+        "TOGGLE_STATUS": "تغيير الحالة"
       },
       "EMPTY": {
-        "TITLE": "لا توجد طرق دفع بعد",
-        "TEXT": "أضف الدفع عند الاستلام أو Whish أو أي طريقة دفع أخرى لإعداد الدفع."
+        "TRANSACTIONS_TITLE": "لا توجد معاملات دفع بعد",
+        "TRANSACTIONS_TEXT": "سيظهر سجل مدفوعات العملاء هنا عند تسجيل المعاملات.",
+        "METHODS_TITLE": "لا توجد طرق دفع بعد",
+        "METHODS_TEXT": "أضف الدفع عند الاستلام أو Whish أو أي طريقة دفع أخرى لإعداد خيارات الدفع."
       },
       "MODAL": {
         "CREATE_TITLE": "إضافة طريقة دفع",
@@ -2551,8 +2616,8 @@
         "CONFIG_JSON": "إعدادات JSON اختيارية للتكاملات المستقبلية."
       },
       "TOAST": {
-        "LOAD_FAILED_TITLE": "فشل تحميل طرق الدفع",
-        "LOAD_FAILED_DETAIL": "تعذر تحميل طرق الدفع.",
+        "LOAD_FAILED_TITLE": "فشل تحميل المدفوعات",
+        "LOAD_FAILED_DETAIL": "تعذر تحميل بيانات المدفوعات.",
         "VALIDATION_TITLE": "طريقة الدفع تحتاج إلى مراجعة",
         "SAVE_SUCCESS": "تم حفظ طريقة الدفع.",
         "SAVE_FAILED_TITLE": "فشل حفظ طريقة الدفع",
@@ -2562,7 +2627,12 @@
         "DELETE_FAILED_DETAIL": "تعذر حذف طريقة الدفع.",
         "STATUS_UPDATED": "تم تحديث حالة طريقة الدفع.",
         "STATUS_FAILED_TITLE": "فشل تحديث حالة الدفع",
-        "STATUS_FAILED_DETAIL": "تعذر تحديث حالة طريقة الدفع."
+        "STATUS_FAILED_DETAIL": "تعذر تحديث حالة طريقة الدفع.",
+        "REFUND_SUCCESS": "تم استرداد الدفع.",
+        "RETRY_SUCCESS": "تم بدء إعادة محاولة الدفع.",
+        "MARK_PAID_SUCCESS": "تم تحديد دفع الاستلام كمدفوع.",
+        "TRANSACTION_ACTION_FAILED_TITLE": "فشل تحديث المعاملة",
+        "TRANSACTION_ACTION_FAILED_DETAIL": "تعذر تحديث معاملة الدفع."
       },
       "ERRORS": {
         "NAME_REQUIRED": "الاسم مطلوب.",

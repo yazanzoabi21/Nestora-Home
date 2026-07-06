@@ -4,7 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ToastService } from '../../../core/services';
-import { PaymentMethod, PaymentMethodPayload, PaymentMethodType, PaymentsService } from '../../../data-access';
+import {
+  PaymentMethod,
+  PaymentMethodPayload,
+  PaymentMethodType,
+  PaymentTransaction,
+  PaymentTransactionStatus,
+  PaymentsService,
+} from '../../../data-access';
 import { AdminFormFieldComponent } from '../../../shared/ui/admin-form-field';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import {
@@ -14,6 +21,7 @@ import {
   AdminTableRow,
 } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
+import { ExportReportComponent, ExportReportConfig } from '../../../shared/ui/export-report';
 
 interface SelectOption<T extends string = string> {
   label: string;
@@ -39,9 +47,11 @@ interface PaymentMethodForm {
   config: string;
 }
 
-type PaymentMethodTableRow = AdminTableRow & {
-  raw: PaymentMethod;
-};
+type PaymentsTab = 'transactions' | 'methods';
+type PaymentMethodTableRow = AdminTableRow & { raw: PaymentMethod };
+type PaymentTransactionTableRow = AdminTableRow & { raw: PaymentTransaction };
+type TransactionStatusFilter = 'all' | PaymentTransactionStatus;
+type TransactionMethodFilter = 'all' | string;
 
 const DEFAULT_PAYMENT_METHOD_FORM: PaymentMethodForm = {
   id: null,
@@ -73,6 +83,7 @@ const DEFAULT_PAYMENT_METHOD_FORM: PaymentMethodForm = {
     CommonModule,
     FormsModule,
     KpiCardComponent,
+    ExportReportComponent,
     TranslatePipe,
   ],
   templateUrl: './payments.component.html',
@@ -83,19 +94,51 @@ export class PaymentsComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
 
+  readonly activeTab = signal<PaymentsTab>('transactions');
   readonly methods = signal<PaymentMethod[]>([]);
+  readonly transactions = signal<PaymentTransaction[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
+  readonly searchTerm = signal('');
+  readonly statusFilter = signal<TransactionStatusFilter>('all');
+  readonly methodFilter = signal<TransactionMethodFilter>('all');
   readonly methodModalOpen = signal(false);
   readonly deleteModalOpen = signal(false);
   readonly methodForm = signal<PaymentMethodForm>({ ...DEFAULT_PAYMENT_METHOD_FORM });
   readonly pendingDelete = signal<PaymentMethod | null>(null);
+
+  readonly tabs: SelectOption<PaymentsTab>[] = [
+    { label: 'PAYMENTS.TABS.TRANSACTIONS', value: 'transactions' },
+    { label: 'PAYMENTS.TABS.METHODS', value: 'methods' },
+  ];
+
+  readonly transactionStatusOptions: SelectOption<TransactionStatusFilter>[] = [
+    { label: 'PAYMENTS.FILTERS.ALL_STATUSES', value: 'all' },
+    { label: 'PAYMENTS.STATUS.PAID', value: 'paid' },
+    { label: 'PAYMENTS.STATUS.PENDING', value: 'pending' },
+    { label: 'PAYMENTS.STATUS.FAILED', value: 'failed' },
+    { label: 'PAYMENTS.STATUS.REFUNDED', value: 'refunded' },
+    { label: 'PAYMENTS.STATUS.CANCELLED', value: 'cancelled' },
+  ];
 
   readonly paymentTypeOptions: SelectOption<PaymentMethodType>[] = [
     { label: 'PAYMENTS.TYPE.MANUAL', value: 'manual' },
     { label: 'PAYMENTS.TYPE.ONLINE', value: 'online' },
     { label: 'PAYMENTS.TYPE.BANK_TRANSFER', value: 'bank_transfer' },
     { label: 'PAYMENTS.TYPE.WALLET', value: 'wallet' },
+  ];
+
+  readonly transactionColumns: AdminTableColumn[] = [
+    { key: 'transaction', label: 'PAYMENTS.TABLE.TRANSACTION', type: 'text' },
+    { key: 'customer', label: 'PAYMENTS.TABLE.CUSTOMER', type: 'text' },
+    { key: 'amount', label: 'PAYMENTS.TABLE.AMOUNT', type: 'text' },
+    { key: 'method', label: 'PAYMENTS.TABLE.METHOD', type: 'text' },
+    { key: 'status', label: 'PAYMENTS.TABLE.STATUS', type: 'status' },
+    { key: 'date', label: 'PAYMENTS.TABLE.DATE', type: 'text' },
+    { key: 'notes', label: 'PAYMENTS.TABLE.NOTES', type: 'text' },
+    { key: 'paid_at', label: 'PAYMENTS.TABLE.PAID_AT', type: 'text' },
+    { key: 'refunded_at', label: 'PAYMENTS.TABLE.REFUNDED_AT', type: 'text' },
+    { key: 'actions', label: '', type: 'actions' },
   ];
 
   readonly paymentMethodColumns: AdminTableColumn[] = [
@@ -105,53 +148,105 @@ export class PaymentsComponent implements OnInit {
     { key: 'fees', label: 'PAYMENTS.TABLE.FEES', type: 'text' },
     { key: 'limits', label: 'PAYMENTS.TABLE.LIMITS', type: 'text' },
     { key: 'status', label: 'PAYMENTS.TABLE.STATUS', type: 'status' },
-    { key: 'actions', label: 'PAYMENTS.TABLE.ACTIONS', type: 'actions' },
+    { key: 'actions', label: '', type: 'actions' },
   ];
 
-  readonly stats = computed(() => this.paymentsService.getPaymentMethodStats(this.methods()));
+  readonly methodFilterOptions = computed<SelectOption<TransactionMethodFilter>[]>(() => [
+    { label: 'PAYMENTS.FILTERS.ALL_METHODS', value: 'all' },
+    ...Array.from(new Set(this.transactions().map((transaction) => transaction.method_code).filter(Boolean))).map(
+      (code) => ({
+        label: this.methodNameForCode(code),
+        value: code,
+      })
+    ),
+  ]);
+
+  readonly filteredTransactions = computed(() => {
+    const query = this.searchTerm().trim().toLowerCase();
+    const status = this.statusFilter();
+    const method = this.methodFilter();
+
+    return this.transactions().filter((transaction) => {
+      const matchesSearch = query
+        ? [
+          transaction.transaction_code,
+          transaction.order_number,
+          transaction.customer_name,
+          transaction.customer_email,
+        ]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(query))
+        : true;
+      const matchesStatus = status === 'all' || transaction.status === status;
+      const matchesMethod = method === 'all' || transaction.method_code === method;
+
+      return matchesSearch && matchesStatus && matchesMethod;
+    });
+  });
+
+  readonly transactionStats = computed(() => this.paymentsService.getPaymentStats(this.transactions()));
 
   readonly kpiCards = computed<KpiCardData[]>(() => {
-    const stats = this.stats();
+    const stats = this.transactionStats();
 
     return [
       {
-        title: 'PAYMENTS.KPI.ACTIVE_METHODS',
-        titleKey: 'PAYMENTS.KPI.ACTIVE_METHODS',
-        value: stats.activeMethods.toString(),
-        icon: 'pi pi-check-circle',
+        title: 'PAYMENTS.KPI.TOTAL_REVENUE',
+        titleKey: 'PAYMENTS.KPI.TOTAL_REVENUE',
+        value: this.formatMoney(stats.totalRevenue),
+        icon: 'pi pi-chart-line',
         iconColor: '#2f9f69',
         iconBg: '#e9f8ef',
         showChart: false,
       },
       {
-        title: 'PAYMENTS.KPI.ONLINE_METHODS',
-        titleKey: 'PAYMENTS.KPI.ONLINE_METHODS',
-        value: stats.onlineMethods.toString(),
-        icon: 'pi pi-globe',
-        iconColor: '#3b78d8',
-        iconBg: '#eaf2ff',
+        title: 'PAYMENTS.KPI.GATEWAY_FEES',
+        titleKey: 'PAYMENTS.KPI.GATEWAY_FEES',
+        value: this.formatMoney(stats.gatewayFees),
+        icon: 'pi pi-credit-card',
+        iconColor: '#675f55',
+        iconBg: '#f1eee9',
         showChart: false,
       },
       {
-        title: 'PAYMENTS.KPI.MANUAL_METHODS',
-        titleKey: 'PAYMENTS.KPI.MANUAL_METHODS',
-        value: stats.manualMethods.toString(),
-        icon: 'pi pi-wallet',
-        iconColor: '#d98916',
-        iconBg: '#fff6e7',
-        showChart: false,
-      },
-      {
-        title: 'PAYMENTS.KPI.DISABLED_METHODS',
-        titleKey: 'PAYMENTS.KPI.DISABLED_METHODS',
-        value: stats.disabledMethods.toString(),
-        icon: 'pi pi-ban',
+        title: 'PAYMENTS.KPI.FAILED_PAYMENTS',
+        titleKey: 'PAYMENTS.KPI.FAILED_PAYMENTS',
+        value: stats.failedPayments.toString(),
+        icon: 'pi pi-exclamation-triangle',
         iconColor: '#dc3f35',
         iconBg: '#fff1f0',
         showChart: false,
       },
+      {
+        title: 'PAYMENTS.KPI.REFUNDED_TOTAL',
+        titleKey: 'PAYMENTS.KPI.REFUNDED_TOTAL',
+        value: this.formatMoney(stats.refundedTotal),
+        icon: 'pi pi-refresh',
+        iconColor: '#3b78d8',
+        iconBg: '#eaf2ff',
+        showChart: false,
+      },
     ];
   });
+
+  readonly transactionRows = computed<PaymentTransactionTableRow[]>(() =>
+    this.filteredTransactions().map((transaction) => ({
+      id: transaction.id,
+      transaction: transaction.transaction_code,
+      customer: transaction.customer_name ?? '-',
+      amount: this.formatMoney(transaction.amount, transaction.currency),
+      method: transaction.method_name,
+      status: {
+        labelKey: this.transactionStatusLabelKey(transaction.status),
+        className: this.transactionStatusClass(transaction.status),
+      },
+      date: this.formatDate(transaction.created_at),
+      notes: transaction.notes || '-',
+      paid_at: transaction.paid_at ? this.formatDate(transaction.paid_at) : '-',
+      refunded_at: transaction.refunded_at ? this.formatDate(transaction.refunded_at) : '-',
+      raw: transaction,
+    }))
+  );
 
   readonly paymentMethodRows = computed<PaymentMethodTableRow[]>(() =>
     this.methods().map((method) => ({
@@ -172,15 +267,119 @@ export class PaymentsComponent implements OnInit {
     }))
   );
 
+  readonly paymentsExportConfig = computed<ExportReportConfig>(() => {
+    const transactions = this.filteredTransactions();
+
+    const totalAmount = transactions.reduce(
+      (sum, transaction) => sum + Number(transaction.amount ?? 0),
+      0
+    );
+
+    const totalFees = transactions.reduce(
+      (sum, transaction) => sum + Number(transaction.fee_amount ?? 0),
+      0
+    );
+
+    const refundedTotal = transactions
+      .filter((transaction) => transaction.status === 'refunded')
+      .reduce((sum, transaction) => sum + Number(transaction.amount ?? 0), 0);
+
+    return {
+      fileName: 'nestora-payment-transactions-report',
+      reportTitle: 'Nestora Home - Payment Transactions Report',
+      reportSubtitle: `${transactions.length} transactions exported`,
+      orientation: 'landscape',
+      summaryItems: [
+        { label: 'Transactions', value: transactions.length },
+        { label: 'Paid', value: transactions.filter((transaction) => transaction.status === 'paid').length },
+        { label: 'Pending', value: transactions.filter((transaction) => transaction.status === 'pending').length },
+        { label: 'Failed', value: transactions.filter((transaction) => transaction.status === 'failed').length },
+        { label: 'Refunded', value: transactions.filter((transaction) => transaction.status === 'refunded').length },
+        { label: 'Amount', value: this.formatMoney(totalAmount) },
+        { label: 'Fees', value: this.formatMoney(totalFees) },
+        { label: 'Refunded Amt', value: this.formatMoney(refundedTotal) },
+      ],
+      sections: [
+        {
+          title: 'Payment Transactions',
+          headers: [
+            'Transaction Code',
+            'Order Number',
+            'Customer',
+            'Customer Email',
+            'Amount',
+            'Fee',
+            'Currency',
+            'Method',
+            'Status',
+            'Reference',
+            'Provider Transaction ID',
+            'Created At',
+            'Paid At',
+            'Refunded At',
+            'Notes',
+          ],
+          excludedPdfColumns: [
+            'Customer Email',
+            'Fee',
+            'Currency',
+            'Reference',
+            'Provider Transaction ID',
+            'Paid At',
+            'Refunded At',
+            'Notes',
+          ],
+          truncateColumns: [
+            'Transaction Code',
+            'Order Number',
+            'Customer',
+            'Method',
+          ],
+          columnWidths: {
+            'Transaction Code': 34,
+            'Order Number': 28,
+            Customer: 34,
+            Amount: 24,
+            Method: 34,
+            Status: 22,
+            'Created At': 30,
+          },
+          rows: transactions.map((transaction) => [
+            transaction.transaction_code || '-',
+            transaction.order_number || '-',
+            transaction.customer_name || '-',
+            transaction.customer_email || '-',
+            this.formatMoney(transaction.amount, transaction.currency),
+            this.formatMoney(transaction.fee_amount, transaction.currency),
+            transaction.currency || 'USD',
+            transaction.method_name || transaction.method_code || '-',
+            this.transactionStatusLabelKey(transaction.status).replace('PAYMENTS.STATUS.', ''),
+            transaction.reference || '-',
+            transaction.provider_transaction_id || '-',
+            this.formatDate(transaction.created_at),
+            transaction.paid_at ? this.formatDate(transaction.paid_at) : '-',
+            transaction.refunded_at ? this.formatDate(transaction.refunded_at) : '-',
+            transaction.notes || '-',
+          ]),
+        },
+      ],
+    };
+  });
+
   async ngOnInit(): Promise<void> {
-    await this.loadPaymentMethods();
+    await this.loadPaymentData();
   }
 
-  async loadPaymentMethods(): Promise<void> {
+  async loadPaymentData(): Promise<void> {
     this.loading.set(true);
 
     try {
-      this.methods.set(await this.paymentsService.getPaymentMethods());
+      const [methods, transactions] = await Promise.all([
+        this.paymentsService.getPaymentMethods(),
+        this.paymentsService.getPaymentTransactions(),
+      ]);
+      this.methods.set(methods);
+      this.transactions.set(transactions);
     } catch (error) {
       this.toast.failed(
         this.translate.instant('PAYMENTS.TOAST.LOAD_FAILED_TITLE'),
@@ -189,6 +388,27 @@ export class PaymentsComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async loadPaymentMethods(): Promise<void> {
+    const methods = await this.paymentsService.getPaymentMethods();
+    this.methods.set(methods);
+  }
+
+  setActiveTab(tab: PaymentsTab): void {
+    this.activeTab.set(tab);
+  }
+
+  updateSearchTerm(value: string): void {
+    this.searchTerm.set(value);
+  }
+
+  updateStatusFilter(value: TransactionStatusFilter): void {
+    this.statusFilter.set(value);
+  }
+
+  updateMethodFilter(value: TransactionMethodFilter): void {
+    this.methodFilter.set(value);
   }
 
   openMethodModal(method?: PaymentMethod): void {
@@ -244,7 +464,7 @@ export class PaymentsComponent implements OnInit {
       return;
     }
 
-    await this.runMutation(async () => {
+    await this.runMethodMutation(async () => {
       const payload = this.buildPayload(form);
 
       if (form.id) {
@@ -267,7 +487,7 @@ export class PaymentsComponent implements OnInit {
       return;
     }
 
-    await this.runMutation(
+    await this.runMethodMutation(
       () => this.paymentsService.deletePaymentMethod(method.id),
       'PAYMENTS.TOAST.DELETE_SUCCESS',
       'PAYMENTS.TOAST.DELETE_FAILED_TITLE',
@@ -276,7 +496,7 @@ export class PaymentsComponent implements OnInit {
   }
 
   async toggleMethod(method: PaymentMethod): Promise<void> {
-    await this.runMutation(
+    await this.runMethodMutation(
       () => this.paymentsService.togglePaymentMethod(method),
       'PAYMENTS.TOAST.STATUS_UPDATED',
       'PAYMENTS.TOAST.STATUS_FAILED_TITLE',
@@ -284,8 +504,33 @@ export class PaymentsComponent implements OnInit {
     );
   }
 
+  async refundTransaction(transaction: PaymentTransaction): Promise<void> {
+    await this.runTransactionMutation(
+      () => this.paymentsService.refundTransaction(transaction.id),
+      'PAYMENTS.TOAST.REFUND_SUCCESS'
+    );
+  }
+
+  async retryTransaction(transaction: PaymentTransaction): Promise<void> {
+    await this.runTransactionMutation(
+      () => this.paymentsService.retryTransaction(transaction.id),
+      'PAYMENTS.TOAST.RETRY_SUCCESS'
+    );
+  }
+
+  async markCodAsPaid(transaction: PaymentTransaction): Promise<void> {
+    await this.runTransactionMutation(
+      () => this.paymentsService.markCodAsPaid(transaction.id),
+      'PAYMENTS.TOAST.MARK_PAID_SUCCESS'
+    );
+  }
+
   paymentMethodFromRow(row: AdminTableRow): PaymentMethod {
     return row.raw as PaymentMethod;
+  }
+
+  transactionFromRow(row: AdminTableRow): PaymentTransaction {
+    return row.raw as PaymentTransaction;
   }
 
   modalTitle(): string {
@@ -310,6 +555,26 @@ export class PaymentsComponent implements OnInit {
 
   statusClass(isActive: boolean): string {
     return isActive ? 'bg-[#e9f8ef] text-[#117047]' : 'bg-[#fff1f0] text-[#b42318]';
+  }
+
+  transactionStatusLabelKey(status: PaymentTransactionStatus): string {
+    return `PAYMENTS.STATUS.${status.toUpperCase()}`;
+  }
+
+  transactionStatusClass(status: PaymentTransactionStatus): string {
+    switch (status) {
+      case 'paid':
+        return 'bg-[#e9f8ef] text-[#117047]';
+      case 'pending':
+        return 'bg-[#fff6e7] text-[#a66309]';
+      case 'refunded':
+        return 'bg-[#eaf2ff] text-[#2f6fd0]';
+      case 'failed':
+        return 'bg-[#fff1f0] text-[#b42318]';
+      case 'cancelled':
+      default:
+        return 'bg-[#f1eee9] text-[#675f55]';
+    }
   }
 
   feesLabel(method: PaymentMethod): string {
@@ -342,16 +607,52 @@ export class PaymentsComponent implements OnInit {
     return this.translate.instant('PAYMENTS.NO_LIMITS');
   }
 
-  formatMoney(value: number | null | undefined): string {
+  formatMoney(value: number | null | undefined, currency = 'USD'): string {
     if (value === null || value === undefined) {
       return '-';
     }
 
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(this.currentLocale(), {
       style: 'currency',
-      currency: 'USD',
+      currency,
       maximumFractionDigits: 2,
     }).format(value);
+  }
+
+  formatDate(value: string | null): string {
+    if (!value) {
+      return '-';
+    }
+
+    return new Intl.DateTimeFormat(this.currentLocale(), {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(value));
+  }
+
+  canRefund(transaction: PaymentTransaction): boolean {
+    return transaction.status === 'paid' && transaction.method_code !== 'cod';
+  }
+
+  canRetry(transaction: PaymentTransaction): boolean {
+    return transaction.status === 'failed' && transaction.method_code !== 'cod';
+  }
+
+  canMarkCodPaid(transaction: PaymentTransaction): boolean {
+    return transaction.status === 'pending' && transaction.method_code === 'cod';
+  }
+
+  methodIcon(transaction: PaymentTransaction): string {
+    const method = this.methods().find((item) => item.code === transaction.method_code);
+
+    return method?.icon || (transaction.method_code === 'cod' ? 'pi pi-wallet' : 'pi pi-credit-card');
+  }
+
+  methodNameForCode(code: string): string {
+    return this.transactions().find((transaction) => transaction.method_code === code)?.method_name ?? code;
   }
 
   textValue(value: unknown): string {
@@ -370,7 +671,7 @@ export class PaymentsComponent implements OnInit {
     return value === true;
   }
 
-  private async runMutation(
+  private async runMethodMutation(
     action: () => Promise<unknown>,
     successKey: string,
     failureTitleKey = 'PAYMENTS.TOAST.SAVE_FAILED_TITLE',
@@ -392,6 +693,32 @@ export class PaymentsComponent implements OnInit {
       this.toast.failed(
         this.translate.instant(failureTitleKey),
         this.errorDetail(error, this.translate.instant(failureDetailKey))
+      );
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  private async runTransactionMutation(
+    action: () => Promise<PaymentTransaction>,
+    successKey: string
+  ): Promise<void> {
+    if (this.saving()) {
+      return;
+    }
+
+    this.saving.set(true);
+
+    try {
+      const updated = await action();
+      this.transactions.update((transactions) =>
+        transactions.map((transaction) => transaction.id === updated.id ? updated : transaction)
+      );
+      this.toast.success(this.translate.instant(successKey));
+    } catch (error) {
+      this.toast.failed(
+        this.translate.instant('PAYMENTS.TOAST.TRANSACTION_ACTION_FAILED_TITLE'),
+        this.errorDetail(error, this.translate.instant('PAYMENTS.TOAST.TRANSACTION_ACTION_FAILED_DETAIL'))
       );
     } finally {
       this.saving.set(false);
@@ -470,6 +797,10 @@ export class PaymentsComponent implements OnInit {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/^_+|_+$/g, '');
+  }
+
+  private currentLocale(): string {
+    return this.translate.currentLang() === 'ar' ? 'ar-LB' : 'en-US';
   }
 
   private errorDetail(error: unknown, fallback: string): string {

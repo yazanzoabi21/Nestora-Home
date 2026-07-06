@@ -4,15 +4,23 @@
     class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
     <div class="min-w-0">
       <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'PAYMENTS.TITLE' | translate }}</h1>
-      <p class="mt-2 text-base font-medium text-[#8d877e]">{{ 'PAYMENTS.SUBTITLE' | translate }}</p>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        {{ 'PAYMENTS.SUBTITLE' | translate: { count: transactions().length } }}
+      </p>
     </div>
 
+    @if (activeTab() === 'transactions') {
+    <app-export-report [config]="paymentsExportConfig()" [buttonLabel]="'PAYMENTS.EXPORT' | translate"
+      variant="secondary">
+    </app-export-report>
+    } @else {
     <button type="button"
       class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-4 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:w-auto"
       (click)="openMethodModal()">
       <i class="pi pi-plus text-sm"></i>
       <span>{{ 'PAYMENTS.ADD_METHOD' | translate }}</span>
     </button>
+    }
   </section>
 
   <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -21,6 +29,167 @@
     }
   </section>
 
+  <section class="mt-6 rounded-2xl bg-[#f1eee9] p-1">
+    <div class="grid grid-cols-2 gap-1">
+      @for (tab of tabs; track tab.value) {
+      <button type="button" class="h-12 rounded-xl text-sm font-black transition"
+        [ngClass]="activeTab() === tab.value ? 'bg-white text-[#182116] shadow-sm' : 'text-[#8d877e] hover:text-[#182116]'"
+        (click)="setActiveTab(tab.value)">
+        {{ tab.label | translate }}
+      </button>
+      }
+    </div>
+  </section>
+
+  @if (activeTab() === 'transactions') {
+  <section class="mt-6 overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-sm">
+    <header class="flex flex-col gap-4 border-b border-[#e5ded2] px-4 py-4 lg:flex-row lg:items-center">
+      <div class="relative min-w-0 flex-1">
+        <i class="pi pi-search absolute start-4 top-1/2 -translate-y-1/2 text-sm text-[#8d877e]"></i>
+        <input type="search"
+          class="h-12 w-full rounded-xl border border-[#e5ded2] bg-[#fbfaf8] px-11 text-sm font-semibold text-[#342f29] outline-none transition placeholder:text-[#aaa39a] focus:border-[#5f6f43] focus:ring-4 focus:ring-[#5f6f43]/10"
+          [placeholder]="'PAYMENTS.FILTERS.SEARCH_PLACEHOLDER' | translate" [ngModel]="searchTerm()"
+          (ngModelChange)="updateSearchTerm(textValue($event))" />
+      </div>
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:w-[360px]">
+        <select
+          class="h-12 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-black text-[#342f29] outline-none focus:border-[#5f6f43] focus:ring-4 focus:ring-[#5f6f43]/10"
+          [ngModel]="statusFilter()" (ngModelChange)="updateStatusFilter($any($event))">
+          @for (option of transactionStatusOptions; track option.value) {
+          <option [value]="option.value">{{ option.label | translate }}</option>
+          }
+        </select>
+
+        <select
+          class="h-12 rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-black text-[#342f29] outline-none focus:border-[#5f6f43] focus:ring-4 focus:ring-[#5f6f43]/10"
+          [ngModel]="methodFilter()" (ngModelChange)="updateMethodFilter($any($event))">
+          @for (option of methodFilterOptions(); track option.value) {
+          <option [value]="option.value">{{ option.label | translate }}</option>
+          }
+        </select>
+      </div>
+
+      <p class="text-sm font-bold text-[#8d877e] lg:min-w-[120px] lg:text-end">
+        {{ 'PAYMENTS.FILTERS.COUNT' | translate: { count: filteredTransactions().length } }}
+      </p>
+    </header>
+
+    <app-admin-table [columns]="transactionColumns" [rows]="transactionRows()" [loading]="loading()"
+      emptyTitle="PAYMENTS.EMPTY.TRANSACTIONS_TITLE" emptyText="PAYMENTS.EMPTY.TRANSACTIONS_TEXT" [selectable]="false"
+      [showActions]="true" [pageSize]="10" [showPageSize]="false">
+      <ng-template adminTableCell="transaction" let-row>
+        @let transaction = transactionFromRow(row);
+        <div class="min-w-[160px]">
+          <p class="text-sm font-black text-[#182116]">{{ transaction.transaction_code }}</p>
+          <p class="mt-1 text-xs font-semibold text-[#9a9389]">{{ transaction.order_number || '-' }}</p>
+        </div>
+      </ng-template>
+
+      <ng-template adminTableCell="customer" let-row>
+        @let transaction = transactionFromRow(row);
+        <div class="min-w-[180px]">
+          <p class="truncate text-sm font-black text-[#342f29]">{{ transaction.customer_name || '-' }}</p>
+          <p class="mt-1 truncate text-xs font-semibold text-[#9a9389]">
+            {{ transaction.customer_email || transaction.provider || '-' }}
+          </p>
+        </div>
+      </ng-template>
+
+      <ng-template adminTableCell="amount" let-row>
+        @let transaction = transactionFromRow(row);
+        <div class="min-w-[120px]">
+          <p class="text-base font-black text-[#182116]">{{ formatMoney(transaction.amount, transaction.currency) }}</p>
+          <p class="mt-1 text-xs font-semibold text-[#9a9389]">
+            {{ 'PAYMENTS.TABLE.FEE_VALUE' | translate: { amount: formatMoney(transaction.fee_amount,
+            transaction.currency) } }}
+          </p>
+        </div>
+      </ng-template>
+
+      <ng-template adminTableCell="method" let-row>
+        @let transaction = transactionFromRow(row);
+        <div class="flex min-w-[180px] items-center gap-3">
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#eef4e8] text-[#5f6f43]">
+            <i [ngClass]="methodIcon(transaction)"></i>
+          </span>
+          <div class="min-w-0">
+            <p class="truncate text-sm font-black text-[#342f29]">{{ transaction.method_name }}</p>
+            <p class="mt-1 truncate text-xs font-semibold text-[#9a9389]">
+              {{ transaction.reference || transaction.provider_transaction_id || '-' }}
+            </p>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template adminTableCell="status" let-row>
+        @let transaction = transactionFromRow(row);
+        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black"
+          [ngClass]="transactionStatusClass(transaction.status)">
+          <span class="h-2 w-2 rounded-full bg-current"></span>
+          {{ transactionStatusLabelKey(transaction.status) | translate }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="date" let-row>
+        @let transaction = transactionFromRow(row);
+        <span class="text-sm font-bold text-[#8d877e]">{{ formatDate(transaction.created_at) }}</span>
+      </ng-template>
+
+      <ng-template adminTableCell="notes" let-row>
+        @let transaction = transactionFromRow(row);
+        <span class="block max-w-[220px] truncate text-sm font-semibold text-[#675f55]">
+          {{ transaction.notes || '-' }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="paid_at" let-row>
+        @let transaction = transactionFromRow(row);
+        <span class="text-sm font-bold text-[#8d877e]">
+          {{ transaction.paid_at ? formatDate(transaction.paid_at) : '-' }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="refunded_at" let-row>
+        @let transaction = transactionFromRow(row);
+        <span class="text-sm font-bold text-[#8d877e]">
+          {{ transaction.refunded_at ? formatDate(transaction.refunded_at) : '-' }}
+        </span>
+      </ng-template>
+
+      <ng-template adminTableCell="actions" let-row>
+        @let transaction = transactionFromRow(row);
+        <div class="flex items-center justify-end gap-2">
+          <button type="button" class="payments-action-button" [title]="'PAYMENTS.ACTIONS.VIEW' | translate">
+            <i class="pi pi-eye"></i>
+          </button>
+
+          @if (canRefund(transaction)) {
+          <button type="button" class="payments-secondary-action" [disabled]="saving()"
+            (click)="refundTransaction(transaction)">
+            <i class="pi pi-refresh text-xs"></i>
+            <span>{{ 'PAYMENTS.ACTIONS.REFUND' | translate }}</span>
+          </button>
+          }
+
+          @if (canRetry(transaction)) {
+          <button type="button" class="payments-danger-action" [disabled]="saving()"
+            (click)="retryTransaction(transaction)">
+            <span>{{ 'PAYMENTS.ACTIONS.RETRY' | translate }}</span>
+          </button>
+          }
+
+          @if (canMarkCodPaid(transaction)) {
+          <button type="button" class="payments-secondary-action" [disabled]="saving()"
+            (click)="markCodAsPaid(transaction)">
+            <span>{{ 'PAYMENTS.ACTIONS.MARK_PAID' | translate }}</span>
+          </button>
+          }
+        </div>
+      </ng-template>
+    </app-admin-table>
+  </section>
+  } @else {
   <section class="mt-6 overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-sm">
     <header
       class="flex flex-col gap-3 border-b border-[#e5ded2] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -31,8 +200,8 @@
     </header>
 
     <app-admin-table [columns]="paymentMethodColumns" [rows]="paymentMethodRows()" [loading]="loading()"
-      emptyTitle="PAYMENTS.EMPTY.TITLE" emptyText="PAYMENTS.EMPTY.TEXT" [selectable]="false" [showActions]="true"
-      [pageSize]="10" [showPageSize]="false">
+      emptyTitle="PAYMENTS.EMPTY.METHODS_TITLE" emptyText="PAYMENTS.EMPTY.METHODS_TEXT" [selectable]="false"
+      [showActions]="true" [pageSize]="10" [showPageSize]="false">
       <ng-template adminTableCell="method" let-row>
         @let method = paymentMethodFromRow(row);
         <div class="flex min-w-[300px] items-center gap-4">
@@ -65,7 +234,8 @@
 
       <ng-template adminTableCell="fees" let-row>
         @let method = paymentMethodFromRow(row);
-        <span class="text-sm font-black" [ngClass]="method.fee_fixed > 0 || method.fee_percentage > 0 ? 'text-[#342f29]' : 'text-[#2f9f69]'">
+        <span class="text-sm font-black"
+          [ngClass]="method.fee_fixed > 0 || method.fee_percentage > 0 ? 'text-[#342f29]' : 'text-[#2f9f69]'">
           {{ row['fees'] }}
         </span>
       </ng-template>
@@ -107,19 +277,20 @@
       </ng-template>
     </app-admin-table>
   </section>
+  }
 
   <app-admin-form-modal [isOpen]="methodModalOpen()" [title]="modalTitle()" [subtitle]="modalSubtitle()" size="xl"
     submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL" [loading]="saving()" (close)="closeModals()"
     (submit)="saveMethod()">
     <form class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <app-admin-form-field type="text" name="paymentName" label="PAYMENTS.FIELDS.NAME"
-        [value]="methodForm().name" (valueChange)="updateMethodName(textValue($event))" />
-      <app-admin-form-field type="text" name="paymentCode" label="PAYMENTS.FIELDS.CODE"
-        [value]="methodForm().code" (valueChange)="updateMethodForm('code', textValue($event))" />
+      <app-admin-form-field type="text" name="paymentName" label="PAYMENTS.FIELDS.NAME" [value]="methodForm().name"
+        (valueChange)="updateMethodName(textValue($event))" />
+      <app-admin-form-field type="text" name="paymentCode" label="PAYMENTS.FIELDS.CODE" [value]="methodForm().code"
+        (valueChange)="updateMethodForm('code', textValue($event))" />
       <app-admin-form-field type="text" name="paymentProvider" label="PAYMENTS.FIELDS.PROVIDER"
         [value]="methodForm().provider" (valueChange)="updateMethodForm('provider', textValue($event))" />
-      <app-admin-form-field type="select" name="paymentType" label="PAYMENTS.FIELDS.TYPE"
-        [value]="methodForm().type" [options]="paymentTypeOptions" optionLabel="label" optionValue="value"
+      <app-admin-form-field type="select" name="paymentType" label="PAYMENTS.FIELDS.TYPE" [value]="methodForm().type"
+        [options]="paymentTypeOptions" optionLabel="label" optionValue="value"
         (valueChange)="updateMethodForm('type', $any($event))" />
       <app-admin-form-field type="text" name="paymentIcon" label="PAYMENTS.FIELDS.ICON"
         placeholder="PAYMENTS.PLACEHOLDERS.ICON" [value]="methodForm().icon"
@@ -128,8 +299,8 @@
         [value]="methodForm().sort_order" (valueChange)="updateMethodForm('sort_order', numberValue($event))" />
       <app-admin-form-field type="number" name="paymentFixedFee" label="PAYMENTS.FIELDS.FIXED_FEE" [min]="0"
         [value]="methodForm().fee_fixed" (valueChange)="updateMethodForm('fee_fixed', numberValue($event))" />
-      <app-admin-form-field type="number" name="paymentPercentageFee" label="PAYMENTS.FIELDS.PERCENTAGE_FEE"
-        [min]="0" [step]="0.01" [value]="methodForm().fee_percentage"
+      <app-admin-form-field type="number" name="paymentPercentageFee" label="PAYMENTS.FIELDS.PERCENTAGE_FEE" [min]="0"
+        [step]="0.01" [value]="methodForm().fee_percentage"
         (valueChange)="updateMethodForm('fee_percentage', numberValue($event))" />
       <app-admin-form-field type="number" name="paymentMinAmount" label="PAYMENTS.FIELDS.MIN_AMOUNT" [min]="0"
         [value]="methodForm().min_amount" (valueChange)="updateMethodForm('min_amount', numberValue($event))" />
