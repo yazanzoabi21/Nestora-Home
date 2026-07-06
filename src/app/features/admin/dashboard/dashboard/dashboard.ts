@@ -1,32 +1,124 @@
-import { Component } from '@angular/core';
+import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { BestSellingProductsCardComponent } from '../../../../shared/ui/best-selling-products-card';
-import { KpiCardComponent, KpiCardData } from '../../../../shared/ui/kpi-card';
-import { RecentOrdersCardComponent } from '../../../../shared/ui/recent-orders-card';
-import { RevenueOverviewChartComponent } from '../../../../shared/ui/revenue-overview-chart';
-import { SalesCategoryChartComponent } from '../../../../shared/ui/sales-category-chart';
-import { SalesOrdersChartComponent } from '../../../../shared/ui/sales-orders-chart';
-import { SalesPerformanceCardComponent } from '../../../../shared/ui/sales-performance-card';
+import type { LegendOptions, Options, XAxisOptions, YAxisOptions } from 'highcharts';
+
+import { AnalyticsChart, AnalyticsChartConfig } from '../../../../shared/ui/analytics-chart';
+import { DashboardCard } from '../../../../shared/ui/dashboard-card';
 import { ExportReportComponent, ExportReportConfig } from '../../../../shared/ui/export-report';
+import { KpiCardComponent, KpiCardData } from '../../../../shared/ui/kpi-card';
+import { DashboardService, DashboardStatisticsRow } from '../../../../data-access/services/dashboard.service';
+
+type DashboardTrendType = 'up' | 'down';
+type DashboardTone = 'positive' | 'negative';
+
+interface PerformanceMetric {
+  label: string;
+  labelKey: string;
+  value: string;
+  change: string;
+  tone: DashboardTone;
+}
+
+interface RecentOrder {
+  id: string;
+  customer: string;
+  email: string;
+  date: string;
+  total: string;
+  payment: string;
+  delivery: string;
+}
+
+interface BestSellingProduct {
+  rank: number;
+  name: string;
+  trend: string;
+  trendType: DashboardTrendType;
+  sold: string;
+  progress: number;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    BestSellingProductsCardComponent,
+    DashboardCard,
     KpiCardComponent,
-    RecentOrdersCardComponent,
-    RevenueOverviewChartComponent,
-    SalesCategoryChartComponent,
-    SalesOrdersChartComponent,
-    SalesPerformanceCardComponent,
+    AnalyticsChart,
     ExportReportComponent,
     TranslatePipe,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
+
+  ngOnInit(): void {
+    void this.loadDashboard('30D');
+  }
+
+  private readonly dashboardService = inject(DashboardService);
+
+  readonly loading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly dashboardData = signal<DashboardStatisticsRow | null>(null);
+
+  readonly revenueFilter = signal('12M');
+  readonly salesOrdersFilter = signal('7D');
+  readonly performanceFilter = signal('30D');
+  readonly recentOrdersFilter = signal('All');
+  readonly bestSellingFilter = signal('Sold');
+
+  readonly performanceFilters = ['7D', '30D', '3M'];
+  readonly recentOrdersFilters = ['All', 'Paid', 'Pending', 'Refunded'];
+  readonly bestSellingFilters = ['Sold'];
+
+  readonly revenueOverviewChart = computed<AnalyticsChartConfig>(() => {
+    const chart = this.dashboardData()?.revenue_overview_chart;
+
+    return this.buildRevenueOverviewChart({
+      categories: chart?.categories ?? [],
+      revenue: chart?.revenue ?? [],
+      target: chart?.target ?? [],
+    });
+  });
+
+  readonly salesOrdersChart = computed<AnalyticsChartConfig>(() => {
+    const chart = this.dashboardData()?.sales_orders_chart;
+
+    return this.buildSalesOrdersChart({
+      categories: chart?.categories ?? [],
+      revenue: chart?.revenue ?? [],
+      orders: chart?.orders ?? [],
+    });
+  });
+
+  readonly salesCategoryChart = computed<AnalyticsChartConfig>(() => {
+    return this.buildSalesCategoryChart(this.dashboardData()?.sales_category_chart ?? []);
+  });
+
+  readonly performanceMetrics = computed(() => {
+    return this.dashboardData()?.sales_performance_card ?? [];
+  });
+
+  readonly recentOrders = computed(() => {
+    const orders = this.dashboardData()?.recent_orders_card ?? [];
+    const filter = this.recentOrdersFilter();
+
+    if (filter === 'All') {
+      return orders;
+    }
+
+    return orders.filter((order) => order.payment === filter);
+  });
+
+  readonly bestSellingProducts = computed(() => {
+    return this.dashboardData()?.best_selling_products_card ?? [];
+  });
+
+  readonly kpiCards = computed<KpiCardData[]>(() => {
+    return this.dashboardData()?.kpi_cards ?? [];
+  });
 
   readonly dashboardExportConfig: ExportReportConfig = {
     fileName: 'nestora-dashboard-report',
@@ -69,66 +161,315 @@ export class Dashboard {
     ],
   };
 
+  setRevenueFilter(filter: string): void {
+    this.revenueFilter.set(filter);
+    void this.loadDashboard(filter);
+  }
+
+  setSalesOrdersFilter(filter: string): void {
+    this.salesOrdersFilter.set(filter);
+    void this.loadDashboard(filter);
+  }
+
+  setPerformanceFilter(filter: string): void {
+    this.performanceFilter.set(filter);
+    void this.loadDashboard(filter);
+  }
+
+  setRecentOrdersFilter(filter: string): void {
+    this.recentOrdersFilter.set(filter);
+  }
+
+  setBestSellingFilter(filter: string): void {
+    this.bestSellingFilter.set(filter);
+  }
+
   selectMonth(): void {
-    // TODO: Add month filter behavior.
+    // Later: open month filter dropdown/modal.
   }
 
   exportReport(): void {
-    // TODO: Add report export behavior.
+    // Export is handled by app-export-report.
   }
 
-  readonly kpiCards: KpiCardData[] = [
-    {
-      title: 'Total Revenue',
-      titleKey: 'DASHBOARD.TOTAL_REVENUE',
-      value: '$891.4K',
-      icon: 'pi pi-dollar',
-      iconColor: '#5f6f43',
-      iconBg: '#eef4e8',
-      trend: '+18.4%',
-      trendType: 'up',
-      trendColor: '#5f6f43',
-      chartColor: '#5f6f43',
-      chartData: [18, 22, 20, 28, 26, 34, 31, 38, 42, 46],
-    },
-    {
-      title: 'Total Orders',
-      titleKey: 'DASHBOARD.TOTAL_ORDERS',
-      value: '6.8K',
-      icon: 'pi pi-shopping-cart',
-      iconColor: '#3b82f6',
-      iconBg: '#eaf2ff',
-      trend: '+12.2%',
-      trendType: 'up',
-      trendColor: '#3b82f6',
-      chartColor: '#3b82f6',
-      chartData: [12, 15, 14, 19, 22, 21, 25, 28, 27, 32],
-    },
-    {
-      title: 'Total Customers',
-      titleKey: 'DASHBOARD.TOTAL_CUSTOMERS',
-      value: '14.3K',
-      icon: 'pi pi-users',
-      iconColor: '#a855f7',
-      iconBg: '#f3e8ff',
-      trend: '+8.6%',
-      trendType: 'up',
-      trendColor: '#a855f7',
-      chartColor: '#a855f7',
-      chartData: [24, 25, 28, 30, 29, 33, 35, 38, 40, 42],
-    },
-    {
-      title: 'Active Products',
-      titleKey: 'DASHBOARD.ACTIVE_PRODUCTS',
-      value: '524',
-      icon: 'pi pi-box',
-      iconColor: '#d97706',
-      iconBg: '#fff4df',
-      trend: '-2.1%',
-      trendType: 'down',
-      trendColor: '#dc3f35',
-      chartColor: '#d97706',
-      chartData: [36, 35, 34, 36, 33, 32, 30, 31, 29, 28],
-    },
-  ];
+  goToOrders(): void {
+    // Later: navigate to orders page.
+  }
+
+  openBestSellingMenu(): void {
+    // Later: open product menu/filter/export.
+  }
+
+  paymentClass(payment: string): string {
+    const classes: Record<string, string> = {
+      Paid: 'bg-[#e7f6ee] text-[#0f7b49]',
+      Pending: 'bg-[#fff4df] text-[#b97712]',
+      Refunded: 'bg-[#edf4ff] text-[#1e5aa8]',
+    };
+
+    return classes[payment] || 'bg-[#f1f0ee] text-[#8d877e]';
+  }
+
+  deliveryClass(delivery: string): string {
+    const classes: Record<string, string> = {
+      Delivered: 'bg-[#e7f6ee] text-[#0f7b49]',
+      Shipped: 'bg-[#eaf2ff] text-[#1e5aa8]',
+      Processing: 'bg-[#fff4df] text-[#b97712]',
+      Returned: 'bg-[#f3e8ff] text-[#7b3fb2]',
+    };
+
+    return classes[delivery] || 'bg-[#f1f0ee] text-[#8d877e]';
+  }
+
+  private buildRevenueOverviewChart(data: {
+    categories: string[];
+    revenue: number[];
+    target: number[];
+  }): AnalyticsChartConfig {
+    return {
+      title: 'Revenue Overview',
+      titleKey: 'DASHBOARD.REVENUE_OVERVIEW',
+      subtitle: 'Revenue vs target',
+      subtitleKey: 'DASHBOARD.REVENUE_OVERVIEW_SUBTITLE',
+      filters: ['7D', '30D', '3M', '12M'],
+      activeFilter: this.revenueFilter(),
+      height: 315,
+      chartOptions: this.createRevenueOverviewOptions(data),
+    };
+  }
+
+  private buildSalesCategoryChart(
+    categories: { name: string; nameKey?: string | null; value: number; color: string }[]
+  ): AnalyticsChartConfig {
+    return {
+      title: 'Sales by Category',
+      titleKey: 'DASHBOARD.SALES_BY_CATEGORY',
+      subtitle: 'Share of total revenue',
+      subtitleKey: 'DASHBOARD.SALES_BY_CATEGORY_SUBTITLE',
+      height: 280,
+      chartOptions: this.createSalesCategoryOptions(categories),
+      legendItems: categories.map((category) => ({
+        name: category.name,
+        nameKey: category.nameKey ?? undefined,
+        value: category.value,
+        suffix: '%',
+        color: category.color,
+      })),
+    };
+  }
+
+  private buildSalesOrdersChart(data: {
+    categories: string[];
+    revenue: number[];
+    orders: number[];
+  }): AnalyticsChartConfig {
+    return {
+      title: 'Sales vs Orders',
+      titleKey: 'DASHBOARD.SALES_VS_ORDERS',
+      subtitle: 'Revenue and order volume comparison',
+      subtitleKey: 'DASHBOARD.SALES_VS_ORDERS_SUBTITLE',
+      filters: ['7D', '30D', '3M', '12M'],
+      activeFilter: this.salesOrdersFilter(),
+      height: 320,
+      chartOptions: this.createSalesOrdersOptions(data),
+    };
+  }
+
+  private createRevenueOverviewOptions(data: { categories: string[]; revenue: number[]; target: number[] }): Options {
+    return {
+      chart: {
+        type: 'line',
+        height: 315,
+        backgroundColor: 'transparent',
+        spacing: [12, 8, 8, 0],
+      },
+      title: { text: undefined },
+      credits: { enabled: false },
+      legend: this.defaultLegend(),
+      xAxis: this.defaultXAxis(data.categories),
+      yAxis: this.defaultYAxis('${value}k'),
+      tooltip: {
+        borderColor: '#e5ded2',
+        borderRadius: 12,
+        shadow: false,
+        valuePrefix: '$',
+        valueSuffix: 'k',
+      },
+      plotOptions: {
+        series: {
+          marker: {
+            enabled: false,
+            symbol: 'circle',
+          },
+          lineWidth: 3,
+        },
+      },
+      series: [
+        {
+          type: 'line',
+          name: 'Revenue',
+          color: '#5f6f43',
+          data: data.revenue,
+        },
+        {
+          type: 'line',
+          name: 'Target',
+          color: '#d9cab8',
+          dashStyle: 'Dash',
+          data: data.target,
+        },
+      ],
+    };
+  }
+
+  private createSalesCategoryOptions(
+    categories: { name: string; nameKey?: string | null; value: number; color: string }[]
+  ): Options {
+    return {
+      chart: {
+        type: 'pie',
+        height: 280,
+        backgroundColor: 'transparent',
+        spacing: [0, 0, 0, 0],
+      },
+      title: { text: undefined },
+      credits: { enabled: false },
+      legend: { enabled: false },
+      tooltip: {
+        pointFormat: '<b>{point.y}%</b>',
+        borderColor: '#e5ded2',
+        borderRadius: 12,
+        shadow: false,
+      },
+      plotOptions: {
+        pie: {
+          innerSize: '66%',
+          borderWidth: 0,
+          dataLabels: { enabled: false },
+        },
+      },
+      series: [
+        {
+          type: 'pie',
+          name: 'Sales',
+          data: categories.map((category) => ({
+            name: category.name,
+            y: category.value,
+            color: category.color,
+          })),
+        },
+      ],
+    };
+  }
+
+  private createSalesOrdersOptions(data: { categories: string[]; revenue: number[]; orders: number[] }): Options {
+    return {
+      chart: {
+        type: 'column',
+        height: 320,
+        backgroundColor: 'transparent',
+        spacing: [12, 8, 8, 0],
+      },
+      title: { text: undefined },
+      credits: { enabled: false },
+      legend: this.defaultLegend(),
+      xAxis: this.defaultXAxis(data.categories),
+      yAxis: [
+        this.defaultYAxis('${value}k'),
+        {
+          title: { text: undefined },
+          opposite: true,
+          gridLineWidth: 0,
+          labels: {
+            style: { color: '#8d877e', fontSize: '12px' },
+          },
+        },
+      ],
+      tooltip: {
+        borderColor: '#e5ded2',
+        borderRadius: 12,
+        shadow: false,
+      },
+      plotOptions: {
+        column: {
+          borderWidth: 0,
+          borderRadius: 7,
+          pointPadding: 0.2,
+          groupPadding: 0.18,
+        },
+      },
+      series: [
+        {
+          type: 'column',
+          name: 'Revenue',
+          color: '#5f6f43',
+          data: data.revenue,
+        },
+        {
+          type: 'column',
+          name: 'Orders',
+          color: '#e7d9c9',
+          yAxis: 1,
+          data: data.orders,
+        },
+      ],
+    };
+  }
+
+  private defaultLegend(): LegendOptions {
+    return {
+      align: 'center',
+      verticalAlign: 'bottom',
+      itemStyle: {
+        color: '#5f6f43',
+        fontSize: '13px',
+        fontWeight: '600',
+      },
+    };
+  }
+
+  private defaultXAxis(categories: string[]): XAxisOptions {
+    return {
+      categories,
+      lineColor: '#eee8df',
+      tickLength: 0,
+      labels: {
+        style: {
+          color: '#8d877e',
+          fontSize: '12px',
+        },
+      },
+    };
+  }
+
+  private defaultYAxis(format: string): YAxisOptions {
+    return {
+      title: { text: undefined },
+      gridLineColor: '#eee8df',
+      gridLineDashStyle: 'Dash',
+      labels: {
+        style: {
+          color: '#8d877e',
+          fontSize: '12px',
+        },
+        format,
+      },
+    };
+  }
+
+  async loadDashboard(periodKey = '30D'): Promise<void> {
+    try {
+      this.loading.set(true);
+      this.errorMessage.set(null);
+
+      const data = await this.dashboardService.refreshStatistics(periodKey);
+
+      this.dashboardData.set(data);
+    } catch (error) {
+      console.error('Failed to load dashboard statistics:', error);
+      this.errorMessage.set('Failed to load dashboard statistics.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
 }

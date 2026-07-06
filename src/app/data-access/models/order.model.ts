@@ -1,0 +1,32 @@
+export type OrderPaymentStatus = 'Paid' | 'Pending' | 'Refunded' | 'Unpaid';
+export type OrderDeliveryStatus = 'Processing' | 'Delivered' | 'Shipped' | 'Returned' | 'Pending';
+export type OrderDateFilter = 'all' | 'today' | 'this_week' | 'this_month';
+
+export interface AdminOrder {
+  id: string;
+  orderId: string; // order_number from Supabase
+  customerName: string;
+  customerEmail: string;
+  date: string;
+  items: number;
+  total: string;
+  payment: OrderPaymentStatus;
+  delivery: OrderDeliveryStatus;
+  // Additional fields for modal
+  phone?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  subtotal?: string;
+  shipping?: string;
+  notes?: string;
+  createdAt?: string;
+  supabaseOrderId?: string; // UUID
+}
+
+export interface OrderStats {
+  totalOrders: number;
+  processing: number;
+  delivered: number;
+  refunded: number;
+}

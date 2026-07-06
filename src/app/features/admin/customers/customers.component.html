@@ -1,0 +1,129 @@
+<main class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">Customers</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">{{ subtitle() }}</p>
+    </div>
+
+    <app-export-report
+      [config]="customersExportConfig()"
+      [buttonLabel]="'CUSTOMERS.EXPORT' | translate"
+      variant="secondary">
+    </app-export-report>
+  </section>
+
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.title) {
+      <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    }
+  </section>
+
+  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_180px_180px] xl:items-center">
+      <app-admin-form-field type="search" name="customerSearch" placeholder="Search by name, email, phone, city or country..."
+        [value]="searchTerm()" (valueChange)="updateSearch($event)" />
+
+      <app-admin-form-field type="select" name="customerStatusFilter" [value]="selectedStatus()"
+        [options]="statusOptions" optionLabel="label" optionValue="value" (valueChange)="updateStatus($event)" />
+
+      <app-admin-form-field type="select" name="customerTierFilter" [value]="selectedTier()"
+        [options]="tierOptions" optionLabel="label" optionValue="value" (valueChange)="updateTier($event)" />
+    </div>
+  </section>
+
+  <app-admin-table class="mt-6 block" [columns]="customerTableColumns" [rows]="tableRows()" [loading]="loading()"
+    emptyTitle="No customers found" emptyText="Customers will appear here once they are added." [selectable]="false"
+    [showActions]="true" actionsMode="crud" [pageSize]="8" [pageSizeOptions]="[8, 16, 32]" [showPageSize]="false"
+    [showPaginationSummary]="true" (rowView)="openCustomerDetails($event)">
+    <ng-template adminTableCell="actions" let-row="row">
+      <div class="flex items-center justify-end gap-2">
+        <button type="button"
+          class="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[#dfe7d5] bg-[#f7faf3] px-3 text-sm font-bold text-[#5f6f43] transition hover:bg-[#eef4e8]"
+          (click)="openCustomerDetails(row)">
+          <i class="pi pi-eye text-xs"></i>
+          <span>View</span>
+        </button>
+        @if (row.raw?.email; as email) {
+          <a [href]="'mailto:' + email" type="button"
+            class="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[#dfe7d5] bg-[#ffffff] px-3 text-sm font-bold text-[#475569] transition hover:bg-[#f3f4f6]">
+            <i class="pi pi-envelope text-xs"></i>
+            <span>Email</span>
+          </a>
+        }
+      </div>
+    </ng-template>
+  </app-admin-table>
+
+  <app-admin-form-modal [isOpen]="!!selectedCustomer()" title="Customer Details" subtitle="Review the selected customer"
+    size="md" submitLabel="Close" cancelLabel="Cancel" (close)="closeCustomerDetails()" (submit)="closeCustomerDetails()">
+    @if (selectedCustomer(); as customer) {
+      <section class="grid gap-3 text-sm font-semibold text-[#342f29]">
+        <div class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.08em] text-[#9a9389]">Customer</p>
+          <h2 class="mt-1 text-xl font-black text-[#182116]">{{ customer.fullName }}</h2>
+          <p class="mt-2 text-sm font-medium text-[#8d877e]">{{ customer.email || 'No email provided' }}</p>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Phone</p>
+            <p class="mt-1 font-black text-[#182116]">{{ customer.phone || 'N/A' }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Joined</p>
+            <p class="mt-1 font-black text-[#182116]">{{ formatJoined(customer.createdAt) }}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Status</p>
+            <p class="mt-1 font-black text-[#182116]">{{ customer.status }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Tier</p>
+            <p class="mt-1 font-black text-[#182116]">{{ customer.tier }}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Total Orders</p>
+            <p class="mt-1 font-black text-[#182116]">{{ customer.totalOrders }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Total Spent</p>
+            <p class="mt-1 font-black text-[#182116]">{{ formatCurrency(customer.totalSpent) }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Last Order</p>
+            <p class="mt-1 font-black text-[#182116]">{{ customer.lastOrderAt ? formatJoined(customer.lastOrderAt) : 'N/A' }}</p>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+          <p class="text-xs font-bold text-[#8d877e]">Address</p>
+          <p class="mt-1 font-black text-[#182116]">{{ customer.address || 'N/A' }}</p>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">City</p>
+            <p class="mt-1 font-black text-[#182116]">{{ customer.city || 'N/A' }}</p>
+          </div>
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Country</p>
+            <p class="mt-1 font-black text-[#182116]">{{ customer.country || 'N/A' }}</p>
+          </div>
+        </div>
+
+        @if (customer.notes) {
+          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
+            <p class="text-xs font-bold text-[#8d877e]">Notes</p>
+            <p class="mt-1 font-black text-[#182116]">{{ customer.notes }}</p>
+          </div>
+        }
+      </section>
+    }
+  </app-admin-form-modal>
+</main>
