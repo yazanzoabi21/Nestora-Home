@@ -1,4 +1,24 @@
 import type { Options } from 'highcharts';
+import {
+  CategoryRevenueSplitItem,
+  ConversionFunnelItem,
+  CustomerGrowthChartData,
+  PerformanceBreakdownItem,
+  RevenueGrowthChartData,
+  WeeklySalesPatternData,
+} from '../../../data-access/models/analytics.model';
+
+export type AnalyticsChartType = 'line' | 'bar' | 'doughnut' | 'funnel' | 'progress';
+
+export type AnalyticsChartData =
+  | RevenueGrowthChartData
+  | CustomerGrowthChartData
+  | CategoryRevenueSplitItem[]
+  | ConversionFunnelItem[]
+  | WeeklySalesPatternData
+  | PerformanceBreakdownItem[]
+  | null
+  | undefined;
 
 export interface AnalyticsChartLegendItem {
   name: string;
@@ -21,4 +41,11 @@ export interface AnalyticsChartConfig {
   chartOptions: Options;
 
   legendItems?: AnalyticsChartLegendItem[];
+}
+
+export interface AnalyticsChartProgressItem {
+  label: string;
+  value: number;
+  displayValue: string;
+  tone?: 'positive' | 'negative' | 'neutral';
 }

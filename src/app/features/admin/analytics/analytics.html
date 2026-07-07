@@ -1,0 +1,91 @@
+<main
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  <section class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">Analytics</h1>
+      <p class="mt-2 text-base font-medium text-[#8d877e]">
+        Performance overview
+        @if (analytics()?.period_label) {
+        <span> - {{ analytics()?.period_label }}</span>
+        }
+      </p>
+    </div>
+
+    <div class="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
+      <label class="sr-only" for="analytics-period">Period</label>
+      <select id="analytics-period" name="analytics-period"
+        class="h-11 w-full rounded-xl border border-[#e5ded2] bg-white px-4 text-sm font-semibold text-[#342f29] shadow-sm outline-none transition hover:bg-[#fbfaf8] focus:border-[#5f6f43] sm:min-w-[160px] lg:w-auto"
+        [ngModel]="selectedPeriod()" (ngModelChange)="onPeriodChange($event)" [disabled]="loading()">
+        @for (period of periodOptions; track period) {
+        <option [ngValue]="period">{{ period }}</option>
+        }
+      </select>
+
+      <button type="button"
+        class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#4f5f36] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        (click)="exportAnalytics()" [disabled]="loading() || !analytics()">
+        <i class="pi pi-download text-sm"></i>
+        Export
+      </button>
+    </div>
+  </section>
+
+  @if (error()) {
+  <section class="rounded-2xl border border-[#f1c6c3] bg-[#fff1f0] p-5 text-sm font-bold text-[#a51f1a]">
+    {{ error() }}
+  </section>
+  }
+
+  @if (loading()) {
+  <section class="rounded-2xl border border-[#e5ded2] bg-white p-8 text-center text-sm font-bold text-[#8d877e] shadow-sm">
+    Loading analytics...
+  </section>
+  } @else if (!analytics() && !error()) {
+  <section class="rounded-2xl border border-[#e5ded2] bg-white p-8 text-center shadow-sm">
+    <p class="text-lg font-extrabold text-[#1f2a1f]">No analytics data found</p>
+    <p class="mt-2 text-sm font-semibold text-[#8d877e]">
+      There is no analytics row for {{ selectedPeriod() }} yet.
+    </p>
+  </section>
+  } @else if (analytics()) {
+  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+    @for (card of kpiCards(); track card.title) {
+    <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+    } @empty {
+    <div class="rounded-2xl border border-[#e5ded2] bg-white p-6 text-sm font-bold text-[#8d877e] shadow-sm sm:col-span-2 xl:col-span-4">
+      No KPI cards available.
+    </div>
+    }
+  </section>
+
+  <section class="mt-6 grid w-full max-w-full min-w-0 grid-cols-1 gap-6 xl:grid-cols-2">
+    <app-analytics-chart class="min-w-0" title="Revenue Growth" subtitle="Monthly revenue vs. target" type="line"
+      [data]="analytics()?.revenue_growth_chart" [height]="320">
+    </app-analytics-chart>
+
+    <app-analytics-chart class="min-w-0" title="Customer Growth" subtitle="New vs. returning customers" type="bar"
+      [data]="analytics()?.customer_growth_chart" [height]="320">
+    </app-analytics-chart>
+  </section>
+
+  <section class="mt-6 grid w-full max-w-full min-w-0 grid-cols-1 gap-6 xl:grid-cols-2">
+    <app-analytics-chart class="min-w-0" title="Category Revenue Split" subtitle="% of total sales by category"
+      type="doughnut" [data]="analytics()?.category_revenue_split" [height]="280">
+    </app-analytics-chart>
+
+    <app-analytics-chart class="min-w-0" title="Conversion Funnel" subtitle="Visitor to purchase pipeline" type="funnel"
+      [data]="analytics()?.conversion_funnel" [height]="320">
+    </app-analytics-chart>
+  </section>
+
+  <section class="mt-6 grid w-full max-w-full min-w-0 grid-cols-1 gap-6 xl:grid-cols-2">
+    <app-analytics-chart class="min-w-0" title="Weekly Sales Pattern" subtitle="Revenue by day of week" type="line"
+      [data]="analytics()?.weekly_sales_pattern" [height]="300">
+    </app-analytics-chart>
+
+    <app-analytics-chart class="min-w-0" title="Performance Breakdown" subtitle="Key metrics at a glance"
+      type="progress" [data]="analytics()?.performance_breakdown" [height]="300">
+    </app-analytics-chart>
+  </section>
+  }
+</main>
