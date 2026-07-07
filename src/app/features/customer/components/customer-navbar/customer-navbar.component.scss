@@ -1,0 +1,25 @@
+:host {
+  display: block;
+}
+
+.customer-icon-button {
+  display: inline-flex;
+  height: 2.75rem;
+  width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid #e8dccf;
+  background: #fff;
+  color: #1f2a1f;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.customer-icon-button:hover {
+  border-color: #6b7d5e;
+  background: #f8f7f5;
+  color: #6b7d5e;
+}

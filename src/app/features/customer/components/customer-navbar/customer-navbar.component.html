@@ -1,0 +1,64 @@
+<header class="sticky top-0 z-40 border-b border-[#e8dccf] bg-white/95 backdrop-blur">
+  <div class="bg-[#1f2a1f] px-4 py-2 text-center text-xs font-black uppercase tracking-[0.18em] text-white sm:px-6">
+    FREE SHIPPING ON ORDERS OVER $75 - USE CODE: NESTORA10 FOR 10% OFF
+  </div>
+
+  <nav class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:px-8">
+    <div class="flex items-center justify-between gap-4">
+      <a routerLink="/shop" class="flex items-center gap-3" aria-label="Nestora Home">
+        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#6b7d5e] text-white shadow-sm">
+          <i class="pi pi-home text-lg"></i>
+        </span>
+        <span class="text-xl font-black tracking-normal text-[#1f2a1f]">Nestora Home</span>
+      </a>
+
+      <div class="flex items-center gap-2 lg:hidden">
+        <button type="button" class="customer-icon-button" aria-label="Wishlist">
+          <i class="pi pi-heart"></i>
+        </button>
+        <button type="button" class="customer-icon-button" aria-label="Cart">
+          <i class="pi pi-shopping-bag"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex min-w-0 flex-1 flex-col gap-4 lg:flex-row lg:items-center lg:justify-end">
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-bold text-[#4f5b49] lg:justify-center">
+        @for (link of navLinks; track link.label) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="text-[#1f2a1f]"
+          [routerLinkActiveOptions]="{ exact: link.path === '/shop' }"
+          class="transition hover:text-[#6b7d5e]"
+        >
+          {{ link.label }}
+        </a>
+        }
+      </div>
+
+      <div class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center lg:min-w-[420px]">
+        <label class="relative block min-w-0 flex-1">
+          <span class="sr-only">Search products</span>
+          <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[#8a8f84]"></i>
+          <input
+            type="search"
+            placeholder="Search home essentials"
+            class="h-11 w-full rounded-full border border-[#e8dccf] bg-[#f8f7f5] pl-11 pr-4 text-sm font-semibold text-[#1f2a1f] outline-none transition placeholder:text-[#8a8f84] focus:border-[#6b7d5e] focus:bg-white"
+          />
+        </label>
+
+        <div class="hidden items-center gap-2 lg:flex">
+          <button type="button" class="customer-icon-button" aria-label="Wishlist">
+            <i class="pi pi-heart"></i>
+          </button>
+          <button type="button" class="customer-icon-button" aria-label="Cart">
+            <i class="pi pi-shopping-bag"></i>
+          </button>
+          <button type="button" class="customer-icon-button" aria-label="Profile">
+            <i class="pi pi-user"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>

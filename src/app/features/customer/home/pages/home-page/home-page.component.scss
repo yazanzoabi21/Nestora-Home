@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.customer-hero {
+  background:
+    linear-gradient(115deg, rgba(248, 247, 245, 0.96) 0%, rgba(248, 247, 245, 0.88) 44%, rgba(232, 220, 207, 0.68) 100%),
+    linear-gradient(145deg, #f8f7f5 0%, #e8dccf 52%, #d8e0d2 100%);
+}
+
+.customer-hero-visual {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(31, 42, 31, 0.05), rgba(31, 42, 31, 0.28)),
+    url('/assets/images/customer-home-hero.jpg'),
+    linear-gradient(145deg, #e8dccf 0%, #f8f7f5 45%, #6b7d5e 100%);
+  background-position: center;
+  background-size: cover;
+}

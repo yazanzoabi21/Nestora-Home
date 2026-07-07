@@ -1,13 +1,25 @@
-﻿import { Routes } from '@angular/router';
-import { CustomerLayoutComponent } from '../../core/layouts/customer-layout';
-import { authGuard } from '../../core/guards/auth.guard';
-import { roleGuard } from '../../core/guards/role.guard';
+import { Routes } from '@angular/router';
+import { CustomerLayoutComponent } from './components/customer-layout/customer-layout.component';
 
 export const CUSTOMER_ROUTES: Routes = [
   {
     path: '',
     component: CustomerLayoutComponent,
-    canActivate: [authGuard, roleGuard],
-    children: [],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./home/pages/home-page/home-page.component').then(
+            (m) => m.HomePageComponent
+          ),
+      },
+      {
+        path: 'home',
+        loadComponent: () =>
+          import('./home/pages/home-page/home-page.component').then(
+            (m) => m.HomePageComponent
+          ),
+      },
+    ],
   },
 ];
