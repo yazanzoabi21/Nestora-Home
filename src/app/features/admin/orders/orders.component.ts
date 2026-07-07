@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { TranslatePipe } from '@ngx-translate/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import {
   AdminOrder,
@@ -48,6 +49,8 @@ type PaymentStatusFilter = 'all' | OrderPaymentStatus;
 export class OrdersComponent implements OnInit {
   private readonly ordersService = inject(OrdersService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly orders = signal<AdminOrder[]>([]);
   readonly loading = signal(true);
@@ -56,97 +59,115 @@ export class OrdersComponent implements OnInit {
   readonly selectedPayment = signal<PaymentStatusFilter>('all');
   readonly selectedDate = signal<OrderDateFilter>('all');
   readonly selectedOrder = signal<AdminOrder | null>(null);
+  readonly langVersion = signal(0);
 
-  readonly orderTableColumns: AdminTableColumn[] = [
-    { key: 'orderId', label: 'ORDER ID', type: 'text' },
-    { key: 'customer', label: 'CUSTOMER', type: 'text' },
-    { key: 'date', label: 'DATE', type: 'text' },
-    { key: 'items', label: 'ITEMS', type: 'badge' },
-    { key: 'total', label: 'TOTAL', type: 'price' },
-    { key: 'payment', label: 'PAYMENT', type: 'status' },
-    { key: 'delivery', label: 'DELIVERY', type: 'status' },
-    { key: 'actions', label: 'ACTION', type: 'actions' },
-  ];
+  readonly orderTableColumns = computed<AdminTableColumn[]>(() => {
+    this.langVersion();
 
-  readonly deliveryOptions: AdminSelectOption<OrderStatusFilter>[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Processing', value: 'Processing' },
-    { label: 'Delivered', value: 'Delivered' },
-    { label: 'Shipped', value: 'Shipped' },
-    { label: 'Returned', value: 'Returned' },
-    { label: 'Pending', value: 'Pending' },
-  ];
+    return [
+      { key: 'orderId', label: this.t('ORDERS.TABLE.ORDER_ID'), type: 'text' },
+      { key: 'customer', label: this.t('ORDERS.TABLE.CUSTOMER'), type: 'text' },
+      { key: 'date', label: this.t('ORDERS.TABLE.DATE'), type: 'text' },
+      { key: 'items', label: this.t('ORDERS.TABLE.ITEMS'), type: 'badge' },
+      { key: 'total', label: this.t('ORDERS.TABLE.TOTAL'), type: 'price' },
+      { key: 'payment', label: this.t('ORDERS.TABLE.PAYMENT'), type: 'status' },
+      { key: 'delivery', label: this.t('ORDERS.TABLE.DELIVERY'), type: 'status' },
+      { key: 'actions', label: this.t('ORDERS.TABLE.ACTION'), type: 'actions' },
+    ];
+  });
 
-  readonly paymentOptions: AdminSelectOption<PaymentStatusFilter>[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Paid', value: 'Paid' },
-    { label: 'Pending', value: 'Pending' },
-    { label: 'Refunded', value: 'Refunded' },
-    { label: 'Unpaid', value: 'Unpaid' },
-  ];
+  readonly deliveryOptions = computed<AdminSelectOption<OrderStatusFilter>[]>(() => {
+    this.langVersion();
 
-  readonly dateOptions: AdminSelectOption<OrderDateFilter>[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Today', value: 'today' },
-    { label: 'This Week', value: 'this_week' },
-    { label: 'This Month', value: 'this_month' },
-  ];
+    return [
+      { label: this.t('ORDERS.FILTERS.ALL_DELIVERIES'), value: 'all' },
+      { label: this.statusLabel('Processing'), value: 'Processing' },
+      { label: this.statusLabel('Delivered'), value: 'Delivered' },
+      { label: this.statusLabel('Shipped'), value: 'Shipped' },
+      { label: this.statusLabel('Returned'), value: 'Returned' },
+      { label: this.statusLabel('Pending'), value: 'Pending' },
+    ];
+  });
+
+  readonly paymentOptions = computed<AdminSelectOption<PaymentStatusFilter>[]>(() => {
+    this.langVersion();
+
+    return [
+      { label: this.t('ORDERS.FILTERS.ALL_PAYMENTS'), value: 'all' },
+      { label: this.statusLabel('Paid'), value: 'Paid' },
+      { label: this.statusLabel('Pending'), value: 'Pending' },
+      { label: this.statusLabel('Refunded'), value: 'Refunded' },
+      { label: this.statusLabel('Unpaid'), value: 'Unpaid' },
+    ];
+  });
+
+  readonly dateOptions = computed<AdminSelectOption<OrderDateFilter>[]>(() => {
+    this.langVersion();
+
+    return [
+      { label: this.t('ORDERS.FILTERS.ALL_DATES'), value: 'all' },
+      { label: this.t('ORDERS.FILTERS.TODAY'), value: 'today' },
+      { label: this.t('ORDERS.FILTERS.THIS_WEEK'), value: 'this_week' },
+      { label: this.t('ORDERS.FILTERS.THIS_MONTH'), value: 'this_month' },
+    ];
+  });
 
   readonly stats = computed(() => this.ordersService.getOrderStats(this.orders()));
 
   readonly ordersExportConfig = computed<ExportReportConfig>(() => {
+    this.langVersion();
     const orders = this.filteredOrders();
 
     return {
       fileName: 'nestora-orders-report',
-      reportTitle: 'Nestora Home - Orders Report',
-      reportSubtitle: `${orders.length} orders exported`,
+      reportTitle: this.t('ORDERS.EXPORT_REPORT_TITLE'),
+      reportSubtitle: this.t('ORDERS.EXPORT_SUBTITLE', { count: orders.length }),
       orientation: 'landscape',
       summaryItems: [
-        { label: 'Total Orders', value: orders.length },
-        { label: 'Processing', value: orders.filter((order) => order.delivery === 'Processing').length },
-        { label: 'Delivered', value: orders.filter((order) => order.delivery === 'Delivered').length },
-        { label: 'Total Revenue', value: this.formatCurrency(orders.reduce((sum, order) => sum + this.parseCurrency(order.total), 0)) },
+        { label: this.t('ORDERS.KPI.TOTAL_ORDERS'), value: orders.length },
+        { label: this.t('ORDERS.KPI.PROCESSING'), value: orders.filter((order) => order.delivery === 'Processing').length },
+        { label: this.t('ORDERS.KPI.DELIVERED'), value: orders.filter((order) => order.delivery === 'Delivered').length },
+        { label: this.t('ORDERS.FIELDS.TOTAL'), value: this.formatCurrency(orders.reduce((sum, order) => sum + this.parseCurrency(order.total), 0)) },
       ],
       sections: [
         {
-          title: 'Orders',
+          title: this.t('ORDERS.TITLE'),
           headers: [
-            'Order ID',
-            'Customer Name',
-            'Email',
-            'Phone',
-            'Address',
-            'City',
-            'Country',
-            'Items',
-            'Subtotal',
-            'Shipping',
-            'Total',
-            'Payment',
-            'Delivery',
-            'Date',
+            this.t('ORDERS.TABLE.ORDER_ID'),
+            this.t('ORDERS.FIELDS.CUSTOMER_NAME'),
+            this.t('ORDERS.FIELDS.EMAIL'),
+            this.t('ORDERS.FIELDS.PHONE'),
+            this.t('ORDERS.FIELDS.ADDRESS'),
+            this.t('ORDERS.FIELDS.CITY'),
+            this.t('ORDERS.FIELDS.COUNTRY'),
+            this.t('ORDERS.FIELDS.ITEMS'),
+            this.t('ORDERS.FIELDS.SUBTOTAL'),
+            this.t('ORDERS.FIELDS.SHIPPING'),
+            this.t('ORDERS.FIELDS.TOTAL'),
+            this.t('ORDERS.TABLE.PAYMENT'),
+            this.t('ORDERS.TABLE.DELIVERY'),
+            this.t('ORDERS.TABLE.DATE'),
           ],
           excludedPdfColumns: [
-            'Phone',
-            'Address',
+            this.t('ORDERS.FIELDS.PHONE'),
+            this.t('ORDERS.FIELDS.ADDRESS'),
           ],
-          truncateColumns: ['Customer Name', 'Email', 'Address'],
+          truncateColumns: [this.t('ORDERS.FIELDS.CUSTOMER_NAME'), this.t('ORDERS.FIELDS.EMAIL'), this.t('ORDERS.FIELDS.ADDRESS')],
           columnWidths: {
-            'Order ID': 28,
-            'Customer Name': 28,
-            'Email': 32,
-            'Phone': 20,
-            'Address': 32,
-            'City': 16,
-            'Country': 16,
-            'Items': 12,
-            'Subtotal': 16,
-            'Shipping': 16,
-            'Total': 16,
-            'Payment': 16,
-            'Delivery': 18,
-            'Date': 18,
+            [this.t('ORDERS.TABLE.ORDER_ID')]: 28,
+            [this.t('ORDERS.FIELDS.CUSTOMER_NAME')]: 28,
+            [this.t('ORDERS.FIELDS.EMAIL')]: 32,
+            [this.t('ORDERS.FIELDS.PHONE')]: 20,
+            [this.t('ORDERS.FIELDS.ADDRESS')]: 32,
+            [this.t('ORDERS.FIELDS.CITY')]: 16,
+            [this.t('ORDERS.FIELDS.COUNTRY')]: 16,
+            [this.t('ORDERS.FIELDS.ITEMS')]: 12,
+            [this.t('ORDERS.FIELDS.SUBTOTAL')]: 16,
+            [this.t('ORDERS.FIELDS.SHIPPING')]: 16,
+            [this.t('ORDERS.FIELDS.TOTAL')]: 16,
+            [this.t('ORDERS.TABLE.PAYMENT')]: 16,
+            [this.t('ORDERS.TABLE.DELIVERY')]: 18,
+            [this.t('ORDERS.TABLE.DATE')]: 18,
           },
           rows: orders.map((order) => [
             order.orderId,
@@ -170,11 +191,12 @@ export class OrdersComponent implements OnInit {
   });
 
   readonly kpiCards = computed<KpiCardData[]>(() => {
+    this.langVersion();
     const stats = this.stats();
 
     return [
       {
-        title: 'Total Orders',
+        title: this.t('ORDERS.KPI.TOTAL_ORDERS'),
         value: stats.totalOrders.toString(),
         icon: 'pi pi-shopping-bag',
         iconColor: '#5f6f43',
@@ -182,7 +204,7 @@ export class OrdersComponent implements OnInit {
         showChart: false,
       },
       {
-        title: 'Processing',
+        title: this.t('ORDERS.KPI.PROCESSING'),
         value: stats.processing.toString(),
         icon: 'pi pi-clock',
         iconColor: '#d98916',
@@ -190,7 +212,7 @@ export class OrdersComponent implements OnInit {
         showChart: false,
       },
       {
-        title: 'Delivered',
+        title: this.t('ORDERS.KPI.DELIVERED'),
         value: stats.delivered.toString(),
         icon: 'pi pi-check-circle',
         iconColor: '#2f9f69',
@@ -198,7 +220,7 @@ export class OrdersComponent implements OnInit {
         showChart: false,
       },
       {
-        title: 'Refunded',
+        title: this.t('ORDERS.KPI.REFUNDED'),
         value: stats.refunded.toString(),
         icon: 'pi pi-replay',
         iconColor: '#3b78d8',
@@ -232,9 +254,16 @@ export class OrdersComponent implements OnInit {
     });
   });
 
-  readonly tableRows = computed<AdminTableRow[]>(() =>
-    this.filteredOrders().map((order) => this.toTableRow(order))
-  );
+  readonly tableRows = computed<AdminTableRow[]>(() => {
+    this.langVersion();
+    return this.filteredOrders().map((order) => this.toTableRow(order));
+  });
+
+  constructor() {
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.langVersion.update((version) => version + 1));
+  }
 
   async ngOnInit(): Promise<void> {
     await this.loadOrders();
@@ -246,7 +275,10 @@ export class OrdersComponent implements OnInit {
     try {
       this.orders.set(await this.ordersService.getOrders());
     } catch (error) {
-      this.toast.failed('Orders could not be loaded', this.errorDetail(error, 'Please try again.'));
+      this.toast.failed(
+        this.t('ORDERS.TOAST.LOAD_FAILED_TITLE'),
+        this.errorDetail(error, this.t('ORDERS.TOAST.LOAD_FAILED_DETAIL'))
+      );
     } finally {
       this.loading.set(false);
     }
@@ -254,7 +286,16 @@ export class OrdersComponent implements OnInit {
 
   exportCsv(): void {
     const rows = this.filteredOrders();
-    const header = ['Order ID', 'Customer', 'Email', 'Date', 'Items', 'Total', 'Payment', 'Delivery'];
+    const header = [
+      this.t('ORDERS.TABLE.ORDER_ID'),
+      this.t('ORDERS.TABLE.CUSTOMER'),
+      this.t('ORDERS.FIELDS.EMAIL'),
+      this.t('ORDERS.TABLE.DATE'),
+      this.t('ORDERS.TABLE.ITEMS'),
+      this.t('ORDERS.TABLE.TOTAL'),
+      this.t('ORDERS.TABLE.PAYMENT'),
+      this.t('ORDERS.TABLE.DELIVERY'),
+    ];
     const csvRows = [
       header,
       ...rows.map((order) => [
@@ -337,6 +378,18 @@ export class OrdersComponent implements OnInit {
     this.selectedDate.set((value as OrderDateFilter) || 'all');
   }
 
+  t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params) as string;
+  }
+
+  statusLabel(status: OrderPaymentStatus | OrderDeliveryStatus): string {
+    return this.t(`ORDERS.STATUS.${this.translationKey(status)}`);
+  }
+
+  translationKey(value: string): string {
+    return value.trim().replace(/[\s-]+/g, '_').toUpperCase();
+  }
+
   private toTableRow(order: AdminOrder): AdminTableRow {
     return {
       id: order.id,
@@ -353,11 +406,11 @@ export class OrdersComponent implements OnInit {
       },
       total: order.total,
       payment: {
-        label: order.payment,
+        label: this.statusLabel(order.payment),
         className: this.paymentBadgeClass(order.payment),
       },
       delivery: {
-        label: order.delivery,
+        label: this.statusLabel(order.delivery),
         className: this.deliveryBadgeClass(order.delivery),
       },
       actions: null,

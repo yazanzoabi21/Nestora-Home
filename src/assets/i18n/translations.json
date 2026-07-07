@@ -1153,7 +1153,79 @@
       "EXPORT": "Export"
     },
     "ORDERS": {
-      "EXPORT": "Export"
+      "TITLE": "Orders",
+      "SUBTITLE": "{{total}} total orders · {{processing}} processing",
+      "EXPORT": "Export",
+      "NA": "N/A",
+      "EXPORT_REPORT_TITLE": "Nestora Home - Orders Report",
+      "EXPORT_SUBTITLE": "{{count}} orders exported",
+      "KPI": {
+        "TOTAL_ORDERS": "Total Orders",
+        "PROCESSING": "Processing",
+        "DELIVERED": "Delivered",
+        "REFUNDED": "Refunded"
+      },
+      "FILTERS": {
+        "SEARCH_PLACEHOLDER": "Search by order ID or customer...",
+        "ALL_DELIVERIES": "All deliveries",
+        "ALL_PAYMENTS": "All payments",
+        "ALL_DATES": "All dates",
+        "TODAY": "Today",
+        "THIS_WEEK": "This Week",
+        "THIS_MONTH": "This Month"
+      },
+      "TABLE": {
+        "ORDER_ID": "Order ID",
+        "CUSTOMER": "Customer",
+        "DATE": "Date",
+        "ITEMS": "Items",
+        "TOTAL": "Total",
+        "PAYMENT": "Payment",
+        "DELIVERY": "Delivery",
+        "ACTION": "Action"
+      },
+      "STATUS": {
+        "PAID": "Paid",
+        "UNPAID": "Unpaid",
+        "PENDING": "Pending",
+        "REFUNDED": "Refunded",
+        "PROCESSING": "Processing",
+        "DELIVERED": "Delivered",
+        "SHIPPED": "Shipped",
+        "RETURNED": "Returned"
+      },
+      "ACTIONS": {
+        "VIEW": "View"
+      },
+      "EMPTY": {
+        "TITLE": "No orders found",
+        "TEXT": "Orders matching your filters will appear here."
+      },
+      "MODAL": {
+        "DETAILS_TITLE": "Order Details",
+        "DETAILS_SUBTITLE": "Review the selected order"
+      },
+      "FIELDS": {
+        "ORDER_NUMBER": "Order Number",
+        "CUSTOMER_NAME": "Customer Name",
+        "EMAIL": "Email",
+        "PHONE": "Phone",
+        "ORDER_DATE": "Order Date",
+        "ADDRESS": "Address",
+        "CITY": "City",
+        "COUNTRY": "Country",
+        "ITEMS": "Items",
+        "SUBTOTAL": "Subtotal",
+        "SHIPPING": "Shipping",
+        "TOTAL": "Total",
+        "PAYMENT_STATUS": "Payment Status",
+        "DELIVERY_STATUS": "Delivery Status",
+        "NOTES": "Notes"
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "Orders could not be loaded",
+        "LOAD_FAILED_DETAIL": "Please try again."
+      }
     },
     "MEDIA_PICKER": {
       "TITLE": "Choose from Media Library",
@@ -2520,7 +2592,79 @@
       "EXPORT": "تصدير"
     },
     "ORDERS": {
-      "EXPORT": "تصدير"
+      "TITLE": "الطلبات",
+      "SUBTITLE": "{{total}} إجمالي الطلبات · {{processing}} قيد المعالجة",
+      "EXPORT": "تصدير",
+      "NA": "غير متوفر",
+      "EXPORT_REPORT_TITLE": "نيستورا هوم - تقرير الطلبات",
+      "EXPORT_SUBTITLE": "تم تصدير {{count}} طلب",
+      "KPI": {
+        "TOTAL_ORDERS": "إجمالي الطلبات",
+        "PROCESSING": "قيد المعالجة",
+        "DELIVERED": "تم التسليم",
+        "REFUNDED": "مستردة"
+      },
+      "FILTERS": {
+        "SEARCH_PLACEHOLDER": "ابحث برقم الطلب أو اسم العميل...",
+        "ALL_DELIVERIES": "كل حالات التوصيل",
+        "ALL_PAYMENTS": "كل حالات الدفع",
+        "ALL_DATES": "كل التواريخ",
+        "TODAY": "اليوم",
+        "THIS_WEEK": "هذا الأسبوع",
+        "THIS_MONTH": "هذا الشهر"
+      },
+      "TABLE": {
+        "ORDER_ID": "رقم الطلب",
+        "CUSTOMER": "العميل",
+        "DATE": "التاريخ",
+        "ITEMS": "العناصر",
+        "TOTAL": "الإجمالي",
+        "PAYMENT": "الدفع",
+        "DELIVERY": "التوصيل",
+        "ACTION": "الإجراء"
+      },
+      "STATUS": {
+        "PAID": "مدفوع",
+        "UNPAID": "غير مدفوع",
+        "PENDING": "قيد الانتظار",
+        "REFUNDED": "مسترد",
+        "PROCESSING": "قيد المعالجة",
+        "DELIVERED": "تم التسليم",
+        "SHIPPED": "تم الشحن",
+        "RETURNED": "مرتجع"
+      },
+      "ACTIONS": {
+        "VIEW": "عرض"
+      },
+      "EMPTY": {
+        "TITLE": "لا توجد طلبات",
+        "TEXT": "ستظهر هنا الطلبات المطابقة للفلاتر."
+      },
+      "MODAL": {
+        "DETAILS_TITLE": "تفاصيل الطلب",
+        "DETAILS_SUBTITLE": "مراجعة الطلب المحدد"
+      },
+      "FIELDS": {
+        "ORDER_NUMBER": "رقم الطلب",
+        "CUSTOMER_NAME": "اسم العميل",
+        "EMAIL": "البريد الإلكتروني",
+        "PHONE": "الهاتف",
+        "ORDER_DATE": "تاريخ الطلب",
+        "ADDRESS": "العنوان",
+        "CITY": "المدينة",
+        "COUNTRY": "البلد",
+        "ITEMS": "العناصر",
+        "SUBTOTAL": "المجموع الفرعي",
+        "SHIPPING": "الشحن",
+        "TOTAL": "الإجمالي",
+        "PAYMENT_STATUS": "حالة الدفع",
+        "DELIVERY_STATUS": "حالة التوصيل",
+        "NOTES": "الملاحظات"
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "تعذر تحميل الطلبات",
+        "LOAD_FAILED_DETAIL": "يرجى المحاولة مرة أخرى."
+      }
     },
     "PAYMENTS": {
       "TITLE": "المدفوعات والمعاملات",

@@ -3,9 +3,9 @@
   <section
     class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
     <div class="min-w-0">
-      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">Orders</h1>
+      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'ORDERS.TITLE' | translate }}</h1>
       <p class="mt-2 text-base font-medium text-[#8d877e]">
-        {{ stats().totalOrders }} total orders · {{ stats().processing }} processing
+        {{ 'ORDERS.SUBTITLE' | translate: { total: stats().totalOrders, processing: stats().processing } }}
       </p>
     </div>
 
@@ -24,22 +24,22 @@
 
   <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
     <div class="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_180px_180px_180px] xl:items-center">
-      <app-admin-form-field type="search" name="orderSearch" placeholder="Search by order ID or customer..."
+      <app-admin-form-field type="search" name="orderSearch" [placeholder]="'ORDERS.FILTERS.SEARCH_PLACEHOLDER' | translate"
         [value]="searchTerm()" (valueChange)="updateSearch($event)" />
 
       <app-admin-form-field type="select" name="orderStatusFilter" [value]="selectedDelivery()"
-        [options]="deliveryOptions" optionLabel="label" optionValue="value" (valueChange)="updateDelivery($event)" />
+        [options]="deliveryOptions()" optionLabel="label" optionValue="value" (valueChange)="updateDelivery($event)" />
 
       <app-admin-form-field type="select" name="orderPaymentFilter" [value]="selectedPayment()"
-        [options]="paymentOptions" optionLabel="label" optionValue="value" (valueChange)="updatePayment($event)" />
+        [options]="paymentOptions()" optionLabel="label" optionValue="value" (valueChange)="updatePayment($event)" />
 
-      <app-admin-form-field type="select" name="orderDateFilter" [value]="selectedDate()" [options]="dateOptions"
+      <app-admin-form-field type="select" name="orderDateFilter" [value]="selectedDate()" [options]="dateOptions()"
         optionLabel="label" optionValue="value" (valueChange)="updateDate($event)" />
     </div>
   </section>
 
-  <app-admin-table class="mt-6 block" [columns]="orderTableColumns" [rows]="tableRows()" [loading]="loading()"
-    emptyTitle="No orders found" emptyText="Orders matching your filters will appear here." [selectable]="false"
+  <app-admin-table class="mt-6 block" [columns]="orderTableColumns()" [rows]="tableRows()" [loading]="loading()"
+    [emptyTitle]="'ORDERS.EMPTY.TITLE' | translate" [emptyText]="'ORDERS.EMPTY.TEXT' | translate" [selectable]="false"
     [showActions]="true" actionsMode="crud" [pageSize]="8" [pageSizeOptions]="[8, 16, 32]" [showPageSize]="false"
     [showPaginationSummary]="true" (rowView)="openOrderDetails($event)">
     <ng-template adminTableCell="orderId" let-row="row">
@@ -59,93 +59,93 @@
           class="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[#dfe7d5] bg-[#f7faf3] px-3 text-sm font-bold text-[#5f6f43] transition hover:bg-[#eef4e8]"
           (click)="openOrderDetails(row)">
           <i class="pi pi-eye text-xs"></i>
-          <span>View</span>
+          <span>{{ 'ORDERS.ACTIONS.VIEW' | translate }}</span>
         </button>
       </div>
     </ng-template>
   </app-admin-table>
 
-  <app-admin-form-modal [isOpen]="!!selectedOrder()" title="Order Details" subtitle="Review the selected order"
-    size="md" submitLabel="Close" cancelLabel="Cancel" (close)="closeOrderDetails()" (submit)="closeOrderDetails()">
+  <app-admin-form-modal [isOpen]="!!selectedOrder()" [title]="'ORDERS.MODAL.DETAILS_TITLE' | translate" [subtitle]="'ORDERS.MODAL.DETAILS_SUBTITLE' | translate"
+    size="md" [submitLabel]="'COMMON.CLOSE' | translate" [cancelLabel]="'COMMON.CANCEL' | translate" (close)="closeOrderDetails()" (submit)="closeOrderDetails()">
     @if (selectedOrder(); as order) {
       <section class="grid gap-3 text-sm font-semibold text-[#342f29]">
         <div class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
-          <p class="text-xs font-black uppercase tracking-[0.08em] text-[#9a9389]">Order Number</p>
+          <p class="text-xs font-black uppercase tracking-[0.08em] text-[#9a9389]">{{ 'ORDERS.FIELDS.ORDER_NUMBER' | translate }}</p>
           <h2 class="mt-1 text-xl font-black text-[#182116]">{{ order.orderId }}</h2>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Customer Name</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.CUSTOMER_NAME' | translate }}</p>
             <p class="mt-1 font-black text-[#182116]">{{ order.customerName }}</p>
           </div>
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Email</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.customerEmail || 'N/A' }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.EMAIL' | translate }}</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.customerEmail || ('ORDERS.NA' | translate) }}</p>
           </div>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Phone</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.phone || 'N/A' }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.PHONE' | translate }}</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.phone || ('ORDERS.NA' | translate) }}</p>
           </div>
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Order Date</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.ORDER_DATE' | translate }}</p>
             <p class="mt-1 font-black text-[#182116]">{{ order.date }}</p>
           </div>
         </div>
 
         <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-          <p class="text-xs font-bold text-[#8d877e]">Address</p>
-          <p class="mt-1 font-black text-[#182116]">{{ order.address || 'N/A' }}</p>
+          <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.ADDRESS' | translate }}</p>
+          <p class="mt-1 font-black text-[#182116]">{{ order.address || ('ORDERS.NA' | translate) }}</p>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">City</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.city || 'N/A' }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.CITY' | translate }}</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.city || ('ORDERS.NA' | translate) }}</p>
           </div>
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Country</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.country || 'N/A' }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.COUNTRY' | translate }}</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.country || ('ORDERS.NA' | translate) }}</p>
           </div>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-3">
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Items</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.ITEMS' | translate }}</p>
             <p class="mt-1 font-black text-[#182116]">{{ order.items }}</p>
           </div>
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Subtotal</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.subtotal || 'N/A' }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.SUBTOTAL' | translate }}</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.subtotal || ('ORDERS.NA' | translate) }}</p>
           </div>
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Shipping</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.shipping || 'N/A' }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.SHIPPING' | translate }}</p>
+            <p class="mt-1 font-black text-[#182116]">{{ order.shipping || ('ORDERS.NA' | translate) }}</p>
           </div>
         </div>
 
         <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-          <p class="text-xs font-bold text-[#8d877e]">Total</p>
+          <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.TOTAL' | translate }}</p>
           <p class="mt-2 text-xl font-black text-[#5f6f43]">{{ order.total }}</p>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Payment Status</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.payment }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.PAYMENT_STATUS' | translate }}</p>
+            <p class="mt-1 font-black text-[#182116]">{{ statusLabel(order.payment) }}</p>
           </div>
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Delivery Status</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.delivery }}</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.DELIVERY_STATUS' | translate }}</p>
+            <p class="mt-1 font-black text-[#182116]">{{ statusLabel(order.delivery) }}</p>
           </div>
         </div>
 
         @if (order.notes) {
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">Notes</p>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.NOTES' | translate }}</p>
             <p class="mt-1 font-black text-[#182116]">{{ order.notes }}</p>
           </div>
         }
