@@ -1,5 +1,6 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
-import { TranslatePipe } from '@ngx-translate/core';
+import { Component, DestroyRef, computed, signal, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import type { LegendOptions, Options, XAxisOptions, YAxisOptions } from 'highcharts';
 
 import { AnalyticsChart, AnalyticsChartConfig } from '../../../../shared/ui/analytics-chart';
@@ -53,15 +54,24 @@ interface BestSellingProduct {
 })
 export class Dashboard implements OnInit {
 
+  constructor() {
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.langVersion.update((version) => version + 1));
+  }
+
   ngOnInit(): void {
     void this.loadDashboard('30D');
   }
 
   private readonly dashboardService = inject(DashboardService);
+  private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly dashboardData = signal<DashboardStatisticsRow | null>(null);
+  readonly langVersion = signal(0);
 
   readonly revenueFilter = signal('12M');
   readonly salesOrdersFilter = signal('7D');
@@ -74,6 +84,7 @@ export class Dashboard implements OnInit {
   readonly bestSellingFilters = ['Sold'];
 
   readonly revenueOverviewChart = computed<AnalyticsChartConfig>(() => {
+    this.langVersion();
     const chart = this.dashboardData()?.revenue_overview_chart;
 
     return this.buildRevenueOverviewChart({
@@ -84,6 +95,7 @@ export class Dashboard implements OnInit {
   });
 
   readonly salesOrdersChart = computed<AnalyticsChartConfig>(() => {
+    this.langVersion();
     const chart = this.dashboardData()?.sales_orders_chart;
 
     return this.buildSalesOrdersChart({
@@ -94,6 +106,7 @@ export class Dashboard implements OnInit {
   });
 
   readonly salesCategoryChart = computed<AnalyticsChartConfig>(() => {
+    this.langVersion();
     return this.buildSalesCategoryChart(this.dashboardData()?.sales_category_chart ?? []);
   });
 
@@ -117,49 +130,61 @@ export class Dashboard implements OnInit {
   });
 
   readonly kpiCards = computed<KpiCardData[]>(() => {
+    this.langVersion();
     return this.dashboardData()?.kpi_cards ?? [];
   });
 
-  readonly dashboardExportConfig: ExportReportConfig = {
-    fileName: 'nestora-dashboard-report',
-    reportTitle: 'Nestora Home - Dashboard Report',
-    reportSubtitle: 'April 2026',
-    sections: [
-      {
-        title: 'KPI Summary',
-        headers: ['Metric', 'Value', 'Trend'],
-        rows: [
-          ['Total Revenue', '$891.4K', '+18.4%'],
-          ['Total Orders', '6.8K', '+12.2%'],
-          ['Total Customers', '14.3K', '+8.6%'],
-          ['Active Products', '524', '-2.1%'],
-        ],
-      },
-      {
-        title: 'Recent Orders',
-        headers: ['Order ID', 'Customer', 'Date', 'Total', 'Payment', 'Delivery'],
-        rows: [
-          ['ORD-8821', 'Sophie Barrett', '22 Apr 2026', '$248.97', 'Paid', 'Delivered'],
-          ['ORD-8820', 'Marcus Hunt', '22 Apr 2026', '$89.99', 'Paid', 'Shipped'],
-          ['ORD-8819', 'Clara Morel', '21 Apr 2026', '$387.45', 'Paid', 'Processing'],
-          ['ORD-8818', 'James Thornton', '21 Apr 2026', '$124.98', 'Pending', 'Processing'],
-          ['ORD-8817', 'Anya Patel', '20 Apr 2026', '$312.96', 'Paid', 'Delivered'],
-          ['ORD-8816', 'Luca Rossi', '20 Apr 2026', '$149.99', 'Refunded', 'Returned'],
-        ],
-      },
-      {
-        title: 'Best Selling Products',
-        headers: ['Product', 'Trend', 'Sold'],
-        rows: [
-          ['Eco Cleaning Kit Bundle', '+24%', '1,203 sold'],
-          ['Bamboo Cutting Board', '+18%', '876 sold'],
-          ['Linen Tea Towel Set', '+12%', '892 sold'],
-          ["Stainless Chef's Knife", '+8%', '703 sold'],
-          ['Nordic Ceramic Bowl Set', '-4%', '567 sold'],
-        ],
-      },
-    ],
-  };
+  readonly dashboardExportConfig = computed<ExportReportConfig>(() => {
+    this.langVersion();
+
+    return {
+      fileName: 'nestora-dashboard-report',
+      reportTitle: this.t('DASHBOARD.EXPORT_REPORT_TITLE'),
+      reportSubtitle: this.t('DASHBOARD.MONTH'),
+      sections: [
+        {
+          title: this.t('DASHBOARD.KPI_SUMMARY'),
+          headers: [this.t('DASHBOARD.METRIC'), this.t('DASHBOARD.VALUE'), this.t('DASHBOARD.TREND')],
+          rows: [
+            [this.t('DASHBOARD.TOTAL_REVENUE'), '$891.4K', '+18.4%'],
+            [this.t('DASHBOARD.TOTAL_ORDERS'), '6.8K', '+12.2%'],
+            [this.t('DASHBOARD.TOTAL_CUSTOMERS'), '14.3K', '+8.6%'],
+            [this.t('DASHBOARD.ACTIVE_PRODUCTS'), '524', '-2.1%'],
+          ],
+        },
+        {
+          title: this.t('DASHBOARD.RECENT_ORDERS'),
+          headers: [
+            this.t('DASHBOARD.ORDER_ID'),
+            this.t('DASHBOARD.CUSTOMER'),
+            this.t('DASHBOARD.DATE'),
+            this.t('DASHBOARD.TOTAL'),
+            this.t('DASHBOARD.PAYMENT'),
+            this.t('DASHBOARD.DELIVERY'),
+          ],
+          rows: [
+            ['ORD-8821', 'Sophie Barrett', '22 Apr 2026', '$248.97', this.dashboardStatusLabel('Paid'), this.dashboardStatusLabel('Delivered')],
+            ['ORD-8820', 'Marcus Hunt', '22 Apr 2026', '$89.99', this.dashboardStatusLabel('Paid'), this.dashboardStatusLabel('Shipped')],
+            ['ORD-8819', 'Clara Morel', '21 Apr 2026', '$387.45', this.dashboardStatusLabel('Paid'), this.dashboardStatusLabel('Processing')],
+            ['ORD-8818', 'James Thornton', '21 Apr 2026', '$124.98', this.dashboardStatusLabel('Pending'), this.dashboardStatusLabel('Processing')],
+            ['ORD-8817', 'Anya Patel', '20 Apr 2026', '$312.96', this.dashboardStatusLabel('Paid'), this.dashboardStatusLabel('Delivered')],
+            ['ORD-8816', 'Luca Rossi', '20 Apr 2026', '$149.99', this.dashboardStatusLabel('Refunded'), this.dashboardStatusLabel('Returned')],
+          ],
+        },
+        {
+          title: this.t('DASHBOARD.BEST_SELLING_PRODUCTS'),
+          headers: [this.t('DASHBOARD.PRODUCT'), this.t('DASHBOARD.TREND'), this.t('DASHBOARD.SOLD')],
+          rows: [
+            [this.t('DASHBOARD.ECO_CLEANING_KIT_BUNDLE'), '+24%', this.t('DASHBOARD.SOLD_COUNT', { count: '1,203' })],
+            [this.t('DASHBOARD.BAMBOO_CUTTING_BOARD'), '+18%', this.t('DASHBOARD.SOLD_COUNT', { count: '876' })],
+            [this.t('DASHBOARD.LINEN_TEA_TOWEL_SET'), '+12%', this.t('DASHBOARD.SOLD_COUNT', { count: '892' })],
+            [this.t('DASHBOARD.STAINLESS_CHEFS_KNIFE'), '+8%', this.t('DASHBOARD.SOLD_COUNT', { count: '703' })],
+            [this.t('DASHBOARD.NORDIC_CERAMIC_BOWL_SET'), '-4%', this.t('DASHBOARD.SOLD_COUNT', { count: '567' })],
+          ],
+        },
+      ],
+    };
+  });
 
   setRevenueFilter(filter: string): void {
     this.revenueFilter.set(filter);
@@ -200,6 +225,25 @@ export class Dashboard implements OnInit {
     // Later: open product menu/filter/export.
   }
 
+  t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params) as string;
+  }
+
+  translationKey(value: string): string {
+    return value.trim().replace(/[^a-zA-Z0-9]+/g, '_').toUpperCase();
+  }
+
+  dashboardStatusLabel(status: string): string {
+    const key = `DASHBOARD.STATUS.${this.translationKey(status)}`;
+    const translated = this.t(key);
+    return translated === key ? status : translated;
+  }
+
+  soldLabel(value: string): string {
+    const match = value.match(/^(.+?)\s+sold$/i);
+    return match ? this.t('DASHBOARD.SOLD_COUNT', { count: match[1] }) : value;
+  }
+
   paymentClass(payment: string): string {
     const classes: Record<string, string> = {
       Paid: 'bg-[#e7f6ee] text-[#0f7b49]',
@@ -229,9 +273,10 @@ export class Dashboard implements OnInit {
     return {
       title: 'Revenue Overview',
       titleKey: 'DASHBOARD.REVENUE_OVERVIEW',
-      subtitle: 'Revenue vs target',
+      subtitle: this.t('DASHBOARD.REVENUE_OVERVIEW_SUBTITLE'),
       subtitleKey: 'DASHBOARD.REVENUE_OVERVIEW_SUBTITLE',
       filters: ['7D', '30D', '3M', '12M'],
+      filterLabelPrefix: 'DASHBOARD.FILTERS',
       activeFilter: this.revenueFilter(),
       height: 315,
       chartOptions: this.createRevenueOverviewOptions(data),
@@ -244,7 +289,7 @@ export class Dashboard implements OnInit {
     return {
       title: 'Sales by Category',
       titleKey: 'DASHBOARD.SALES_BY_CATEGORY',
-      subtitle: 'Share of total revenue',
+      subtitle: this.t('DASHBOARD.SALES_BY_CATEGORY_SUBTITLE'),
       subtitleKey: 'DASHBOARD.SALES_BY_CATEGORY_SUBTITLE',
       height: 280,
       chartOptions: this.createSalesCategoryOptions(categories),
@@ -266,7 +311,7 @@ export class Dashboard implements OnInit {
     return {
       title: 'Sales vs Orders',
       titleKey: 'DASHBOARD.SALES_VS_ORDERS',
-      subtitle: 'Revenue and order volume comparison',
+      subtitle: this.t('DASHBOARD.SALES_VS_ORDERS_SUBTITLE'),
       subtitleKey: 'DASHBOARD.SALES_VS_ORDERS_SUBTITLE',
       filters: ['7D', '30D', '3M', '12M'],
       activeFilter: this.salesOrdersFilter(),
@@ -307,13 +352,13 @@ export class Dashboard implements OnInit {
       series: [
         {
           type: 'line',
-          name: 'Revenue',
+          name: this.t('DASHBOARD.REVENUE'),
           color: '#5f6f43',
           data: data.revenue,
         },
         {
           type: 'line',
-          name: 'Target',
+          name: this.t('DASHBOARD.TARGET'),
           color: '#d9cab8',
           dashStyle: 'Dash',
           data: data.target,
@@ -351,7 +396,7 @@ export class Dashboard implements OnInit {
       series: [
         {
           type: 'pie',
-          name: 'Sales',
+          name: this.t('DASHBOARD.SALES'),
           data: categories.map((category) => ({
             name: category.name,
             y: category.value,
@@ -401,13 +446,13 @@ export class Dashboard implements OnInit {
       series: [
         {
           type: 'column',
-          name: 'Revenue',
+          name: this.t('DASHBOARD.REVENUE'),
           color: '#5f6f43',
           data: data.revenue,
         },
         {
           type: 'column',
-          name: 'Orders',
+          name: this.t('DASHBOARD.ORDERS'),
           color: '#e7d9c9',
           yAxis: 1,
           data: data.orders,
@@ -467,7 +512,7 @@ export class Dashboard implements OnInit {
       this.dashboardData.set(data);
     } catch (error) {
       console.error('Failed to load dashboard statistics:', error);
-      this.errorMessage.set('Failed to load dashboard statistics.');
+      this.errorMessage.set(this.t('DASHBOARD.LOAD_FAILED_DETAIL'));
     } finally {
       this.loading.set(false);
     }

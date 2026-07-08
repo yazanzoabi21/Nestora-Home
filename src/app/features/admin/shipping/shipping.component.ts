@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ToastService } from '../../../core/services';
@@ -140,14 +142,17 @@ const DEFAULT_METHOD_ZONE_FORM: MethodZoneForm = {
 })
 export class ShippingComponent implements OnInit {
   private readonly shippingService = inject(ShippingService);
+  private readonly route = inject(ActivatedRoute);
   private readonly sidebarBadges = inject(AdminSidebarBadgesService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly methods = signal<ShippingMethod[]>([]);
   readonly zones = signal<DeliveryZone[]>([]);
   readonly methodZones = signal<ShippingMethodZone[]>([]);
   readonly activeTab = signal<ShippingTab>('methods');
+  readonly searchTerm = signal('');
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly togglingMethodIds = signal<Set<string>>(new Set());
@@ -194,8 +199,63 @@ export class ShippingComponent implements OnInit {
 
   readonly stats = computed(() => this.shippingService.getShippingStats(this.methods(), this.zones()));
 
+  readonly filteredMethods = computed(() => {
+    const query = this.searchTerm().trim().toLowerCase();
+
+    if (!query) {
+      return this.methods();
+    }
+
+    return this.methods().filter((method) =>
+      [
+        method.name,
+        method.code,
+        method.carrier_name,
+        method.description,
+        method.eta_label,
+        this.formatMoney(method.base_cost),
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query))
+    );
+  });
+
+  readonly filteredZones = computed(() => {
+    const query = this.searchTerm().trim().toLowerCase();
+
+    if (!query) {
+      return this.zones();
+    }
+
+    return this.zones().filter((zone) =>
+      [zone.name, zone.country, ...this.zoneRegions(zone), this.formatMoney(zone.extra_cost)]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query))
+    );
+  });
+
+  readonly filteredMethodZones = computed(() => {
+    const query = this.searchTerm().trim().toLowerCase();
+
+    if (!query) {
+      return this.methodZones();
+    }
+
+    return this.methodZones().filter((item) =>
+      [
+        item.shipping_method?.name || this.methodName(item.shipping_method_id),
+        item.delivery_zone?.name || this.zoneName(item.delivery_zone_id),
+        item.eta_label_override,
+        this.formatMoney(item.cost_override),
+        this.formatMoney(item.free_shipping_min_amount_override),
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query))
+    );
+  });
+
   readonly deliveryZoneRows = computed<DeliveryZoneTableRow[]>(() =>
-    this.zones().map((zone) => ({
+    this.filteredZones().map((zone) => ({
       id: zone.id,
       zone: zone.name,
       regions: this.zoneRegions(zone).join(', '),
@@ -209,7 +269,7 @@ export class ShippingComponent implements OnInit {
   );
 
   readonly methodZoneRows = computed<MethodZoneTableRow[]>(() =>
-    this.methodZones().map((item) => ({
+    this.filteredMethodZones().map((item) => ({
       id: item.id,
       shippingMethod: item.shipping_method?.name || this.methodName(item.shipping_method_id),
       deliveryZone: item.delivery_zone?.name || this.zoneName(item.delivery_zone_id),
@@ -268,6 +328,7 @@ export class ShippingComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
+    this.watchQuerySearch();
     await this.loadShipping();
   }
 
@@ -705,6 +766,10 @@ export class ShippingComponent implements OnInit {
     return value === true;
   }
 
+  updateSearch(value: unknown): void {
+    this.searchTerm.set(String(value ?? ''));
+  }
+
   private async runMutation(
     action: () => Promise<void>,
     successMessageKey: string,
@@ -795,5 +860,11 @@ export class ShippingComponent implements OnInit {
     }
 
     return null;
+  }
+
+  private watchQuerySearch(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
   }
 }

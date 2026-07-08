@@ -11,6 +11,5 @@
   [class.sidebar-expanded]="!sidebarCollapsed()" [class.sidebar-collapsed]="sidebarCollapsed()">
   <app-topbar [user]="currentUser()" [sidebarCollapsed]="sidebarCollapsed()"
     (menuClick)="mobileSidebarOpen.set(true)"></app-topbar>
-  <app-topbar [sidebarCollapsed]="sidebarCollapsed()" (menuClick)="mobileSidebarOpen.set(true)"></app-topbar>
   <router-outlet></router-outlet>
 </div>

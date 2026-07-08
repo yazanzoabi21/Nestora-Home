@@ -36,6 +36,7 @@ export interface AnalyticsChartConfig {
 
   filters?: string[];
   activeFilter?: string;
+  filterLabelPrefix?: string;
 
   height?: number;
   chartOptions: Options;

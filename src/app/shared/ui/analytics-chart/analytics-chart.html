@@ -27,7 +27,11 @@
                 [class.bg-white]="filter === chartConfig().activeFilter"
                 [class.text-[#1f2a1f]]="filter === chartConfig().activeFilter"
                 [class.shadow-sm]="filter === chartConfig().activeFilter" (click)="selectFilter(filter)">
+                @if (chartConfig().filterLabelPrefix) {
+                {{ chartConfig().filterLabelPrefix + '.' + filter.replace('-', '_').toUpperCase() | translate }}
+                } @else {
                 {{ filter }}
+                }
             </button>
             }
         </div>

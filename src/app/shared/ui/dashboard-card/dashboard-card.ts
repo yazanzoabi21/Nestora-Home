@@ -18,12 +18,17 @@ export class DashboardCard {
 
   readonly filters = input<string[]>([]);
   readonly activeFilter = input<string | null>(null);
+  readonly filterLabelPrefix = input<string | null>(null);
 
   readonly action = input<DashboardCardAction | null>(null);
   readonly padded = input(true);
 
   readonly filterChange = output<string>();
   readonly actionClick = output<void>();
+
+  filterLabelKey(filter: string): string {
+    return `${this.filterLabelPrefix()}.${filter.replace(/[^a-zA-Z0-9]+/g, '_').toUpperCase()}`;
+  }
 
   selectFilter(filter: string): void {
     this.filterChange.emit(filter);

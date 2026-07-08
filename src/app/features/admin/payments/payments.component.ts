@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ToastService } from '../../../core/services';
@@ -91,8 +93,10 @@ const DEFAULT_PAYMENT_METHOD_FORM: PaymentMethodForm = {
 })
 export class PaymentsComponent implements OnInit {
   private readonly paymentsService = inject(PaymentsService);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly activeTab = signal<PaymentsTab>('transactions');
   readonly methods = signal<PaymentMethod[]>([]);
@@ -367,6 +371,7 @@ export class PaymentsComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
+    this.watchQuerySearch();
     await this.loadPaymentData();
   }
 
@@ -801,6 +806,12 @@ export class PaymentsComponent implements OnInit {
 
   private currentLocale(): string {
     return this.translate.currentLang() === 'ar' ? 'ar-LB' : 'en-US';
+  }
+
+  private watchQuerySearch(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
   }
 
   private errorDetail(error: unknown, fallback: string): string {

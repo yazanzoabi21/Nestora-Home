@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import {
@@ -48,8 +50,10 @@ const DEFAULT_STOCK_FORM: StockUpdateFormModel = {
 })
 export class InventoryComponent implements OnInit {
   private readonly inventoryService = inject(InventoryService);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly lowStockLimit = LOW_STOCK_LIMIT;
   readonly products = signal<InventoryProduct[]>([]);
@@ -188,6 +192,7 @@ export class InventoryComponent implements OnInit {
   );
 
   async ngOnInit(): Promise<void> {
+    this.watchQuerySearch();
     await this.loadInventory();
   }
 
@@ -458,5 +463,14 @@ export class InventoryComponent implements OnInit {
 
   private errorDetail(error: unknown, fallback: string): string {
     return error instanceof Error ? error.message : fallback;
+  }
+
+  private watchQuerySearch(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        this.searchTerm.set(params.get('q') ?? '');
+        this.currentPage.set(1);
+      });
   }
 }

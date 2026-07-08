@@ -116,7 +116,40 @@
       "LINEN_TEA_TOWEL_SET": "Linen Tea Towel Set",
       "STAINLESS_CHEFS_KNIFE": "Stainless Chef's Knife",
       "NORDIC_CERAMIC_BOWL_SET": "Nordic Ceramic Bowl Set",
-      "SOLD": "sold"
+      "SOLD": "sold",
+      "OVERVIEW": "Overview",
+      "EXPORT_REPORT_TITLE": "Nestora Home - Dashboard Report",
+      "KPI_SUMMARY": "KPI Summary",
+      "METRIC": "Metric",
+      "VALUE": "Value",
+      "TREND": "Trend",
+      "PRODUCT": "Product",
+      "SALES": "Sales",
+      "ORDERS": "Orders",
+      "NO_ORDERS_FOR_FILTER": "No orders found for this filter.",
+      "BY_SELECTED_FILTER": "By selected filter",
+      "SOLD_COUNT": "{{count}} sold",
+      "LOAD_FAILED_DETAIL": "Failed to load dashboard statistics.",
+      "FILTERS": {
+        "ALL": "All",
+        "PAID": "Paid",
+        "PENDING": "Pending",
+        "REFUNDED": "Refunded",
+        "SOLD": "Sold",
+        "7D": "7D",
+        "30D": "30D",
+        "3M": "3M",
+        "12M": "12M"
+      },
+      "STATUS": {
+        "PAID": "Paid",
+        "PENDING": "Pending",
+        "REFUNDED": "Refunded",
+        "DELIVERED": "Delivered",
+        "SHIPPED": "Shipped",
+        "PROCESSING": "Processing",
+        "RETURNED": "Returned"
+      }
     },
     "PROFILE_SETTINGS": {
       "TITLE": "Profile & Settings",
@@ -1150,7 +1183,86 @@
       }
     },
     "CUSTOMERS": {
-      "EXPORT": "Export"
+      "TITLE": "Customers",
+      "SUBTITLE": "{{count}} customers total",
+      "EXPORT": "Export",
+      "NA": "N/A",
+      "NO_EMAIL": "No email provided",
+      "EXPORT_REPORT_TITLE": "Nestora Home - Customers Report",
+      "EXPORT_SUBTITLE": "{{count}} customers exported",
+      "KPI": {
+        "TOTAL_CUSTOMERS": "Total Customers",
+        "ACTIVE_CUSTOMERS": "Active Customers",
+        "VIP_CUSTOMERS": "VIP Customers",
+        "TOTAL_SPENT": "Total Spent"
+      },
+      "FILTERS": {
+        "SEARCH_PLACEHOLDER": "Search by name, email, phone, city or country...",
+        "ALL_STATUSES": "All statuses",
+        "ALL_TIERS": "All tiers"
+      },
+      "TABLE": {
+        "CUSTOMER": "Customer",
+        "LOCATION": "Location",
+        "CUSTOMER_ID": "Customer ID",
+        "FULL_NAME": "Full Name",
+        "EMAIL": "Email",
+        "PHONE": "Phone",
+        "CITY": "City",
+        "COUNTRY": "Country",
+        "ORDERS": "Orders",
+        "SPENT": "Spent",
+        "TIER": "Tier",
+        "STATUS": "Status",
+        "JOINED": "Joined",
+        "ACTIONS": "Actions"
+      },
+      "STATUS": {
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive",
+        "BLOCKED": "Blocked",
+        "PENDING": "Pending"
+      },
+      "TIER": {
+        "VIP": "VIP",
+        "REGULAR": "Regular",
+        "NEW": "New",
+        "LOYAL": "Loyal",
+        "BRONZE": "Bronze",
+        "SILVER": "Silver",
+        "GOLD": "Gold",
+        "PLATINUM": "Platinum"
+      },
+      "ACTIONS": {
+        "VIEW": "View",
+        "EMAIL": "Email"
+      },
+      "EMPTY": {
+        "TITLE": "No customers found",
+        "TEXT": "Customers will appear here once they are added."
+      },
+      "MODAL": {
+        "DETAILS_TITLE": "Customer Details",
+        "DETAILS_SUBTITLE": "Review the selected customer"
+      },
+      "FIELDS": {
+        "CUSTOMER": "Customer",
+        "PHONE": "Phone",
+        "JOINED": "Joined",
+        "STATUS": "Status",
+        "TIER": "Tier",
+        "TOTAL_ORDERS": "Total Orders",
+        "TOTAL_SPENT": "Total Spent",
+        "LAST_ORDER": "Last Order",
+        "ADDRESS": "Address",
+        "CITY": "City",
+        "COUNTRY": "Country",
+        "NOTES": "Notes"
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "Customers could not be loaded",
+        "LOAD_FAILED_DETAIL": "Please try again."
+      }
     },
     "ORDERS": {
       "TITLE": "Orders",
@@ -1399,6 +1511,144 @@
         "INVALID_ETA_MAX": "ETA max days must be 0 or more.",
         "INVALID_ETA_RANGE": "ETA max days must be greater than or equal to ETA min days."
       }
+    },
+    "ANALYTICS": {
+      "TITLE": "Analytics",
+      "SUBTITLE": "Performance overview",
+      "PERIOD": "Period",
+      "EXPORT": "Export",
+      "LOADING": "Loading analytics...",
+      "EXPORT_REPORT_TITLE": "Nestora Home - Analytics Report",
+      "EXPORT_SUBTITLE": "Performance overview for {{period}}",
+      "EMPTY": {
+        "TITLE": "No analytics data found",
+        "TEXT": "There is no analytics row for {{period}} yet.",
+        "NO_KPI": "No KPI cards available."
+      },
+      "KPI": {
+        "UNTITLED": "Untitled KPI",
+        "TOTAL_REVENUE": "Total Revenue",
+        "TOTAL_ORDERS": "Total Orders",
+        "TOTAL_CUSTOMERS": "Total Customers",
+        "CONVERSION_RATE": "Conversion Rate",
+        "AVERAGE_ORDER_VALUE": "Average Order Value",
+        "RETURNING_CUSTOMERS": "Returning Customers",
+        "NEW_CUSTOMERS": "New Customers",
+        "REFUND_RATE": "Refund Rate",
+        "CART_ABANDONMENT": "Cart Abandonment",
+        "REVENUE_GROWTH": "Revenue Growth",
+        "ORDER_GROWTH": "Order Growth",
+        "CUSTOMER_GROWTH": "Customer Growth"
+      },
+      "CHARTS": {
+        "REVENUE_GROWTH": {
+          "TITLE": "Revenue Growth",
+          "SUBTITLE": "Monthly revenue vs. target"
+        },
+        "CUSTOMER_GROWTH": {
+          "TITLE": "Customer Growth",
+          "SUBTITLE": "New vs. returning customers"
+        },
+        "CATEGORY_REVENUE_SPLIT": {
+          "TITLE": "Category Revenue Split",
+          "SUBTITLE": "% of total sales by category"
+        },
+        "CONVERSION_FUNNEL": {
+          "TITLE": "Conversion Funnel",
+          "SUBTITLE": "Visitor to purchase pipeline"
+        },
+        "WEEKLY_SALES_PATTERN": {
+          "TITLE": "Weekly Sales Pattern",
+          "SUBTITLE": "Revenue by day of week"
+        },
+        "PERFORMANCE_BREAKDOWN": {
+          "TITLE": "Performance Breakdown",
+          "SUBTITLE": "Key metrics at a glance"
+        }
+      },
+      "PERIODS": {
+        "TODAY": "Today",
+        "THIS_WEEK": "This Week",
+        "THIS_MONTH": "This Month",
+        "THIS_YEAR": "This Year",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MONTHLY": "Monthly",
+        "YEARLY": "Yearly",
+        "LAST_7_DAYS": "Last 7 days",
+        "LAST_30_DAYS": "Last 30 days",
+        "LAST_3_MONTHS": "Last 3 months",
+        "LAST_12_MONTHS": "Last 12 months"
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "Analytics could not be loaded",
+        "LOAD_FAILED_DETAIL": "Please try again.",
+        "EXPORT_FAILED_TITLE": "Analytics export failed",
+        "EXPORT_FAILED_DETAIL": "Unable to export analytics."
+      }
+    },
+    "AUTH": {
+      "BRAND": "Nestora Home",
+      "ADMIN_PANEL": "Admin Panel",
+      "WELCOME_TO": "Welcome to",
+      "BRAND_DESCRIPTION": "Manage your store, products, orders, customers, analytics, and operations from one secure dashboard.",
+      "FEATURE_SECURE_TITLE": "Secure access",
+      "FEATURE_SECURE_TEXT": "Protected authentication for admins, staff, and authorized users.",
+      "FEATURE_ROLES_TITLE": "Role-based control",
+      "FEATURE_ROLES_TEXT": "Give every user the right access level for their responsibilities.",
+      "FEATURE_EFFICIENCY_TITLE": "Efficient operations",
+      "FEATURE_EFFICIENCY_TEXT": "Track performance, manage orders, and keep your store running smoothly.",
+      "SINGLE_LOGIN": "Secure admin login",
+      "SIGN_IN": "Sign In",
+      "SIGN_IN_SUBTITLE": "Enter your details to access the admin dashboard.",
+      "EMAIL_ADDRESS": "Email Address",
+      "EMAIL_PLACEHOLDER": "you@example.com",
+      "PASSWORD": "Password",
+      "PASSWORD_PLACEHOLDER": "Enter your password",
+      "REMEMBER_ME": "Remember me",
+      "FORGOT_PASSWORD": "Forgot password?",
+      "OR": "or",
+      "CONTINUE_GOOGLE": "Continue with Google",
+      "NO_ACCOUNT": "Don't have an account?",
+      "CREATE_ACCOUNT": "Create Account",
+      "CREATE_ACCOUNT_BADGE": "Create admin account",
+      "CREATE_ACCOUNT_SUBTITLE": "Create your account to start managing Nestora Home.",
+      "FULL_NAME": "Full Name",
+      "FULL_NAME_PLACEHOLDER": "Enter your full name",
+      "PHONE_NUMBER": "Phone Number",
+      "PHONE_PLACEHOLDER": "Enter your phone number",
+      "CREATE_PASSWORD_PLACEHOLDER": "Create a password",
+      "CONFIRM_PASSWORD": "Confirm Password",
+      "CONFIRM_PASSWORD_PLACEHOLDER": "Confirm your password",
+      "ROLE_ACCOUNT_TYPE": "Role / Account Type",
+      "ALL_ROLES_SUPPORTED": "Admin, Super Admin, and Customer roles supported",
+      "AGREE_TERMS": "I agree to the terms and privacy policy.",
+      "HAVE_ACCOUNT": "Already have an account?",
+      "SIGN_IN_LINK": "Sign in",
+      "PROTECTED_SECURITY": "Protected by secure authentication and role-based access.",
+      "ERRORS": {
+        "EMAIL_REQUIRED": "Email is required.",
+        "EMAIL_INVALID": "Enter a valid email address.",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_MIN_LENGTH": "Password must be at least {{min}} characters.",
+        "FULL_NAME_REQUIRED": "Full name is required.",
+        "PHONE_REQUIRED": "Phone number is required.",
+        "CONFIRM_PASSWORD_REQUIRED": "Please confirm your password.",
+        "PASSWORDS_NOT_MATCH": "Passwords do not match.",
+        "REQUIRED_FIELDS": "Please fill all required fields.",
+        "INVALID_CREDENTIALS": "Invalid email or password.",
+        "SIGN_IN_FAILED": "Unable to sign in. Please try again.",
+        "REGISTER_FAILED": "Unable to create account. Please try again.",
+        "UNKNOWN": "Something went wrong. Please try again."
+      },
+      "TOAST": {
+        "LOGIN_SUCCESS_TITLE": "Welcome back",
+        "LOGIN_SUCCESS_DETAIL": "You have signed in successfully.",
+        "REGISTER_SUCCESS_TITLE": "Account created",
+        "REGISTER_SUCCESS_DETAIL": "Your account has been created successfully.",
+        "LOGOUT_SUCCESS_TITLE": "Signed out",
+        "LOGOUT_SUCCESS_DETAIL": "You have been signed out successfully."
+      }
     }
   },
   "ar": {
@@ -1518,7 +1768,40 @@
       "LINEN_TEA_TOWEL_SET": "طقم مناشف شاي كتانية",
       "STAINLESS_CHEFS_KNIFE": "سكين طاهي من الستانلس",
       "NORDIC_CERAMIC_BOWL_SET": "طقم أوعية سيراميك نورديك",
-      "SOLD": "مباع"
+      "SOLD": "مباع",
+      "OVERVIEW": "نظرة عامة",
+      "EXPORT_REPORT_TITLE": "نيستورا هوم - تقرير لوحة التحكم",
+      "KPI_SUMMARY": "ملخص المؤشرات",
+      "METRIC": "المؤشر",
+      "VALUE": "القيمة",
+      "TREND": "الاتجاه",
+      "PRODUCT": "المنتج",
+      "SALES": "المبيعات",
+      "ORDERS": "الطلبات",
+      "NO_ORDERS_FOR_FILTER": "لا توجد طلبات لهذا الفلتر.",
+      "BY_SELECTED_FILTER": "حسب الفلتر المحدد",
+      "SOLD_COUNT": "{{count}} مباع",
+      "LOAD_FAILED_DETAIL": "فشل تحميل إحصاءات لوحة التحكم.",
+      "FILTERS": {
+        "ALL": "الكل",
+        "PAID": "مدفوع",
+        "PENDING": "قيد الانتظار",
+        "REFUNDED": "مسترد",
+        "SOLD": "المباع",
+        "7D": "7D",
+        "30D": "30D",
+        "3M": "3M",
+        "12M": "12M"
+      },
+      "STATUS": {
+        "PAID": "مدفوع",
+        "PENDING": "قيد الانتظار",
+        "REFUNDED": "مسترد",
+        "DELIVERED": "تم التسليم",
+        "SHIPPED": "تم الشحن",
+        "PROCESSING": "قيد المعالجة",
+        "RETURNED": "مرتجع"
+      }
     },
     "PROFILE_SETTINGS": {
       "TITLE": "الملف الشخصي والإعدادات",
@@ -2589,7 +2872,86 @@
       }
     },
     "CUSTOMERS": {
-      "EXPORT": "تصدير"
+      "TITLE": "العملاء",
+      "SUBTITLE": "{{count}} عميل إجمالاً",
+      "EXPORT": "تصدير",
+      "NA": "غير متوفر",
+      "NO_EMAIL": "لا يوجد بريد إلكتروني",
+      "EXPORT_REPORT_TITLE": "نيستورا هوم - تقرير العملاء",
+      "EXPORT_SUBTITLE": "تم تصدير {{count}} عميل",
+      "KPI": {
+        "TOTAL_CUSTOMERS": "إجمالي العملاء",
+        "ACTIVE_CUSTOMERS": "العملاء النشطون",
+        "VIP_CUSTOMERS": "عملاء VIP",
+        "TOTAL_SPENT": "إجمالي الإنفاق"
+      },
+      "FILTERS": {
+        "SEARCH_PLACEHOLDER": "ابحث بالاسم أو البريد الإلكتروني أو الهاتف أو المدينة أو البلد...",
+        "ALL_STATUSES": "كل الحالات",
+        "ALL_TIERS": "كل الفئات"
+      },
+      "TABLE": {
+        "CUSTOMER": "العميل",
+        "LOCATION": "الموقع",
+        "CUSTOMER_ID": "رقم العميل",
+        "FULL_NAME": "الاسم الكامل",
+        "EMAIL": "البريد الإلكتروني",
+        "PHONE": "الهاتف",
+        "CITY": "المدينة",
+        "COUNTRY": "البلد",
+        "ORDERS": "الطلبات",
+        "SPENT": "الإنفاق",
+        "TIER": "الفئة",
+        "STATUS": "الحالة",
+        "JOINED": "تاريخ الانضمام",
+        "ACTIONS": "الإجراءات"
+      },
+      "STATUS": {
+        "ACTIVE": "نشط",
+        "INACTIVE": "غير نشط",
+        "BLOCKED": "محظور",
+        "PENDING": "قيد الانتظار"
+      },
+      "TIER": {
+        "VIP": "VIP",
+        "REGULAR": "عادي",
+        "NEW": "جديد",
+        "LOYAL": "وفي",
+        "BRONZE": "برونزية",
+        "SILVER": "فضية",
+        "GOLD": "ذهبية",
+        "PLATINUM": "بلاتينية"
+      },
+      "ACTIONS": {
+        "VIEW": "عرض",
+        "EMAIL": "بريد"
+      },
+      "EMPTY": {
+        "TITLE": "لا يوجد عملاء",
+        "TEXT": "سيظهر العملاء هنا بعد إضافتهم."
+      },
+      "MODAL": {
+        "DETAILS_TITLE": "تفاصيل العميل",
+        "DETAILS_SUBTITLE": "مراجعة العميل المحدد"
+      },
+      "FIELDS": {
+        "CUSTOMER": "العميل",
+        "PHONE": "الهاتف",
+        "JOINED": "تاريخ الانضمام",
+        "STATUS": "الحالة",
+        "TIER": "الفئة",
+        "TOTAL_ORDERS": "إجمالي الطلبات",
+        "TOTAL_SPENT": "إجمالي الإنفاق",
+        "LAST_ORDER": "آخر طلب",
+        "ADDRESS": "العنوان",
+        "CITY": "المدينة",
+        "COUNTRY": "البلد",
+        "NOTES": "الملاحظات"
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "تعذر تحميل العملاء",
+        "LOAD_FAILED_DETAIL": "يرجى المحاولة مرة أخرى."
+      }
     },
     "ORDERS": {
       "TITLE": "الطلبات",
@@ -2800,6 +3162,81 @@
         "MAX_AMOUNT_INVALID": "لا يمكن أن يكون الحد الأقصى سالباً.",
         "MAX_LESS_THAN_MIN": "لا يمكن أن يكون الحد الأقصى أقل من الحد الأدنى.",
         "CONFIG_INVALID": "يجب أن تكون إعدادات JSON صالحة."
+      }
+    },
+    "ANALYTICS": {
+      "TITLE": "التحليلات",
+      "SUBTITLE": "نظرة عامة على الأداء",
+      "PERIOD": "الفترة",
+      "EXPORT": "تصدير",
+      "LOADING": "جار تحميل التحليلات...",
+      "EXPORT_REPORT_TITLE": "نيستورا هوم - تقرير التحليلات",
+      "EXPORT_SUBTITLE": "نظرة عامة على الأداء لفترة {{period}}",
+      "EMPTY": {
+        "TITLE": "لا توجد بيانات تحليلات",
+        "TEXT": "لا يوجد سجل تحليلات لفترة {{period}} حتى الآن.",
+        "NO_KPI": "لا توجد بطاقات مؤشرات متاحة."
+      },
+      "KPI": {
+        "UNTITLED": "مؤشر بدون عنوان",
+        "TOTAL_REVENUE": "إجمالي الإيرادات",
+        "TOTAL_ORDERS": "إجمالي الطلبات",
+        "TOTAL_CUSTOMERS": "إجمالي العملاء",
+        "CONVERSION_RATE": "معدل التحويل",
+        "AVERAGE_ORDER_VALUE": "متوسط قيمة الطلب",
+        "RETURNING_CUSTOMERS": "العملاء العائدون",
+        "NEW_CUSTOMERS": "العملاء الجدد",
+        "REFUND_RATE": "معدل الاسترداد",
+        "CART_ABANDONMENT": "ترك السلة",
+        "REVENUE_GROWTH": "نمو الإيرادات",
+        "ORDER_GROWTH": "نمو الطلبات",
+        "CUSTOMER_GROWTH": "نمو العملاء"
+      },
+      "CHARTS": {
+        "REVENUE_GROWTH": {
+          "TITLE": "نمو الإيرادات",
+          "SUBTITLE": "الإيرادات الشهرية مقابل الهدف"
+        },
+        "CUSTOMER_GROWTH": {
+          "TITLE": "نمو العملاء",
+          "SUBTITLE": "العملاء الجدد مقابل العائدين"
+        },
+        "CATEGORY_REVENUE_SPLIT": {
+          "TITLE": "توزيع الإيرادات حسب الفئة",
+          "SUBTITLE": "نسبة المبيعات الإجمالية حسب الفئة"
+        },
+        "CONVERSION_FUNNEL": {
+          "TITLE": "مسار التحويل",
+          "SUBTITLE": "من الزائر إلى إتمام الشراء"
+        },
+        "WEEKLY_SALES_PATTERN": {
+          "TITLE": "نمط المبيعات الأسبوعي",
+          "SUBTITLE": "الإيرادات حسب أيام الأسبوع"
+        },
+        "PERFORMANCE_BREAKDOWN": {
+          "TITLE": "تفصيل الأداء",
+          "SUBTITLE": "أهم المؤشرات بنظرة سريعة"
+        }
+      },
+      "PERIODS": {
+        "TODAY": "اليوم",
+        "THIS_WEEK": "هذا الأسبوع",
+        "THIS_MONTH": "هذا الشهر",
+        "THIS_YEAR": "هذه السنة",
+        "DAILY": "يومي",
+        "WEEKLY": "أسبوعي",
+        "MONTHLY": "شهري",
+        "YEARLY": "سنوي",
+        "LAST_7_DAYS": "آخر 7 أيام",
+        "LAST_30_DAYS": "آخر 30 يوما",
+        "LAST_3_MONTHS": "آخر 3 أشهر",
+        "LAST_12_MONTHS": "آخر 12 شهرا"
+      },
+      "TOAST": {
+        "LOAD_FAILED_TITLE": "تعذر تحميل التحليلات",
+        "LOAD_FAILED_DETAIL": "يرجى المحاولة مرة أخرى.",
+        "EXPORT_FAILED_TITLE": "فشل تصدير التحليلات",
+        "EXPORT_FAILED_DETAIL": "تعذر تصدير التحليلات."
       }
     }
   }

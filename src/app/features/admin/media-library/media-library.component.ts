@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import {
@@ -76,8 +78,10 @@ const EMPTY_MEDIA_FORM: MediaEditForm = {
 })
 export class MediaLibraryComponent implements OnInit {
   private readonly mediaLibraryService = inject(MediaLibraryService);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly assets = signal<MediaAsset[]>([]);
   readonly loading = signal(true);
@@ -204,6 +208,7 @@ export class MediaLibraryComponent implements OnInit {
   readonly tableRows = computed<MediaTableRow[]>(() => this.filteredAssets().map((asset) => this.toTableRow(asset)));
 
   async ngOnInit(): Promise<void> {
+    this.watchQuerySearch();
     await this.loadAssets();
   }
 
@@ -544,5 +549,11 @@ export class MediaLibraryComponent implements OnInit {
     }
 
     return fallback;
+  }
+
+  private watchQuerySearch(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
   }
 }

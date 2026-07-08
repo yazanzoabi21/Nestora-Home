@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../../core/services/auth';
@@ -33,9 +35,11 @@ interface AdminSelectOption<T extends string | number | null = string> {
 export class ReviewsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly reviewsService = inject(ReviewsService);
+  private readonly route = inject(ActivatedRoute);
   private readonly sidebarBadges = inject(AdminSidebarBadgesService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly reviews = signal<Review[]>([]);
   readonly loading = signal(true);
@@ -157,6 +161,7 @@ export class ReviewsComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
+    this.watchQuerySearch();
     await this.loadReviews();
   }
 
@@ -446,5 +451,16 @@ export class ReviewsComponent implements OnInit {
 
   private errorDetail(error: unknown, fallback: string): string {
     return error instanceof Error ? error.message : fallback;
+  }
+
+  private watchQuerySearch(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        this.filters.update((filters) => ({
+          ...filters,
+          search: params.get('q') ?? '',
+        }));
+      });
   }
 }

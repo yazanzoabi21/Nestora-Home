@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import {
@@ -82,7 +84,9 @@ export class ProductsComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
   private readonly mediaLibraryService = inject(MediaLibraryService);
   private readonly uploadService = inject(UploadService);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly products = signal<Product[]>([]);
   readonly categoryRecords = signal<Category[]>([]);
@@ -347,6 +351,7 @@ export class ProductsComponent implements OnInit {
   );
 
   async ngOnInit(): Promise<void> {
+    this.watchQuerySearch();
     await Promise.all([this.loadProducts(), this.loadCategories()]);
   }
 
@@ -1007,5 +1012,11 @@ export class ProductsComponent implements OnInit {
         'Product was saved, but media usage tracking could not be updated.'
       );
     }
+  }
+
+  private watchQuerySearch(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
   }
 }

@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import {
@@ -97,8 +99,10 @@ export class DiscountsComponent implements OnInit {
   private readonly discountsService = inject(DiscountsService);
   private readonly productsService = inject(ProductsService);
   private readonly categoriesService = inject(CategoriesService);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly discounts = signal<Discount[]>([]);
   readonly products = signal<Product[]>([]);
@@ -271,6 +275,7 @@ export class DiscountsComponent implements OnInit {
   );
 
   async ngOnInit(): Promise<void> {
+    this.watchQuerySearch();
     await this.loadDiscountsPage();
   }
 
@@ -920,5 +925,11 @@ export class DiscountsComponent implements OnInit {
 
   private errorDetail(error: unknown, fallback: string): string {
     return error instanceof Error ? error.message : fallback;
+  }
+
+  private watchQuerySearch(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
   }
 }

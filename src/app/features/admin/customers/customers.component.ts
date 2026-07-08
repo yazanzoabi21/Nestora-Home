@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { TranslatePipe } from '@ngx-translate/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AdminCustomer, CustomerStatus, CustomerTier, CustomersService } from '../../../data-access';
 import { ToastService } from '../../../core/services';
@@ -36,7 +38,10 @@ type TierFilter = 'all' | CustomerTier;
 })
 export class CustomersComponent implements OnInit {
   private readonly customersService = inject(CustomersService);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly customers = signal<AdminCustomer[]>([]);
   readonly loading = signal(true);
@@ -44,32 +49,45 @@ export class CustomersComponent implements OnInit {
   readonly selectedStatus = signal<StatusFilter>('all');
   readonly selectedTier = signal<TierFilter>('all');
   readonly selectedCustomer = signal<AdminCustomer | null>(null);
+  readonly langVersion = signal(0);
 
-  readonly customerTableColumns: AdminTableColumn[] = [
-    { key: 'customer', label: 'CUSTOMER', type: 'imageText' },
-    { key: 'location', label: 'LOCATION', type: 'text' },
-    { key: 'orders', label: 'ORDERS', type: 'number' },
-    { key: 'totalSpent', label: 'TOTAL SPENT', type: 'price' },
-    { key: 'tier', label: 'TIER', type: 'badge' },
-    { key: 'status', label: 'STATUS', type: 'status' },
-    { key: 'joined', label: 'JOINED', type: 'text' },
-    { key: 'actions', label: 'ACTIONS', type: 'actions' },
-  ];
+  readonly customerTableColumns = computed<AdminTableColumn[]>(() => {
+    this.langVersion();
 
-  readonly statusOptions: AdminSelectOption<StatusFilter>[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Active', value: 'Active' },
-    { label: 'Inactive', value: 'Inactive' },
-    { label: 'Blocked', value: 'Blocked' },
-  ];
+    return [
+      { key: 'customer', label: this.t('CUSTOMERS.TABLE.CUSTOMER'), type: 'imageText' },
+      { key: 'location', label: this.t('CUSTOMERS.TABLE.LOCATION'), type: 'text' },
+      { key: 'orders', label: this.t('CUSTOMERS.TABLE.ORDERS'), type: 'number' },
+      { key: 'totalSpent', label: this.t('CUSTOMERS.TABLE.SPENT'), type: 'price' },
+      { key: 'tier', label: this.t('CUSTOMERS.TABLE.TIER'), type: 'badge' },
+      { key: 'status', label: this.t('CUSTOMERS.TABLE.STATUS'), type: 'status' },
+      { key: 'joined', label: this.t('CUSTOMERS.TABLE.JOINED'), type: 'text' },
+      { key: 'actions', label: this.t('CUSTOMERS.TABLE.ACTIONS'), type: 'actions' },
+    ];
+  });
 
-  readonly tierOptions: AdminSelectOption<TierFilter>[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Bronze', value: 'Bronze' },
-    { label: 'Silver', value: 'Silver' },
-    { label: 'Gold', value: 'Gold' },
-    { label: 'Platinum', value: 'Platinum' },
-  ];
+  readonly statusOptions = computed<AdminSelectOption<StatusFilter>[]>(() => {
+    this.langVersion();
+
+    return [
+      { label: this.t('CUSTOMERS.FILTERS.ALL_STATUSES'), value: 'all' },
+      { label: this.customerStatusLabel('Active'), value: 'Active' },
+      { label: this.customerStatusLabel('Inactive'), value: 'Inactive' },
+      { label: this.customerStatusLabel('Blocked'), value: 'Blocked' },
+    ];
+  });
+
+  readonly tierOptions = computed<AdminSelectOption<TierFilter>[]>(() => {
+    this.langVersion();
+
+    return [
+      { label: this.t('CUSTOMERS.FILTERS.ALL_TIERS'), value: 'all' },
+      { label: this.customerTierLabel('Bronze'), value: 'Bronze' },
+      { label: this.customerTierLabel('Silver'), value: 'Silver' },
+      { label: this.customerTierLabel('Gold'), value: 'Gold' },
+      { label: this.customerTierLabel('Platinum'), value: 'Platinum' },
+    ];
+  });
 
   readonly stats = computed(() => {
     const customers = this.customers();
@@ -84,10 +102,27 @@ export class CustomersComponent implements OnInit {
   });
 
   readonly kpiCards = computed<KpiCardData[]>(() => {
+    this.langVersion();
     const stats = this.stats();
     return [
       {
-        title: 'Platinum Tier',
+        title: this.t('CUSTOMERS.KPI.TOTAL_CUSTOMERS'),
+        value: stats.total.toString(),
+        icon: 'pi pi-users',
+        iconColor: '#5f6f43',
+        iconBg: '#eef4e8',
+        showChart: false,
+      },
+      {
+        title: this.t('CUSTOMERS.KPI.ACTIVE_CUSTOMERS'),
+        value: stats.active.toString(),
+        icon: 'pi pi-check-circle',
+        iconColor: '#2f9f69',
+        iconBg: '#e9f8ef',
+        showChart: false,
+      },
+      {
+        title: this.t('CUSTOMERS.KPI.VIP_CUSTOMERS'),
         value: stats.platinum.toString(),
         icon: 'pi pi-star',
         iconColor: '#3b78d8',
@@ -95,86 +130,71 @@ export class CustomersComponent implements OnInit {
         showChart: false,
       },
       {
-        title: 'Gold Tier',
-        value: stats.gold.toString(),
-        icon: 'pi pi-star',
-        iconColor: '#d98916',
-        iconBg: '#fff6e7',
-        showChart: false,
-      },
-      {
-        title: 'Silver Tier',
-        value: stats.silver.toString(),
-        icon: 'pi pi-star',
-        iconColor: '#57534e',
-        iconBg: '#f4f4f5',
-        showChart: false,
-      },
-      {
-        title: 'Total Revenue',
+        title: this.t('CUSTOMERS.KPI.TOTAL_SPENT'),
         value: this.formatCurrency(stats.revenue),
         icon: 'pi pi-wallet',
-        iconColor: '#5f6f43',
-        iconBg: '#eef4e8',
+        iconColor: '#d98916',
+        iconBg: '#fff6e7',
         showChart: false,
       },
     ];
   });
 
   readonly subtitle = computed(() => {
-    const stats = this.stats();
-    return `${stats.total} registered customers · ${stats.active} active`;
+    this.langVersion();
+    return this.t('CUSTOMERS.SUBTITLE', { count: this.stats().total });
   });
 
   readonly customersExportConfig = computed<ExportReportConfig>(() => {
+    this.langVersion();
     const customers = this.filteredCustomers();
 
     return {
       fileName: 'nestora-customers-report',
-      reportTitle: 'Nestora Home - Customers Report',
-      reportSubtitle: `${customers.length} customers exported`,
+      reportTitle: this.t('CUSTOMERS.EXPORT_REPORT_TITLE'),
+      reportSubtitle: this.t('CUSTOMERS.EXPORT_SUBTITLE', { count: customers.length }),
       orientation: 'landscape',
       summaryItems: [
-        { label: 'Total Customers', value: customers.length },
-        { label: 'Active', value: customers.filter((customer) => customer.status === 'Active').length },
-        { label: 'Platinum Tier', value: customers.filter((customer) => customer.tier === 'Platinum').length },
-        { label: 'Total Revenue', value: this.formatCurrency(customers.reduce((sum, customer) => sum + (customer.totalSpent ?? 0), 0)) },
+        { label: this.t('CUSTOMERS.KPI.TOTAL_CUSTOMERS'), value: customers.length },
+        { label: this.t('CUSTOMERS.KPI.ACTIVE_CUSTOMERS'), value: customers.filter((customer) => customer.status === 'Active').length },
+        { label: this.t('CUSTOMERS.KPI.VIP_CUSTOMERS'), value: customers.filter((customer) => customer.tier === 'Platinum').length },
+        { label: this.t('CUSTOMERS.KPI.TOTAL_SPENT'), value: this.formatCurrency(customers.reduce((sum, customer) => sum + (customer.totalSpent ?? 0), 0)) },
       ],
       sections: [
         {
-          title: 'Customers',
+          title: this.t('CUSTOMERS.TITLE'),
           headers: [
-            'Customer ID',
-            'Full Name',
-            'Email',
-            'Phone',
-            'Address',
-            'City',
-            'Country',
-            'Status',
-            'Tier',
-            'Total Orders',
-            'Total Spent',
-            'Joined',
+            this.t('CUSTOMERS.TABLE.CUSTOMER_ID'),
+            this.t('CUSTOMERS.TABLE.FULL_NAME'),
+            this.t('CUSTOMERS.TABLE.EMAIL'),
+            this.t('CUSTOMERS.TABLE.PHONE'),
+            this.t('CUSTOMERS.FIELDS.ADDRESS'),
+            this.t('CUSTOMERS.TABLE.CITY'),
+            this.t('CUSTOMERS.TABLE.COUNTRY'),
+            this.t('CUSTOMERS.TABLE.STATUS'),
+            this.t('CUSTOMERS.TABLE.TIER'),
+            this.t('CUSTOMERS.FIELDS.TOTAL_ORDERS'),
+            this.t('CUSTOMERS.FIELDS.TOTAL_SPENT'),
+            this.t('CUSTOMERS.TABLE.JOINED'),
           ],
           excludedPdfColumns: [
-            'Customer ID',
-            'Address',
+            this.t('CUSTOMERS.TABLE.CUSTOMER_ID'),
+            this.t('CUSTOMERS.FIELDS.ADDRESS'),
           ],
-          truncateColumns: ['Full Name', 'Email', 'Address'],
+          truncateColumns: [this.t('CUSTOMERS.TABLE.FULL_NAME'), this.t('CUSTOMERS.TABLE.EMAIL'), this.t('CUSTOMERS.FIELDS.ADDRESS')],
           columnWidths: {
-            'Customer ID': 32,
-            'Full Name': 28,
-            'Email': 32,
-            'Phone': 22,
-            'Address': 32,
-            'City': 18,
-            'Country': 18,
-            'Status': 16,
-            'Tier': 14,
-            'Total Orders': 18,
-            'Total Spent': 18,
-            'Joined': 16,
+            [this.t('CUSTOMERS.TABLE.CUSTOMER_ID')]: 32,
+            [this.t('CUSTOMERS.TABLE.FULL_NAME')]: 28,
+            [this.t('CUSTOMERS.TABLE.EMAIL')]: 32,
+            [this.t('CUSTOMERS.TABLE.PHONE')]: 22,
+            [this.t('CUSTOMERS.FIELDS.ADDRESS')]: 32,
+            [this.t('CUSTOMERS.TABLE.CITY')]: 18,
+            [this.t('CUSTOMERS.TABLE.COUNTRY')]: 18,
+            [this.t('CUSTOMERS.TABLE.STATUS')]: 16,
+            [this.t('CUSTOMERS.TABLE.TIER')]: 14,
+            [this.t('CUSTOMERS.FIELDS.TOTAL_ORDERS')]: 18,
+            [this.t('CUSTOMERS.FIELDS.TOTAL_SPENT')]: 18,
+            [this.t('CUSTOMERS.TABLE.JOINED')]: 16,
           },
           rows: customers.map((customer) => [
             customer.id,
@@ -184,8 +204,8 @@ export class CustomersComponent implements OnInit {
             customer.address ?? '-',
             customer.city ?? '-',
             customer.country ?? '-',
-            customer.status,
-            customer.tier,
+            this.customerStatusLabel(customer.status),
+            this.customerTierLabel(customer.tier),
             String(customer.totalOrders),
             this.formatCurrency(customer.totalSpent),
             this.formatJoined(customer.createdAt),
@@ -216,9 +236,20 @@ export class CustomersComponent implements OnInit {
     });
   });
 
-  readonly tableRows = computed<AdminTableRow[]>(() =>
-    this.filteredCustomers().map((customer) => this.toTableRow(customer))
-  );
+  readonly tableRows = computed<AdminTableRow[]>(() => {
+    this.langVersion();
+    return this.filteredCustomers().map((customer) => this.toTableRow(customer));
+  });
+
+  constructor() {
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.langVersion.update((version) => version + 1));
+
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
+  }
 
   async ngOnInit(): Promise<void> {
     await this.loadCustomers();
@@ -230,7 +261,10 @@ export class CustomersComponent implements OnInit {
     try {
       this.customers.set(await this.customersService.getCustomers());
     } catch (error) {
-      this.toast.failed('Customers could not be loaded', this.errorDetail(error, 'Please try again.'));
+      this.toast.failed(
+        this.t('CUSTOMERS.TOAST.LOAD_FAILED_TITLE'),
+        this.errorDetail(error, this.t('CUSTOMERS.TOAST.LOAD_FAILED_DETAIL'))
+      );
     } finally {
       this.loading.set(false);
     }
@@ -251,17 +285,17 @@ export class CustomersComponent implements OnInit {
   exportCsv(): void {
     const rows = this.filteredCustomers();
     const header = [
-      'Customer ID',
-      'Full Name',
-      'Email',
-      'Phone',
-      'Status',
-      'Tier',
-      'Total Orders',
-      'Total Spent',
-      'City',
-      'Country',
-      'Joined',
+      this.t('CUSTOMERS.TABLE.CUSTOMER_ID'),
+      this.t('CUSTOMERS.TABLE.FULL_NAME'),
+      this.t('CUSTOMERS.TABLE.EMAIL'),
+      this.t('CUSTOMERS.TABLE.PHONE'),
+      this.t('CUSTOMERS.TABLE.STATUS'),
+      this.t('CUSTOMERS.TABLE.TIER'),
+      this.t('CUSTOMERS.FIELDS.TOTAL_ORDERS'),
+      this.t('CUSTOMERS.FIELDS.TOTAL_SPENT'),
+      this.t('CUSTOMERS.TABLE.CITY'),
+      this.t('CUSTOMERS.TABLE.COUNTRY'),
+      this.t('CUSTOMERS.TABLE.JOINED'),
     ];
 
     const csvRows = [
@@ -271,8 +305,8 @@ export class CustomersComponent implements OnInit {
         customer.fullName,
         customer.email ?? '',
         customer.phone ?? '',
-        customer.status,
-        customer.tier,
+        this.customerStatusLabel(customer.status),
+        this.customerTierLabel(customer.tier),
         String(customer.totalOrders),
         this.formatCurrency(customer.totalSpent),
         customer.city ?? '',
@@ -309,15 +343,16 @@ export class CustomersComponent implements OnInit {
 
   formatJoined(dateString: string): string {
     if (!dateString) {
-      return 'N/A';
+      return this.t('CUSTOMERS.NA');
     }
 
     const date = new Date(dateString);
     if (Number.isNaN(date.getTime())) {
-      return 'N/A';
+      return this.t('CUSTOMERS.NA');
     }
 
-    return date.toLocaleDateString('en-GB', {
+    const locale = this.translate.currentLang() === 'ar' ? 'ar' : 'en-GB';
+    return date.toLocaleDateString(locale, {
       month: 'short',
       year: 'numeric',
     });
@@ -328,40 +363,56 @@ export class CustomersComponent implements OnInit {
     const country = customer.country?.trim();
 
     if (!city && !country) {
-      return '—';
+      return this.t('CUSTOMERS.NA');
     }
 
     if (city && country) {
       return `${city}, ${country}`;
     }
 
-    return city || country || '—';
+    return city || country || this.t('CUSTOMERS.NA');
   }
 
   customerStatusBadge(status: CustomerStatus) {
     switch (status) {
       case 'Active':
-        return { label: status, className: 'bg-[#ecfdf5] text-[#166534]' };
+        return { label: this.customerStatusLabel(status), className: 'bg-[#ecfdf5] text-[#166534]' };
       case 'Inactive':
-        return { label: status, className: 'bg-[#f8fafc] text-[#475569]' };
+        return { label: this.customerStatusLabel(status), className: 'bg-[#f8fafc] text-[#475569]' };
       case 'Blocked':
       default:
-        return { label: status, className: 'bg-[#fff1f0] text-[#b42318]' };
+        return { label: this.customerStatusLabel(status), className: 'bg-[#fff1f0] text-[#b42318]' };
     }
   }
 
   customerTierBadge(tier: CustomerTier) {
     switch (tier) {
       case 'Platinum':
-        return { label: tier, className: 'bg-[#eef4ff] text-[#3b78d8]' };
+        return { label: this.customerTierLabel(tier), className: 'bg-[#eef4ff] text-[#3b78d8]' };
       case 'Gold':
-        return { label: tier, className: 'bg-[#fff6e7] text-[#d98916]' };
+        return { label: this.customerTierLabel(tier), className: 'bg-[#fff6e7] text-[#d98916]' };
       case 'Silver':
-        return { label: tier, className: 'bg-[#f4f4f5] text-[#57534e]' };
+        return { label: this.customerTierLabel(tier), className: 'bg-[#f4f4f5] text-[#57534e]' };
       case 'Bronze':
       default:
-        return { label: tier, className: 'bg-[#fef3c7] text-[#92400e]' };
+        return { label: this.customerTierLabel(tier), className: 'bg-[#fef3c7] text-[#92400e]' };
     }
+  }
+
+  t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params) as string;
+  }
+
+  customerStatusLabel(status: CustomerStatus): string {
+    return this.t(`CUSTOMERS.STATUS.${this.translationKey(status)}`);
+  }
+
+  customerTierLabel(tier: CustomerTier): string {
+    return this.t(`CUSTOMERS.TIER.${this.translationKey(tier)}`);
+  }
+
+  translationKey(value: string): string {
+    return value.trim().replace(/[\s-]+/g, '_').toUpperCase();
   }
 
   updateSearch(value: unknown): void {
@@ -386,7 +437,7 @@ export class CustomersComponent implements OnInit {
         imageUrl: customer.avatarUrl ?? undefined,
         imageFallbackLabel: avatarText,
         title: customer.fullName,
-        subtitle: customer.email ?? 'No email provided',
+        subtitle: customer.email ?? this.t('CUSTOMERS.NO_EMAIL'),
         initials: avatarText,
       },
       location: this.customerLocation(customer),

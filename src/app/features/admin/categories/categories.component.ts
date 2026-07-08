@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import {
@@ -118,8 +120,10 @@ export class CategoriesComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
   private readonly mediaLibraryService = inject(MediaLibraryService);
   private readonly uploadService = inject(UploadService);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
@@ -254,6 +258,7 @@ export class CategoriesComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.watchQuerySearch();
     await this.loadCategories();
   }
 
@@ -796,5 +801,11 @@ export class CategoriesComponent implements OnInit {
 
   private errorDetail(error: unknown, fallback: string): string {
     return error instanceof Error ? error.message : fallback;
+  }
+
+  private watchQuerySearch(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
   }
 }
