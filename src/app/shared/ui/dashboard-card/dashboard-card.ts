@@ -22,6 +22,7 @@ export class DashboardCard {
 
   readonly action = input<DashboardCardAction | null>(null);
   readonly padded = input(true);
+  readonly loading = input(false);
 
   readonly filterChange = output<string>();
   readonly actionClick = output<void>();
@@ -31,6 +32,10 @@ export class DashboardCard {
   }
 
   selectFilter(filter: string): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.filterChange.emit(filter);
   }
 }

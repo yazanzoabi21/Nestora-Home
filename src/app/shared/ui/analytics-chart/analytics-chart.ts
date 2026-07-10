@@ -3,9 +3,11 @@ import { Component, Input, computed, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { HighchartsChartComponent } from 'highcharts-angular';
 import type { LegendOptions, Options, XAxisOptions, YAxisOptions } from 'highcharts';
+import { SkeletonModule } from 'primeng/skeleton';
 import {
   AnalyticsChartConfig,
   AnalyticsChartData,
+  AnalyticsChartSkeletonType,
   AnalyticsChartProgressItem,
   AnalyticsChartType,
 } from './analytics-chart.model';
@@ -21,12 +23,13 @@ import {
 @Component({
   selector: 'app-analytics-chart',
   standalone: true,
-  imports: [DecimalPipe, HighchartsChartComponent, TranslatePipe],
+  imports: [DecimalPipe, HighchartsChartComponent, SkeletonModule, TranslatePipe],
   templateUrl: './analytics-chart.html',
   styleUrl: './analytics-chart.css',
 })
 export class AnalyticsChart {
   readonly config = input<AnalyticsChartConfig | null>(null);
+  readonly loading = input(false);
 
   @Input() title = '';
   @Input() subtitle?: string;
@@ -61,8 +64,41 @@ export class AnalyticsChart {
   readonly showHighcharts = computed(() => !this.isFunnel() && !this.isProgress());
   readonly funnelItems = computed(() => this.normalizeFunnelItems(this.data));
   readonly progressItems = computed(() => this.normalizeProgressItems(this.data));
+  readonly chartHeight = computed(() => this.chartConfig().height ?? this.height ?? 320);
+  readonly skeletonType = computed<AnalyticsChartSkeletonType>(() => this.resolveSkeletonType(this.chartConfig()));
+  readonly shouldShowSkeletonLegend = computed(() => {
+    const config = this.chartConfig();
+    const configured = config.loadingConfig?.showLegend;
+
+    if (configured !== undefined) {
+      return configured;
+    }
+
+    if (config.legendItems?.length) {
+      return true;
+    }
+
+    const seriesCount = Array.isArray(config.chartOptions.series) ? config.chartOptions.series.length : 0;
+    const legend = config.chartOptions.legend;
+    const legendEnabled = typeof legend === 'object' && legend !== null ? legend.enabled !== false : legend !== false;
+
+    return legendEnabled && seriesCount > 1;
+  });
+  readonly skeletonSeriesItems = computed(() =>
+    Array.from({ length: Math.max(1, Math.min(this.chartConfig().loadingConfig?.seriesCount ?? 2, 4)) }, (_, index) => index)
+  );
+  readonly skeletonCategoryItems = computed(() =>
+    Array.from({ length: Math.max(3, Math.min(this.chartConfig().loadingConfig?.categoryCount ?? 7, 10)) }, (_, index) => index)
+  );
+  readonly gridSkeletonItems = Array.from({ length: 5 }, (_, index) => index);
+  readonly columnSkeletonHeights = [42, 68, 54, 82, 63, 76, 48, 58, 72, 50];
+  readonly barSkeletonWidths = [72, 88, 64, 78, 56, 92, 68];
 
   selectFilter(filter: string): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.filterChange.emit(filter);
   }
 
@@ -102,6 +138,14 @@ export class AnalyticsChart {
     return classes[tone || 'neutral'] || classes['neutral'];
   }
 
+  columnHeight(index: number): number {
+    return this.columnSkeletonHeights[index % this.columnSkeletonHeights.length];
+  }
+
+  barWidth(index: number): number {
+    return this.barSkeletonWidths[index % this.barSkeletonWidths.length];
+  }
+
   dropOffText(dropOff: number | string | null): string {
     if (dropOff === null || dropOff === undefined || dropOff === '') {
       return '';
@@ -120,6 +164,63 @@ export class AnalyticsChart {
     }
 
     return this.createLineOptions();
+  }
+
+  private resolveSkeletonType(config: AnalyticsChartConfig): AnalyticsChartSkeletonType {
+    const configuredType = config.loadingConfig?.type;
+
+    if (configuredType) {
+      return configuredType;
+    }
+
+    const chartType = this.toSkeletonType(config.chartOptions.chart?.type, config);
+
+    if (chartType !== 'generic') {
+      return chartType;
+    }
+
+    const firstSeries = Array.isArray(config.chartOptions.series) ? config.chartOptions.series[0] : undefined;
+    return this.toSkeletonType(this.recordStringValue(firstSeries, 'type'), config, firstSeries);
+  }
+
+  private toSkeletonType(
+    type: string | undefined,
+    config: AnalyticsChartConfig,
+    series?: unknown
+  ): AnalyticsChartSkeletonType {
+    switch (type) {
+      case 'line':
+      case 'spline':
+        return 'line';
+      case 'area':
+      case 'areaspline':
+        return 'area';
+      case 'column':
+        return 'column';
+      case 'bar':
+        return 'bar';
+      case 'pie':
+        return this.hasPieInnerSize(config, series) ? 'donut' : 'pie';
+      default:
+        return 'generic';
+    }
+  }
+
+  private hasPieInnerSize(config: AnalyticsChartConfig, series?: unknown): boolean {
+    return this.hasRecordValue(config.chartOptions.plotOptions?.pie, 'innerSize') || this.hasRecordValue(series, 'innerSize');
+  }
+
+  private hasRecordValue(value: unknown, key: string): boolean {
+    return typeof value === 'object' && value !== null && key in value && Boolean((value as Record<string, unknown>)[key]);
+  }
+
+  private recordStringValue(value: unknown, key: string): string | undefined {
+    if (typeof value !== 'object' || value === null || !(key in value)) {
+      return undefined;
+    }
+
+    const recordValue = (value as Record<string, unknown>)[key];
+    return typeof recordValue === 'string' ? recordValue : undefined;
   }
 
   private createLineOptions(): Options {

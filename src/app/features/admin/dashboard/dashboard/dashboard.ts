@@ -2,6 +2,7 @@ import { Component, DestroyRef, computed, signal, inject, OnInit } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import type { LegendOptions, Options, XAxisOptions, YAxisOptions } from 'highcharts';
+import { SkeletonModule } from 'primeng/skeleton';
 
 import { AnalyticsChart, AnalyticsChartConfig } from '../../../../shared/ui/analytics-chart';
 import { DashboardCard } from '../../../../shared/ui/dashboard-card';
@@ -47,6 +48,7 @@ interface BestSellingProduct {
     KpiCardComponent,
     AnalyticsChart,
     ExportReportComponent,
+    SkeletonModule,
     TranslatePipe,
   ],
   templateUrl: './dashboard.html',
@@ -67,6 +69,7 @@ export class Dashboard implements OnInit {
   private readonly dashboardService = inject(DashboardService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private dashboardRequestId = 0;
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -82,6 +85,10 @@ export class Dashboard implements OnInit {
   readonly performanceFilters = ['7D', '30D', '3M'];
   readonly recentOrdersFilters = ['All', 'Paid', 'Pending', 'Refunded'];
   readonly bestSellingFilters = ['Sold'];
+  readonly kpiSkeletonItems = Array.from({ length: 4 }, (_, index) => index);
+  readonly performanceSkeletonItems = Array.from({ length: 4 }, (_, index) => index);
+  readonly tableSkeletonRows = Array.from({ length: 6 }, (_, index) => index);
+  readonly productSkeletonRows = Array.from({ length: 5 }, (_, index) => index);
 
   readonly revenueOverviewChart = computed<AnalyticsChartConfig>(() => {
     this.langVersion();
@@ -280,6 +287,12 @@ export class Dashboard implements OnInit {
       activeFilter: this.revenueFilter(),
       height: 315,
       chartOptions: this.createRevenueOverviewOptions(data),
+      loadingConfig: {
+        type: 'line',
+        showLegend: true,
+        seriesCount: 2,
+        categoryCount: data.categories.length || 7,
+      },
     };
   }
 
@@ -293,6 +306,12 @@ export class Dashboard implements OnInit {
       subtitleKey: 'DASHBOARD.SALES_BY_CATEGORY_SUBTITLE',
       height: 280,
       chartOptions: this.createSalesCategoryOptions(categories),
+      loadingConfig: {
+        type: 'donut',
+        showLegend: true,
+        seriesCount: 1,
+        categoryCount: categories.length || 4,
+      },
       legendItems: categories.map((category) => ({
         name: category.name,
         nameKey: category.nameKey ?? undefined,
@@ -317,6 +336,12 @@ export class Dashboard implements OnInit {
       activeFilter: this.salesOrdersFilter(),
       height: 320,
       chartOptions: this.createSalesOrdersOptions(data),
+      loadingConfig: {
+        type: 'column',
+        showLegend: true,
+        seriesCount: 2,
+        categoryCount: data.categories.length || 7,
+      },
     };
   }
 
@@ -503,18 +528,30 @@ export class Dashboard implements OnInit {
   }
 
   async loadDashboard(periodKey = '30D'): Promise<void> {
+    const requestId = ++this.dashboardRequestId;
+
     try {
       this.loading.set(true);
       this.errorMessage.set(null);
 
       const data = await this.dashboardService.refreshStatistics(periodKey);
 
+      if (requestId !== this.dashboardRequestId) {
+        return;
+      }
+
       this.dashboardData.set(data);
     } catch (error) {
+      if (requestId !== this.dashboardRequestId) {
+        return;
+      }
+
       console.error('Failed to load dashboard statistics:', error);
       this.errorMessage.set(this.t('DASHBOARD.LOAD_FAILED_DETAIL'));
     } finally {
-      this.loading.set(false);
+      if (requestId === this.dashboardRequestId) {
+        this.loading.set(false);
+      }
     }
   }
 }

@@ -10,6 +10,22 @@ import {
 
 export type AnalyticsChartType = 'line' | 'bar' | 'doughnut' | 'funnel' | 'progress';
 
+export type AnalyticsChartSkeletonType =
+  | 'line'
+  | 'area'
+  | 'column'
+  | 'bar'
+  | 'pie'
+  | 'donut'
+  | 'generic';
+
+export interface AnalyticsChartLoadingConfig {
+  type?: AnalyticsChartSkeletonType;
+  showLegend?: boolean;
+  seriesCount?: number;
+  categoryCount?: number;
+}
+
 export type AnalyticsChartData =
   | RevenueGrowthChartData
   | CustomerGrowthChartData
@@ -42,6 +58,7 @@ export interface AnalyticsChartConfig {
   chartOptions: Options;
 
   legendItems?: AnalyticsChartLegendItem[];
+  loadingConfig?: AnalyticsChartLoadingConfig;
 }
 
 export interface AnalyticsChartProgressItem {

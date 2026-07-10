@@ -1,4 +1,4 @@
-<article class="analytics-card">
+<article class="analytics-card" [attr.aria-busy]="loading()">
     <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h2 class="text-xl font-bold text-[#1f2a1f]">
@@ -23,7 +23,8 @@
         @if (chartConfig().filters?.length) {
         <div class="inline-flex w-fit rounded-2xl bg-[#f1eee8] p-1">
             @for (filter of chartConfig().filters; track filter) {
-            <button type="button" class="h-10 rounded-xl px-4 text-sm font-semibold text-[#8d877e] transition"
+            <button type="button" class="h-10 rounded-xl px-4 text-sm font-semibold text-[#8d877e] transition disabled:pointer-events-none disabled:opacity-60"
+                [disabled]="loading()"
                 [class.bg-white]="filter === chartConfig().activeFilter"
                 [class.text-[#1f2a1f]]="filter === chartConfig().activeFilter"
                 [class.shadow-sm]="filter === chartConfig().activeFilter" (click)="selectFilter(filter)">
@@ -38,7 +39,146 @@
         }
     </div>
 
-    @if (showHighcharts()) {
+    @if (loading()) {
+    <span class="sr-only">{{ 'COMMON.LOADING' | translate }}</span>
+    <div class="relative w-full min-w-0 overflow-hidden rounded-2xl bg-[#fbfaf8] p-4"
+        [style.min-height.px]="chartHeight()" aria-hidden="true">
+        @switch (skeletonType()) {
+        @case ('line') {
+        <div class="grid h-full min-h-[inherit] grid-cols-[3rem_minmax(0,1fr)] gap-3">
+            <div class="flex flex-col justify-between py-4">
+                @for (item of gridSkeletonItems; track item) {
+                <p-skeleton width="2.25rem" height="0.7rem" borderRadius="0.5rem" />
+                }
+            </div>
+            <div class="relative min-h-[220px]">
+                <div class="absolute inset-x-0 top-4 bottom-9 flex flex-col justify-between">
+                    @for (item of gridSkeletonItems; track item) {
+                    <div class="h-px w-full bg-[#eee8df]"></div>
+                    }
+                </div>
+                <svg viewBox="0 0 800 260" preserveAspectRatio="none" class="absolute inset-x-0 top-6 h-[calc(100%-4rem)] w-full"
+                    aria-hidden="true">
+                    <path d="M10 205 C110 172 160 112 260 132 S400 208 500 128 640 58 790 86" fill="none"
+                        stroke="#d9d2c8" stroke-width="14" stroke-linecap="round" opacity="0.9" />
+                    @if (skeletonSeriesItems().length > 1) {
+                    <path d="M10 150 C120 112 210 178 310 142 S460 82 560 120 690 182 790 126" fill="none"
+                        stroke="#eee8df" stroke-width="10" stroke-linecap="round" />
+                    }
+                </svg>
+                <div class="absolute inset-x-0 bottom-0 flex justify-between gap-3">
+                    @for (item of skeletonCategoryItems(); track item) {
+                    <p-skeleton width="2.25rem" height="0.7rem" borderRadius="0.5rem" />
+                    }
+                </div>
+            </div>
+        </div>
+        }
+        @case ('area') {
+        <div class="grid h-full min-h-[inherit] grid-cols-[3rem_minmax(0,1fr)] gap-3">
+            <div class="flex flex-col justify-between py-4">
+                @for (item of gridSkeletonItems; track item) {
+                <p-skeleton width="2.25rem" height="0.7rem" borderRadius="0.5rem" />
+                }
+            </div>
+            <div class="relative min-h-[220px]">
+                <div class="absolute inset-x-0 top-4 bottom-9 flex flex-col justify-between">
+                    @for (item of gridSkeletonItems; track item) {
+                    <div class="h-px w-full bg-[#eee8df]"></div>
+                    }
+                </div>
+                <svg viewBox="0 0 800 260" preserveAspectRatio="none" class="absolute inset-x-0 top-6 h-[calc(100%-4rem)] w-full"
+                    aria-hidden="true">
+                    <path d="M10 205 C110 172 160 112 260 132 S400 208 500 128 640 58 790 86 L790 252 L10 252 Z"
+                        fill="#eee8df" opacity="0.9" />
+                    <path d="M10 205 C110 172 160 112 260 132 S400 208 500 128 640 58 790 86" fill="none"
+                        stroke="#d9d2c8" stroke-width="10" stroke-linecap="round" />
+                </svg>
+                <div class="absolute inset-x-0 bottom-0 flex justify-between gap-3">
+                    @for (item of skeletonCategoryItems(); track item) {
+                    <p-skeleton width="2.25rem" height="0.7rem" borderRadius="0.5rem" />
+                    }
+                </div>
+            </div>
+        </div>
+        }
+        @case ('column') {
+        <div class="relative flex min-h-[220px] flex-col justify-end gap-4">
+            <div class="absolute inset-x-0 top-4 bottom-10 flex flex-col justify-between">
+                @for (item of gridSkeletonItems; track item) {
+                <div class="h-px w-full bg-[#eee8df]"></div>
+                }
+            </div>
+            <div class="relative z-10 flex min-h-[200px] items-end justify-between gap-3">
+                @for (item of skeletonCategoryItems(); track item) {
+                <div class="flex flex-1 items-end justify-center gap-1.5">
+                    @for (series of skeletonSeriesItems(); track series) {
+                    <div class="w-full max-w-6 rounded-t-lg bg-[#e5ded2] animate-pulse"
+                        [style.height.%]="columnHeight(item + series)"></div>
+                    }
+                </div>
+                }
+            </div>
+            <div class="relative z-10 flex justify-between gap-3">
+                @for (item of skeletonCategoryItems(); track item) {
+                <p-skeleton width="2.25rem" height="0.7rem" borderRadius="0.5rem" />
+                }
+            </div>
+        </div>
+        }
+        @case ('bar') {
+        <div class="flex min-h-[220px] flex-col justify-center gap-5">
+            @for (item of skeletonCategoryItems(); track item) {
+            <div class="grid grid-cols-[4.5rem_minmax(0,1fr)_3rem] items-center gap-3">
+                <p-skeleton width="4rem" height="0.8rem" borderRadius="0.5rem" />
+                <div class="h-4 overflow-hidden rounded-full bg-[#f1eee8]">
+                    <div class="h-full rounded-full bg-[#d9d2c8] animate-pulse" [style.width.%]="barWidth(item)"></div>
+                </div>
+                <p-skeleton width="2.5rem" height="0.8rem" borderRadius="0.5rem" />
+            </div>
+            }
+        </div>
+        }
+        @case ('pie') {
+        <div class="flex min-h-[220px] flex-col items-center justify-center gap-5">
+            <p-skeleton shape="circle" size="12rem" />
+        </div>
+        }
+        @case ('donut') {
+        <div class="flex min-h-[220px] flex-col items-center justify-center gap-5">
+            <div class="relative h-48 w-48 rounded-full bg-[#e5ded2] animate-pulse">
+                <div class="absolute inset-12 rounded-full bg-[#fbfaf8]"></div>
+            </div>
+        </div>
+        }
+        @default {
+        <div class="relative min-h-[220px]">
+            <div class="absolute inset-x-0 top-4 bottom-8 flex flex-col justify-between">
+                @for (item of gridSkeletonItems; track item) {
+                <div class="h-px w-full bg-[#eee8df]"></div>
+                }
+            </div>
+            <div class="relative z-10 flex h-full min-h-[220px] flex-col justify-center gap-5">
+                <p-skeleton width="72%" height="2.5rem" borderRadius="0.75rem" />
+                <p-skeleton width="88%" height="2.5rem" borderRadius="0.75rem" />
+                <p-skeleton width="58%" height="2.5rem" borderRadius="0.75rem" />
+            </div>
+        </div>
+        }
+        }
+    </div>
+
+    @if (shouldShowSkeletonLegend()) {
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-4" aria-hidden="true">
+        @for (item of skeletonSeriesItems(); track item) {
+        <div class="flex items-center gap-2">
+            <p-skeleton shape="circle" size="0.7rem" />
+            <p-skeleton width="5rem" height="0.8rem" borderRadius="0.5rem" />
+        </div>
+        }
+    </div>
+    }
+    } @else if (showHighcharts()) {
     <div class="w-full min-w-0 overflow-hidden">
         <highcharts-chart [options]="chartConfig().chartOptions" class="block w-full min-w-0"
             [style.height.px]="chartConfig().height || 320">
