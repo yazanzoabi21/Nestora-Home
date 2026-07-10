@@ -1,0 +1,205 @@
+<article class="quick-view-panel" aria-live="polite">
+  <header class="flex items-center justify-between gap-4 border-b border-[#e8dccf] px-5 py-4">
+    <div class="min-w-0 text-sm font-bold">
+      <span class="text-[#6b7d5e]">{{ product().brand }}</span>
+      <i class="pi pi-chevron-right mx-2 text-[10px] text-[#c3baaf]"></i>
+      <span class="text-[#9a948d]">{{ product().category }}</span>
+    </div>
+
+    <button
+      type="button"
+      class="inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-bold text-[#8a847c] transition hover:bg-[#f8f7f5] hover:text-[#1f2a1f]"
+      [attr.aria-label]="'COMMON.CLOSE' | translate"
+      (click)="close.emit()"
+    >
+      <i class="pi pi-times text-xs"></i>
+      <span>{{ 'COMMON.CLOSE' | translate }}</span>
+    </button>
+  </header>
+
+  <div class="quick-view-scroll">
+    <section class="relative aspect-[4/3] max-h-[330px] w-full overflow-hidden bg-[#f5f2ee]">
+      <img [src]="product().imageUrl" [alt]="product().name" class="h-full w-full object-cover" />
+
+      @if (product().discountPercentage) {
+      <span class="absolute start-4 top-4 rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white">
+        -{{ product().discountPercentage }}% OFF
+      </span>
+      }
+
+      <button
+        type="button"
+        class="absolute end-4 top-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#1f2a1f] shadow-[0_8px_24px_rgba(31,42,31,0.12)] transition hover:text-[#6b7d5e]"
+        [class.text-[#6b7d5e]]="wishlistActive()"
+        [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
+        (click)="toggleWishlist.emit(product())"
+      >
+        <i class="pi" [class.pi-heart]="!wishlistActive()" [class.pi-heart-fill]="wishlistActive()"></i>
+      </button>
+
+      <span class="absolute bottom-4 end-4 inline-flex h-8 items-center gap-1 rounded-full bg-white/90 px-3 text-xs font-bold text-[#8a847c] shadow-sm">
+        <i class="pi pi-search-plus text-[10px]"></i>
+        Zoom
+      </span>
+    </section>
+
+    <div class="flex gap-3 border-b border-[#e8dccf] px-5 py-4">
+      <button type="button" class="h-16 w-16 overflow-hidden rounded-xl border-2 border-[#6b7d5e] bg-[#f5f2ee] p-1">
+        <img [src]="product().imageUrl" [alt]="product().name" class="h-full w-full rounded-lg object-cover" />
+      </button>
+      <button type="button" class="h-16 w-16 overflow-hidden rounded-xl border border-[#e8dccf] bg-[#f5f2ee] p-1">
+        <img [src]="product().imageUrl" [alt]="product().name" class="h-full w-full rounded-lg object-cover opacity-80" />
+      </button>
+    </div>
+
+    <section class="space-y-5 p-5">
+      <div class="flex flex-wrap gap-2">
+        <span class="inline-flex h-7 items-center gap-1 rounded-full bg-[#eef6ea] px-3 text-xs font-bold text-[#4f8a4b]">
+          <span class="h-2 w-2 rounded-full bg-current"></span>
+          {{ product().inStock ? 'In Stock' : 'Out of Stock' }}
+        </span>
+        @if (product().badge) {
+        <span class="inline-flex h-7 items-center rounded-full bg-[#eee5db] px-3 text-xs font-bold text-[#5f564c]">
+          {{ product().badge }}
+        </span>
+        }
+      </div>
+
+      <h2 class="text-2xl font-black tracking-normal text-[#30362f]">{{ product().name }}</h2>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-1">
+          @for (star of starItems; track star) {
+          <i class="pi pi-star-fill text-sm" [class.text-[#f2aa2f]]="isFilledStar(star)" [class.text-[#d8d1c8]]="!isFilledStar(star)"></i>
+          }
+        </div>
+        <span class="text-sm font-bold text-[#30362f]">{{ product().rating.toFixed(1) }}</span>
+        <span class="text-sm font-semibold text-[#9a948d]">({{ product().reviewCount }} reviews)</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-[#e8dccf] bg-white px-5 py-4">
+        <span class="text-3xl font-black text-[#30362f]">{{ product().price | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+        @if (product().originalPrice) {
+        <span class="text-base font-bold text-[#b8b0a7] line-through">
+          {{ product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2' }}
+        </span>
+        }
+        @if (savingsAmount(product()); as savings) {
+        <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white">
+          Save {{ savings | currency: 'USD' : 'symbol' : '1.2-2' }}
+        </span>
+        }
+      </div>
+
+      <p class="line-clamp-3 text-sm font-semibold leading-7 text-[#77736d]">{{ product().description }}</p>
+
+      <hr class="border-[#e8dccf]" />
+
+      <div>
+        <p class="text-sm font-black text-[#30362f]">Color</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          @for (color of colorOptions; track color) {
+          <button
+            type="button"
+            class="h-10 rounded-xl border px-4 text-sm font-bold transition"
+            [class.border-[#6b7d5e]]="selectedColor() === color"
+            [class.bg-[#eef6ea]]="selectedColor() === color"
+            [class.text-[#4f6f43]]="selectedColor() === color"
+            [class.border-[#e8dccf]]="selectedColor() !== color"
+            [class.bg-white]="selectedColor() !== color"
+            [class.text-[#3f443d]]="selectedColor() !== color"
+            (click)="selectColor(color)"
+          >
+            {{ color }}
+          </button>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4">
+        <span class="text-sm font-black text-[#30362f]">Qty</span>
+        <div class="inline-grid h-10 grid-cols-3 overflow-hidden rounded-full border border-[#e8dccf] bg-white">
+          <button
+            type="button"
+            class="flex w-11 items-center justify-center text-[#30362f] transition hover:bg-[#f8f7f5] disabled:opacity-40"
+            [disabled]="quantity() === 1"
+            aria-label="Decrease quantity"
+            (click)="decreaseQuantity()"
+          >
+            <i class="pi pi-minus text-xs"></i>
+          </button>
+          <span class="flex w-11 items-center justify-center text-sm font-black text-[#30362f]">{{ quantity() }}</span>
+          <button
+            type="button"
+            class="flex w-11 items-center justify-center text-[#30362f] transition hover:bg-[#f8f7f5] disabled:opacity-40"
+            [disabled]="quantity() >= product().stock"
+            aria-label="Increase quantity"
+            (click)="increaseQuantity()"
+          >
+            <i class="pi pi-plus text-xs"></i>
+          </button>
+        </div>
+        <span class="text-sm font-bold text-[#8a847c]">=</span>
+        <span class="text-sm font-black text-[#30362f]">{{ subtotal() | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+      </div>
+
+      <hr class="border-[#e8dccf]" />
+
+      <div class="space-y-4">
+        <div class="flex gap-3">
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]">
+            <i class="pi pi-truck text-sm"></i>
+          </span>
+          <div>
+            <p class="text-sm font-black text-[#30362f]">Free delivery over $75</p>
+            <p class="mt-1 text-sm font-semibold text-[#9a948d]">Est. 2-5 business days</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]">
+            <i class="pi pi-refresh text-sm"></i>
+          </span>
+          <div>
+            <p class="text-sm font-black text-[#30362f]">30-day easy returns</p>
+            <p class="mt-1 text-sm font-semibold text-[#9a948d]">No questions asked</p>
+          </div>
+        </div>
+      </div>
+
+      <a
+        href="/shop/products"
+        class="inline-flex items-center gap-2 text-sm font-black text-[#9a948d] transition hover:text-[#6b7d5e]"
+      >
+        View full product details
+        <i class="pi pi-arrow-right text-xs"></i>
+      </a>
+    </section>
+  </div>
+
+  <footer class="quick-view-actions border-t border-[#e8dccf] bg-white/95 px-5 py-4 backdrop-blur">
+    <div class="grid grid-cols-[auto_minmax(0,1fr)_3.25rem] items-center gap-3">
+      <div>
+        <p class="text-xs font-bold text-[#9a948d]">Total</p>
+        <p class="text-xl font-black text-[#30362f]">{{ subtotal() | currency: 'USD' : 'symbol' : '1.2-2' }}</p>
+      </div>
+      <button
+        type="button"
+        class="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#596b4e]"
+        (click)="addToCart.emit(product())"
+      >
+        <i class="pi pi-shopping-cart text-xs"></i>
+        {{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}
+      </button>
+      <button
+        type="button"
+        class="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#e8dccf] bg-white text-[#1f2a1f] transition hover:border-[#6b7d5e] hover:text-[#6b7d5e]"
+        [class.text-[#6b7d5e]]="wishlistActive()"
+        [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
+        (click)="toggleWishlist.emit(product())"
+      >
+        <i class="pi" [class.pi-heart]="!wishlistActive()" [class.pi-heart-fill]="wishlistActive()"></i>
+      </button>
+    </div>
+  </footer>
+</article>

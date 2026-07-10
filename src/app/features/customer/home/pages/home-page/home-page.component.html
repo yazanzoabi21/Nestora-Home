@@ -1,0 +1,46 @@
+<section class="customer-hero">
+  <div class="mx-auto grid min-h-[calc(100vh-156px)] max-w-7xl grid-cols-1 items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_440px] lg:px-8 lg:py-20">
+    <div class="max-w-3xl">
+      <span class="inline-flex rounded-full border border-[#e8dccf] bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-[#6b7d5e] shadow-sm">
+        PREMIUM HOME ESSENTIALS
+      </span>
+
+      <h1 class="mt-6 max-w-3xl text-5xl font-black leading-[1.02] tracking-normal text-[#1f2a1f] sm:text-6xl lg:text-7xl">
+        Upgrade Your Home Essentials
+      </h1>
+
+      <p class="mt-6 max-w-2xl text-lg font-medium leading-8 text-[#566050] sm:text-xl">
+        Discover thoughtfully designed kitchen tools, cookware, and smart home products that transform your everyday routines into moments of joy.
+      </p>
+
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <a routerLink="/shop" class="inline-flex h-12 items-center justify-center rounded-full bg-[#6b7d5e] px-7 text-sm font-black text-white shadow-sm transition hover:bg-[#596b4e]">
+          Shop Now
+        </a>
+        <a routerLink="/shop/home" class="inline-flex h-12 items-center justify-center rounded-full border border-[#e8dccf] bg-white px-7 text-sm font-black text-[#1f2a1f] shadow-sm transition hover:border-[#6b7d5e] hover:text-[#6b7d5e]">
+          New Arrivals
+        </a>
+      </div>
+
+      <div class="mt-10 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
+        @for (stat of stats; track stat.label) {
+        <div class="rounded-2xl border border-[#e8dccf] bg-white/80 p-5 shadow-sm backdrop-blur">
+          <p class="text-3xl font-black text-[#1f2a1f]">{{ stat.value }}</p>
+          <p class="mt-1 text-sm font-bold text-[#6f7569]">{{ stat.label }}</p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="hidden lg:block">
+      <div class="rounded-[2rem] border border-[#e8dccf] bg-white/75 p-4 shadow-[0_24px_70px_rgba(31,42,31,0.12)] backdrop-blur">
+        <div class="customer-hero-visual">
+          <div class="absolute bottom-6 left-6 right-6 rounded-3xl bg-white/90 p-5 shadow-lg">
+            <p class="text-sm font-black uppercase tracking-[0.18em] text-[#6b7d5e]">Curated Collection</p>
+            <p class="mt-2 text-2xl font-black text-[#1f2a1f]">Kitchen, cookware, and smart living pieces.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

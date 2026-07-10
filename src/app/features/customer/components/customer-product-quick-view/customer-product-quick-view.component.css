@@ -1,0 +1,48 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.quick-view-panel {
+  display: flex;
+  max-height: calc(100vh - 130px);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e5ded2;
+  border-radius: 1.5rem;
+  background: #fff;
+  box-shadow: 0 22px 56px rgba(31, 42, 31, 0.12);
+}
+
+.quick-view-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-color: #d9c8b7 transparent;
+  scrollbar-width: thin;
+}
+
+.quick-view-scroll::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+.quick-view-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quick-view-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: #d9c8b7;
+}
+
+.quick-view-actions {
+  flex-shrink: 0;
+}
+
+@media (max-width: 1279px) {
+  .quick-view-panel {
+    max-height: calc(100vh - 6rem);
+    min-height: 0;
+    border-radius: 1.35rem 1.35rem 0 0;
+  }
+}

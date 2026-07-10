@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+.filter-heading {
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7a8a70;
+}
+
+.filter-option {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #3d403a;
+}
+
+.filter-box,
+.filter-radio {
+  display: inline-flex;
+  height: 1.25rem;
+  width: 1.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e8dccf;
+  background: #fff;
+}
+
+.filter-box {
+  border-radius: 0.35rem;
+}
+
+.filter-radio {
+  border-radius: 9999px;
+}
+
+.peer:checked + .filter-radio::after {
+  content: '';
+  height: 0.55rem;
+  width: 0.55rem;
+  border-radius: 9999px;
+  background: #6b7d5e;
+}

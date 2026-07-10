@@ -1512,6 +1512,28 @@
         "INVALID_ETA_RANGE": "ETA max days must be greater than or equal to ETA min days."
       }
     },
+    "CUSTOMER": {
+      "PRODUCTS": {
+        "HOME": "Home",
+        "ALL_PRODUCTS": "All Products",
+        "FILTERS": "Filters",
+        "CLEAR": "Clear",
+        "CLEAR_FILTERS": "Clear filters",
+        "CATEGORY": "Category",
+        "PRICE_RANGE": "Price Range",
+        "MIN_RATING": "Min Rating",
+        "AVAILABILITY": "Availability",
+        "IN_STOCK_ONLY": "In Stock Only",
+        "SORT_BY": "Sort by",
+        "GRID_VIEW": "Grid view",
+        "LIST_VIEW": "List view",
+        "QUICK_VIEW": "Quick View",
+        "ADD_TO_CART": "Add to Cart",
+        "TOGGLE_WISHLIST": "Toggle wishlist",
+        "NO_RESULTS": "No products match your filters",
+        "NO_RESULTS_DETAIL": "Try removing a filter or changing your sort to discover more Nestora Home essentials."
+      }
+    },
     "ANALYTICS": {
       "TITLE": "Analytics",
       "SUBTITLE": "Performance overview",
@@ -3162,6 +3184,28 @@
         "MAX_AMOUNT_INVALID": "لا يمكن أن يكون الحد الأقصى سالباً.",
         "MAX_LESS_THAN_MIN": "لا يمكن أن يكون الحد الأقصى أقل من الحد الأدنى.",
         "CONFIG_INVALID": "يجب أن تكون إعدادات JSON صالحة."
+      }
+    },
+    "CUSTOMER": {
+      "PRODUCTS": {
+        "HOME": "الرئيسية",
+        "ALL_PRODUCTS": "كل المنتجات",
+        "FILTERS": "الفلاتر",
+        "CLEAR": "مسح",
+        "CLEAR_FILTERS": "مسح الفلاتر",
+        "CATEGORY": "الفئة",
+        "PRICE_RANGE": "نطاق السعر",
+        "MIN_RATING": "الحد الأدنى للتقييم",
+        "AVAILABILITY": "التوفر",
+        "IN_STOCK_ONLY": "المتوفر فقط",
+        "SORT_BY": "ترتيب حسب",
+        "GRID_VIEW": "عرض شبكي",
+        "LIST_VIEW": "عرض قائمة",
+        "QUICK_VIEW": "عرض سريع",
+        "ADD_TO_CART": "أضف إلى السلة",
+        "TOGGLE_WISHLIST": "تبديل المفضلة",
+        "NO_RESULTS": "لا توجد منتجات تطابق الفلاتر",
+        "NO_RESULTS_DETAIL": "جرّب إزالة فلتر أو تغيير الترتيب لاكتشاف المزيد من أساسيات نيستورا هوم."
       }
     },
     "ANALYTICS": {

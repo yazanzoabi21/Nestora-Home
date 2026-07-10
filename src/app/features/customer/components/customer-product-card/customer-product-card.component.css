@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.customer-product-card {
+  min-width: 0;
+  border-color: #fff;
+  box-shadow: 0 16px 36px rgba(31, 42, 31, 0.08);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.customer-product-card--selected {
+  border-color: #6f8563;
+  box-shadow:
+    0 0 0 4px rgba(111, 133, 99, 0.14),
+    0 20px 48px rgba(31, 42, 31, 0.12);
+}
+
+.customer-product-card--list {
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+}
+
+@media (max-width: 767px) {
+  .customer-product-card--list {
+    display: block;
+  }
+}

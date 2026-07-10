@@ -1,0 +1,206 @@
+<section class="bg-[#f8f7f5]">
+  <div class="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10 xl:px-10">
+    <nav class="flex items-center gap-2 text-sm font-bold text-[#8a8f84]" aria-label="Breadcrumb">
+      <a routerLink="/shop" class="transition hover:text-[#6b7d5e]">{{ 'CUSTOMER.PRODUCTS.HOME' | translate }}</a>
+      <span>/</span>
+      <span class="text-[#30362f]">{{ 'CUSTOMER.PRODUCTS.ALL_PRODUCTS' | translate }}</span>
+    </nav>
+
+    <div class="mb-8 mt-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div class="space-y-1">
+        <h1 class="text-4xl font-black tracking-normal text-[#1f2a1f]">
+          {{ 'CUSTOMER.PRODUCTS.ALL_PRODUCTS' | translate }}
+        </h1>
+        <p class="text-base font-semibold text-[#8a847c]">{{ productCountLabel() }}</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          class="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[#e8dccf] bg-white px-5 text-sm font-black text-[#30362f] shadow-sm transition hover:border-[#6b7d5e] lg:hidden"
+          (click)="mobileFiltersOpen.set(true)"
+        >
+          <i class="pi pi-filter text-xs"></i>
+          {{ 'CUSTOMER.PRODUCTS.FILTERS' | translate }}
+        </button>
+
+        <label class="relative block">
+          <span class="sr-only">{{ 'CUSTOMER.PRODUCTS.SORT_BY' | translate }}</span>
+          <select
+            class="h-12 min-w-[190px] appearance-none rounded-2xl border border-[#e8dccf] bg-white py-0 ps-5 pe-11 text-base font-bold text-[#30362f] outline-none transition focus:border-[#6b7d5e]"
+            [value]="sortBy()"
+            (change)="setSort($any($event.target).value)"
+          >
+            @for (option of sortOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          <i class="pi pi-chevron-down pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-xs text-[#8a847c]"></i>
+        </label>
+
+        <div class="inline-flex rounded-2xl border border-[#e8dccf] bg-white p-1 shadow-sm">
+          <button
+            type="button"
+            class="flex h-10 w-10 items-center justify-center rounded-xl text-[#8a847c] transition"
+            [class.bg-[#6b7d5e]]="viewMode() === 'grid'"
+            [class.text-white]="viewMode() === 'grid'"
+            [attr.aria-label]="'CUSTOMER.PRODUCTS.GRID_VIEW' | translate"
+            (click)="setViewMode('grid')"
+          >
+            <i class="pi pi-th-large text-sm"></i>
+          </button>
+          <button
+            type="button"
+            class="flex h-10 w-10 items-center justify-center rounded-xl text-[#8a847c] transition"
+            [class.bg-[#6b7d5e]]="viewMode() === 'list'"
+            [class.text-white]="viewMode() === 'list'"
+            [attr.aria-label]="'CUSTOMER.PRODUCTS.LIST_VIEW' | translate"
+            (click)="setViewMode('list')"
+          >
+            <i class="pi pi-list text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      [class]="
+        selectedProduct()
+          ? 'mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[270px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)_430px]'
+          : 'mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[270px_minmax(0,1fr)]'
+      "
+    >
+      <app-customer-product-filters
+        class="sticky top-[110px] hidden self-start lg:block"
+        [categories]="categoryOptions"
+        [priceRanges]="priceRanges"
+        [ratings]="ratingOptions"
+        [selectedCategories]="selectedCategories()"
+        [selectedPriceRange]="selectedPriceRange()"
+        [selectedRating]="selectedRating()"
+        [inStockOnly]="inStockOnly()"
+        (categoryToggle)="toggleCategory($event)"
+        (priceRangeChange)="setPriceRange($event)"
+        (ratingChange)="setRating($event)"
+        (inStockOnlyChange)="inStockOnly.set($event)"
+        (clearFilters)="clearFilters()"
+      />
+
+      <div class="min-w-0">
+        @if (visibleProducts().length) {
+        <div
+          [class]="
+            viewMode() === 'grid'
+              ? selectedProduct()
+                ? 'grid grid-cols-1 gap-6 sm:grid-cols-2'
+                : 'grid grid-cols-1 gap-6 sm:grid-cols-2 2xl:grid-cols-3'
+              : 'grid grid-cols-1 gap-6'
+          "
+        >
+          @for (product of visibleProducts(); track product.id) {
+          <app-customer-product-card
+            [product]="product"
+            [view]="viewMode()"
+            [wishlistActive]="isWishlisted(product.id)"
+            [selected]="isSelected(product.id)"
+            (quickView)="selectProduct($event)"
+            (addToCart)="addProductToCart($event)"
+            (toggleWishlist)="toggleWishlist($event)"
+          />
+          }
+        </div>
+        } @else {
+        <div class="rounded-[1.5rem] border border-[#e8dccf] bg-white px-6 py-16 text-center shadow-sm">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]">
+            <i class="pi pi-search text-2xl"></i>
+          </div>
+          <h2 class="mt-5 text-2xl font-black text-[#1f2a1f]">{{ 'CUSTOMER.PRODUCTS.NO_RESULTS' | translate }}</h2>
+          <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-[#77736d]">
+            {{ 'CUSTOMER.PRODUCTS.NO_RESULTS_DETAIL' | translate }}
+          </p>
+          <button
+            type="button"
+            class="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white transition hover:bg-[#596b4e]"
+            (click)="clearFilters()"
+          >
+            {{ 'CUSTOMER.PRODUCTS.CLEAR_FILTERS' | translate }}
+          </button>
+        </div>
+        }
+      </div>
+
+      @if (selectedProduct(); as product) {
+      <aside class="hidden min-w-0 xl:block">
+        <div class="sticky top-[110px] min-w-0">
+          <app-customer-product-quick-view
+            [product]="product"
+            [wishlistActive]="isWishlisted(product.id)"
+            (close)="closeQuickView()"
+            (addToCart)="addProductToCart($event)"
+            (toggleWishlist)="toggleWishlist($event)"
+          />
+        </div>
+      </aside>
+      }
+    </div>
+  </div>
+</section>
+
+@if (mobileFiltersOpen()) {
+<div class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+  <button
+    type="button"
+    class="absolute inset-0 bg-[#1f2a1f]/45"
+    [attr.aria-label]="'COMMON.CLOSE' | translate"
+    (click)="mobileFiltersOpen.set(false)"
+  ></button>
+  <div class="absolute inset-y-0 start-0 w-full max-w-sm overflow-y-auto bg-[#f8f7f5] p-4 shadow-2xl">
+    <div class="mb-4 flex items-center justify-between">
+      <h2 class="text-xl font-black text-[#1f2a1f]">{{ 'CUSTOMER.PRODUCTS.FILTERS' | translate }}</h2>
+      <button
+        type="button"
+        class="flex h-10 w-10 items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f]"
+        [attr.aria-label]="'COMMON.CLOSE' | translate"
+        (click)="mobileFiltersOpen.set(false)"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <app-customer-product-filters
+      [categories]="categoryOptions"
+      [priceRanges]="priceRanges"
+      [ratings]="ratingOptions"
+      [selectedCategories]="selectedCategories()"
+      [selectedPriceRange]="selectedPriceRange()"
+      [selectedRating]="selectedRating()"
+      [inStockOnly]="inStockOnly()"
+      (categoryToggle)="toggleCategory($event)"
+      (priceRangeChange)="setPriceRange($event)"
+      (ratingChange)="setRating($event)"
+      (inStockOnlyChange)="inStockOnly.set($event)"
+      (clearFilters)="clearFilters()"
+    />
+  </div>
+</div>
+}
+
+@if (selectedProduct(); as product) {
+<div class="fixed inset-0 z-50 xl:hidden" role="dialog" aria-modal="true">
+  <button
+    type="button"
+    class="absolute inset-0 bg-[#1f2a1f]/35"
+    [attr.aria-label]="'COMMON.CLOSE' | translate"
+    (click)="closeQuickView()"
+  ></button>
+  <div class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden px-3 sm:px-6">
+    <app-customer-product-quick-view
+      [product]="product"
+      [wishlistActive]="isWishlisted(product.id)"
+      (close)="closeQuickView()"
+      (addToCart)="addProductToCart($event)"
+      (toggleWishlist)="toggleWishlist($event)"
+    />
+  </div>
+</div>
+}
