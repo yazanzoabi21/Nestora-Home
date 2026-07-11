@@ -1516,6 +1516,9 @@
       "PRODUCTS": {
         "HOME": "Home",
         "ALL_PRODUCTS": "All Products",
+        "NEW_ARRIVALS": "New Arrivals",
+        "LOADING": "Loading products...",
+        "LOAD_ERROR": "We couldn't load the products",
         "FILTERS": "Filters",
         "CLEAR": "Clear",
         "CLEAR_FILTERS": "Clear filters",
@@ -3190,6 +3193,12 @@
       "PRODUCTS": {
         "HOME": "الرئيسية",
         "ALL_PRODUCTS": "كل المنتجات",
+        "NEW_ARRIVALS": "الوافد حديثاً",
+        "LOADING": "جارٍ تحميل المنتجات...",
+        "LOAD_ERROR": "تعذر تحميل المنتجات",
+        "NEW_ARRIVALS": "الوافد حديثاً",
+        "LOADING": "جارٍ تحميل المنتجات...",
+        "LOAD_ERROR": "تعذر تحميل المنتجات",
         "FILTERS": "الفلاتر",
         "CLEAR": "مسح",
         "CLEAR_FILTERS": "مسح الفلاتر",

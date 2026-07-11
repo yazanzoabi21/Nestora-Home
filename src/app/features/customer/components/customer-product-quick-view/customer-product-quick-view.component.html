@@ -47,9 +47,6 @@
       <button type="button" class="h-16 w-16 overflow-hidden rounded-xl border-2 border-[#6b7d5e] bg-[#f5f2ee] p-1">
         <img [src]="product().imageUrl" [alt]="product().name" class="h-full w-full rounded-lg object-cover" />
       </button>
-      <button type="button" class="h-16 w-16 overflow-hidden rounded-xl border border-[#e8dccf] bg-[#f5f2ee] p-1">
-        <img [src]="product().imageUrl" [alt]="product().name" class="h-full w-full rounded-lg object-cover opacity-80" />
-      </button>
     </div>
 
     <section class="space-y-5 p-5">
@@ -94,27 +91,6 @@
       <p class="line-clamp-3 text-sm font-semibold leading-7 text-[#77736d]">{{ product().description }}</p>
 
       <hr class="border-[#e8dccf]" />
-
-      <div>
-        <p class="text-sm font-black text-[#30362f]">Color</p>
-        <div class="mt-3 flex flex-wrap gap-2">
-          @for (color of colorOptions; track color) {
-          <button
-            type="button"
-            class="h-10 rounded-xl border px-4 text-sm font-bold transition"
-            [class.border-[#6b7d5e]]="selectedColor() === color"
-            [class.bg-[#eef6ea]]="selectedColor() === color"
-            [class.text-[#4f6f43]]="selectedColor() === color"
-            [class.border-[#e8dccf]]="selectedColor() !== color"
-            [class.bg-white]="selectedColor() !== color"
-            [class.text-[#3f443d]]="selectedColor() !== color"
-            (click)="selectColor(color)"
-          >
-            {{ color }}
-          </button>
-          }
-        </div>
-      </div>
 
       <div class="flex flex-wrap items-center gap-4">
         <span class="text-sm font-black text-[#30362f]">Qty</span>
@@ -168,8 +144,9 @@
       </div>
 
       <a
-        href="/shop/products"
-        class="inline-flex items-center gap-2 text-sm font-black text-[#9a948d] transition hover:text-[#6b7d5e]"
+        [routerLink]="detailUrl()"
+        class="inline-flex items-center gap-2 rounded text-sm font-black text-[#9a948d] transition hover:text-[#6b7d5e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b7d5e]"
+        (click)="close.emit(); $event.stopPropagation()"
       >
         View full product details
         <i class="pi pi-arrow-right text-xs"></i>

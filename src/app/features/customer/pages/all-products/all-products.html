@@ -3,13 +3,13 @@
     <nav class="flex items-center gap-2 text-sm font-bold text-[#8a8f84]" aria-label="Breadcrumb">
       <a routerLink="/shop" class="transition hover:text-[#6b7d5e]">{{ 'CUSTOMER.PRODUCTS.HOME' | translate }}</a>
       <span>/</span>
-      <span class="text-[#30362f]">{{ 'CUSTOMER.PRODUCTS.ALL_PRODUCTS' | translate }}</span>
+      <span class="text-[#30362f]">{{ titleKey | translate }}</span>
     </nav>
 
     <div class="mb-8 mt-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
       <div class="space-y-1">
         <h1 class="text-4xl font-black tracking-normal text-[#1f2a1f]">
-          {{ 'CUSTOMER.PRODUCTS.ALL_PRODUCTS' | translate }}
+          {{ titleKey | translate }}
         </h1>
         <p class="text-base font-semibold text-[#8a847c]">{{ productCountLabel() }}</p>
       </div>
@@ -29,7 +29,7 @@
           <select
             class="h-12 min-w-[190px] appearance-none rounded-2xl border border-[#e8dccf] bg-white py-0 ps-5 pe-11 text-base font-bold text-[#30362f] outline-none transition focus:border-[#6b7d5e]"
             [value]="sortBy()"
-            (change)="setSort($any($event.target).value)"
+            (change)="sortBy.set($any($event.target).value)"
           >
             @for (option of sortOptions; track option.value) {
             <option [value]="option.value">{{ option.label }}</option>
@@ -45,7 +45,8 @@
             [class.bg-[#6b7d5e]]="viewMode() === 'grid'"
             [class.text-white]="viewMode() === 'grid'"
             [attr.aria-label]="'CUSTOMER.PRODUCTS.GRID_VIEW' | translate"
-            (click)="setViewMode('grid')"
+            [attr.aria-pressed]="viewMode() === 'grid'"
+            (click)="viewMode.set('grid')"
           >
             <i class="pi pi-th-large text-sm"></i>
           </button>
@@ -55,7 +56,8 @@
             [class.bg-[#6b7d5e]]="viewMode() === 'list'"
             [class.text-white]="viewMode() === 'list'"
             [attr.aria-label]="'CUSTOMER.PRODUCTS.LIST_VIEW' | translate"
-            (click)="setViewMode('list')"
+            [attr.aria-pressed]="viewMode() === 'list'"
+            (click)="viewMode.set('list')"
           >
             <i class="pi pi-list text-sm"></i>
           </button>
@@ -72,7 +74,7 @@
     >
       <app-customer-product-filters
         class="sticky top-[110px] hidden self-start lg:block"
-        [categories]="categoryOptions"
+        [categories]="categoryOptions()"
         [priceRanges]="priceRanges"
         [ratings]="ratingOptions"
         [selectedCategories]="selectedCategories()"
@@ -87,13 +89,23 @@
       />
 
       <div class="min-w-0">
-        @if (visibleProducts().length) {
+        @if (loading()) {
+        <div class="rounded-[1.5rem] bg-white px-6 py-16 text-center shadow-sm" role="status">
+          <i class="pi pi-spin pi-spinner text-3xl text-[#6b7d5e]"></i>
+          <p class="mt-4 font-semibold text-[#77736d]">{{ 'CUSTOMER.PRODUCTS.LOADING' | translate }}</p>
+        </div>
+        } @else if (error()) {
+        <div class="rounded-[1.5rem] border border-red-200 bg-white px-6 py-16 text-center shadow-sm" role="alert">
+          <h2 class="text-xl font-black text-[#1f2a1f]">{{ 'CUSTOMER.PRODUCTS.LOAD_ERROR' | translate }}</h2>
+          <p class="mt-2 text-sm text-[#77736d]">{{ error() }}</p>
+        </div>
+        } @else if (visibleProducts().length) {
         <div
           [class]="
             viewMode() === 'grid'
               ? selectedProduct()
                 ? 'grid grid-cols-1 gap-6 sm:grid-cols-2'
-                : 'grid grid-cols-1 gap-6 sm:grid-cols-2 2xl:grid-cols-3'
+                : 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3'
               : 'grid grid-cols-1 gap-6'
           "
         >
@@ -168,7 +180,7 @@
     </div>
 
     <app-customer-product-filters
-      [categories]="categoryOptions"
+      [categories]="categoryOptions()"
       [priceRanges]="priceRanges"
       [ratings]="ratingOptions"
       [selectedCategories]="selectedCategories()"

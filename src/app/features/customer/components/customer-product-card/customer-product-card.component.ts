@@ -25,9 +25,20 @@ export class CustomerProductCardComponent {
 
   readonly starItems = [1, 2, 3, 4, 5];
 
-  readonly detailUrl = computed(() => ['/shop/products']);
+  readonly detailUrl = computed(() => ['/shop/products', this.product().slug || this.product().id]);
 
   isFilledStar(star: number): boolean {
     return star <= Math.round(this.product().rating);
+  }
+
+  hasValidDiscount(): boolean {
+    const originalPrice = this.product().originalPrice;
+    return typeof originalPrice === 'number' && originalPrice > 0 && originalPrice > this.product().price;
+  }
+
+  safeDiscountPercentage(): number {
+    const originalPrice = this.product().originalPrice;
+    if (!this.hasValidDiscount() || !originalPrice) { return 0; }
+    return Math.max(0, Math.min(100, Math.round(((originalPrice - this.product().price) / originalPrice) * 100)));
   }
 }

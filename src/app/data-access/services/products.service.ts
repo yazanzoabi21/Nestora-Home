@@ -57,6 +57,18 @@ export class ProductsService {
     return (data ?? []).map((product) => this.mapProduct(product as Product));
   }
 
+  async getProductBySlug(slug: string): Promise<Product | null> {
+    const { data, error } = await this.supabase.from('products').select(PRODUCT_SELECT).eq('slug', slug).maybeSingle();
+    if (error) { throw new Error(error.message); }
+    return data ? this.mapProduct(data as Product) : null;
+  }
+
+  async getProductById(id: string): Promise<Product | null> {
+    const { data, error } = await this.supabase.from('products').select(PRODUCT_SELECT).eq('id', id).maybeSingle();
+    if (error) { throw new Error(error.message); }
+    return data ? this.mapProduct(data as Product) : null;
+  }
+
   async getProductStats(): Promise<ProductStats> {
     const products = await this.getProducts();
 

@@ -8,17 +8,17 @@ import { NewArrivalsService } from '../../services';
 import { ProductBrowserPage } from '../product-browser-page';
 
 @Component({
-  selector: 'app-all-products', standalone: true,
+  selector: 'app-new-arrivals', standalone: true,
   imports: [CustomerProductCardComponent, CustomerProductFiltersComponent, CustomerProductQuickViewComponent, RouterLink, TranslatePipe],
-  templateUrl: './all-products.html', styleUrl: './all-products.css',
+  templateUrl: '../all-products/all-products.html', styleUrl: './new-arrivals.css',
 })
-export class AllProducts extends ProductBrowserPage {
-  readonly titleKey = 'CUSTOMER.PRODUCTS.ALL_PRODUCTS';
+export class NewArrivalsComponent extends ProductBrowserPage {
+  readonly titleKey = 'CUSTOMER.PRODUCTS.NEW_ARRIVALS';
   private readonly catalog = inject(NewArrivalsService);
   constructor() { super(); void this.load(); }
   private async load(): Promise<void> {
-    try { this.products.set(await this.catalog.getProducts()); }
-    catch (error) { this.error.set(error instanceof Error ? error.message : 'Unable to load products.'); }
+    try { this.products.set(await this.catalog.getNewArrivals()); }
+    catch (error) { this.error.set(error instanceof Error ? error.message : 'Unable to load new arrivals.'); }
     finally { this.loading.set(false); }
   }
 }
