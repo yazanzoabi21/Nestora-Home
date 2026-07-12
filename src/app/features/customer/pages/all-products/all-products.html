@@ -1,4 +1,4 @@
-<section class="bg-[#f8f7f5]">
+<section class="overflow-x-clip bg-[#f8f7f5]">
   <div class="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10 xl:px-10">
     <nav class="flex items-center gap-2 text-sm font-bold text-[#8a8f84]" aria-label="Breadcrumb">
       <a routerLink="/shop" class="transition hover:text-[#6b7d5e]">{{ 'CUSTOMER.PRODUCTS.HOME' | translate }}</a>
@@ -73,7 +73,7 @@
       "
     >
       <app-customer-product-filters
-        class="sticky top-[110px] hidden self-start lg:block"
+        class="hidden min-w-0 lg:sticky lg:top-[110px] lg:block lg:max-h-[calc(100vh-130px)] lg:self-start lg:overflow-y-auto lg:overscroll-contain"
         [categories]="categoryOptions()"
         [priceRanges]="priceRanges"
         [ratings]="ratingOptions"
@@ -142,16 +142,14 @@
       </div>
 
       @if (selectedProduct(); as product) {
-      <aside class="hidden min-w-0 xl:block">
-        <div class="sticky top-[110px] min-w-0">
-          <app-customer-product-quick-view
-            [product]="product"
-            [wishlistActive]="isWishlisted(product.id)"
-            (close)="closeQuickView()"
-            (addToCart)="addProductToCart($event)"
-            (toggleWishlist)="toggleWishlist($event)"
-          />
-        </div>
+      <aside class="hidden min-w-0 xl:sticky xl:top-[110px] xl:block xl:self-start">
+        <app-customer-product-quick-view
+          [product]="product"
+          [wishlistActive]="isWishlisted(product.id)"
+          (close)="closeQuickView()"
+          (addToCart)="addProductToCart($event)"
+          (toggleWishlist)="toggleWishlist($event)"
+        />
       </aside>
       }
     </div>

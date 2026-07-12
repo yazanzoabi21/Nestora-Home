@@ -7,13 +7,13 @@ html,
 body {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 app-root {
   display: block;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 select,
