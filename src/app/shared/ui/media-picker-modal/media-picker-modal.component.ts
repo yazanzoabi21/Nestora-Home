@@ -26,11 +26,13 @@ export class MediaPickerModalComponent implements OnChanges {
   @Input() categoryFilter: MediaCategory | 'all' = 'all';
   @Input() allowedFileTypes: MediaFileType[] = ['image', 'logo', 'banner', 'avatar'];
   @Input() selectedMediaId: string | null = null;
+  @Input() multiple = false;
 
   // Keep the reusable picker API aligned with the admin modal output naming.
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() readonly close = new EventEmitter<void>();
   @Output() readonly selectMedia = new EventEmitter<MediaAsset>();
+  @Output() readonly selectMultipleMedia = new EventEmitter<MediaAsset[]>();
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -38,6 +40,7 @@ export class MediaPickerModalComponent implements OnChanges {
   readonly category = signal<MediaCategory | 'all'>('all');
   readonly media = signal<MediaAsset[]>([]);
   readonly selectedId = signal<string | null>(null);
+  readonly selectedIds = signal<Set<string>>(new Set());
   readonly failedImageIds = signal<Set<string>>(new Set());
 
   readonly categoryOptions: MediaPickerCategoryOption[] = [
@@ -106,10 +109,24 @@ export class MediaPickerModalComponent implements OnChanges {
   }
 
   select(asset: MediaAsset): void {
+    if (this.multiple) {
+      this.selectedIds.update((ids) => {
+        const next = new Set(ids);
+        if (next.has(asset.id)) next.delete(asset.id);
+        else next.add(asset.id);
+        return next;
+      });
+      return;
+    }
     this.selectedId.set(asset.id);
   }
 
   confirmSelection(): void {
+    if (this.multiple) {
+      const selected = this.media().filter((asset) => this.selectedIds().has(asset.id));
+      if (selected.length) this.selectMultipleMedia.emit(selected);
+      return;
+    }
     const selected = this.media().find((asset) => asset.id === this.selectedId());
 
     if (!selected) {
@@ -117,6 +134,10 @@ export class MediaPickerModalComponent implements OnChanges {
     }
 
     this.selectMedia.emit(selected);
+  }
+
+  isSelected(asset: MediaAsset): boolean {
+    return this.multiple ? this.selectedIds().has(asset.id) : this.selectedId() === asset.id;
   }
 
   hasImage(asset: MediaAsset): boolean {

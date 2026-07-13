@@ -18,6 +18,6 @@ export class CustomerNavbarComponent {
     { label: 'Home', path: '/shop' },
     { label: 'Categories', path: '/shop' },
     { label: 'All Products', path: '/shop/products' },
-    { label: 'New Arrivals', path: '/shop/home' },
+    { label: 'New Arrivals', path: '/shop/new-arrivals' },
   ];
 }

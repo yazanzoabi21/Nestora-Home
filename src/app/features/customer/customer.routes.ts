@@ -25,6 +25,20 @@ export const CUSTOMER_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/all-products').then((m) => m.AllProducts),
       },
+      {
+        path: 'products/:identifier',
+        loadComponent: () => import('./product-details').then((m) => m.ProductDetailsComponent),
+      },
+      {
+        path: 'all-products',
+        redirectTo: 'products',
+        pathMatch: 'full',
+      },
+      {
+        path: 'new-arrivals',
+        loadComponent: () =>
+          import('./pages/new-arrivals').then((m) => m.NewArrivalsComponent),
+      },
     ],
   },
 ];

@@ -15,5 +15,12 @@ export interface CustomerProduct {
   isNew: boolean;
   inStock: boolean;
   stock: number;
+  createdAt?: string | null;
+  slug?: string | null;
 }
 
+export interface CustomerProductDetails extends CustomerProduct {
+  longDescription?: string;
+  gallery: string[];
+  sku?: string | null;
+}

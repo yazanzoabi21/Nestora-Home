@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from '../../core/services/supabase';
 
 const PRODUCT_IMAGES_BUCKET = 'product-images';
-const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
 @Injectable({
@@ -14,6 +14,14 @@ export class UploadService {
 
   async uploadProductImage(file: File): Promise<string> {
     return this.uploadImage(file, 'products');
+  }
+
+  async deleteProductImage(publicUrl: string): Promise<void> {
+    const marker = `/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/`;
+    const path = decodeURIComponent(publicUrl.split(marker)[1] ?? '');
+    if (!path.startsWith('products/')) return;
+    const { error } = await this.supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([path]);
+    if (error) throw new Error(error.message);
   }
 
   async uploadCategoryImage(file: File): Promise<string> {

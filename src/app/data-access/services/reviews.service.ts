@@ -77,6 +77,13 @@ export class ReviewsService {
     return (data ?? []).map((review) => this.mapReview(review as ReviewRecord));
   }
 
+  async getPublishedReviewsByProduct(productId: string): Promise<Review[]> {
+    const { data, error } = await this.supabase.from('reviews').select(REVIEW_SELECT)
+      .eq('product_id', productId).eq('status', 'published').order('created_at', { ascending: false });
+    if (error) { throw new Error('Unable to load reviews.'); }
+    return (data ?? []).map((review) => this.mapReview(review as ReviewRecord));
+  }
+
   async getReviewStats(): Promise<ReviewStats> {
     return this.calculateStats(await this.getReviews());
   }

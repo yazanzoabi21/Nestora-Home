@@ -1,5 +1,7 @@
 :host {
-  display: block;
+  // Remove the component host as a sticky containing box so the navigation can
+  // remain pinned for the full customer page while the announcement scrolls away.
+  display: contents;
 }
 
 .customer-icon-button {
