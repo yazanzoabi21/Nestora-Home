@@ -71,7 +71,7 @@
       "
     >
       <app-customer-product-filters
-        class="sticky top-[110px] hidden self-start lg:block"
+        class="customer-products-sticky-panel customer-products-sticky-scroll hidden lg:block"
         [categories]="categoryOptions"
         [priceRanges]="priceRanges"
         [ratings]="ratingOptions"
@@ -131,7 +131,7 @@
 
       @if (selectedProduct(); as product) {
       <aside class="hidden min-w-0 xl:block">
-        <div class="sticky top-[110px] min-w-0">
+        <div class="customer-products-sticky-panel min-w-0">
           <app-customer-product-quick-view
             [product]="product"
             [wishlistActive]="isWishlisted(product.id)"

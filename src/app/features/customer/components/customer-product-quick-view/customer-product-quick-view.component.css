@@ -5,7 +5,7 @@
 
 .quick-view-panel {
   display: flex;
-  max-height: calc(100vh - 130px);
+  max-height: inherit;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid #e5ded2;
