@@ -163,9 +163,10 @@
       <button
         type="button"
         class="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#596b4e]"
+        [disabled]="cartLoading() || !product().inStock"
         (click)="addToCart.emit(product())"
       >
-        <i class="pi pi-shopping-cart text-xs"></i>
+        <i class="pi text-xs" [class.pi-shopping-cart]="!cartLoading()" [class.pi-spinner]="cartLoading()" [class.pi-spin]="cartLoading()"></i>
         {{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}
       </button>
       <button

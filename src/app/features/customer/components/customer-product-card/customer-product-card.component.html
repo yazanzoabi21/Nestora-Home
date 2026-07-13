@@ -1,56 +1,131 @@
 @if (view() === 'list') {
-<a
-  [routerLink]="detailUrl()"
-  class="customer-product-card customer-product-card--list group grid min-h-[132px] cursor-pointer grid-cols-[96px_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-3xl border bg-white p-4 transition sm:min-h-[164px] sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-6"
-  [class.customer-product-card--selected]="selected()"
-  [attr.aria-label]="'View details for ' + product().name"
->
-  <img
-    [src]="product().imageUrl"
-    [alt]="product().name"
-    loading="lazy"
-    class="h-24 w-24 rounded-2xl object-cover sm:h-[132px] sm:w-[132px]"
-  />
-  <div class="min-w-0 py-1">
-    <p class="text-sm font-bold text-[#6b7d5e]">{{ product().brand }}</p>
-    <h2 class="mt-1 truncate text-base font-bold text-[#30362f] sm:text-lg">{{ product().name }}</h2>
-    @if (product().description) {
-      <p class="mt-2 truncate text-sm font-medium text-[#8a847c]">{{ product().description }}</p>
-    }
-    <div class="mt-3 flex flex-wrap items-center gap-3">
-      <span class="text-lg font-black text-[#30362f]">{{ product().price | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
-      @if (hasValidDiscount()) {
-        <span class="text-sm font-bold text-[#b8b0a7] line-through">{{ product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
-        <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white">−{{ safeDiscountPercentage() }}%</span>
+  <a
+    [routerLink]="detailUrl()"
+    class="customer-product-card customer-product-card--list group grid min-h-[132px] cursor-pointer grid-cols-[96px_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-3xl border bg-white p-4 transition sm:min-h-[164px] sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-6"
+    [class.customer-product-card--selected]="selected()"
+    [attr.aria-label]="'View details for ' + product().name"
+  >
+    <img
+      [src]="product().imageUrl"
+      [alt]="product().name"
+      loading="lazy"
+      class="h-24 w-24 rounded-2xl object-cover sm:h-[132px] sm:w-[132px]"
+    />
+    <div class="min-w-0 py-1">
+      <p class="text-sm font-bold text-[#6b7d5e]">{{ product().brand }}</p>
+      <h2 class="mt-1 truncate text-base font-bold text-[#30362f] sm:text-lg">
+        {{ product().name }}
+      </h2>
+      @if (product().description) {
+        <p class="mt-2 truncate text-sm font-medium text-[#8a847c]">{{ product().description }}</p>
       }
+      <div class="mt-3 flex flex-wrap items-center gap-3">
+        <span class="text-lg font-black text-[#30362f]">{{
+          product().price | currency: 'USD' : 'symbol' : '1.2-2'
+        }}</span>
+        @if (hasValidDiscount()) {
+          <span class="text-sm font-bold text-[#b8b0a7] line-through">{{
+            product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2'
+          }}</span>
+          <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white"
+            >−{{ safeDiscountPercentage() }}%</span
+          >
+        }
+      </div>
     </div>
-  </div>
-</a>
+  </a>
 } @else {
-<article
-  class="customer-product-card group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white"
-  [class.customer-product-card--selected]="selected()"
->
-  <a [routerLink]="detailUrl()" class="absolute inset-0 z-0 rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]" [attr.aria-label]="'View details for ' + product().name"></a>
-  <div class="pointer-events-none relative h-80 overflow-hidden bg-[#f5f2ee]">
-    <img [src]="product().imageUrl" [alt]="product().name" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-    <div class="absolute start-4 top-4 flex flex-col items-start gap-2">
-      @if (hasValidDiscount()) { <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white">−{{ safeDiscountPercentage() }}%</span> }
-      @if (product().badge) { <span class="rounded-full bg-[#eee5db] px-3 py-1 text-xs font-bold text-[#4f473f]">{{ product().badge }}</span> }
+  <article
+    class="customer-product-card group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white"
+    [class.customer-product-card--selected]="selected()"
+  >
+    <a
+      [routerLink]="detailUrl()"
+      class="absolute inset-0 z-0 rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
+      [attr.aria-label]="'View details for ' + product().name"
+    ></a>
+    <div class="pointer-events-none relative h-80 overflow-hidden bg-[#f5f2ee]">
+      <img
+        [src]="product().imageUrl"
+        [alt]="product().name"
+        loading="lazy"
+        class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+      />
+      <div class="absolute start-4 top-4 flex flex-col items-start gap-2">
+        @if (hasValidDiscount()) {
+          <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white"
+            >−{{ safeDiscountPercentage() }}%</span
+          >
+        }
+        @if (product().badge) {
+          <span class="rounded-full bg-[#eee5db] px-3 py-1 text-xs font-bold text-[#4f473f]">{{
+            product().badge
+          }}</span>
+        }
+      </div>
+      <button
+        type="button"
+        class="pointer-events-auto absolute end-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg"
+        [class.text-[#6b7d5e]]="wishlistActive()"
+        [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
+        [attr.aria-pressed]="wishlistActive()"
+        (click)="toggleWishlist.emit(product()); $event.stopPropagation()"
+      >
+        <i
+          class="pi"
+          [class.pi-heart]="!wishlistActive()"
+          [class.pi-heart-fill]="wishlistActive()"
+        ></i>
+      </button>
+      <div
+        class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 hidden translate-y-2 items-center gap-3 opacity-0 transition group-hover:flex group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:flex group-focus-within:opacity-100"
+      >
+        <button
+          type="button"
+          class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-black shadow-sm"
+          (click)="quickView.emit(product()); $event.stopPropagation()"
+        >
+          <i class="pi pi-eye text-xs"></i>{{ 'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate }}
+        </button>
+        <button
+          type="button"
+          class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white disabled:opacity-60"
+          [disabled]="!product().inStock || cartLoading()"
+          (click)="addToCart.emit(product()); $event.stopPropagation()"
+        >
+          <i
+            class="pi"
+            [class.pi-shopping-cart]="!cartLoading()"
+            [class.pi-spinner]="cartLoading()"
+            [class.pi-spin]="cartLoading()"
+          ></i
+          >{{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}
+        </button>
+      </div>
     </div>
-    <button type="button" class="pointer-events-auto absolute end-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg" [class.text-[#6b7d5e]]="wishlistActive()" [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate" [attr.aria-pressed]="wishlistActive()" (click)="toggleWishlist.emit(product()); $event.stopPropagation()">
-      <i class="pi" [class.pi-heart]="!wishlistActive()" [class.pi-heart-fill]="wishlistActive()"></i>
-    </button>
-    <div class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 hidden translate-y-2 items-center gap-3 opacity-0 transition group-hover:flex group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:flex group-focus-within:opacity-100">
-      <button type="button" class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-black shadow-sm" (click)="quickView.emit(product()); $event.stopPropagation()"><i class="pi pi-eye text-xs"></i>{{ 'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate }}</button>
-      <button type="button" class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white disabled:opacity-60" [disabled]="!product().inStock" (click)="addToCart.emit(product()); $event.stopPropagation()"><i class="pi pi-shopping-cart text-xs"></i>{{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}</button>
+    <div class="pointer-events-none relative z-[1] flex flex-1 flex-col gap-2 p-5">
+      <p class="text-sm font-bold text-[#6b7d5e]">{{ product().brand }}</p>
+      <h2 class="text-base font-bold leading-6 text-[#30362f]">{{ product().name }}</h2>
+      <div class="flex items-center gap-1">
+        @for (star of starItems; track star) {
+          <i
+            class="pi pi-star-fill text-sm"
+            [class.text-[#f2aa2f]]="isFilledStar(star)"
+            [class.text-[#d8d1c8]]="!isFilledStar(star)"
+          ></i>
+        }
+        <span class="ms-1 text-sm text-[#8a847c]">({{ product().reviewCount }})</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-xl font-black">{{
+          product().price | currency: 'USD' : 'symbol' : '1.2-2'
+        }}</span>
+        @if (hasValidDiscount()) {
+          <span class="text-sm font-bold text-[#b8b0a7] line-through">{{
+            product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2'
+          }}</span>
+        }
+      </div>
     </div>
-  </div>
-  <div class="pointer-events-none relative z-[1] flex flex-1 flex-col gap-2 p-5">
-    <p class="text-sm font-bold text-[#6b7d5e]">{{ product().brand }}</p>
-    <h2 class="text-base font-bold leading-6 text-[#30362f]">{{ product().name }}</h2>
-    <div class="flex items-center gap-1">@for (star of starItems; track star) { <i class="pi pi-star-fill text-sm" [class.text-[#f2aa2f]]="isFilledStar(star)" [class.text-[#d8d1c8]]="!isFilledStar(star)"></i> }<span class="ms-1 text-sm text-[#8a847c]">({{ product().reviewCount }})</span></div>
-    <div class="flex items-baseline gap-2"><span class="text-xl font-black">{{ product().price | currency: 'USD' : 'symbol' : '1.2-2' }}</span>@if (hasValidDiscount()) { <span class="text-sm font-bold text-[#b8b0a7] line-through">{{ product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2' }}</span> }</div>
-  </div>
-</article>
+  </article>
 }

@@ -1,10 +1,18 @@
 import { computed, inject, signal } from '@angular/core';
-import { CustomerFilterOption, CustomerRatingFilterOption } from '../components/customer-product-filters';
-import { CustomerPriceRange, CustomerProduct, CustomerProductSort, CustomerProductView } from '../models';
+import {
+  CustomerFilterOption,
+  CustomerRatingFilterOption,
+} from '../components/customer-product-filters';
+import {
+  CustomerPriceRange,
+  CustomerProduct,
+  CustomerProductSort,
+  CustomerProductView,
+} from '../models';
 import { CustomerShoppingStateService } from '../services';
 
 export abstract class ProductBrowserPage {
-  private readonly shopping = inject(CustomerShoppingStateService);
+  readonly shopping = inject(CustomerShoppingStateService);
   readonly products = signal<CustomerProduct[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -26,43 +34,90 @@ export abstract class ProductBrowserPage {
     { label: 'Over $100', value: 'over-100', min: 100, max: null },
   ];
   readonly ratingOptions: CustomerRatingFilterOption[] = [
-    { label: '★★★★★ & up', value: 5 }, { label: '★★★★☆ & up', value: 4 }, { label: '★★★☆☆ & up', value: 3 },
+    { label: '★★★★★ & up', value: 5 },
+    { label: '★★★★☆ & up', value: 4 },
+    { label: '★★★☆☆ & up', value: 3 },
   ];
   readonly sortOptions: { label: string; value: CustomerProductSort }[] = [
-    { label: 'Featured', value: 'featured' }, { label: 'Newest', value: 'newest' },
-    { label: 'Price: Low to High', value: 'price-low' }, { label: 'Price: High to Low', value: 'price-high' },
+    { label: 'Featured', value: 'featured' },
+    { label: 'Newest', value: 'newest' },
+    { label: 'Price: Low to High', value: 'price-low' },
+    { label: 'Price: High to Low', value: 'price-high' },
     { label: 'Highest Rated', value: 'rating' },
   ];
   readonly categoryOptions = computed<CustomerFilterOption[]>(() =>
-    [...new Set(this.products().map((product) => product.category))].sort().map((label) => ({ label, value: label }))
+    [...new Set(this.products().map((product) => product.category))]
+      .sort()
+      .map((label) => ({ label, value: label })),
   );
-  readonly activePriceRange = computed(() => this.priceRanges.find((range) => range.value === this.selectedPriceRange()) ?? null);
+  readonly activePriceRange = computed(
+    () => this.priceRanges.find((range) => range.value === this.selectedPriceRange()) ?? null,
+  );
   readonly visibleProducts = computed(() => {
     const range = this.activePriceRange();
-    const filtered = this.products().filter((product) =>
-      (!this.selectedCategories().length || this.selectedCategories().includes(product.category)) &&
-      (!range || (product.price >= range.min && (range.max === null || product.price < range.max))) &&
-      (this.selectedRating() === null || product.rating >= this.selectedRating()!) &&
-      (!this.inStockOnly() || product.inStock)
+    const filtered = this.products().filter(
+      (product) =>
+        (!this.selectedCategories().length ||
+          this.selectedCategories().includes(product.category)) &&
+        (!range ||
+          (product.price >= range.min && (range.max === null || product.price < range.max))) &&
+        (this.selectedRating() === null || product.rating >= this.selectedRating()!) &&
+        (!this.inStockOnly() || product.inStock),
     );
     switch (this.sortBy()) {
-      case 'newest': return filtered.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-      case 'price-low': return filtered.sort((a, b) => a.price - b.price);
-      case 'price-high': return filtered.sort((a, b) => b.price - a.price);
-      case 'rating': return filtered.sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount);
-      default: return filtered.sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
+      case 'newest':
+        return filtered.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      case 'price-low':
+        return filtered.sort((a, b) => a.price - b.price);
+      case 'price-high':
+        return filtered.sort((a, b) => b.price - a.price);
+      case 'rating':
+        return filtered.sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount);
+      default:
+        return filtered.sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
     }
   });
-  readonly productCountLabel = computed(() => `${this.visibleProducts().length} ${this.visibleProducts().length === 1 ? 'product' : 'products'}`);
+  readonly productCountLabel = computed(
+    () =>
+      `${this.visibleProducts().length} ${this.visibleProducts().length === 1 ? 'product' : 'products'}`,
+  );
 
-  toggleCategory(value: string): void { this.selectedCategories.update((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]); }
-  setPriceRange(value: string | null): void { this.selectedPriceRange.set(this.selectedPriceRange() === value ? null : value); }
-  setRating(value: number | null): void { this.selectedRating.set(this.selectedRating() === value ? null : value); }
-  clearFilters(): void { this.selectedCategories.set([]); this.selectedPriceRange.set(null); this.selectedRating.set(null); this.inStockOnly.set(false); }
-  toggleWishlist(product: CustomerProduct): void { this.shopping.toggleWishlist(product.id); }
-  isWishlisted(id: string): boolean { return this.wishlistProductIds().has(id); }
-  selectProduct(product: CustomerProduct): void { this.selectedProduct.set(product); }
-  closeQuickView(): void { this.selectedProduct.set(null); }
-  isSelected(id: string): boolean { return this.selectedProduct()?.id === id; }
-  addProductToCart(product: CustomerProduct): void { this.shopping.addToCart(product); }
+  toggleCategory(value: string): void {
+    this.selectedCategories.update((items) =>
+      items.includes(value) ? items.filter((item) => item !== value) : [...items, value],
+    );
+  }
+  setPriceRange(value: string | null): void {
+    this.selectedPriceRange.set(this.selectedPriceRange() === value ? null : value);
+  }
+  setRating(value: number | null): void {
+    this.selectedRating.set(this.selectedRating() === value ? null : value);
+  }
+  clearFilters(): void {
+    this.selectedCategories.set([]);
+    this.selectedPriceRange.set(null);
+    this.selectedRating.set(null);
+    this.inStockOnly.set(false);
+  }
+  toggleWishlist(product: CustomerProduct): void {
+    this.shopping.toggleWishlist(product.id);
+  }
+  isWishlisted(id: string): boolean {
+    return this.wishlistProductIds().has(id);
+  }
+  selectProduct(product: CustomerProduct): void {
+    this.selectedProduct.set(product);
+  }
+  closeQuickView(): void {
+    this.selectedProduct.set(null);
+  }
+  isSelected(id: string): boolean {
+    return this.selectedProduct()?.id === id;
+  }
+  isAddingToCart(id: string): boolean {
+    return this.shopping.pendingProductIds().has(id);
+  }
+  addProductToCart(product: CustomerProduct): void {
+    this.shopping.addToCart(product);
+  }
 }

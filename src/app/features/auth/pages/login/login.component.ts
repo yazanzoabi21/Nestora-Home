@@ -6,6 +6,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { TranslationService } from '../../../../core/services/translation';
 import { AuthService } from '../../../../core/services/auth';
+import { CustomerShoppingStateService } from '../../../customer/services';
 
 type AuthMode = 'login' | 'register';
 
@@ -26,6 +27,7 @@ export class LoginComponent {
   private readonly translation = inject(TranslationService);
   private readonly translate = inject(TranslateService);
   private readonly authService = inject(AuthService);
+  private readonly shopping = inject(CustomerShoppingStateService);
   private readonly route = inject(ActivatedRoute);
 
   loginForm = {
@@ -96,6 +98,7 @@ export class LoginComponent {
         },
         this.route.snapshot.queryParamMap.get('returnUrl'),
       );
+      await this.shopping.initialize();
     } catch {
       this.errorMessage.set(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
     } finally {

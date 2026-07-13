@@ -1572,6 +1572,31 @@
       }
     },
     "CUSTOMER": {
+      "CART": {
+        "TITLE": "Shopping Cart",
+        "ITEMS": "items",
+        "CONTINUE": "Continue Shopping",
+        "EMPTY_TITLE": "Your cart is empty",
+        "EMPTY_TEXT": "Looks like you haven't added anything yet.",
+        "START_SHOPPING": "Start Shopping",
+        "ERROR_TITLE": "Unable to load your cart",
+        "RETRY": "Try again",
+        "FREE_REMAINING": "Add",
+        "FREE_UNLOCKED": "You've unlocked free shipping!",
+        "FREE_THRESHOLD": "Free shipping on orders over",
+        "DECREASE": "Decrease quantity",
+        "INCREASE": "Increase quantity",
+        "REMOVE": "Remove item",
+        "SUMMARY": "Order Summary",
+        "PROMO_PLACEHOLDER": "Promo code",
+        "APPLY": "Apply",
+        "SUBTOTAL": "Subtotal",
+        "SHIPPING": "Shipping",
+        "FREE": "Free",
+        "DISCOUNT": "Discount",
+        "TOTAL": "Total",
+        "CHECKOUT": "Proceed to Checkout"
+      },
       "PRODUCTS": {
         "HOME": "Home",
         "ALL_PRODUCTS": "All Products",
@@ -3308,6 +3333,31 @@
       }
     },
     "CUSTOMER": {
+      "CART": {
+        "TITLE": "سلة التسوق",
+        "ITEMS": "عناصر",
+        "CONTINUE": "متابعة التسوق",
+        "EMPTY_TITLE": "سلة التسوق فارغة",
+        "EMPTY_TEXT": "يبدو أنك لم تضف أي منتجات بعد.",
+        "START_SHOPPING": "ابدأ التسوق",
+        "ERROR_TITLE": "تعذر تحميل سلة التسوق",
+        "RETRY": "إعادة المحاولة",
+        "FREE_REMAINING": "أضف",
+        "FREE_UNLOCKED": "لقد حصلت على الشحن المجاني!",
+        "FREE_THRESHOLD": "شحن مجاني للطلبات التي تتجاوز",
+        "DECREASE": "تقليل الكمية",
+        "INCREASE": "زيادة الكمية",
+        "REMOVE": "إزالة المنتج",
+        "SUMMARY": "ملخص الطلب",
+        "PROMO_PLACEHOLDER": "رمز الخصم",
+        "APPLY": "تطبيق",
+        "SUBTOTAL": "المجموع الفرعي",
+        "SHIPPING": "الشحن",
+        "FREE": "مجاني",
+        "DISCOUNT": "الخصم",
+        "TOTAL": "الإجمالي",
+        "CHECKOUT": "متابعة الدفع"
+      },
       "PRODUCTS": {
         "HOME": "الرئيسية",
         "ALL_PRODUCTS": "كل المنتجات",

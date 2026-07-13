@@ -142,7 +142,7 @@
             <button
               type="button"
               class="h-14 rounded-2xl bg-[#6b7d5e] font-black text-white disabled:opacity-50"
-              [disabled]="!item.inStock"
+              [disabled]="!item.inStock || shopping.pendingProductIds().has(item.id)"
               (click)="addToCart()"
             >
               <i class="pi pi-shopping-cart me-2"></i>Add to Cart
