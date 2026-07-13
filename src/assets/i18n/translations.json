@@ -310,6 +310,18 @@
         "EMPTY": "Upload images or choose them from the Media Library.",
         "DUPLICATE": "This image has already been added."
       },
+      "FEATURES": {
+        "TITLE": "Product features",
+        "HELPER": "Add up to 20 concise features. Their order is preserved on the product page.",
+        "ADD": "Add feature",
+        "ITEM_LABEL": "Feature",
+        "PLACEHOLDER": "Example: Dishwasher safe",
+        "MOVE_UP": "Move feature up",
+        "MOVE_DOWN": "Move feature down",
+        "REMOVE": "Remove feature",
+        "EMPTY": "No product features have been added.",
+        "LIMIT_ERROR": "A product can have up to 20 features."
+      },
       "STATS": {
         "TOTAL_PRODUCTS": "Total Products",
         "IN_STOCK": "In Stock",
@@ -1124,6 +1136,40 @@
         "MAX_AMOUNT_INVALID": "Max amount cannot be negative.",
         "MAX_LESS_THAN_MIN": "Max amount cannot be less than min amount.",
         "CONFIG_INVALID": "Config must be valid JSON."
+      }
+    },
+    "PRODUCT_REVIEWS": {
+      "TITLE": "Customer reviews",
+      "REVIEWS": "reviews",
+      "OUT_OF_FIVE": "out of 5 stars",
+      "STARS": "stars",
+      "CUSTOMER": "Customer",
+      "WRITE_TITLE": "Share your experience",
+      "WRITE_TEXT": "Help other customers by reviewing this product.",
+      "SIGN_IN": "Sign in to write a review",
+      "WRITE": "Write a review",
+      "EDIT": "Edit your review",
+      "YOUR_RATING": "Your rating",
+      "COMMENT": "Your review",
+      "PLACEHOLDER": "What did you think about this product?",
+      "REMAINING": "characters remaining",
+      "SUBMIT": "Submit review",
+      "SUCCESS": "Thank you. Your review is awaiting approval.",
+      "RESPONSE": "Response from Nestora Home",
+      "EMPTY_TITLE": "No reviews yet",
+      "EMPTY_TEXT": "Be the first customer to review this product.",
+      "RETRY": "Try again",
+      "STATUS": {
+        "PENDING": "Pending approval",
+        "PUBLISHED": "Published",
+        "HIDDEN": "Hidden"
+      },
+      "ERRORS": {
+        "LOAD": "Unable to load reviews.",
+        "RATING": "Choose a rating from 1 to 5 stars.",
+        "COMMENT": "Enter your review comment.",
+        "DUPLICATE": "You have already reviewed this product.",
+        "SUBMIT": "Unable to submit your review. Please try again."
       }
     },
     "REVIEWS": {
@@ -2000,6 +2046,18 @@
         "EMPTY": "ارفع الصور أو اخترها من مكتبة الوسائط.",
         "DUPLICATE": "تمت إضافة هذه الصورة مسبقاً."
       },
+      "FEATURES": {
+        "TITLE": "ميزات المنتج",
+        "HELPER": "أضف حتى 20 ميزة مختصرة. سيُحفظ ترتيبها في صفحة المنتج.",
+        "ADD": "إضافة ميزة",
+        "ITEM_LABEL": "الميزة",
+        "PLACEHOLDER": "مثال: آمن للاستخدام في غسالة الصحون",
+        "MOVE_UP": "نقل الميزة إلى الأعلى",
+        "MOVE_DOWN": "نقل الميزة إلى الأسفل",
+        "REMOVE": "إزالة الميزة",
+        "EMPTY": "لم تتم إضافة ميزات لهذا المنتج.",
+        "LIMIT_ERROR": "يمكن أن يحتوي المنتج على 20 ميزة كحد أقصى."
+      },
       "STATS": {
         "TOTAL_PRODUCTS": "إجمالي المنتجات",
         "IN_STOCK": "متوفر",
@@ -2851,6 +2909,40 @@
         "INVALID_ETA_MIN": "يجب أن يكون أقل عدد أيام 0 أو أكثر.",
         "INVALID_ETA_MAX": "يجب أن يكون أعلى عدد أيام 0 أو أكثر.",
         "INVALID_ETA_RANGE": "يجب أن يكون أعلى عدد أيام أكبر من أو مساوياً لأقل عدد أيام."
+      }
+    },
+    "PRODUCT_REVIEWS": {
+      "TITLE": "تقييمات العملاء",
+      "REVIEWS": "تقييمات",
+      "OUT_OF_FIVE": "من 5 نجوم",
+      "STARS": "نجوم",
+      "CUSTOMER": "عميل",
+      "WRITE_TITLE": "شارك تجربتك",
+      "WRITE_TEXT": "ساعد العملاء الآخرين عبر تقييم هذا المنتج.",
+      "SIGN_IN": "سجّل الدخول لكتابة تقييم",
+      "WRITE": "اكتب تقييماً",
+      "EDIT": "عدّل تقييمك",
+      "YOUR_RATING": "تقييمك",
+      "COMMENT": "رأيك",
+      "PLACEHOLDER": "ما رأيك في هذا المنتج؟",
+      "REMAINING": "حرف متبقٍ",
+      "SUBMIT": "إرسال التقييم",
+      "SUCCESS": "شكراً لك. تقييمك بانتظار الموافقة.",
+      "RESPONSE": "رد من Nestora Home",
+      "EMPTY_TITLE": "لا توجد تقييمات بعد",
+      "EMPTY_TEXT": "كن أول عميل يقيّم هذا المنتج.",
+      "RETRY": "إعادة المحاولة",
+      "STATUS": {
+        "PENDING": "بانتظار الموافقة",
+        "PUBLISHED": "منشور",
+        "HIDDEN": "مخفي"
+      },
+      "ERRORS": {
+        "LOAD": "تعذر تحميل التقييمات.",
+        "RATING": "اختر تقييماً من نجمة إلى 5 نجوم.",
+        "COMMENT": "أدخل تعليق التقييم.",
+        "DUPLICATE": "لقد قيّمت هذا المنتج مسبقاً.",
+        "SUBMIT": "تعذر إرسال تقييمك. حاول مرة أخرى."
       }
     },
     "REVIEWS": {

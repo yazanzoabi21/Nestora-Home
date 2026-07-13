@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
@@ -25,6 +26,7 @@ export class LoginComponent {
   private readonly translation = inject(TranslationService);
   private readonly translate = inject(TranslateService);
   private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
 
   loginForm = {
     email: '',
@@ -87,10 +89,13 @@ export class LoginComponent {
         return;
       }
 
-      await this.authService.login({
-        email,
-        password,
-      });
+      await this.authService.login(
+        {
+          email,
+          password,
+        },
+        this.route.snapshot.queryParamMap.get('returnUrl'),
+      );
     } catch {
       this.errorMessage.set(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
     } finally {

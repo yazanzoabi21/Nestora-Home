@@ -65,6 +65,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   description: '',
   imageUrl: '',
   gallery: null,
+  features: [],
   isFeatured: false,
   isNew: false,
   isActive: true,
@@ -102,6 +103,7 @@ export class ProductsComponent implements OnInit {
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly imageUploadError = signal<string | null>(null);
+  readonly featureError = signal<string | null>(null);
   readonly searchTerm = signal('');
   readonly selectedCategory = signal<CategoryFilterValue>('all');
   readonly selectedStatus = signal<ProductStatusFilter>('all');
@@ -459,6 +461,7 @@ export class ProductsComponent implements OnInit {
       description: product.description ?? '',
       imageUrl: product.image_url ?? '',
       gallery: product.gallery,
+      features: this.normalizeFeatures(product.features),
       isFeatured: !!product.is_featured,
       isNew: !!product.is_new,
       isActive: product.is_active !== false,
@@ -639,6 +642,38 @@ export class ProductsComponent implements OnInit {
       ...form,
       [key]: value,
     }));
+  }
+
+  addFeature(): void {
+    if (this.productForm().features.length >= 20) {
+      this.featureError.set('PRODUCTS.FEATURES.LIMIT_ERROR');
+      return;
+    }
+    this.productForm.update((form) => ({ ...form, features: [...form.features, ''] }));
+    this.featureError.set(null);
+  }
+
+  updateFeature(index: number, value: string): void {
+    const features = [...this.productForm().features];
+    features[index] = value.slice(0, 200);
+    this.productForm.update((form) => ({ ...form, features }));
+    this.featureError.set(null);
+  }
+
+  removeFeature(index: number): void {
+    this.productForm.update((form) => ({
+      ...form,
+      features: form.features.filter((_, featureIndex) => featureIndex !== index),
+    }));
+    this.featureError.set(null);
+  }
+
+  moveFeature(index: number, direction: -1 | 1): void {
+    const features = [...this.productForm().features];
+    const target = index + direction;
+    if (target < 0 || target >= features.length) return;
+    [features[index], features[target]] = [features[target], features[index]];
+    this.productForm.update((form) => ({ ...form, features }));
   }
 
   viewProduct(row: AdminTableRow): void {
@@ -943,10 +978,16 @@ export class ProductsComponent implements OnInit {
       description: form.description.trim() || null,
       image_url: imageUrl,
       gallery,
+      features: [...new Set(form.features.map((feature) => feature.trim()).filter(Boolean))],
       is_featured: form.isFeatured,
       is_new: form.isNew,
       is_active: form.isActive,
     };
+  }
+
+  private normalizeFeatures(features: string[] | null | undefined): string[] {
+    if (!Array.isArray(features)) return [];
+    return features.filter((feature): feature is string => typeof feature === 'string');
   }
 
   clearSelectedProducts(): void {

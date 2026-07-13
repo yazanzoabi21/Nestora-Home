@@ -22,6 +22,7 @@ const PRODUCT_SELECT = `
   sku,
   image_url,
   gallery,
+  features,
   price,
   sale_price,
   stock,
@@ -58,14 +59,26 @@ export class ProductsService {
   }
 
   async getProductBySlug(slug: string): Promise<Product | null> {
-    const { data, error } = await this.supabase.from('products').select(PRODUCT_SELECT).eq('slug', slug).maybeSingle();
-    if (error) { throw new Error(error.message); }
+    const { data, error } = await this.supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .eq('slug', slug)
+      .maybeSingle();
+    if (error) {
+      throw new Error(error.message);
+    }
     return data ? this.mapProduct(data as Product) : null;
   }
 
   async getProductById(id: string): Promise<Product | null> {
-    const { data, error } = await this.supabase.from('products').select(PRODUCT_SELECT).eq('id', id).maybeSingle();
-    if (error) { throw new Error(error.message); }
+    const { data, error } = await this.supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .eq('id', id)
+      .maybeSingle();
+    if (error) {
+      throw new Error(error.message);
+    }
     return data ? this.mapProduct(data as Product) : null;
   }
 
@@ -94,7 +107,7 @@ export class ProductsService {
         featured: 0,
         newProducts: 0,
         inactive: 0,
-      }
+      },
     );
   }
 
@@ -128,10 +141,7 @@ export class ProductsService {
   }
 
   async deleteProduct(id: string): Promise<void> {
-    const { error } = await this.supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
+    const { error } = await this.supabase.from('products').delete().eq('id', id);
 
     if (error) {
       throw new Error(error.message);
@@ -182,7 +192,7 @@ export class ProductsService {
   }
 
   private resolveCategoryRelation(
-    categories: ProductCategoryRelation | ProductCategoryRelation[] | null | undefined
+    categories: ProductCategoryRelation | ProductCategoryRelation[] | null | undefined,
   ): ProductCategoryRelation | null {
     if (Array.isArray(categories)) {
       return categories[0] ?? null;
@@ -205,15 +215,13 @@ export class ProductsService {
       sku: payload.sku?.trim() || null,
       image_url: payload.image_url ?? null,
       gallery: payload.gallery ?? null,
+      features: payload.features ?? [],
       price: Number(payload.price ?? 0),
       sale_price:
         payload.sale_price === null || payload.sale_price === undefined
           ? null
           : Number(payload.sale_price),
-      stock:
-        payload.stock === null || payload.stock === undefined
-          ? null
-          : Number(payload.stock),
+      stock: payload.stock === null || payload.stock === undefined ? null : Number(payload.stock),
       sold_count:
         payload.sold_count === null || payload.sold_count === undefined
           ? null
@@ -222,9 +230,7 @@ export class ProductsService {
       is_new: payload.is_new ?? null,
       is_active: payload.is_active ?? null,
       rating:
-        payload.rating === null || payload.rating === undefined
-          ? null
-          : Number(payload.rating),
+        payload.rating === null || payload.rating === undefined ? null : Number(payload.rating),
     };
   }
 
