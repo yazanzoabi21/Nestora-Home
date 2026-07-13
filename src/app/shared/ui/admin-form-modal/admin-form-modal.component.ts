@@ -1,5 +1,14 @@
 import { NgClass } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
 export type AdminFormModalSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -12,7 +21,9 @@ export type AdminFormModalVariant = 'form' | 'delete';
   templateUrl: './admin-form-modal.component.html',
   styleUrl: './admin-form-modal.component.css',
 })
-export class AdminFormModalComponent {
+export class AdminFormModalComponent implements OnChanges, OnDestroy {
+  private static openModalCount = 0;
+  private scrollLocked = false;
   @Input() isOpen = false;
   @Input() title = '';
   @Input() subtitle = '';
@@ -24,8 +35,45 @@ export class AdminFormModalComponent {
   @Input() cancelLabel = 'COMMON.CANCEL';
   @Input() loading = false;
 
+  // Keep the reusable modal API aligned with its existing consumers.
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() close = new EventEmitter<void>();
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() submit = new EventEmitter<void>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen']) {
+      if (this.isOpen) this.lockBodyScroll();
+      else this.unlockBodyScroll();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.unlockBodyScroll();
+  }
+
+  private lockBodyScroll(): void {
+    if (this.scrollLocked || typeof document === 'undefined') return;
+    this.scrollLocked = true;
+    AdminFormModalComponent.openModalCount += 1;
+    if (AdminFormModalComponent.openModalCount === 1) {
+      document.body.dataset['adminModalOverflow'] = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  private unlockBodyScroll(): void {
+    if (!this.scrollLocked || typeof document === 'undefined') return;
+    this.scrollLocked = false;
+    AdminFormModalComponent.openModalCount = Math.max(
+      0,
+      AdminFormModalComponent.openModalCount - 1,
+    );
+    if (AdminFormModalComponent.openModalCount === 0) {
+      document.body.style.overflow = document.body.dataset['adminModalOverflow'] ?? '';
+      delete document.body.dataset['adminModalOverflow'];
+    }
+  }
 
   @HostListener('document:keydown.escape')
   closeOnEscape(): void {
@@ -57,9 +105,7 @@ export class AdminFormModalComponent {
   }
 
   submitButtonClass(): string {
-    return this.isDeleteModal()
-      ? 'admin-modal-delete-button'
-      : 'admin-modal-submit-button';
+    return this.isDeleteModal() ? 'admin-modal-delete-button' : 'admin-modal-submit-button';
   }
 
   onBackdropClick(event: MouseEvent): void {

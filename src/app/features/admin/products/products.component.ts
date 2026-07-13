@@ -25,10 +25,18 @@ import {
 import { ToastService } from '../../../core/services';
 import { AdminFormFieldComponent } from '../../../shared/ui/admin-form-field';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
-import { AdminTableColumn, AdminTableRow, AdminTableComponent } from '../../../shared/ui/admin-table';
+import {
+  AdminTableColumn,
+  AdminTableRow,
+  AdminTableComponent,
+} from '../../../shared/ui/admin-table';
 import { ExportReportComponent, ExportReportConfig } from '../../../shared/ui/export-report';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
+import {
+  ProductImageGalleryComponent,
+  ProductImageItem,
+} from '../../../shared/ui/product-image-gallery';
 type ViewMode = 'list' | 'grid';
 type ProductModalMode = 'add' | 'edit';
 type CategoryFilterValue = 'all' | 'uncategorized' | string;
@@ -74,6 +82,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
     FormsModule,
     KpiCardComponent,
     MediaPickerModalComponent,
+    ProductImageGalleryComponent,
     TranslatePipe,
   ],
   templateUrl: './products.component.html',
@@ -116,10 +125,9 @@ export class ProductsComponent implements OnInit {
   readonly productModalMode = signal<ProductModalMode>('add');
   readonly selectedProduct = signal<Product | null>(null);
   readonly productForm = signal<ProductFormModel>({ ...EMPTY_PRODUCT_FORM });
-  readonly selectedImageFile = signal<File | null>(null);
-  readonly selectedProductMedia = signal<MediaAsset | null>(null);
+  readonly productImages = signal<ProductImageItem[]>([]);
+  readonly coverImageId = signal<string | null>(null);
   readonly isProductMediaPickerOpen = signal(false);
-  readonly imagePreviewUrl = signal<string | null>(null);
   readonly productMediaFileTypes: MediaFileType[] = ['image', 'banner'];
 
   readonly productTableColumns: AdminTableColumn[] = [
@@ -154,7 +162,7 @@ export class ProductsComponent implements OnInit {
         label: this.categoryHierarchyLabel(category),
         value: category.id,
       }))
-      .sort((first, second) => first.label.localeCompare(second.label))
+      .sort((first, second) => first.label.localeCompare(second.label)),
   );
   readonly statusFilterOptions: AdminSelectOption<ProductStatusFilter>[] = [
     { label: 'PRODUCTS.ALL_STATUSES', value: 'all' },
@@ -179,7 +187,8 @@ export class ProductsComponent implements OnInit {
         (product.slug ?? '').toLowerCase().includes(searchTerm) ||
         category.toLowerCase().includes(searchTerm);
       const matchesCategory = this.matchesCategoryFilter(product, selectedCategory);
-      const matchesStatus = selectedStatus === 'all' || this.productStatus(product) === selectedStatus;
+      const matchesStatus =
+        selectedStatus === 'all' || this.productStatus(product) === selectedStatus;
       const matchesPriceRange = this.matchesPriceRange(price, selectedPriceRange);
 
       return matchesSearch && matchesCategory && matchesStatus && matchesPriceRange;
@@ -209,8 +218,8 @@ export class ProductsComponent implements OnInit {
         featured: 0,
         newProducts: 0,
         inactive: 0,
-      }
-    )
+      },
+    ),
   );
 
   readonly kpiCards = computed<KpiCardData[]>(() => {
@@ -257,7 +266,7 @@ export class ProductsComponent implements OnInit {
   });
 
   readonly tableRows = computed<ProductTableRow[]>(() =>
-    this.filteredProducts().map((product) => this.toTableRow(product))
+    this.filteredProducts().map((product) => this.toTableRow(product)),
   );
 
   readonly productsExportConfig = computed<ExportReportConfig>(() => {
@@ -270,9 +279,19 @@ export class ProductsComponent implements OnInit {
       orientation: 'landscape',
       summaryItems: [
         { label: 'Total Products', value: products.length },
-        { label: 'In Stock', value: products.filter((product) => this.productStatus(product) === 'in_stock').length },
-        { label: 'Low Stock', value: products.filter((product) => this.productStatus(product) === 'low_stock').length },
-        { label: 'Out of Stock', value: products.filter((product) => this.productStatus(product) === 'out_of_stock').length },
+        {
+          label: 'In Stock',
+          value: products.filter((product) => this.productStatus(product) === 'in_stock').length,
+        },
+        {
+          label: 'Low Stock',
+          value: products.filter((product) => this.productStatus(product) === 'low_stock').length,
+        },
+        {
+          label: 'Out of Stock',
+          value: products.filter((product) => this.productStatus(product) === 'out_of_stock')
+            .length,
+        },
       ],
       sections: [
         {
@@ -347,7 +366,7 @@ export class ProductsComponent implements OnInit {
       this.searchTerm().trim().length > 0 ||
       this.selectedCategory() !== 'all' ||
       this.selectedStatus() !== 'all' ||
-      this.selectedPriceRange() !== 'all'
+      this.selectedPriceRange() !== 'all',
   );
 
   async ngOnInit(): Promise<void> {
@@ -373,7 +392,10 @@ export class ProductsComponent implements OnInit {
       const categories = await this.categoriesService.getCategories();
       this.categoryRecords.set(categories);
     } catch (error) {
-      this.toast.failed('Loading categories', this.errorDetail(error, 'Unable to load categories.'));
+      this.toast.failed(
+        'Loading categories',
+        this.errorDetail(error, 'Unable to load categories.'),
+      );
     }
   }
 
@@ -442,9 +464,14 @@ export class ProductsComponent implements OnInit {
       isActive: product.is_active !== false,
     });
 
-    this.selectedImageFile.set(null);
-    this.selectedProductMedia.set(null);
-    this.imagePreviewUrl.set(product.image_url);
+    const images = this.productImageUrls(product).map((url, index) => ({
+      id: `existing-${index}-${url}`,
+      url,
+      name: `${product.name} ${index + 1}`,
+      mediaId: index === 0 ? (product.media_id ?? undefined) : undefined,
+    }));
+    this.productImages.set(images);
+    this.coverImageId.set(images[0]?.id ?? null);
     this.imageUploadError.set(null);
     this.isProductModalOpen.set(true);
   }
@@ -454,37 +481,58 @@ export class ProductsComponent implements OnInit {
     this.resetProductForm();
   }
 
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-
-    if (!file) {
-      return;
+  onImagesSelected(files: File[]): void {
+    const valid: ProductImageItem[] = [];
+    const existingKeys = new Set(
+      this.productImages().map((image) => this.imageKey(image.file, image.url)),
+    );
+    for (const file of files) {
+      const error = this.validateImageFile(file);
+      if (error) {
+        this.imageUploadError.set(error);
+        continue;
+      }
+      const key = this.imageKey(file);
+      if (existingKeys.has(key)) {
+        this.imageUploadError.set('PRODUCTS.IMAGES.DUPLICATE');
+        continue;
+      }
+      existingKeys.add(key);
+      valid.push({
+        id: `local-${crypto.randomUUID()}`,
+        url: URL.createObjectURL(file),
+        name: file.name,
+        file,
+      });
     }
-
-    const validationError = this.validateImageFile(file);
-
-    if (validationError) {
-      this.imageUploadError.set(validationError);
-      this.selectedImageFile.set(null);
-      this.imagePreviewUrl.set(this.productForm().imageUrl || null);
-      input.value = '';
-      return;
+    if (valid.length) {
+      this.productImages.update((images) => [...images, ...valid]);
+      this.coverImageId.update((id) => id ?? valid[0].id);
+      if (!this.imageUploadError()) this.imageUploadError.set(null);
     }
-
-    this.imageUploadError.set(null);
-    this.selectedImageFile.set(file);
-    this.selectedProductMedia.set(null);
-    this.productForm.update((form) => ({ ...form, mediaId: null }));
-    this.imagePreviewUrl.set(URL.createObjectURL(file));
   }
 
-  removeSelectedImage(): void {
-    this.selectedImageFile.set(null);
-    this.selectedProductMedia.set(null);
-    this.imagePreviewUrl.set(null);
+  removeProductImage(id: string): void {
+    const removed = this.productImages().find((image) => image.id === id);
+    if (removed?.file) URL.revokeObjectURL(removed.url);
+    this.productImages.update((images) => images.filter((image) => image.id !== id));
+    if (this.coverImageId() === id) this.coverImageId.set(this.productImages()[0]?.id ?? null);
     this.imageUploadError.set(null);
-    this.productForm.update((form) => ({ ...form, mediaId: null, imageUrl: '' }));
+  }
+
+  setCoverImage(id: string): void {
+    this.coverImageId.set(id);
+  }
+
+  moveProductImage(event: { id: string; direction: -1 | 1 }): void {
+    this.productImages.update((images) => {
+      const from = images.findIndex((image) => image.id === event.id);
+      const to = from + event.direction;
+      if (from < 0 || to < 0 || to >= images.length) return images;
+      const reordered = [...images];
+      [reordered[from], reordered[to]] = [reordered[to], reordered[from]];
+      return reordered;
+    });
   }
 
   openProductMediaPicker(): void {
@@ -500,16 +548,19 @@ export class ProductsComponent implements OnInit {
   }
 
   selectProductMedia(asset: MediaAsset): void {
-    this.selectedImageFile.set(null);
-    this.selectedProductMedia.set(asset);
-    this.imagePreviewUrl.set(asset.file_url);
-    this.imageUploadError.set(null);
-    this.productForm.update((form) => ({
-      ...form,
+    if (this.productImages().some((image) => image.url === asset.file_url)) {
+      this.imageUploadError.set('PRODUCTS.IMAGES.DUPLICATE');
+      return;
+    }
+    const image = {
+      id: `media-${asset.id}`,
+      url: asset.file_url,
+      name: asset.alt_text || asset.title || asset.file_name,
       mediaId: asset.id,
-      imageUrl: asset.file_url,
-    }));
-    this.isProductMediaPickerOpen.set(false);
+    };
+    this.productImages.update((images) => [...images, image]);
+    this.coverImageId.update((id) => id ?? image.id);
+    this.imageUploadError.set(null);
   }
 
   async saveProduct(): Promise<void> {
@@ -519,21 +570,32 @@ export class ProductsComponent implements OnInit {
 
     this.saving.set(true);
     this.imageUploadError.set(null);
+    const uploadedUrls: string[] = [];
 
     try {
-      const selectedImageFile = this.selectedImageFile();
-      let imageUrl = this.productForm().imageUrl || null;
-
-      if (selectedImageFile) {
-        try {
-          imageUrl = await this.uploadService.uploadProductImage(selectedImageFile);
-          this.productForm.update((form) => ({ ...form, mediaId: null }));
-        } catch (error) {
-          throw new Error('PRODUCTS.UPLOAD_FAILED', { cause: error });
+      const resolvedImages: ProductImageItem[] = [];
+      try {
+        for (const image of this.productImages()) {
+          if (!image.file) {
+            resolvedImages.push(image);
+            continue;
+          }
+          const url = await this.uploadService.uploadProductImage(image.file);
+          uploadedUrls.push(url);
+          resolvedImages.push({ ...image, url, file: undefined });
         }
+      } catch (error) {
+        await Promise.allSettled(
+          uploadedUrls.map((url) => this.uploadService.deleteProductImage(url)),
+        );
+        throw new Error('PRODUCTS.UPLOAD_FAILED', { cause: error });
       }
-
-      const payload = this.buildProductPayload(imageUrl);
+      const cover =
+        resolvedImages.find((image) => image.id === this.coverImageId()) ?? resolvedImages[0];
+      const gallery = resolvedImages
+        .filter((image) => image.id !== cover?.id)
+        .map((image) => image.url);
+      const payload = this.buildProductPayload(cover?.url ?? null, gallery, cover?.mediaId ?? null);
       const selectedProduct = this.selectedProduct();
       const isEdit = this.productModalMode() === 'edit' && !!selectedProduct;
       let savedProduct: Product;
@@ -557,6 +619,9 @@ export class ProductsComponent implements OnInit {
       }
       this.closeProductModal();
     } catch (error) {
+      await Promise.allSettled(
+        uploadedUrls.map((url) => this.uploadService.deleteProductImage(url)),
+      );
       console.error('Product save failed.', error);
       const message =
         error instanceof Error && error.message.startsWith('PRODUCTS.')
@@ -744,7 +809,11 @@ export class ProductsComponent implements OnInit {
     };
   }
 
-  private booleanBadge(value: boolean | null, yesLabel = 'Yes', noLabel = 'No'): {
+  private booleanBadge(
+    value: boolean | null,
+    yesLabel = 'Yes',
+    noLabel = 'No',
+  ): {
     label: string;
     className: string;
   } {
@@ -757,7 +826,8 @@ export class ProductsComponent implements OnInit {
 
     return {
       label: noLabel,
-      className: noLabel === 'Inactive' ? 'bg-[#fff1f0] text-[#b42318]' : 'bg-[#f0ebe4] text-[#675f55]',
+      className:
+        noLabel === 'Inactive' ? 'bg-[#fff1f0] text-[#b42318]' : 'bg-[#f0ebe4] text-[#675f55]',
     };
   }
 
@@ -813,7 +883,7 @@ export class ProductsComponent implements OnInit {
     return new Set(
       this.categoryRecords()
         .filter((category) => category.parent_id === parentId)
-        .map((category) => category.id)
+        .map((category) => category.id),
     );
   }
 
@@ -834,10 +904,12 @@ export class ProductsComponent implements OnInit {
   }
 
   private resetImageState(): void {
-    this.selectedImageFile.set(null);
-    this.selectedProductMedia.set(null);
+    this.productImages().forEach((image) => {
+      if (image.file) URL.revokeObjectURL(image.url);
+    });
+    this.productImages.set([]);
+    this.coverImageId.set(null);
     this.isProductMediaPickerOpen.set(false);
-    this.imagePreviewUrl.set(null);
     this.imageUploadError.set(null);
   }
 
@@ -847,24 +919,30 @@ export class ProductsComponent implements OnInit {
     this.resetImageState();
   }
 
-  private buildProductPayload(imageUrl: string | null): ProductMutationPayload {
+  private buildProductPayload(
+    imageUrl: string | null,
+    gallery: string[],
+    mediaId: string | null,
+  ): ProductMutationPayload {
     const form = this.productForm();
 
     return {
       category_id: form.categoryId,
-      media_id: form.mediaId,
+      media_id: mediaId,
       name: form.name.trim(),
       slug: form.slug.trim(),
       sku: form.sku.trim() || null,
       price: Number(form.price ?? 0),
-      sale_price: form.salePrice === null || form.salePrice === undefined ? null : Number(form.salePrice),
+      sale_price:
+        form.salePrice === null || form.salePrice === undefined ? null : Number(form.salePrice),
       stock: form.stock === null || form.stock === undefined ? null : Number(form.stock),
-      sold_count: form.soldCount === null || form.soldCount === undefined ? null : Number(form.soldCount),
+      sold_count:
+        form.soldCount === null || form.soldCount === undefined ? null : Number(form.soldCount),
       rating: form.rating === null || form.rating === undefined ? null : Number(form.rating),
       short_description: form.shortDescription.trim() || null,
       description: form.description.trim() || null,
       image_url: imageUrl,
-      gallery: form.gallery,
+      gallery,
       is_featured: form.isFeatured,
       is_new: form.isNew,
       is_active: form.isActive,
@@ -907,7 +985,7 @@ export class ProductsComponent implements OnInit {
 
     try {
       await Promise.all(
-        selectedIds.map((productId) => this.productsService.deleteProduct(productId))
+        selectedIds.map((productId) => this.productsService.deleteProduct(productId)),
       );
 
       this.isDeleteSelectedProductsModalOpen.set(false);
@@ -917,12 +995,12 @@ export class ProductsComponent implements OnInit {
 
       this.toast.success(
         `${selectedIds.length} product${selectedIds.length === 1 ? '' : 's'} deleted successfully.`,
-        'Selected products have been removed.'
+        'Selected products have been removed.',
       );
     } catch (error) {
       this.toast.failed(
         'Deleting selected products',
-        this.errorDetail(error, 'Unable to delete selected products.')
+        this.errorDetail(error, 'Unable to delete selected products.'),
       );
     } finally {
       this.saving.set(false);
@@ -985,16 +1063,16 @@ export class ProductsComponent implements OnInit {
 
       this.toast.deleted('Product');
     } catch (error) {
-      this.toast.failed(
-        'Deleting product',
-        this.errorDetail(error, 'Unable to delete product.')
-      );
+      this.toast.failed('Deleting product', this.errorDetail(error, 'Unable to delete product.'));
     } finally {
       this.saving.set(false);
     }
   }
 
-  private async saveProductMediaUsage(product: Product, mediaId: string | null | undefined): Promise<void> {
+  private async saveProductMediaUsage(
+    product: Product,
+    mediaId: string | null | undefined,
+  ): Promise<void> {
     if (!mediaId) {
       return;
     }
@@ -1009,9 +1087,24 @@ export class ProductsComponent implements OnInit {
     } catch {
       this.toast.warn(
         'Media usage not linked',
-        'Product was saved, but media usage tracking could not be updated.'
+        'Product was saved, but media usage tracking could not be updated.',
       );
     }
+  }
+
+  selectProductMediaItems(assets: MediaAsset[]): void {
+    for (const asset of assets) this.selectProductMedia(asset);
+    this.isProductMediaPickerOpen.set(false);
+  }
+
+  private productImageUrls(product: Product): string[] {
+    const gallery = Array.isArray(product.gallery) ? product.gallery : [];
+    const urls = gallery.map((item) => (typeof item === 'string' ? item : item.url));
+    return [...new Set([product.image_url, ...urls].filter((url): url is string => !!url))];
+  }
+
+  private imageKey(file?: File, url = ''): string {
+    return file ? `${file.name.toLowerCase()}-${file.size}-${file.lastModified}` : url;
   }
 
   private watchQuerySearch(): void {

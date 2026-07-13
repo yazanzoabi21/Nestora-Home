@@ -46,7 +46,7 @@
       <button
         type="button"
         class="group min-w-0 overflow-hidden rounded-2xl border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        [ngClass]="selectedId() === asset.id ? 'border-[#5f6f43] ring-4 ring-[#5f6f43]/10' : 'border-[#e5ded2]'"
+        [ngClass]="isSelected(asset) ? 'border-[#5f6f43] ring-4 ring-[#5f6f43]/10' : 'border-[#e5ded2]'"
         (click)="select(asset)">
         <span class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-[#f7f4ef]">
           @if (hasImage(asset)) {

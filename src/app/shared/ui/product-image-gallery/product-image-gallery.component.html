@@ -1,0 +1,111 @@
+<section class="image-gallery" [attr.aria-label]="'PRODUCTS.IMAGES.SECTION_LABEL' | translate">
+  <div class="gallery-heading">
+    <div>
+      <h3>{{ 'PRODUCTS.IMAGES.TITLE' | translate }}</h3>
+      <p>{{ 'PRODUCTS.UPLOAD_HELPER' | translate }}</p>
+    </div>
+    <div class="gallery-actions">
+      <label class="gallery-action" [class.is-disabled]="disabled">
+        <i class="pi pi-upload"></i><span>{{ 'PRODUCTS.IMAGES.UPLOAD' | translate }}</span>
+        <input
+          type="file"
+          multiple
+          accept="image/png,image/jpeg,image/webp"
+          [disabled]="disabled"
+          (change)="onFilesSelected($event)"
+        />
+      </label>
+      <button
+        type="button"
+        class="gallery-action"
+        [disabled]="disabled"
+        (click)="chooseMedia.emit()"
+      >
+        <i class="pi pi-images"></i
+        ><span>{{ 'COMMON.CHOOSE_FROM_MEDIA_LIBRARY' | translate }}</span>
+      </button>
+    </div>
+  </div>
+
+  @if (error) {
+    <p class="gallery-error" role="alert">{{ error | translate }}</p>
+  }
+
+  @if (images.length) {
+    <div class="gallery-grid">
+      @for (image of images; track image.id; let index = $index) {
+        <article
+          class="image-card"
+          [class.is-cover]="image.id === coverId"
+          (mouseenter)="showPreview(image.id)"
+          (mouseleave)="hidePreview(image.id)"
+        >
+          <button
+            type="button"
+            class="thumbnail"
+            (focus)="showPreview(image.id)"
+            (blur)="hidePreview(image.id)"
+            (click)="togglePreview(image.id)"
+            [attr.aria-label]="('PRODUCTS.IMAGES.PREVIEW' | translate) + ' ' + image.name"
+            [attr.aria-expanded]="previewId() === image.id"
+          >
+            <img [src]="image.url" [alt]="image.name" />
+            @if (image.id === coverId) {
+              <span class="cover-badge">{{ 'PRODUCTS.IMAGES.COVER' | translate }}</span>
+            }
+          </button>
+          <div class="image-controls">
+            <button
+              type="button"
+              [disabled]="index === 0 || disabled"
+              (click)="moveImage.emit({ id: image.id, direction: -1 })"
+              [attr.aria-label]="'PRODUCTS.IMAGES.MOVE_LEFT' | translate"
+            >
+              <i class="pi pi-chevron-left rtl:rotate-180"></i>
+            </button>
+            <button
+              type="button"
+              [disabled]="index === images.length - 1 || disabled"
+              (click)="moveImage.emit({ id: image.id, direction: 1 })"
+              [attr.aria-label]="'PRODUCTS.IMAGES.MOVE_RIGHT' | translate"
+            >
+              <i class="pi pi-chevron-right rtl:rotate-180"></i>
+            </button>
+            <button
+              type="button"
+              class="cover-action"
+              [disabled]="image.id === coverId || disabled"
+              (click)="setCover.emit(image.id)"
+            >
+              {{
+                (image.id === coverId ? 'PRODUCTS.IMAGES.COVER' : 'PRODUCTS.IMAGES.SET_COVER')
+                  | translate
+              }}
+            </button>
+            <button
+              type="button"
+              class="remove-action"
+              [disabled]="disabled"
+              (click)="removeImage.emit(image.id)"
+              [attr.aria-label]="'PRODUCTS.IMAGES.REMOVE' | translate"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+        </article>
+      }
+      @if (previewImage(); as preview) {
+        <div class="hover-preview" aria-live="polite">
+          <img [src]="preview.url" [alt]="preview.name" />
+          @if (preview.id === coverId) {
+            <span class="cover-badge">{{ 'PRODUCTS.IMAGES.COVER' | translate }}</span>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="gallery-empty">
+      <i class="pi pi-images"></i><span>{{ 'PRODUCTS.IMAGES.EMPTY' | translate }}</span>
+    </div>
+  }
+</section>

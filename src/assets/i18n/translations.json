@@ -297,6 +297,19 @@
       "IMAGE_SIZE_ERROR": "Image must be 5MB or smaller.",
       "SAVE_FAILED": "Unable to save product.",
       "UPLOAD_FAILED": "Unable to upload product image.",
+      "IMAGES": {
+        "SECTION_LABEL": "Product image gallery",
+        "TITLE": "Product images",
+        "UPLOAD": "Upload images",
+        "COVER": "Cover",
+        "SET_COVER": "Set as cover",
+        "REMOVE": "Remove image",
+        "MOVE_LEFT": "Move image left",
+        "MOVE_RIGHT": "Move image right",
+        "PREVIEW": "Preview image",
+        "EMPTY": "Upload images or choose them from the Media Library.",
+        "DUPLICATE": "This image has already been added."
+      },
       "STATS": {
         "TOTAL_PRODUCTS": "Total Products",
         "IN_STOCK": "In Stock",
@@ -1974,6 +1987,19 @@
       "IMAGE_SIZE_ERROR": "يجب أن يكون حجم الصورة 5MB أو أقل.",
       "SAVE_FAILED": "تعذر حفظ المنتج.",
       "UPLOAD_FAILED": "تعذر رفع صورة المنتج.",
+      "IMAGES": {
+        "SECTION_LABEL": "معرض صور المنتج",
+        "TITLE": "صور المنتج",
+        "UPLOAD": "رفع الصور",
+        "COVER": "الغلاف",
+        "SET_COVER": "تعيين كغلاف",
+        "REMOVE": "إزالة الصورة",
+        "MOVE_LEFT": "نقل الصورة إلى اليسار",
+        "MOVE_RIGHT": "نقل الصورة إلى اليمين",
+        "PREVIEW": "معاينة الصورة",
+        "EMPTY": "ارفع الصور أو اخترها من مكتبة الوسائط.",
+        "DUPLICATE": "تمت إضافة هذه الصورة مسبقاً."
+      },
       "STATS": {
         "TOTAL_PRODUCTS": "إجمالي المنتجات",
         "IN_STOCK": "متوفر",
