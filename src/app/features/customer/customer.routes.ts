@@ -9,21 +9,16 @@ export const CUSTOMER_ROUTES: Routes = [
       {
         path: '',
         loadComponent: () =>
-          import('./home/pages/home-page/home-page.component').then(
-            (m) => m.HomePageComponent
-          ),
+          import('./home/pages/home-page/home-page.component').then((m) => m.HomePageComponent),
       },
       {
         path: 'home',
         loadComponent: () =>
-          import('./home/pages/home-page/home-page.component').then(
-            (m) => m.HomePageComponent
-          ),
+          import('./home/pages/home-page/home-page.component').then((m) => m.HomePageComponent),
       },
       {
         path: 'products',
-        loadComponent: () =>
-          import('./pages/all-products').then((m) => m.AllProducts),
+        loadComponent: () => import('./pages/all-products').then((m) => m.AllProducts),
       },
       {
         path: 'products/:identifier',
@@ -36,8 +31,19 @@ export const CUSTOMER_ROUTES: Routes = [
       },
       {
         path: 'new-arrivals',
-        loadComponent: () =>
-          import('./pages/new-arrivals').then((m) => m.NewArrivalsComponent),
+        loadComponent: () => import('./pages/new-arrivals').then((m) => m.NewArrivalsComponent),
+      },
+      {
+        path: 'cart',
+        loadComponent: () => import('./cart').then((m) => m.CustomerCartComponent),
+      },
+      {
+        path: 'checkout',
+        loadComponent: () => import('./checkout').then((m) => m.CustomerCheckoutComponent),
+      },
+      {
+        path: 'orders',
+        loadComponent: () => import('./orders').then((m) => m.CustomerOrdersComponent),
       },
     ],
   },

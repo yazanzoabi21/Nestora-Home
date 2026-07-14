@@ -23,4 +23,5 @@ export interface CustomerProductDetails extends CustomerProduct {
   longDescription?: string;
   gallery: string[];
   sku?: string | null;
+  features: string[];
 }

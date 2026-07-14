@@ -1,0 +1,222 @@
+<main class="min-h-[70vh] bg-[#f9f8f6] px-3 py-6 text-[#292929] sm:px-6 lg:py-7">
+  <div class="mx-auto max-w-[1480px]">
+    @if (shopping.loading()) {
+      <div class="grid gap-5" role="status">
+        <div class="h-20 animate-pulse rounded-[20px] bg-[#eee8df]"></div>
+        <div class="h-44 animate-pulse rounded-[20px] bg-[#eee8df]"></div>
+        <div class="h-72 animate-pulse rounded-[20px] bg-[#eee8df]"></div>
+      </div>
+    } @else if (shopping.error()) {
+      <section
+        class="mx-auto my-12 max-w-2xl rounded-[28px] bg-white px-8 py-16 text-center shadow-[0_12px_35px_rgba(52,47,41,.07)]"
+        role="alert"
+      >
+        <i class="pi pi-exclamation-circle text-3xl text-red-700"></i>
+        <h1 class="mt-4 text-2xl font-bold">{{ 'CUSTOMER.CART.ERROR_TITLE' | translate }}</h1>
+        <p class="mt-2 text-[#88837e]">{{ shopping.error() }}</p>
+        <button
+          class="mt-6 rounded-xl bg-[#708565] px-6 py-3 font-semibold text-white"
+          type="button"
+          (click)="shopping.initialize()"
+        >
+          {{ 'CUSTOMER.CART.RETRY' | translate }}
+        </button>
+      </section>
+    } @else if (!shopping.cart().length) {
+      <section
+        class="mx-auto my-12 max-w-2xl rounded-[28px] bg-white px-8 py-16 text-center shadow-[0_12px_35px_rgba(52,47,41,.07)]"
+      >
+        <span
+          class="mx-auto flex size-24 items-center justify-center rounded-full bg-[#eef4e8] text-3xl text-[#708565]"
+          ><i class="pi pi-shopping-cart"></i
+        ></span>
+        <h1 class="mt-5 text-2xl font-bold">{{ 'CUSTOMER.CART.EMPTY_TITLE' | translate }}</h1>
+        <p class="mt-2 text-[#88837e]">{{ 'CUSTOMER.CART.EMPTY_TEXT' | translate }}</p>
+        <a
+          class="mt-6 inline-flex rounded-xl bg-[#708565] px-6 py-3 font-semibold text-white"
+          routerLink="/shop/products"
+          >{{ 'CUSTOMER.CART.START_SHOPPING' | translate }}</a
+        >
+      </section>
+    } @else {
+      <nav
+        class="mb-8 flex items-center gap-3 text-[15px] text-[#858585] lg:mb-9"
+        aria-label="Breadcrumb"
+      >
+        <a routerLink="/">{{ 'CUSTOMER.PRODUCTS.HOME' | translate }}</a
+        ><span>/</span><span class="text-[#252525]">Cart</span>
+      </nav>
+      <header class="mb-10 flex items-baseline gap-4">
+        <h1 class="text-[28px] font-semibold tracking-[-.02em]">
+          {{ 'CUSTOMER.CART.TITLE' | translate }}
+        </h1>
+        <span class="text-[16px] text-[#777]"
+          >({{ shopping.cartQuantity() }} {{ 'CUSTOMER.CART.ITEMS' | translate }})</span
+        >
+      </header>
+      <section class="mb-7 rounded-[20px] bg-[#eadfce] px-5 py-5 lg:px-6">
+        <p class="mb-3 text-[16px]">
+          @if (remainingForFreeShipping()) {
+            {{ 'CUSTOMER.CART.FREE_REMAINING' | translate }}
+            <strong>{{ remainingForFreeShipping() | currency: 'USD' }}</strong> more for free
+            shipping! 🚚
+          } @else {
+            <strong>{{ 'CUSTOMER.CART.FREE_UNLOCKED' | translate }}</strong> 🚚
+          }
+        </p>
+        <div class="h-[7px] overflow-hidden rounded-full bg-[#d6cec1]">
+          <span
+            class="block h-full rounded-full bg-[#708565] transition-[width] duration-300"
+            [style.width.%]="shippingProgress()"
+          ></span>
+        </div>
+      </section>
+      <div class="grid items-start gap-7 xl:grid-cols-[minmax(0,1fr)_488px] xl:gap-10">
+        <div>
+          <section class="grid gap-4" [attr.aria-label]="'CUSTOMER.CART.ITEMS' | translate">
+            @for (line of shopping.cart(); track line.product.id) {
+              <article
+                class="grid min-h-[180px] grid-cols-[112px_minmax(0,1fr)] gap-5 rounded-[20px] bg-white p-5 shadow-[0_8px_26px_rgba(52,47,41,.07)] sm:grid-cols-[140px_minmax(0,1fr)_130px]"
+              >
+                <img
+                  class="size-28 rounded-[16px] bg-[#eee] object-cover sm:size-[140px]"
+                  [src]="line.product.imageUrl"
+                  [alt]="line.product.name"
+                />
+                <div class="min-w-0 py-0.5">
+                  <span class="text-[14px] text-[#708565]">{{ line.product.brand }}</span>
+                  <h2 class="mt-1 truncate text-[18px] font-medium text-[#171717]">
+                    {{ line.product.name }}
+                  </h2>
+                  <div
+                    class="mt-6 inline-grid grid-cols-[46px_52px_46px] overflow-hidden rounded-full border border-[#e8d8c6] text-[16px]"
+                  >
+                    <button
+                      class="flex h-8 items-center justify-center disabled:opacity-35"
+                      type="button"
+                      [disabled]="
+                        line.quantity <= 1 || shopping.pendingProductIds().has(line.product.id)
+                      "
+                      (click)="shopping.setQuantity(line.product.id, line.quantity - 1)"
+                      [attr.aria-label]="'CUSTOMER.CART.DECREASE' | translate"
+                    >
+                      −</button
+                    ><span class="flex h-8 items-center justify-center">{{ line.quantity }}</span
+                    ><button
+                      class="flex h-8 items-center justify-center disabled:opacity-35"
+                      type="button"
+                      [disabled]="
+                        line.quantity >= line.product.stock ||
+                        shopping.pendingProductIds().has(line.product.id)
+                      "
+                      (click)="shopping.setQuantity(line.product.id, line.quantity + 1)"
+                      [attr.aria-label]="'CUSTOMER.CART.INCREASE' | translate"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="col-span-2 flex items-end justify-between sm:col-span-1 sm:flex-col sm:items-end"
+                >
+                  <button
+                    class="text-[#c8c8c8] hover:text-red-600 disabled:opacity-35"
+                    type="button"
+                    [disabled]="shopping.pendingProductIds().has(line.product.id)"
+                    (click)="shopping.removeFromCart(line.product.id)"
+                    [attr.aria-label]="'CUSTOMER.CART.REMOVE' | translate"
+                  >
+                    <i class="pi pi-trash"></i>
+                  </button>
+                  <div class="text-end">
+                    <strong class="text-[18px] font-semibold">{{
+                      line.product.price * line.quantity | currency: 'USD'
+                    }}</strong
+                    ><span class="mt-1 block text-[14px] text-[#aaa]"
+                      >{{ line.product.price | currency: 'USD' }} each</span
+                    >
+                  </div>
+                </div>
+              </article>
+            }
+          </section>
+          <a
+            class="mt-5 inline-flex items-center gap-2 text-[16px] text-[#777] hover:text-[#708565]"
+            routerLink="/shop/products"
+            ><i class="pi pi-arrow-left text-sm rtl:rotate-180"></i
+            >{{ 'CUSTOMER.CART.CONTINUE' | translate }}</a
+          >
+        </div>
+        <aside
+          class="rounded-[20px] bg-white p-[30px] shadow-[0_8px_26px_rgba(52,47,41,.07)] xl:sticky xl:top-28"
+        >
+          <h2 class="text-[23px] font-semibold">{{ 'CUSTOMER.CART.SUMMARY' | translate }}</h2>
+          <label
+            class="mt-7 block text-[15px] font-medium uppercase tracking-[.12em] text-[#929292]"
+            for="cart-promo"
+            >Promo code</label
+          >
+          <div class="mt-2 grid grid-cols-[minmax(0,1fr)_88px] gap-3">
+            <div class="relative">
+              <i class="pi pi-tag absolute start-4 top-1/2 -translate-y-1/2 text-[#999]"></i
+              ><input
+                id="cart-promo"
+                class="h-12 w-full rounded-[18px] border border-[#e8d8c6] ps-10 pe-3 text-[16px] uppercase outline-none placeholder:text-[#aaa] focus:border-[#708565]"
+                type="text"
+                [ngModel]="promoCode()"
+                (ngModelChange)="promoCode.set($event)"
+                [placeholder]="'CUSTOMER.CART.PROMO_PLACEHOLDER' | translate"
+              />
+            </div>
+            <button
+              class="h-12 rounded-[17px] bg-[#708565] px-4 text-[16px] font-semibold text-white hover:bg-[#607456] disabled:opacity-60"
+              type="button"
+              [disabled]="applyingPromo()"
+              (click)="applyPromo()"
+            >
+              {{ 'CUSTOMER.CART.APPLY' | translate }}
+            </button>
+          </div>
+          <dl class="mt-6 border-t border-[#ebe7e1] pt-5 text-[16px]">
+            <div class="flex justify-between py-1.5">
+              <dt class="text-[#888]">{{ 'CUSTOMER.CART.SUBTOTAL' | translate }}</dt>
+              <dd>{{ shopping.subtotal() | currency: 'USD' }}</dd>
+            </div>
+            <div class="flex justify-between py-1.5">
+              <dt class="text-[#888]">{{ 'CUSTOMER.CART.SHIPPING' | translate }}</dt>
+              <dd>
+                {{
+                  shipping() ? (shipping() | currency: 'USD') : ('CUSTOMER.CART.FREE' | translate)
+                }}
+              </dd>
+            </div>
+            @if (discountAmount()) {
+              <div class="flex justify-between py-1.5 text-[#4f8a4b]">
+                <dt>{{ 'CUSTOMER.CART.DISCOUNT' | translate }}</dt>
+                <dd>−{{ discountAmount() | currency: 'USD' }}</dd>
+              </div>
+            }
+            <div class="mt-4 flex items-center justify-between border-t border-[#ebe7e1] pt-6">
+              <dt class="text-[20px] font-semibold">{{ 'CUSTOMER.CART.TOTAL' | translate }}</dt>
+              <dd class="text-[27px] font-bold">{{ total() | currency: 'USD' }}</dd>
+            </div>
+          </dl>
+          <button
+            class="mt-12 flex h-[61px] w-full items-center justify-center gap-4 rounded-[20px] bg-[#708565] text-[17px] font-semibold text-white hover:bg-[#607456]"
+            type="button"
+            (click)="checkout()"
+          >
+            {{ 'CUSTOMER.CART.CHECKOUT' | translate
+            }}<i class="pi pi-arrow-right text-sm rtl:rotate-180"></i>
+          </button>
+          <div
+            class="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[14px] text-[#aaa]"
+            aria-label="Accepted payment methods"
+          >
+            <span>Visa</span><span>MC</span><span>PayPal</span><span>Apple Pay</span>
+          </div>
+        </aside>
+      </div>
+    }
+  </div>
+</main>

@@ -14,6 +14,7 @@ import { CustomerProduct } from '../../models';
 export class CustomerProductQuickViewComponent {
   readonly product = input.required<CustomerProduct>();
   readonly wishlistActive = input(false);
+  readonly cartLoading = input(false);
 
   readonly close = output<void>();
   readonly addToCart = output<CustomerProduct>();

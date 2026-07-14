@@ -1,5 +1,5 @@
 <section class="overflow-x-clip bg-[#f8f7f5]">
-  <div class="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10 xl:px-10">
+  <div class="mx-auto w-full max-w-[1480px] px-3 py-6 sm:px-6 lg:py-7">
     <nav class="flex items-center gap-2 text-sm font-bold text-[#8a8f84]" aria-label="Breadcrumb">
       <a routerLink="/shop" class="transition hover:text-[#6b7d5e]">{{
         'CUSTOMER.PRODUCTS.HOME' | translate
@@ -115,8 +115,8 @@
             [class]="
               viewMode() === 'grid'
                 ? selectedProduct()
-                  ? 'grid grid-cols-1 gap-6 sm:grid-cols-2'
-                  : 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3'
+                  ? 'mx-auto grid w-full max-w-[704px] grid-cols-1 gap-6 sm:grid-cols-2'
+                  : 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:mx-auto xl:w-full xl:max-w-[1068px] xl:grid-cols-3'
                 : 'grid grid-cols-1 gap-6'
             "
           >
@@ -125,6 +125,7 @@
                 [product]="product"
                 [view]="viewMode()"
                 [wishlistActive]="isWishlisted(product.id)"
+                [cartLoading]="isAddingToCart(product.id)"
                 [selected]="isSelected(product.id)"
                 (quickView)="selectProduct($event)"
                 (addToCart)="addProductToCart($event)"
@@ -163,6 +164,7 @@
           <app-customer-product-quick-view
             [product]="product"
             [wishlistActive]="isWishlisted(product.id)"
+            [cartLoading]="isAddingToCart(product.id)"
             (close)="closeQuickView()"
             (addToCart)="addProductToCart($event)"
             (toggleWishlist)="toggleWishlist($event)"
@@ -228,6 +230,7 @@
       <app-customer-product-quick-view
         [product]="product"
         [wishlistActive]="isWishlisted(product.id)"
+        [cartLoading]="isAddingToCart(product.id)"
         (close)="closeQuickView()"
         (addToCart)="addProductToCart($event)"
         (toggleWishlist)="toggleWishlist($event)"

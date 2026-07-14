@@ -1,0 +1,178 @@
+<section class="reviews-shell" [attr.aria-label]="'PRODUCT_REVIEWS.TITLE' | translate">
+  @if (loading()) {
+    <div class="summary skeleton" aria-busy="true">
+      <div></div>
+      <div></div>
+    </div>
+    <div class="review-card skeleton">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  } @else if (error()) {
+    <div class="state-card" role="alert">
+      <i class="pi pi-exclamation-circle"></i>
+      <h3>{{ 'PRODUCT_REVIEWS.ERRORS.LOAD' | translate }}</h3>
+      <button type="button" (click)="load()">{{ 'PRODUCT_REVIEWS.RETRY' | translate }}</button>
+    </div>
+  } @else {
+    <div class="summary">
+      <div class="average-block">
+        <strong>{{ average() | number: '1.1-1' }}</strong>
+        <div
+          class="stars"
+          [attr.aria-label]="average() + ' ' + ('PRODUCT_REVIEWS.OUT_OF_FIVE' | translate)"
+        >
+          @for (star of stars; track star) {
+            <i class="pi pi-star-fill" [class.filled]="star <= average()"></i>
+          }
+        </div>
+        <span>{{ reviews().length }} {{ 'PRODUCT_REVIEWS.REVIEWS' | translate }}</span>
+      </div>
+      <div class="distribution">
+        @for (row of distribution(); track row.rating) {
+          <div class="rating-row">
+            <span>{{ row.rating }} <i class="pi pi-star-fill"></i></span>
+            <div
+              class="bar"
+              role="progressbar"
+              [attr.aria-valuenow]="row.percentage"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <span [style.width.%]="row.percentage"></span>
+            </div>
+            <span>{{ row.percentage }}% ({{ row.count }})</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <section class="write-card">
+      <div>
+        <h3>{{ 'PRODUCT_REVIEWS.WRITE_TITLE' | translate }}</h3>
+        <p>{{ 'PRODUCT_REVIEWS.WRITE_TEXT' | translate }}</p>
+      </div>
+      @if (!authenticated()) {
+        <button type="button" class="primary" (click)="signIn()">
+          {{ 'PRODUCT_REVIEWS.SIGN_IN' | translate }}
+        </button>
+      } @else if (!formOpen()) {
+        <div class="write-action">
+          @if (ownReview(); as own) {
+            <span class="status">{{ statusKey(own.status) | translate }}</span>
+          }
+          <button type="button" class="primary" (click)="openForm()">
+            {{ (ownReview() ? 'PRODUCT_REVIEWS.EDIT' : 'PRODUCT_REVIEWS.WRITE') | translate }}
+          </button>
+        </div>
+      }
+    </section>
+
+    @if (success()) {
+      <p class="success-message" role="status">{{ 'PRODUCT_REVIEWS.SUCCESS' | translate }}</p>
+    }
+    @if (formOpen()) {
+      <form class="review-form" (ngSubmit)="submit()">
+        <fieldset>
+          <legend>{{ 'PRODUCT_REVIEWS.YOUR_RATING' | translate }}</legend>
+          <div class="rating-input" (mouseleave)="hoverRating.set(0)">
+            @for (star of stars; track star) {
+              <button
+                type="button"
+                (mouseenter)="hoverRating.set(star)"
+                (focus)="hoverRating.set(star)"
+                (blur)="hoverRating.set(0)"
+                (click)="rating.set(star)"
+                [attr.aria-label]="star + ' ' + ('PRODUCT_REVIEWS.STARS' | translate)"
+                [attr.aria-pressed]="rating() === star"
+              >
+                <i class="pi pi-star-fill" [class.filled]="star <= (hoverRating() || rating())"></i>
+              </button>
+            }
+          </div>
+        </fieldset>
+        <label for="review-comment">{{ 'PRODUCT_REVIEWS.COMMENT' | translate }}</label>
+        <textarea
+          id="review-comment"
+          name="reviewComment"
+          rows="5"
+          maxlength="1000"
+          [ngModel]="comment()"
+          (ngModelChange)="setComment($event)"
+          [placeholder]="'PRODUCT_REVIEWS.PLACEHOLDER' | translate"
+        ></textarea>
+        <div class="form-meta">
+          <span>{{ remaining() }} {{ 'PRODUCT_REVIEWS.REMAINING' | translate }}</span>
+        </div>
+        @if (formError()) {
+          <p class="form-error" role="alert">{{ formError()! | translate }}</p>
+        }
+        <div class="form-actions">
+          <button type="button" class="secondary" [disabled]="saving()" (click)="closeForm()">
+            {{ 'COMMON.CANCEL' | translate }}</button
+          ><button type="submit" class="primary" [disabled]="saving()">
+            @if (saving()) {
+              <i class="pi pi-spin pi-spinner"></i>
+            }
+            {{ 'PRODUCT_REVIEWS.SUBMIT' | translate }}
+          </button>
+        </div>
+      </form>
+    }
+
+    @if (!reviews().length) {
+      <div class="state-card">
+        <i class="pi pi-comments"></i>
+        <h3>{{ 'PRODUCT_REVIEWS.EMPTY_TITLE' | translate }}</h3>
+        <p>{{ 'PRODUCT_REVIEWS.EMPTY_TEXT' | translate }}</p>
+      </div>
+    } @else {
+      <div class="review-list">
+        @for (review of reviews(); track review.id) {
+          <article class="review-card">
+            <header>
+              <div class="customer">
+                <span class="avatar">
+                  @if (review.customer?.avatar_url) {
+                    <img [src]="review.customer?.avatar_url" [alt]="customerName(review)" />
+                  } @else {
+                    {{ initials(review) }}
+                  }
+                </span>
+                <div>
+                  <strong>{{ customerName(review) | translate }}</strong
+                  ><time [attr.datetime]="review.created_at">{{
+                    review.created_at | date: 'mediumDate'
+                  }}</time>
+                </div>
+              </div>
+              <div
+                class="stars"
+                [attr.aria-label]="
+                  review.rating + ' ' + ('PRODUCT_REVIEWS.OUT_OF_FIVE' | translate)
+                "
+              >
+                @for (star of stars; track star) {
+                  <i class="pi pi-star-fill" [class.filled]="star <= (review.rating ?? 0)"></i>
+                }
+              </div>
+            </header>
+            <p class="comment">{{ review.comment }}</p>
+            @if (review.admin_reply) {
+              <div class="admin-reply">
+                <strong>{{ 'PRODUCT_REVIEWS.RESPONSE' | translate }}</strong>
+                <p>{{ review.admin_reply }}</p>
+                @if (review.admin_reply_at) {
+                  <time [attr.datetime]="review.admin_reply_at">{{
+                    review.admin_reply_at | date: 'mediumDate'
+                  }}</time>
+                }
+              </div>
+            }
+          </article>
+        }
+      </div>
+    }
+  }
+</section>

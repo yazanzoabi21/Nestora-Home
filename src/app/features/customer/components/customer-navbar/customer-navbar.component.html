@@ -1,59 +1,155 @@
-<header class="customer-header">
-  <div class="benefits-bar">
-    <div class="navbar-container benefits-bar__content">
-      <span class="benefits-bar__check" aria-hidden="true">
-        <i class="pi pi-check"></i>
+<header class="sticky top-0 z-[1000] block w-full">
+  <!-- Benefits bar -->
+  <div class="h-10 w-full bg-[#30362f] text-white">
+    <div
+      class="mx-auto flex h-full w-full max-w-[1480px] items-center justify-center gap-2 whitespace-nowrap px-6 text-[11px] font-semibold max-sm:gap-1.5 max-sm:px-3 max-sm:text-[10px]"
+    >
+      <span
+        class="inline-flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-full bg-[#718369] text-white"
+        aria-hidden="true"
+      >
+        <i class="pi pi-check text-[8px] font-extrabold"></i>
       </span>
-      <span class="benefits-bar__lead">Worry-free shopping</span>
-      <span class="benefits-bar__separator" aria-hidden="true">—</span>
-      <span class="benefits-bar__pill">30-Day Returns</span>
-      <a routerLink="/shop" class="benefits-bar__link">Learn More <span aria-hidden="true">→</span></a>
+
+      <span
+        class="max-[390px]:max-w-[118px] max-[390px]:overflow-hidden max-[390px]:text-ellipsis"
+      >
+        Worry-free shopping
+      </span>
+
+      <span class="text-white/50 max-sm:hidden" aria-hidden="true">
+        —
+      </span>
+
+      <span
+        class="rounded-full border border-[#aec1a299] px-[9px] py-[3px] leading-none text-[#e8eee4] max-sm:hidden"
+      >
+        30-Day Returns
+      </span>
+
+      <a
+        routerLink="/shop"
+        class="ml-0.5 text-white underline decoration-1 underline-offset-[3px] transition-colors duration-150 hover:text-[#cbd8c4]"
+      >
+        Learn More
+        <span aria-hidden="true">→</span>
+      </a>
     </div>
   </div>
 
-  <div class="shipping-bar">
+  <!-- Shipping bar -->
+  <div
+    class="flex h-8 w-full items-center justify-center gap-[7px] overflow-hidden whitespace-nowrap bg-[#718369] px-4 text-center text-[11px] font-semibold uppercase leading-none tracking-[0.15em] text-white max-sm:h-[30px] max-sm:px-2.5 max-sm:text-[8px] max-sm:tracking-[0.09em]"
+  >
     <span>FREE SHIPPING ON ORDERS OVER $75</span>
-    <span class="shipping-bar__dot" aria-hidden="true">·</span>
+
+    <span class="text-[15px] leading-none" aria-hidden="true">
+      ·
+    </span>
+
     <span>USE CODE: NESTORA10 FOR 10% OFF</span>
   </div>
 
-  <nav class="main-navbar" aria-label="Primary navigation">
-    <div class="navbar-container main-navbar__content">
-      <a routerLink="/shop" class="brand" aria-label="Nestora Home">
-        <span class="brand__icon" aria-hidden="true">
-          <i class="pi pi-home"></i>
+  <!-- Main navbar -->
+  <nav
+    class="h-[82px] w-full border-b border-[#e8dccf] bg-white/[0.98] backdrop-blur-[8px] max-sm:h-[70px]"
+    aria-label="Primary navigation"
+  >
+    <div
+      class="mx-auto flex h-full w-full max-w-[1480px] items-center gap-7 px-6 max-[1120px]:gap-[18px] max-sm:gap-[9px] max-sm:px-3"
+    >
+      <!-- Brand -->
+      <a
+        routerLink="/shop"
+        class="flex shrink-0 items-center gap-3 text-[#202c22] no-underline max-sm:gap-[9px]"
+        aria-label="Nestora Home"
+      >
+        <span
+          class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#718369] text-white shadow-[0_2px_5px_rgba(31,42,31,0.18)] max-sm:h-10 max-sm:w-10 max-sm:rounded-xl"
+          aria-hidden="true"
+        >
+          <i class="pi pi-home text-base"></i>
         </span>
-        <span class="brand__name">Nestora Home</span>
+
+        <span
+          class="whitespace-nowrap text-xl font-extrabold max-sm:text-[17px] max-[390px]:text-[15px]"
+        >
+          Nestora Home
+        </span>
       </a>
 
-      <div class="navigation">
+      <!-- Navigation centered between brand and search -->
+      <div
+        class="flex min-w-0 flex-1 items-center justify-center gap-[26px] max-[1120px]:gap-[17px] max-[920px]:hidden"
+      >
         @for (link of navLinks; track link.label) {
           <a
             [routerLink]="link.path"
-            routerLinkActive="navigation__link--active"
+            routerLinkActive="!font-extrabold !text-[#202c22]"
             [routerLinkActiveOptions]="{ exact: link.path === '/shop' }"
-            class="navigation__link"
+            class="whitespace-nowrap text-[15px] font-semibold leading-none text-[#53604f] no-underline transition-colors duration-150 hover:text-[#718369]"
           >
             {{ link.label }}
           </a>
         }
       </div>
 
-      <div class="actions">
-        <label class="search-box">
+      <!-- Search and actions -->
+      <div
+        class="flex shrink-0 items-center gap-[9px] max-[920px]:ml-auto max-sm:gap-[7px] max-[390px]:gap-[5px]"
+      >
+        <!-- Search -->
+        <label
+          class="relative me-6 block w-[380px] max-[1280px]:me-2 max-[1280px]:w-[290px] max-[1120px]:w-[clamp(210px,22vw,270px)] max-[920px]:w-[min(280px,34vw)] max-sm:hidden"
+        >
           <span class="sr-only">Search products</span>
-          <i class="pi pi-search" aria-hidden="true"></i>
-          <input type="search" placeholder="Search home essentials" />
+
+          <i
+            class="pi pi-search pointer-events-none absolute left-[15px] top-1/2 z-[1] -translate-y-1/2 text-[15px] text-[#899086]"
+            aria-hidden="true"
+          ></i>
+
+          <input
+            type="search"
+            placeholder="Search home essentials"
+            class="h-11 w-full rounded-full border border-[#e7d9cb] bg-[#faf8f5] py-0 pl-[43px] pr-4 text-[13px] font-semibold text-[#202c22] outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[#899086] focus:border-[#718369] focus:bg-white focus:shadow-[0_0_0_3px_rgba(113,131,105,0.14)]"
+          />
         </label>
 
-        <button type="button" class="customer-icon-button actions__wishlist" aria-label="Wishlist">
-          <i class="pi pi-heart"></i>
+        <!-- Wishlist -->
+        <button
+          type="button"
+          class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:hidden"
+          aria-label="Wishlist"
+        >
+          <i class="pi pi-heart text-base"></i>
         </button>
-        <button type="button" class="customer-icon-button" aria-label="Cart">
-          <i class="pi pi-shopping-bag"></i>
-        </button>
-        <button type="button" class="customer-icon-button" aria-label="Profile">
-          <i class="pi pi-user"></i>
+
+        <!-- Cart -->
+        <a
+          routerLink="/shop/cart"
+          class="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] no-underline transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:h-10 max-sm:w-10"
+          [attr.aria-label]="'Cart, ' + shopping.cartQuantity() + ' items'"
+        >
+          <i class="pi pi-shopping-bag text-base" aria-hidden="true"></i>
+
+          @if (shopping.cartQuantity() > 0) {
+            <span
+              class="pointer-events-none absolute -end-[0.3rem] -top-[0.3rem] inline-flex h-[1.15rem] min-w-[1.15rem] items-center justify-center rounded-full border-2 border-white bg-[#6b7d5e] px-1 text-[0.6rem] font-extrabold leading-none text-white"
+              aria-hidden="true"
+            >
+              {{ shopping.cartQuantity() > 99 ? '99+' : shopping.cartQuantity() }}
+            </span>
+          }
+        </a>
+
+        <!-- Profile -->
+        <button
+          type="button"
+          class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:h-10 max-sm:w-10"
+          aria-label="Profile"
+        >
+          <i class="pi pi-user text-base"></i>
         </button>
       </div>
     </div>

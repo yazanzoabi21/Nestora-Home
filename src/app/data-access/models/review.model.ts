@@ -57,3 +57,15 @@ export interface ReviewUpdatePayload {
   is_liked_by_admin?: boolean;
   is_featured?: boolean;
 }
+
+export interface CustomerReviewPayload {
+  productId: string;
+  rating: number;
+  comment: string;
+}
+
+export interface CustomerReviewEditPayload {
+  reviewId: string;
+  rating: number;
+  comment: string;
+}

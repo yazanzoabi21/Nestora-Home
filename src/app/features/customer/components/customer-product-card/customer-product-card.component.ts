@@ -17,6 +17,7 @@ export class CustomerProductCardComponent {
   readonly product = input.required<CustomerProduct>();
   readonly view = input<CustomerProductCardView>('grid');
   readonly wishlistActive = input(false);
+  readonly cartLoading = input(false);
   readonly selected = input(false);
 
   readonly quickView = output<CustomerProduct>();

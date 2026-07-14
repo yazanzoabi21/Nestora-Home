@@ -1,0 +1,40 @@
+<label class="checkout-field" [class.checkout-field--full]="fullWidth()">
+  <span class="checkout-field__label">
+    {{ label() }}
+    @if (required()) {
+      <span class="checkout-field__required">*</span>
+    }
+  </span>
+
+  @if (type() === 'select') {
+    <select
+      class="checkout-field__control"
+      [id]="name()"
+      [name]="name()"
+      [formControl]="control()"
+      [autocomplete]="autocomplete()"
+      [required]="required()"
+      [disabled]="disabled()"
+    >
+      @for (option of options(); track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+      }
+    </select>
+  } @else {
+    <input
+      class="checkout-field__control"
+      [id]="name()"
+      [name]="name()"
+      [type]="type()"
+      [formControl]="control()"
+      [placeholder]="placeholder()"
+      [autocomplete]="autocomplete()"
+      [required]="required()"
+      [disabled]="disabled()"
+    />
+  }
+
+  @if (error()) {
+    <span class="checkout-field__error">{{ error() }}</span>
+  }
+</label>

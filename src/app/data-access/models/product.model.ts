@@ -26,6 +26,7 @@ export interface Product {
   sku: string | null;
   image_url: string | null;
   gallery: ProductGallery;
+  features: string[];
   price: number;
   sale_price: number | null;
   stock: number | null;
@@ -60,6 +61,7 @@ export interface ProductMutationPayload {
   sku?: string | null;
   image_url?: string | null;
   gallery?: ProductGallery;
+  features?: string[];
   price: number;
   sale_price?: number | null;
   stock?: number | null;
@@ -85,6 +87,7 @@ export interface ProductFormModel {
   description: string;
   imageUrl: string;
   gallery: ProductGallery;
+  features: string[];
   isFeatured: boolean;
   isNew: boolean;
   isActive: boolean;

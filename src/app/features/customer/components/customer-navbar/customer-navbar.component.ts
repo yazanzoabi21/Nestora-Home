@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { CustomerShoppingStateService } from '../../services';
 
 interface CustomerNavLink {
   label: string;
@@ -14,6 +15,7 @@ interface CustomerNavLink {
   styleUrl: './customer-navbar.component.scss',
 })
 export class CustomerNavbarComponent {
+  readonly shopping = inject(CustomerShoppingStateService);
   readonly navLinks: CustomerNavLink[] = [
     { label: 'Home', path: '/shop' },
     { label: 'Categories', path: '/shop' },

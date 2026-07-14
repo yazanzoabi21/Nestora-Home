@@ -1,0 +1,63 @@
+<section class="checkout-card">
+  <h1 class="checkout-card__title">Payment Method</h1>
+
+  <div class="payment-options">
+    @for (method of methods(); track method.id) {
+      <label class="payment-option" [class.payment-option--selected]="selectedId() === method.id">
+        <input
+          type="radio"
+          name="payment"
+          [checked]="selectedId() === method.id"
+          (change)="select.emit(method.id)"
+        />
+        <span class="payment-option__icon">
+          <i [class]="method.icon || 'pi pi-credit-card'"></i>
+        </span>
+        <span class="payment-option__body">
+          <span class="payment-option__header">
+            <span>{{ method.name }}</span>
+            <span class="payment-option__code">{{ method.code }}</span>
+          </span>
+          @if (instructions(method)) {
+            <span class="payment-option__instructions">{{ instructions(method) }}</span>
+          }
+          @if (method.fee_fixed || method.fee_percentage) {
+            <span class="payment-option__fee">
+              Fee: {{ method.fee_fixed | currency: 'USD' }} + {{ method.fee_percentage }}%
+            </span>
+          }
+        </span>
+      </label>
+    } @empty {
+      <p class="checkout-empty">No active payment methods are available for this order total.</p>
+    }
+  </div>
+
+  @if (selectedMethod(); as method) {
+    @if (method.code !== 'cod') {
+      <div class="payment-reference">
+        <app-checkout-form-field
+          name="paymentReference"
+          label="Payment reference"
+          placeholder="Transaction ID or wallet reference"
+          [control]="referenceControl"
+        />
+      </div>
+    }
+  }
+
+  <div class="checkout-actions">
+    <button class="checkout-actions__secondary" type="button" (click)="back.emit()">Back</button>
+    <button
+      class="checkout-actions__primary"
+      type="button"
+      [disabled]="!selectedId() || submitting()"
+      (click)="placeOrder.emit()"
+    >
+      @if (submitting()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      }
+      {{ totalLabel() }}
+    </button>
+  </div>
+</section>

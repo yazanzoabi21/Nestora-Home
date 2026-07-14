@@ -310,6 +310,18 @@
         "EMPTY": "Upload images or choose them from the Media Library.",
         "DUPLICATE": "This image has already been added."
       },
+      "FEATURES": {
+        "TITLE": "Product features",
+        "HELPER": "Add up to 20 concise features. Their order is preserved on the product page.",
+        "ADD": "Add feature",
+        "ITEM_LABEL": "Feature",
+        "PLACEHOLDER": "Example: Dishwasher safe",
+        "MOVE_UP": "Move feature up",
+        "MOVE_DOWN": "Move feature down",
+        "REMOVE": "Remove feature",
+        "EMPTY": "No product features have been added.",
+        "LIMIT_ERROR": "A product can have up to 20 features."
+      },
       "STATS": {
         "TOTAL_PRODUCTS": "Total Products",
         "IN_STOCK": "In Stock",
@@ -1126,6 +1138,40 @@
         "CONFIG_INVALID": "Config must be valid JSON."
       }
     },
+    "PRODUCT_REVIEWS": {
+      "TITLE": "Customer reviews",
+      "REVIEWS": "reviews",
+      "OUT_OF_FIVE": "out of 5 stars",
+      "STARS": "stars",
+      "CUSTOMER": "Customer",
+      "WRITE_TITLE": "Share your experience",
+      "WRITE_TEXT": "Help other customers by reviewing this product.",
+      "SIGN_IN": "Sign in to write a review",
+      "WRITE": "Write a review",
+      "EDIT": "Edit your review",
+      "YOUR_RATING": "Your rating",
+      "COMMENT": "Your review",
+      "PLACEHOLDER": "What did you think about this product?",
+      "REMAINING": "characters remaining",
+      "SUBMIT": "Submit review",
+      "SUCCESS": "Thank you. Your review is awaiting approval.",
+      "RESPONSE": "Response from Nestora Home",
+      "EMPTY_TITLE": "No reviews yet",
+      "EMPTY_TEXT": "Be the first customer to review this product.",
+      "RETRY": "Try again",
+      "STATUS": {
+        "PENDING": "Pending approval",
+        "PUBLISHED": "Published",
+        "HIDDEN": "Hidden"
+      },
+      "ERRORS": {
+        "LOAD": "Unable to load reviews.",
+        "RATING": "Choose a rating from 1 to 5 stars.",
+        "COMMENT": "Enter your review comment.",
+        "DUPLICATE": "You have already reviewed this product.",
+        "SUBMIT": "Unable to submit your review. Please try again."
+      }
+    },
     "REVIEWS": {
       "TITLE": "Reviews",
       "SUBTITLE": "Manage product reviews and customer feedback",
@@ -1526,6 +1572,70 @@
       }
     },
     "CUSTOMER": {
+      "CART": {
+        "TITLE": "Shopping Cart",
+        "ITEMS": "items",
+        "CONTINUE": "Continue Shopping",
+        "EMPTY_TITLE": "Your cart is empty",
+        "EMPTY_TEXT": "Looks like you haven't added anything yet.",
+        "START_SHOPPING": "Start Shopping",
+        "ERROR_TITLE": "Unable to load your cart",
+        "RETRY": "Try again",
+        "FREE_REMAINING": "Add",
+        "FREE_UNLOCKED": "You've unlocked free shipping!",
+        "FREE_THRESHOLD": "Free shipping on orders over",
+        "DECREASE": "Decrease quantity",
+        "INCREASE": "Increase quantity",
+        "REMOVE": "Remove item",
+        "SUMMARY": "Order Summary",
+        "PROMO_PLACEHOLDER": "Promo code",
+        "APPLY": "Apply",
+        "SUBTOTAL": "Subtotal",
+        "SHIPPING": "Shipping",
+        "FREE": "Free",
+        "DISCOUNT": "Discount",
+        "TOTAL": "Total",
+        "CHECKOUT": "Proceed to Checkout"
+      },
+      "CHECKOUT": {
+        "BREADCRUMB": "Home / Cart / Checkout",
+        "STEPS": {
+          "SHIPPING": "Shipping",
+          "DELIVERY": "Delivery",
+          "PAYMENT": "Payment"
+        },
+        "SHIPPING": {
+          "TITLE": "Shipping Information",
+          "CONTINUE": "Continue to Delivery"
+        },
+        "DELIVERY": {
+          "TITLE": "Delivery Method",
+          "CONTINUE": "Continue to Payment",
+          "EMPTY": "No active delivery methods are configured yet."
+        },
+        "PAYMENT": {
+          "TITLE": "Payment Method",
+          "PLACE_ORDER": "Place Order · {{total}}",
+          "EMPTY": "No active payment methods are available for this order total."
+        },
+        "SUMMARY": {
+          "TITLE": "Your Order",
+          "SUBTOTAL": "Subtotal",
+          "DISCOUNT": "Discount",
+          "DELIVERY": "Delivery",
+          "PAYMENT_FEE": "Payment fee",
+          "TOTAL": "Total",
+          "FREE": "Free"
+        },
+        "CONFIRMATION": {
+          "TITLE": "Order Confirmed!",
+          "ORDER_SUMMARY": "Order Summary",
+          "ORDER_TOTAL": "Order Total",
+          "TOTAL_PAID": "Total Paid",
+          "VIEW_ORDERS": "View Orders",
+          "BACK_HOME": "Back to Home"
+        }
+      },
       "PRODUCTS": {
         "HOME": "Home",
         "ALL_PRODUCTS": "All Products",
@@ -1999,6 +2109,18 @@
         "PREVIEW": "معاينة الصورة",
         "EMPTY": "ارفع الصور أو اخترها من مكتبة الوسائط.",
         "DUPLICATE": "تمت إضافة هذه الصورة مسبقاً."
+      },
+      "FEATURES": {
+        "TITLE": "ميزات المنتج",
+        "HELPER": "أضف حتى 20 ميزة مختصرة. سيُحفظ ترتيبها في صفحة المنتج.",
+        "ADD": "إضافة ميزة",
+        "ITEM_LABEL": "الميزة",
+        "PLACEHOLDER": "مثال: آمن للاستخدام في غسالة الصحون",
+        "MOVE_UP": "نقل الميزة إلى الأعلى",
+        "MOVE_DOWN": "نقل الميزة إلى الأسفل",
+        "REMOVE": "إزالة الميزة",
+        "EMPTY": "لم تتم إضافة ميزات لهذا المنتج.",
+        "LIMIT_ERROR": "يمكن أن يحتوي المنتج على 20 ميزة كحد أقصى."
       },
       "STATS": {
         "TOTAL_PRODUCTS": "إجمالي المنتجات",
@@ -2853,6 +2975,40 @@
         "INVALID_ETA_RANGE": "يجب أن يكون أعلى عدد أيام أكبر من أو مساوياً لأقل عدد أيام."
       }
     },
+    "PRODUCT_REVIEWS": {
+      "TITLE": "تقييمات العملاء",
+      "REVIEWS": "تقييمات",
+      "OUT_OF_FIVE": "من 5 نجوم",
+      "STARS": "نجوم",
+      "CUSTOMER": "عميل",
+      "WRITE_TITLE": "شارك تجربتك",
+      "WRITE_TEXT": "ساعد العملاء الآخرين عبر تقييم هذا المنتج.",
+      "SIGN_IN": "سجّل الدخول لكتابة تقييم",
+      "WRITE": "اكتب تقييماً",
+      "EDIT": "عدّل تقييمك",
+      "YOUR_RATING": "تقييمك",
+      "COMMENT": "رأيك",
+      "PLACEHOLDER": "ما رأيك في هذا المنتج؟",
+      "REMAINING": "حرف متبقٍ",
+      "SUBMIT": "إرسال التقييم",
+      "SUCCESS": "شكراً لك. تقييمك بانتظار الموافقة.",
+      "RESPONSE": "رد من Nestora Home",
+      "EMPTY_TITLE": "لا توجد تقييمات بعد",
+      "EMPTY_TEXT": "كن أول عميل يقيّم هذا المنتج.",
+      "RETRY": "إعادة المحاولة",
+      "STATUS": {
+        "PENDING": "بانتظار الموافقة",
+        "PUBLISHED": "منشور",
+        "HIDDEN": "مخفي"
+      },
+      "ERRORS": {
+        "LOAD": "تعذر تحميل التقييمات.",
+        "RATING": "اختر تقييماً من نجمة إلى 5 نجوم.",
+        "COMMENT": "أدخل تعليق التقييم.",
+        "DUPLICATE": "لقد قيّمت هذا المنتج مسبقاً.",
+        "SUBMIT": "تعذر إرسال تقييمك. حاول مرة أخرى."
+      }
+    },
     "REVIEWS": {
       "TITLE": "Reviews",
       "SUBTITLE": "Manage product reviews and customer feedback",
@@ -3216,6 +3372,31 @@
       }
     },
     "CUSTOMER": {
+      "CART": {
+        "TITLE": "سلة التسوق",
+        "ITEMS": "عناصر",
+        "CONTINUE": "متابعة التسوق",
+        "EMPTY_TITLE": "سلة التسوق فارغة",
+        "EMPTY_TEXT": "يبدو أنك لم تضف أي منتجات بعد.",
+        "START_SHOPPING": "ابدأ التسوق",
+        "ERROR_TITLE": "تعذر تحميل سلة التسوق",
+        "RETRY": "إعادة المحاولة",
+        "FREE_REMAINING": "أضف",
+        "FREE_UNLOCKED": "لقد حصلت على الشحن المجاني!",
+        "FREE_THRESHOLD": "شحن مجاني للطلبات التي تتجاوز",
+        "DECREASE": "تقليل الكمية",
+        "INCREASE": "زيادة الكمية",
+        "REMOVE": "إزالة المنتج",
+        "SUMMARY": "ملخص الطلب",
+        "PROMO_PLACEHOLDER": "رمز الخصم",
+        "APPLY": "تطبيق",
+        "SUBTOTAL": "المجموع الفرعي",
+        "SHIPPING": "الشحن",
+        "FREE": "مجاني",
+        "DISCOUNT": "الخصم",
+        "TOTAL": "الإجمالي",
+        "CHECKOUT": "متابعة الدفع"
+      },
       "PRODUCTS": {
         "HOME": "الرئيسية",
         "ALL_PRODUCTS": "كل المنتجات",
@@ -3241,6 +3422,45 @@
         "TOGGLE_WISHLIST": "تبديل المفضلة",
         "NO_RESULTS": "لا توجد منتجات تطابق الفلاتر",
         "NO_RESULTS_DETAIL": "جرّب إزالة فلتر أو تغيير الترتيب لاكتشاف المزيد من أساسيات نيستورا هوم."
+      },
+      "CHECKOUT": {
+        "BREADCRUMB": "الرئيسية / السلة / الدفع",
+        "STEPS": {
+          "SHIPPING": "الشحن",
+          "DELIVERY": "التوصيل",
+          "PAYMENT": "الدفع"
+        },
+        "SHIPPING": {
+          "TITLE": "معلومات الشحن",
+          "CONTINUE": "المتابعة إلى التوصيل"
+        },
+        "DELIVERY": {
+          "TITLE": "طريقة التوصيل",
+          "CONTINUE": "المتابعة إلى الدفع",
+          "EMPTY": "لا توجد طرق توصيل نشطة حالياً."
+        },
+        "PAYMENT": {
+          "TITLE": "طريقة الدفع",
+          "PLACE_ORDER": "تأكيد الطلب · {{total}}",
+          "EMPTY": "لا توجد طرق دفع نشطة لهذا الإجمالي."
+        },
+        "SUMMARY": {
+          "TITLE": "طلبك",
+          "SUBTOTAL": "المجموع الفرعي",
+          "DISCOUNT": "الخصم",
+          "DELIVERY": "التوصيل",
+          "PAYMENT_FEE": "رسوم الدفع",
+          "TOTAL": "الإجمالي",
+          "FREE": "مجاني"
+        },
+        "CONFIRMATION": {
+          "TITLE": "تم تأكيد الطلب!",
+          "ORDER_SUMMARY": "ملخص الطلب",
+          "ORDER_TOTAL": "إجمالي الطلب",
+          "TOTAL_PAID": "المبلغ المدفوع",
+          "VIEW_ORDERS": "عرض الطلبات",
+          "BACK_HOME": "العودة للرئيسية"
+        }
       }
     },
     "ANALYTICS": {
