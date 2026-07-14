@@ -1597,6 +1597,45 @@
         "TOTAL": "Total",
         "CHECKOUT": "Proceed to Checkout"
       },
+      "CHECKOUT": {
+        "BREADCRUMB": "Home / Cart / Checkout",
+        "STEPS": {
+          "SHIPPING": "Shipping",
+          "DELIVERY": "Delivery",
+          "PAYMENT": "Payment"
+        },
+        "SHIPPING": {
+          "TITLE": "Shipping Information",
+          "CONTINUE": "Continue to Delivery"
+        },
+        "DELIVERY": {
+          "TITLE": "Delivery Method",
+          "CONTINUE": "Continue to Payment",
+          "EMPTY": "No active delivery methods are configured yet."
+        },
+        "PAYMENT": {
+          "TITLE": "Payment Method",
+          "PLACE_ORDER": "Place Order · {{total}}",
+          "EMPTY": "No active payment methods are available for this order total."
+        },
+        "SUMMARY": {
+          "TITLE": "Your Order",
+          "SUBTOTAL": "Subtotal",
+          "DISCOUNT": "Discount",
+          "DELIVERY": "Delivery",
+          "PAYMENT_FEE": "Payment fee",
+          "TOTAL": "Total",
+          "FREE": "Free"
+        },
+        "CONFIRMATION": {
+          "TITLE": "Order Confirmed!",
+          "ORDER_SUMMARY": "Order Summary",
+          "ORDER_TOTAL": "Order Total",
+          "TOTAL_PAID": "Total Paid",
+          "VIEW_ORDERS": "View Orders",
+          "BACK_HOME": "Back to Home"
+        }
+      },
       "PRODUCTS": {
         "HOME": "Home",
         "ALL_PRODUCTS": "All Products",
@@ -3383,6 +3422,45 @@
         "TOGGLE_WISHLIST": "تبديل المفضلة",
         "NO_RESULTS": "لا توجد منتجات تطابق الفلاتر",
         "NO_RESULTS_DETAIL": "جرّب إزالة فلتر أو تغيير الترتيب لاكتشاف المزيد من أساسيات نيستورا هوم."
+      },
+      "CHECKOUT": {
+        "BREADCRUMB": "الرئيسية / السلة / الدفع",
+        "STEPS": {
+          "SHIPPING": "الشحن",
+          "DELIVERY": "التوصيل",
+          "PAYMENT": "الدفع"
+        },
+        "SHIPPING": {
+          "TITLE": "معلومات الشحن",
+          "CONTINUE": "المتابعة إلى التوصيل"
+        },
+        "DELIVERY": {
+          "TITLE": "طريقة التوصيل",
+          "CONTINUE": "المتابعة إلى الدفع",
+          "EMPTY": "لا توجد طرق توصيل نشطة حالياً."
+        },
+        "PAYMENT": {
+          "TITLE": "طريقة الدفع",
+          "PLACE_ORDER": "تأكيد الطلب · {{total}}",
+          "EMPTY": "لا توجد طرق دفع نشطة لهذا الإجمالي."
+        },
+        "SUMMARY": {
+          "TITLE": "طلبك",
+          "SUBTOTAL": "المجموع الفرعي",
+          "DISCOUNT": "الخصم",
+          "DELIVERY": "التوصيل",
+          "PAYMENT_FEE": "رسوم الدفع",
+          "TOTAL": "الإجمالي",
+          "FREE": "مجاني"
+        },
+        "CONFIRMATION": {
+          "TITLE": "تم تأكيد الطلب!",
+          "ORDER_SUMMARY": "ملخص الطلب",
+          "ORDER_TOTAL": "إجمالي الطلب",
+          "TOTAL_PAID": "المبلغ المدفوع",
+          "VIEW_ORDERS": "عرض الطلبات",
+          "BACK_HOME": "العودة للرئيسية"
+        }
       }
     },
     "ANALYTICS": {

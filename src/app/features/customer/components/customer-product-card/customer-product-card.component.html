@@ -1,17 +1,20 @@
 @if (view() === 'list') {
-  <a
-    [routerLink]="detailUrl()"
-    class="customer-product-card customer-product-card--list group grid min-h-[132px] cursor-pointer grid-cols-[96px_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-3xl border bg-white p-4 transition sm:min-h-[164px] sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-6"
+  <article
+    class="customer-product-card customer-product-card--list group relative grid min-h-[132px] cursor-pointer grid-cols-[96px_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-3xl border bg-white p-4 transition sm:min-h-[164px] sm:grid-cols-[132px_minmax(0,1fr)_auto] sm:gap-6"
     [class.customer-product-card--selected]="selected()"
-    [attr.aria-label]="'View details for ' + product().name"
   >
+    <a
+      [routerLink]="detailUrl()"
+      class="absolute inset-0 z-0 rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
+      [attr.aria-label]="'View details for ' + product().name"
+    ></a>
     <img
       [src]="product().imageUrl"
       [alt]="product().name"
       loading="lazy"
-      class="h-24 w-24 rounded-2xl object-cover sm:h-[132px] sm:w-[132px]"
+      class="pointer-events-none relative z-[1] h-24 w-24 rounded-2xl object-cover sm:h-[132px] sm:w-[132px]"
     />
-    <div class="min-w-0 py-1">
+    <div class="pointer-events-none relative z-[1] min-w-0 py-1">
       <p class="text-sm font-bold text-[#6b7d5e]">{{ product().brand }}</p>
       <h2 class="mt-1 truncate text-base font-bold text-[#30362f] sm:text-lg">
         {{ product().name }}
@@ -33,7 +36,41 @@
         }
       </div>
     </div>
-  </a>
+    <div
+      class="relative z-10 col-span-2 flex items-center justify-end gap-3 sm:col-span-1 sm:self-center"
+    >
+      <button
+        type="button"
+        class="customer-product-card__icon-button"
+        [class.customer-product-card__icon-button--active]="wishlistActive()"
+        [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
+        [attr.aria-pressed]="wishlistActive()"
+        [attr.title]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
+        (click)="toggleWishlist.emit(product()); $event.stopPropagation()"
+      >
+        <i
+          class="pi"
+          [class.pi-heart]="!wishlistActive()"
+          [class.pi-heart-fill]="wishlistActive()"
+        ></i>
+      </button>
+      <button
+        type="button"
+        class="customer-product-card__icon-button customer-product-card__icon-button--primary"
+        [disabled]="!product().inStock || cartLoading()"
+        [attr.aria-label]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
+        [attr.title]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
+        (click)="addToCart.emit(product()); $event.stopPropagation()"
+      >
+        <i
+          class="pi"
+          [class.pi-shopping-cart]="!cartLoading()"
+          [class.pi-spinner]="cartLoading()"
+          [class.pi-spin]="cartLoading()"
+        ></i>
+      </button>
+    </div>
+  </article>
 } @else {
   <article
     class="customer-product-card group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white"
@@ -69,6 +106,7 @@
         [class.text-[#6b7d5e]]="wishlistActive()"
         [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
         [attr.aria-pressed]="wishlistActive()"
+        [attr.title]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
         (click)="toggleWishlist.emit(product()); $event.stopPropagation()"
       >
         <i
@@ -83,6 +121,8 @@
         <button
           type="button"
           class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-black shadow-sm"
+          [attr.aria-label]="'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate"
+          [attr.title]="'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate"
           (click)="quickView.emit(product()); $event.stopPropagation()"
         >
           <i class="pi pi-eye text-xs"></i>{{ 'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate }}
@@ -91,6 +131,8 @@
           type="button"
           class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white disabled:opacity-60"
           [disabled]="!product().inStock || cartLoading()"
+          [attr.aria-label]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
+          [attr.title]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
           (click)="addToCart.emit(product()); $event.stopPropagation()"
         >
           <i

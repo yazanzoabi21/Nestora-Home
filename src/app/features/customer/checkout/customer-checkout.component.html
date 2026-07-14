@@ -1,0 +1,64 @@
+<main class="checkout-page">
+  <div class="checkout-page__inner">
+    <nav class="checkout-breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/shop">Home</a>
+      <span>/</span>
+      <a routerLink="/shop/cart">Cart</a>
+      <span>/</span>
+      <span>Checkout</span>
+    </nav>
+
+    @if (state.currentStep() !== 'confirmed') {
+      <app-checkout-stepper
+        [active]="state.currentStep()"
+        [completed]="completedSteps()"
+        [canOpenStep]="canOpenStep"
+        (stepClick)="state.goToStep($event)"
+      />
+
+      <div class="checkout-layout">
+        <div class="checkout-layout__main">
+          @switch (state.currentStep()) {
+            @case ('shipping') {
+              <app-checkout-shipping
+                [initialValue]="state.shippingInfo()"
+                (continue)="state.saveShipping($event)"
+              />
+            }
+            @case ('delivery') {
+              <app-checkout-delivery
+                [options]="state.deliveryOptions()"
+                [selectedId]="state.selectedDeliveryId()"
+                [loading]="state.loadingOptions()"
+                (select)="state.selectDelivery($event)"
+                (back)="state.goToStep('shipping')"
+                (continue)="state.continueToPayment()"
+              />
+            }
+            @case ('payment') {
+              <app-checkout-payment
+                [methods]="state.availablePaymentMethods()"
+                [selectedId]="state.selectedPaymentId()"
+                [totalLabel]="state.formatTotalLabel(currency)"
+                [reference]="state.paymentReference()"
+                [submitting]="state.submitting()"
+                (select)="state.selectPayment($event)"
+                (referenceChange)="state.setPaymentReference($event)"
+                (back)="state.goToStep('delivery')"
+                (placeOrder)="state.placeOrder()"
+              />
+            }
+          }
+        </div>
+
+        <app-checkout-order-summary
+          class="checkout-layout__summary"
+          [lines]="state.shopping.cart()"
+          [totals]="state.totals()"
+        />
+      </div>
+    } @else {
+      <app-checkout-confirmation [confirmation]="state.confirmation()" />
+    }
+  </div>
+</main>

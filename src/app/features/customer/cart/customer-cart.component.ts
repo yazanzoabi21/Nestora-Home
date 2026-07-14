@@ -1,7 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ToastService } from '../../../core/services';
 import { Discount, DiscountsService } from '../../../data-access';
@@ -21,6 +21,7 @@ export class CustomerCartComponent {
   readonly shopping = inject(CustomerShoppingStateService);
   private readonly discounts = inject(DiscountsService);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
   readonly promoCode = signal('');
   readonly appliedDiscount = signal<Discount | null>(null);
   readonly applyingPromo = signal(false);
@@ -104,6 +105,14 @@ export class CustomerCartComponent {
     }
   }
   checkout(): void {
-    this.toast.info('Checkout coming soon', 'Your cart is saved and ready for checkout.');
+    if (!this.shopping.cart().length) {
+      this.toast.info('Your cart is empty', 'Add an item before checkout.');
+      return;
+    }
+    void this.router.navigate(['/shop/checkout']).then(() => {
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
   }
 }

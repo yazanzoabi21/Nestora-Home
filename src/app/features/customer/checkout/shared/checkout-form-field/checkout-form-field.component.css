@@ -1,0 +1,65 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.checkout-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.checkout-field--full {
+  grid-column: 1 / -1;
+}
+
+.checkout-field__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #817a71;
+}
+
+.checkout-field__required {
+  color: #b66b60;
+}
+
+.checkout-field__control {
+  height: 2.75rem;
+  width: 100%;
+  min-width: 0;
+  border-radius: 0.7rem;
+  border: 1px solid #e6d6c4;
+  background: #fffdfb;
+  padding: 0 0.875rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #292f27;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.checkout-field__control::placeholder {
+  color: #b8b0a7;
+  font-weight: 500;
+}
+
+.checkout-field__control:focus {
+  border-color: #738665;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(115, 134, 101, 0.12);
+}
+
+.checkout-field__control:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkout-field__error {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #b42318;
+}

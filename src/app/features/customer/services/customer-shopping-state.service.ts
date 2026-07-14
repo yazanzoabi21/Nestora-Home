@@ -123,6 +123,12 @@ export class CustomerShoppingStateService {
       return next;
     });
   }
+
+  clearCompletedCart(): void {
+    this.cart.set([]);
+    this.clearGuestItems();
+  }
+
   private setPending(id: string, pending: boolean): void {
     this.pendingProductIds.update((current) => {
       const next = new Set(current);

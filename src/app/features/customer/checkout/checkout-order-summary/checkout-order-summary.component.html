@@ -1,0 +1,54 @@
+<aside class="order-summary">
+  <h2 class="order-summary__title">Your Order</h2>
+
+  <div class="order-summary__items">
+    @for (line of lines(); track line.product.id) {
+      <div class="order-summary__item">
+        <div class="order-summary__image-wrap">
+          <img
+            class="order-summary__image"
+            [src]="line.product.imageUrl"
+            [alt]="line.product.name"
+            loading="lazy"
+          />
+          <span class="order-summary__quantity">{{ line.quantity }}</span>
+        </div>
+
+        <p class="order-summary__name">{{ line.product.name }}</p>
+
+        <strong class="order-summary__price">
+          {{ line.product.price * line.quantity | currency: 'USD' }}
+        </strong>
+      </div>
+    }
+  </div>
+
+  <dl class="order-summary__totals">
+    <div class="order-summary__row">
+      <dt>Subtotal</dt>
+      <dd>{{ totals().subtotal | currency: 'USD' }}</dd>
+    </div>
+    @if (totals().discount) {
+      <div class="order-summary__row order-summary__row--green">
+        <dt>Discount</dt>
+        <dd>-{{ totals().discount | currency: 'USD' }}</dd>
+      </div>
+    }
+    <div class="order-summary__row">
+      <dt>Delivery</dt>
+      <dd [class.order-summary__row--green]="!totals().delivery">
+        {{ totals().delivery ? (totals().delivery | currency: 'USD') : 'Free' }}
+      </dd>
+    </div>
+    @if (totals().paymentFee) {
+      <div class="order-summary__row">
+        <dt>Payment fee</dt>
+        <dd>{{ totals().paymentFee | currency: 'USD' }}</dd>
+      </div>
+    }
+    <div class="order-summary__row order-summary__row--total">
+      <dt>Total</dt>
+      <dd>{{ totals().total | currency: 'USD' }}</dd>
+    </div>
+  </dl>
+</aside>

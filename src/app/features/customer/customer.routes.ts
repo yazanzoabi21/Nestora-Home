@@ -37,6 +37,14 @@ export const CUSTOMER_ROUTES: Routes = [
         path: 'cart',
         loadComponent: () => import('./cart').then((m) => m.CustomerCartComponent),
       },
+      {
+        path: 'checkout',
+        loadComponent: () => import('./checkout').then((m) => m.CustomerCheckoutComponent),
+      },
+      {
+        path: 'orders',
+        loadComponent: () => import('./orders').then((m) => m.CustomerOrdersComponent),
+      },
     ],
   },
 ];

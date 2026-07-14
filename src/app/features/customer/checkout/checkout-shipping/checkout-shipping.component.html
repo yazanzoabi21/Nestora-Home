@@ -1,0 +1,86 @@
+<section class="checkout-card">
+  <h1 class="checkout-card__title">Shipping Information</h1>
+
+  <form class="shipping-form" [formGroup]="form" (ngSubmit)="submit()">
+    <app-checkout-form-field
+      name="firstName"
+      label="First Name"
+      autocomplete="given-name"
+      [required]="true"
+      [control]="form.controls.firstName"
+      [error]="error('firstName')"
+    />
+    <app-checkout-form-field
+      name="lastName"
+      label="Last Name"
+      autocomplete="family-name"
+      [required]="true"
+      [control]="form.controls.lastName"
+      [error]="error('lastName')"
+    />
+    <app-checkout-form-field
+      name="email"
+      label="Email"
+      type="email"
+      autocomplete="email"
+      [required]="true"
+      [control]="form.controls.email"
+      [error]="error('email')"
+    />
+    <app-checkout-form-field
+      name="phone"
+      label="Phone"
+      type="tel"
+      autocomplete="tel"
+      [control]="form.controls.phone"
+      [error]="error('phone')"
+    />
+    <app-checkout-form-field
+      name="address"
+      label="Street Address"
+      autocomplete="street-address"
+      [required]="true"
+      [fullWidth]="true"
+      [control]="form.controls.address"
+      [error]="error('address')"
+    />
+    <app-checkout-form-field
+      name="city"
+      label="City"
+      autocomplete="address-level2"
+      [required]="true"
+      [control]="form.controls.city"
+      [error]="error('city')"
+    />
+    <app-checkout-form-field
+      name="state"
+      label="State / Province"
+      autocomplete="address-level1"
+      [required]="true"
+      [control]="form.controls.state"
+      [error]="error('state')"
+    />
+    <app-checkout-form-field
+      name="postalCode"
+      label="ZIP / Postal Code"
+      autocomplete="postal-code"
+      [required]="true"
+      [control]="form.controls.postalCode"
+      [error]="error('postalCode')"
+    />
+    <app-checkout-form-field
+      name="country"
+      label="Country"
+      type="select"
+      autocomplete="country-name"
+      [options]="countries"
+      [control]="form.controls.country"
+      [error]="error('country')"
+    />
+
+    <button class="shipping-form__continue" type="submit" [disabled]="form.invalid">
+      <span>Continue to Delivery</span>
+      <i class="pi pi-chevron-right"></i>
+    </button>
+  </form>
+</section>

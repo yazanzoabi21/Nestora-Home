@@ -1,0 +1,51 @@
+<section class="checkout-card">
+  <h1 class="checkout-card__title">Delivery Method</h1>
+
+  @if (loading()) {
+    <div class="checkout-empty" role="status">
+      <i class="pi pi-spin pi-spinner"></i>
+      <span>Loading delivery methods...</span>
+    </div>
+  } @else {
+    <div class="delivery-options">
+      @for (option of options(); track option.id) {
+        <label
+          class="delivery-option"
+          [class.delivery-option--selected]="selectedId() === option.id"
+        >
+          <input
+            type="radio"
+            name="delivery"
+            [checked]="selectedId() === option.id"
+            (change)="select.emit(option.id)"
+          />
+          <span class="delivery-option__icon">
+            <i [class]="option.icon"></i>
+          </span>
+          <span class="delivery-option__body">
+            <span class="delivery-option__name">{{ option.name }}</span>
+            <span class="delivery-option__eta">{{ option.eta }}</span>
+          </span>
+          <strong class="delivery-option__price">
+            {{ option.fee ? (option.fee | currency: 'USD') : 'Free' }}
+          </strong>
+        </label>
+      } @empty {
+        <p class="checkout-empty">No active delivery methods are configured yet.</p>
+      }
+    </div>
+  }
+
+  <div class="checkout-actions">
+    <button class="checkout-actions__secondary" type="button" (click)="back.emit()">Back</button>
+    <button
+      class="checkout-actions__primary"
+      type="button"
+      [disabled]="!selectedId()"
+      (click)="continue.emit()"
+    >
+      Continue to Payment
+      <i class="pi pi-chevron-right"></i>
+    </button>
+  </div>
+</section>
