@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { TranslationService } from '../../../../core/services/translation';
-import { AuthService } from '../../../../core/services/auth';
+import { AdminAuthService, CustomerAuthService } from '../../../../core/services/auth';
 import { CustomerShoppingStateService } from '../../../customer/services';
 
 type AuthMode = 'login' | 'register';
@@ -26,7 +26,8 @@ export class LoginComponent {
 
   private readonly translation = inject(TranslationService);
   private readonly translate = inject(TranslateService);
-  private readonly authService = inject(AuthService);
+  private readonly adminAuth = inject(AdminAuthService);
+  private readonly customerAuth = inject(CustomerAuthService);
   private readonly shopping = inject(CustomerShoppingStateService);
   private readonly route = inject(ActivatedRoute);
 
@@ -91,13 +92,19 @@ export class LoginComponent {
         return;
       }
 
-      await this.authService.login(
-        {
-          email,
-          password,
-        },
-        this.route.snapshot.queryParamMap.get('returnUrl'),
-      );
+      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+      const request = { email, password };
+      if (returnUrl?.startsWith('/shop')) {
+        await this.customerAuth.login(request, returnUrl);
+      } else {
+        try {
+          await this.adminAuth.login(request, returnUrl);
+        } catch (error) {
+          await this.customerAuth.login(request, returnUrl).catch(() => {
+            throw error;
+          });
+        }
+      }
       await this.shopping.initialize();
     } catch {
       this.errorMessage.set(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
@@ -157,7 +164,7 @@ export class LoginComponent {
         return;
       }
 
-      await this.authService.register({
+      await this.customerAuth.register({
         fullName,
         email,
         phone,

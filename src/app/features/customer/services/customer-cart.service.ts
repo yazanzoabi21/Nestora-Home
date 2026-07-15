@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { SupabaseService } from '../../../core/services/supabase';
+import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 import { Product } from '../../../data-access';
 import { CustomerCartLine, CustomerProduct, GuestCartItem } from '../models';
 
@@ -15,7 +15,7 @@ interface CartItemRecord {
 
 @Injectable({ providedIn: 'root' })
 export class CustomerCartService {
-  private readonly supabase = inject(SupabaseService).client;
+  private readonly supabase = inject(CUSTOMER_SUPABASE);
 
   async getOrCreateCart(userId: string): Promise<string> {
     const { data, error } = await this.supabase

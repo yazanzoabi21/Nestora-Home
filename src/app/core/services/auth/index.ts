@@ -1,1 +1,2 @@
-﻿export * from './auth.service';
+export * from './admin-auth.service';
+export * from './customer-auth.service';

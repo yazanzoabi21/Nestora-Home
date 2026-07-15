@@ -2,15 +2,12 @@ import { CurrencyPipe } from '@angular/common';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { AuthService } from '../../../core/services/auth';
-import { SupabaseService, ToastService } from '../../../core/services';
-import {
-  PaymentMethod,
-  PaymentsService,
-  ShippingMethodZone,
-  ShippingService,
-} from '../../../data-access';
+import { CustomerAuthService } from '../../../core/services/auth';
+import { ToastService } from '../../../core/services';
+import { CUSTOMER_SUPABASE } from '../../../core/tokens';
+import { PaymentMethod, ShippingMethodZone } from '../../../data-access';
 import { CustomerShoppingStateService } from '../services';
+import { CustomerCheckoutOptionsService } from './customer-checkout-options.service';
 import {
   CheckoutConfirmation,
   CheckoutStep,
@@ -29,11 +26,10 @@ interface PlaceOrderRpcResult {
 @Injectable({ providedIn: 'root' })
 export class CustomerCheckoutStateService {
   readonly shopping = inject(CustomerShoppingStateService);
-  private readonly auth = inject(AuthService);
+  private readonly auth = inject(CustomerAuthService);
   private readonly router = inject(Router);
-  private readonly shippingService = inject(ShippingService);
-  private readonly paymentsService = inject(PaymentsService);
-  private readonly supabase = inject(SupabaseService).client;
+  private readonly checkoutOptions = inject(CustomerCheckoutOptionsService);
+  private readonly supabase = inject(CUSTOMER_SUPABASE);
   private readonly toast = inject(ToastService);
 
   readonly currentStep = signal<CheckoutStep>('shipping');
@@ -213,7 +209,7 @@ export class CustomerCheckoutStateService {
 
   private async prefillProfile(): Promise<void> {
     if (this.shippingInfo()) return;
-    const profile = await this.auth.getCurrentUserProfile().catch(() => null);
+    const profile = await this.auth.getCurrentCustomerProfile().catch(() => null);
     if (!profile) return;
     const [firstName = '', ...rest] = (profile.full_name ?? '').trim().split(/\s+/).filter(Boolean);
     this.shippingInfo.set({
@@ -233,9 +229,9 @@ export class CustomerCheckoutStateService {
     this.loadingOptions.set(true);
     try {
       const [methods, methodZones, payments] = await Promise.all([
-        this.shippingService.getShippingMethods(),
-        this.shippingService.getShippingMethodZones(),
-        this.paymentsService.getPaymentMethods(),
+        this.checkoutOptions.getShippingMethods(),
+        this.checkoutOptions.getShippingMethodZones(),
+        this.checkoutOptions.getPaymentMethods(),
       ]);
       const options = methodZones
         .filter(

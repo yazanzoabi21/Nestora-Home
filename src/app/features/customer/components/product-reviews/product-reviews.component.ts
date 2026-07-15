@@ -12,8 +12,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import { AuthService } from '../../../../core/services/auth';
-import { Review, ReviewStatus, ReviewsService } from '../../../../data-access';
+import { CustomerAuthService } from '../../../../core/services/auth';
+import { Review, ReviewStatus } from '../../../../data-access';
+import { CustomerReviewsService } from '../../services';
 
 interface RatingRow {
   rating: number;
@@ -29,8 +30,8 @@ interface RatingRow {
   styleUrl: './product-reviews.component.css',
 })
 export class ProductReviewsComponent implements OnChanges {
-  private readonly reviewsService = inject(ReviewsService);
-  private readonly auth = inject(AuthService);
+  private readonly reviewsService = inject(CustomerReviewsService);
+  private readonly auth = inject(CustomerAuthService);
   private readonly router = inject(Router);
   @Input({ required: true }) productId = '';
   @Input() returnUrl = '/shop/products';

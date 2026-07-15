@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../../shared/ui/sidebar';
 import { TOPBAR_USER_FALLBACK, TopbarComponent, TopbarUser } from '../../../shared/ui/topbar';
 import { AppRoleName, AuthenticatedUserProfile } from '../../models/auth';
-import { AuthService } from '../../services/auth';
+import { AdminAuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-admin-layout',
@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth';
   styleUrl: './admin-layout.component.scss',
 })
 export class AdminLayoutComponent implements OnInit {
-  private readonly authService = inject(AuthService);
+  private readonly authService = inject(AdminAuthService);
 
   readonly sidebarCollapsed = signal(false);
   readonly mobileSidebarOpen = signal(false);

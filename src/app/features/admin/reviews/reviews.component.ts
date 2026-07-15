@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AuthService } from '../../../core/services/auth';
+import { AdminAuthService } from '../../../core/services/auth';
 import { ToastService } from '../../../core/services';
 import { AdminSidebarBadgesService } from '../../../core/services/navigation/admin-sidebar-badges.service';
 import { Review, ReviewFilters, ReviewStatus, ReviewsService } from '../../../data-access';
@@ -33,7 +33,7 @@ interface AdminSelectOption<T extends string | number | null = string> {
   styleUrl: './reviews.component.css',
 })
 export class ReviewsComponent implements OnInit {
-  private readonly authService = inject(AuthService);
+  private readonly authService = inject(AdminAuthService);
   private readonly reviewsService = inject(ReviewsService);
   private readonly route = inject(ActivatedRoute);
   private readonly sidebarBadges = inject(AdminSidebarBadgesService);

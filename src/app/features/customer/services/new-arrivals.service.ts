@@ -1,16 +1,51 @@
 import { Injectable, inject } from '@angular/core';
+import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 import { Product } from '../../../data-access/models';
-import { ProductsService } from '../../../data-access/services';
-import { ReviewsService } from '../../../data-access/services';
 import { CustomerProduct, CustomerProductDetails } from '../models';
+import { CustomerReviewsService } from './customer-reviews.service';
+
+const PRODUCT_SELECT = `
+  id,
+  category_id,
+  media_id,
+  name,
+  slug,
+  description,
+  short_description,
+  sku,
+  image_url,
+  gallery,
+  features,
+  price,
+  sale_price,
+  stock,
+  sold_count,
+  is_featured,
+  is_new,
+  is_active,
+  rating,
+  created_at,
+  categories (
+    id,
+    name,
+    slug
+  )
+`;
 
 @Injectable({ providedIn: 'root' })
 export class NewArrivalsService {
-  private readonly productsService = inject(ProductsService);
-  private readonly reviewsService = inject(ReviewsService);
+  private readonly supabase = inject(CUSTOMER_SUPABASE);
+  private readonly reviewsService = inject(CustomerReviewsService);
 
   async getProducts(): Promise<CustomerProduct[]> {
-    const products = await this.productsService.getProducts();
+    const { data, error } = await this.supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .order('created_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    const products = (data ?? []).map((product) => this.mapProduct(product as Product));
     return Promise.all(
       products
         .filter((product) => product.is_active !== false)
@@ -29,9 +64,7 @@ export class NewArrivalsService {
   }
 
   async getProductDetails(identifier: string): Promise<CustomerProductDetails | null> {
-    const product =
-      (await this.productsService.getProductBySlug(identifier)) ??
-      (await this.productsService.getProductById(identifier));
+    const product = (await this.getProductBySlug(identifier)) ?? (await this.getProductById(identifier));
     if (!product || product.is_active === false) {
       return null;
     }
@@ -52,7 +85,7 @@ export class NewArrivalsService {
 
   private withPublishedReviewStats(
     product: CustomerProduct,
-    reviews: Awaited<ReturnType<ReviewsService['getPublishedReviewsByProduct']>>,
+    reviews: Awaited<ReturnType<CustomerReviewsService['getPublishedReviewsByProduct']>>,
   ): CustomerProduct {
     const ratings = reviews.flatMap((review) => (review.rating === null ? [] : [review.rating]));
     return {
@@ -100,5 +133,54 @@ export class NewArrivalsService {
       .map((item) => (typeof item === 'string' ? item : item.url))
       .filter((url) => Boolean(url));
     return [...new Set([product.image_url, ...urls].filter((url): url is string => Boolean(url)))];
+  }
+
+  private async getProductBySlug(slug: string): Promise<Product | null> {
+    const { data, error } = await this.supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data ? this.mapProduct(data as Product) : null;
+  }
+
+  private async getProductById(id: string): Promise<Product | null> {
+    const { data, error } = await this.supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data ? this.mapProduct(data as Product) : null;
+  }
+
+  private mapProduct(product: Product): Product {
+    const categories = product.categories;
+    const category = Array.isArray(categories) ? categories[0] : categories;
+
+    return {
+      ...product,
+      slug: product.slug || this.createSlug(product.name),
+      sku: product.sku ?? null,
+      media_id: product.media_id ?? null,
+      stock: product.stock ?? null,
+      sold_count: product.sold_count ?? null,
+      is_featured: product.is_featured ?? null,
+      is_new: product.is_new ?? null,
+      is_active: product.is_active ?? null,
+      rating: product.rating ?? null,
+      categoryName: category?.name || 'Uncategorized',
+    };
+  }
+
+  private createSlug(value: string): string {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
   }
 }

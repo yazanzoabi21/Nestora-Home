@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthenticatedUserProfile } from '../../../core/models/auth';
-import { AuthService } from '../../../core/services/auth';
+import { AdminAuthService } from '../../../core/services/auth';
 import { AdminGlobalSearchService, AdminSearchResult } from '../../../core/services/navigation';
 import { TranslationService } from '../../../core/services/translation';
 import { UserMenuComponent } from '../user-menu';
@@ -41,7 +41,7 @@ export const TOPBAR_USER_FALLBACK: TopbarUser = {
   styleUrl: './topbar.component.css',
 })
 export class TopbarComponent implements OnInit {
-  private readonly authService = inject(AuthService);
+  private readonly authService = inject(AdminAuthService);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly globalSearch = inject(AdminGlobalSearchService);
   private readonly router = inject(Router);

@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, inject, Input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/services/auth';
+import { AdminAuthService } from '../../../core/services/auth';
 import { TranslatePipe } from '@ngx-translate/core';
 
 export interface UserMenuUser {
@@ -29,7 +29,7 @@ const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
 export class UserMenuComponent {
   @Input() user: UserMenuUser = USER_MENU_FALLBACK;
 
-  private readonly authService = inject(AuthService);
+  private readonly authService = inject(AdminAuthService);
 
   readonly isOpen = signal(false);
 

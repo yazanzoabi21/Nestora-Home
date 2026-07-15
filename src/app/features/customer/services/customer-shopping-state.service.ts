@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { AuthService } from '../../../core/services/auth';
+import { CustomerAuthService } from '../../../core/services/auth';
 import { ToastService } from '../../../core/services';
 import { CustomerCartLine, CustomerProduct, GuestCartItem } from '../models';
 import { CustomerCartService } from './customer-cart.service';
@@ -9,7 +9,7 @@ const GUEST_CART_KEY = 'nestora_guest_cart_v1';
 @Injectable({ providedIn: 'root' })
 export class CustomerShoppingStateService {
   private readonly carts = inject(CustomerCartService);
-  private readonly auth = inject(AuthService);
+  private readonly auth = inject(CustomerAuthService);
   private readonly toast = inject(ToastService);
   private cartId: string | null = null;
   readonly cart = signal<CustomerCartLine[]>([]);

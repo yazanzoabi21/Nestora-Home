@@ -2,8 +2,8 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { AuthService } from '../../../core/services/auth';
-import { SupabaseService } from '../../../core/services';
+import { CustomerAuthService } from '../../../core/services/auth';
+import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 
 interface CustomerOrderRow {
   id: string;
@@ -83,8 +83,8 @@ interface CustomerOrderRow {
   `,
 })
 export class CustomerOrdersComponent implements OnInit {
-  private readonly auth = inject(AuthService);
-  private readonly supabase = inject(SupabaseService).client;
+  private readonly auth = inject(CustomerAuthService);
+  private readonly supabase = inject(CUSTOMER_SUPABASE);
 
   readonly loading = signal(true);
   readonly orders = signal<CustomerOrderRow[]>([]);

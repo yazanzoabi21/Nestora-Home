@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { AppRoleName, AuthenticatedUserProfile, CurrentUserProfileUpdate } from '../../../core/models/auth';
 import { ToastService } from '../../../core/services';
-import { AuthService } from '../../../core/services/auth';
+import { AdminAuthService } from '../../../core/services/auth';
 import { MediaAsset, MediaFileType, MediaLibraryService } from '../../../data-access';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
@@ -85,7 +85,7 @@ const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
   styleUrl: './profile.component.css',
 })
 export class ProfileComponent implements OnInit {
-  private readonly authService = inject(AuthService);
+  private readonly authService = inject(AdminAuthService);
   private readonly mediaLibraryService = inject(MediaLibraryService);
   private readonly toast = inject(ToastService);
 
