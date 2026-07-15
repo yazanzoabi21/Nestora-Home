@@ -13,7 +13,7 @@ import { ProductBrowserPage } from '../product-browser-page';
   templateUrl: '../all-products/all-products.html', styleUrl: './new-arrivals.css',
 })
 export class NewArrivalsComponent extends ProductBrowserPage {
-  readonly titleKey = 'CUSTOMER.PRODUCTS.NEW_ARRIVALS';
+  override readonly titleKey = 'CUSTOMER.PRODUCTS.NEW_ARRIVALS';
   private readonly catalog = inject(NewArrivalsService);
   constructor() { super(); void this.load(); }
   private async load(): Promise<void> {

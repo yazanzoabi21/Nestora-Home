@@ -29,14 +29,26 @@
   align-items: center;
   justify-content: center;
   border: 2px solid #e8dccf;
-  background: #fff;
+  background-color: #ffffff;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .filter-box {
   border-radius: 0.35rem;
 }
 
+/* Visible selected checkbox */
+.filter-box--checked {
+  border-color: #6b7d5e;
+  background-color: #6b7d5e;
+  box-shadow: 0 0 0 2px rgba(107, 125, 94, 0.12);
+}
+
 .filter-radio {
+  position: relative;
   border-radius: 9999px;
 }
 
