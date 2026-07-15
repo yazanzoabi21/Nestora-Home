@@ -3,6 +3,19 @@
 @import "primeicons/primeicons.css";
 @import 'tailwindcss';
 
+.customer-page-container {
+  width: 100%;
+  max-width: 1480px;
+  margin-inline: auto;
+  padding-inline: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .customer-page-container {
+    padding-inline: 1.5rem;
+  }
+}
+
 html,
 body {
   width: 100%;

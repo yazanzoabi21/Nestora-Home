@@ -20,8 +20,8 @@ interface CustomerOrderRow {
   imports: [CurrencyPipe, DatePipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="min-h-[70vh] bg-[#f9f8f6] px-4 py-10 text-[#292929] sm:px-8 lg:px-12 lg:py-14">
-      <div class="mx-auto max-w-5xl">
+    <main class="min-h-[70vh] bg-[#f9f8f6] py-10 text-[#292929] lg:py-14">
+      <div class="customer-page-container">
         <nav
           class="mb-8 flex items-center gap-3 text-sm font-bold text-[#858585]"
           aria-label="Breadcrumb"

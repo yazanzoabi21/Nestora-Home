@@ -2,13 +2,11 @@
   min-height: 70vh;
   background: #f9f8f6;
   color: #292929;
-  padding: 1.5rem 1.5rem 3rem;
+  padding-block: 1.5rem 3rem;
 }
 
 .checkout-page__inner {
   width: 100%;
-  max-width: 1480px;
-  margin: 0 auto;
 }
 
 .checkout-breadcrumb {
@@ -58,7 +56,7 @@
 
 @media (max-width: 640px) {
   .checkout-page {
-    padding-inline: 0.75rem;
+    padding-block-start: 1.5rem;
   }
 }
 
