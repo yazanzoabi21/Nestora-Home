@@ -7,6 +7,24 @@ import { MessageService } from 'primeng/api';
 export class ToastService {
   private readonly messageService = inject(MessageService);
 
+  productAdded(
+    productName: string,
+    imageUrl: string | null | undefined,
+  ): void {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Added to cart',
+      detail: productName,
+      life: 3000,
+      data: imageUrl
+        ? {
+          imageUrl,
+          imageAlt: productName,
+        }
+        : undefined,
+    });
+  }
+
   success(summary: string, detail?: string): void {
     this.messageService.add({
       severity: 'success',
@@ -62,4 +80,23 @@ export class ToastService {
   failed(action = 'Action', detail?: string): void {
     this.error(`${action} failed.`, detail);
   }
+
+  productRemoved(
+    productName: string,
+    imageUrl: string | null | undefined,
+  ): void {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Removed from cart',
+      detail: productName,
+      life: 3000,
+      data: imageUrl
+        ? {
+          imageUrl,
+          imageAlt: productName,
+        }
+        : undefined,
+    });
+  }
 }
+

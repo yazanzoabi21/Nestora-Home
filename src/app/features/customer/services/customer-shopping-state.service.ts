@@ -11,7 +11,10 @@ export class CustomerShoppingStateService {
   private readonly carts = inject(CustomerCartService);
   private readonly auth = inject(CustomerAuthService);
   private readonly toast = inject(ToastService);
-  private cartId: string | null = null;
+  private serverCartId: string | null = null;
+  private isGuestCart = false;
+  private readonly _checkoutCartId = signal<string | null>(null);
+  readonly checkoutCartId = this._checkoutCartId.asReadonly();
   readonly cart = signal<CustomerCartLine[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -33,8 +36,10 @@ export class CustomerShoppingStateService {
       const userId = await this.auth.getCurrentUserId();
       const guestItems = this.readGuestItems();
       if (userId) {
-        this.cartId = await this.carts.getOrCreateCart(userId);
-        const serverLines = await this.carts.loadLines(this.cartId);
+        this.isGuestCart = false;
+        this.serverCartId = await this.carts.getOrCreateCart(userId);
+        this._checkoutCartId.set(this.serverCartId);
+        const serverLines = await this.carts.loadLines(this.serverCartId);
         const merged = new Map(serverLines.map((line) => [line.product.id, line]));
         if (guestItems.length) {
           for (const guest of await this.carts.productsForGuest(guestItems)) {
@@ -44,7 +49,7 @@ export class CustomerShoppingStateService {
               (existing?.quantity ?? 0) + guest.quantity,
             );
             const id = await this.carts.upsertItem(
-              this.cartId,
+              this.serverCartId,
               guest.product.id,
               quantity,
               existing?.id,
@@ -55,6 +60,9 @@ export class CustomerShoppingStateService {
         }
         this.cart.set([...merged.values()]);
       } else {
+        this.isGuestCart = true;
+        this.serverCartId = null;
+        this._checkoutCartId.set(null);
         this.cart.set(await this.carts.productsForGuest(guestItems));
       }
     } catch (error) {
@@ -71,8 +79,8 @@ export class CustomerShoppingStateService {
     const existing = this.cart().find((line) => line.product.id === product.id);
     const quantity = Math.min(product.stock, (existing?.quantity ?? 0) + requestedQuantity);
     try {
-      const id = this.cartId
-        ? await this.carts.upsertItem(this.cartId, product.id, quantity, existing?.id)
+      const id = this.serverCartId
+        ? await this.carts.upsertItem(this.serverCartId, product.id, quantity, existing?.id)
         : existing?.id;
       this.cart.update((lines) =>
         existing
@@ -82,7 +90,7 @@ export class CustomerShoppingStateService {
           : [...lines, { id, product, quantity }],
       );
       this.persistGuest();
-      this.toast.success('Added to cart', `${product.name} is now in your cart.`);
+      this.toast.productAdded(product.name, product.imageUrl);
     } catch (error) {
       this.toast.failed('Adding to cart', error instanceof Error ? error.message : undefined);
     } finally {
@@ -99,8 +107,8 @@ export class CustomerShoppingStateService {
     if (quantity === line.quantity) return;
     this.setPending(productId, true);
     try {
-      const id = this.cartId
-        ? await this.carts.upsertItem(this.cartId, productId, quantity, line.id)
+      const id = this.serverCartId
+        ? await this.carts.upsertItem(this.serverCartId, productId, quantity, line.id)
         : line.id;
       this.cart.update((lines) =>
         lines.map((item) =>
@@ -119,12 +127,13 @@ export class CustomerShoppingStateService {
     if (this.pendingProductIds().has(productId)) return;
     this.setPending(productId, true);
     try {
-      if (this.cartId) await this.carts.removeItem(this.cartId, productId);
+      if (this.serverCartId) await this.carts.removeItem(this.serverCartId, productId);
       this.cart.update((lines) => lines.filter((line) => line.product.id !== productId));
       this.persistGuest();
-      this.toast.success('Item removed');
+      // this.toast.success('Item removed');
     } catch (error) {
       this.toast.failed('Removing item', error instanceof Error ? error.message : undefined);
+      throw error;
     } finally {
       this.setPending(productId, false);
     }
@@ -139,9 +148,30 @@ export class CustomerShoppingStateService {
     });
   }
 
+  async prepareCheckoutCart(): Promise<string | null> {
+    if (!this.cart().length) throw new Error('Your cart is empty.');
+
+    const userId = await this.auth.getCurrentUserId();
+    const hasInvalidItems = this.cart().some(
+      (line) => !line.product.id || !Number.isInteger(line.quantity) || line.quantity < 1,
+    );
+    if (hasInvalidItems) throw new Error('Your cart contains invalid items.');
+
+    const cartId = userId ? await this.carts.getOrCreateCart(userId) : null;
+
+    this.isGuestCart = !userId;
+    this.serverCartId = cartId;
+    this._checkoutCartId.set(cartId);
+    return cartId;
+  }
+
   clearCompletedCart(): void {
     this.cart.set([]);
     this.clearGuestItems();
+    if (this.isGuestCart) {
+      this.serverCartId = null;
+      this._checkoutCartId.set(null);
+    }
   }
 
   private setPending(id: string, pending: boolean): void {
@@ -153,8 +183,8 @@ export class CustomerShoppingStateService {
     });
   }
   private persistGuest(): void {
-    if (!this.cartId && typeof localStorage !== 'undefined')
-      localStorage.setItem(
+    if (this.isGuestCart && typeof window !== 'undefined')
+      window.localStorage.setItem(
         GUEST_CART_KEY,
         JSON.stringify(
           this.cart().map((line) => ({ productId: line.product.id, quantity: line.quantity })),
@@ -162,9 +192,9 @@ export class CustomerShoppingStateService {
       );
   }
   private readGuestItems(): GuestCartItem[] {
-    if (typeof localStorage === 'undefined') return [];
+    if (typeof window === 'undefined') return [];
     try {
-      const value: unknown = JSON.parse(localStorage.getItem(GUEST_CART_KEY) ?? '[]');
+      const value: unknown = JSON.parse(window.localStorage.getItem(GUEST_CART_KEY) ?? '[]');
       return Array.isArray(value)
         ? value.filter(
             (item): item is GuestCartItem =>
@@ -179,6 +209,6 @@ export class CustomerShoppingStateService {
     }
   }
   private clearGuestItems(): void {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem(GUEST_CART_KEY);
+    if (typeof window !== 'undefined') window.localStorage.removeItem(GUEST_CART_KEY);
   }
 }

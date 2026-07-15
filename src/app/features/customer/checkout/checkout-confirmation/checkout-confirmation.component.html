@@ -15,14 +15,14 @@
       <dl>
         <div>
           <dt>Order number</dt>
-          <dd>{{ order.orderNumber }}</dd>
+          <dd>{{ order.order.orderNumber }}</dd>
         </div>
         <div>
           <dt>Payment method</dt>
           <dd>{{ order.paymentMethodName }}</dd>
         </div>
         <div>
-          <dt>{{ order.paymentStatus === 'paid' ? 'Total Paid' : 'Order Total' }}</dt>
+          <dt>{{ order.order.paymentStatus === 'paid' ? 'Total Paid' : 'Order Total' }}</dt>
           <dd>{{ order.totals.total | currency: 'USD' }}</dd>
         </div>
       </dl>
@@ -30,7 +30,7 @@
 
     <app-checkout-order-summary
       class="confirmation__summary"
-      [lines]="order.lines"
+      [items]="order.items"
       [totals]="order.totals"
     />
 

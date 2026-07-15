@@ -36,13 +36,21 @@
       [error]="error('phone')"
     />
     <app-checkout-form-field
-      name="address"
+      name="streetAddress"
       label="Street Address"
       autocomplete="street-address"
       [required]="true"
       [fullWidth]="true"
-      [control]="form.controls.address"
-      [error]="error('address')"
+      [control]="form.controls.streetAddress"
+      [error]="error('streetAddress')"
+    />
+    <app-checkout-form-field
+      name="addressLine2"
+      label="Apartment, suite, etc."
+      autocomplete="address-line2"
+      [fullWidth]="true"
+      [control]="form.controls.addressLine2"
+      [error]="error('addressLine2')"
     />
     <app-checkout-form-field
       name="city"
@@ -53,12 +61,12 @@
       [error]="error('city')"
     />
     <app-checkout-form-field
-      name="state"
+      name="stateProvince"
       label="State / Province"
       autocomplete="address-level1"
       [required]="true"
-      [control]="form.controls.state"
-      [error]="error('state')"
+      [control]="form.controls.stateProvince"
+      [error]="error('stateProvince')"
     />
     <app-checkout-form-field
       name="postalCode"
@@ -76,6 +84,14 @@
       [options]="countries"
       [control]="form.controls.country"
       [error]="error('country')"
+    />
+    <app-checkout-form-field
+      name="deliveryInstructions"
+      label="Delivery Instructions"
+      placeholder="Optional notes for the courier"
+      [fullWidth]="true"
+      [control]="form.controls.deliveryInstructions"
+      [error]="error('deliveryInstructions')"
     />
 
     <button class="shipping-form__continue" type="submit" [disabled]="form.invalid">

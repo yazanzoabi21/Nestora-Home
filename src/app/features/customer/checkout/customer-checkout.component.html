@@ -8,7 +8,7 @@
       <span>Checkout</span>
     </nav>
 
-    @if (state.currentStep() !== 'confirmed') {
+    @if (state.currentStep() !== 'confirmation') {
       <app-checkout-stepper
         [active]="state.currentStep()"
         [completed]="completedSteps()"
@@ -21,31 +21,34 @@
           @switch (state.currentStep()) {
             @case ('shipping') {
               <app-checkout-shipping
-                [initialValue]="state.shippingInfo()"
-                (continue)="state.saveShipping($event)"
+                [initialValue]="state.shippingInformation()"
+                (continue)="saveShipping($event)"
               />
             }
             @case ('delivery') {
               <app-checkout-delivery
-                [options]="state.deliveryOptions()"
-                [selectedId]="state.selectedDeliveryId()"
-                [loading]="state.loadingOptions()"
-                (select)="state.selectDelivery($event)"
-                (back)="state.goToStep('shipping')"
-                (continue)="state.continueToPayment()"
+                [options]="state.shippingMethods()"
+                [selectedId]="state.selectedShippingMethod()?.id ?? null"
+                [loading]="state.loadingShippingMethods()"
+                [error]="state.shippingMethodsError()"
+                (select)="selectShippingMethod($event)"
+                (back)="state.goToShipping()"
+                (continue)="state.goToPayment()"
               />
             }
             @case ('payment') {
               <app-checkout-payment
-                [methods]="state.availablePaymentMethods()"
-                [selectedId]="state.selectedPaymentId()"
+                [methods]="state.paymentMethods()"
+                [selectedId]="state.selectedPaymentMethod()?.id ?? null"
                 [totalLabel]="state.formatTotalLabel(currency)"
-                [reference]="state.paymentReference()"
-                [submitting]="state.submitting()"
-                (select)="state.selectPayment($event)"
-                (referenceChange)="state.setPaymentReference($event)"
-                (back)="state.goToStep('delivery')"
-                (placeOrder)="state.placeOrder()"
+                [loading]="state.loadingPaymentMethods()"
+                [error]="state.paymentMethodsError()"
+                [placeOrderError]="state.placeOrderError()"
+                [submitting]="state.isPlacingOrder()"
+                [canPlaceOrder]="state.canPlaceOrder()"
+                (select)="selectPaymentMethod($event)"
+                (back)="state.goToDelivery()"
+                (placeOrder)="placeOrder()"
               />
             }
           }
@@ -53,7 +56,7 @@
 
         <app-checkout-order-summary
           class="checkout-layout__summary"
-          [lines]="state.shopping.cart()"
+          [items]="state.checkoutItems()"
           [totals]="state.totals()"
         />
       </div>

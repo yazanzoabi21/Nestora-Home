@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
-import { CheckoutStep } from '../checkout.models';
+import { CheckoutStep } from '../models';
 
 interface CheckoutStepperItem {
   id: CheckoutStep;

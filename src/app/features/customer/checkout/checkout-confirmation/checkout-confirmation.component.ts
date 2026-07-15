@@ -2,7 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { CheckoutConfirmation } from '../checkout.models';
+import { CheckoutConfirmation } from '../models';
 import { CheckoutOrderSummaryComponent } from '../checkout-order-summary/checkout-order-summary.component';
 
 @Component({

@@ -40,22 +40,22 @@
       </section>
     } @else {
       <nav
-        class="mb-8 flex items-center gap-3 text-[15px] text-[#858585] lg:mb-9"
+        class="mb-8 flex items-center gap-3 text-xs text-[#858585] lg:mb-9"
         aria-label="Breadcrumb"
       >
         <a routerLink="/">{{ 'CUSTOMER.PRODUCTS.HOME' | translate }}</a
         ><span>/</span><span class="text-[#252525]">Cart</span>
       </nav>
       <header class="mb-10 flex items-baseline gap-4">
-        <h1 class="text-[28px] font-semibold tracking-[-.02em]">
+        <h1 class="text-xl font-semibold tracking-[-.02em]">
           {{ 'CUSTOMER.CART.TITLE' | translate }}
         </h1>
-        <span class="text-[16px] text-[#777]"
+        <span class="text-sm text-[#777]"
           >({{ shopping.cartQuantity() }} {{ 'CUSTOMER.CART.ITEMS' | translate }})</span
         >
       </header>
       <section class="mb-7 rounded-[20px] bg-[#eadfce] px-5 py-5 lg:px-6">
-        <p class="mb-3 text-[16px]">
+        <p class="mb-3 text-sm">
           @if (remainingForFreeShipping()) {
             {{ 'CUSTOMER.CART.FREE_REMAINING' | translate }}
             <strong>{{ remainingForFreeShipping() | currency: 'USD' }}</strong> more for free
@@ -84,12 +84,12 @@
                   [alt]="line.product.name"
                 />
                 <div class="min-w-0 py-0.5">
-                  <span class="text-[14px] text-[#708565]">{{ line.product.brand }}</span>
-                  <h2 class="mt-1 truncate text-[18px] font-medium text-[#171717]">
+                  <span class="text-xs text-[#708565]">{{ line.product.brand }}</span>
+                  <h2 class="mt-1 truncate text-base font-medium text-[#171717]">
                     {{ line.product.name }}
                   </h2>
                   <div
-                    class="mt-6 inline-grid grid-cols-[46px_52px_46px] overflow-hidden rounded-full border border-[#e8d8c6] text-[16px]"
+                    class="mt-6 inline-grid grid-cols-[46px_52px_46px] overflow-hidden rounded-full border border-[#e8d8c6] text-sm"
                   >
                     <button
                       class="flex h-8 items-center justify-center disabled:opacity-35"
@@ -120,19 +120,23 @@
                   class="col-span-2 flex items-end justify-between sm:col-span-1 sm:flex-col sm:items-end"
                 >
                   <button
-                    class="text-[#c8c8c8] hover:text-red-600 disabled:opacity-35"
+                    class="text-[#c8c8c8] transition-colors hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-500 disabled:opacity-35"
                     type="button"
-                    [disabled]="shopping.pendingProductIds().has(line.product.id)"
-                    (click)="shopping.removeFromCart(line.product.id)"
-                    [attr.aria-label]="'CUSTOMER.CART.REMOVE' | translate"
+                    [disabled]="shopping.pendingProductIds().has(line.product.id) || isRemovingLine(line)"
+                    (click)="$event.stopPropagation(); openRemoveModal(line)"
+                    [attr.aria-label]="'Remove ' + line.product.name + ' from cart'"
                   >
-                    <i class="pi pi-trash"></i>
+                    @if (isRemovingLine(line)) {
+                      <i class="pi pi-spin pi-spinner"></i>
+                    } @else {
+                      <i class="pi pi-trash"></i>
+                    }
                   </button>
                   <div class="text-end">
-                    <strong class="text-[18px] font-semibold">{{
+                    <strong class="text-base font-semibold">{{
                       line.product.price * line.quantity | currency: 'USD'
                     }}</strong
-                    ><span class="mt-1 block text-[14px] text-[#aaa]"
+                    ><span class="mt-1 block text-xs text-[#aaa]"
                       >{{ line.product.price | currency: 'USD' }} each</span
                     >
                   </div>
@@ -141,7 +145,7 @@
             }
           </section>
           <a
-            class="mt-5 inline-flex items-center gap-2 text-[16px] text-[#777] hover:text-[#708565]"
+            class="mt-5 inline-flex items-center gap-2 text-sm text-[#777] hover:text-[#708565]"
             routerLink="/shop/products"
             ><i class="pi pi-arrow-left text-sm rtl:rotate-180"></i
             >{{ 'CUSTOMER.CART.CONTINUE' | translate }}</a
@@ -150,9 +154,9 @@
         <aside
           class="rounded-[20px] bg-white p-[30px] shadow-[0_8px_26px_rgba(52,47,41,.07)] xl:sticky xl:top-28"
         >
-          <h2 class="text-[23px] font-semibold">{{ 'CUSTOMER.CART.SUMMARY' | translate }}</h2>
+          <h2 class="text-xl font-semibold">{{ 'CUSTOMER.CART.SUMMARY' | translate }}</h2>
           <label
-            class="mt-7 block text-[15px] font-medium uppercase tracking-[.12em] text-[#929292]"
+            class="mt-7 block text-xs font-medium uppercase tracking-[.12em] text-[#929292]"
             for="cart-promo"
             >Promo code</label
           >
@@ -161,7 +165,7 @@
               <i class="pi pi-tag absolute start-4 top-1/2 -translate-y-1/2 text-[#999]"></i
               ><input
                 id="cart-promo"
-                class="h-12 w-full rounded-[18px] border border-[#e8d8c6] ps-10 pe-3 text-[16px] uppercase outline-none placeholder:text-[#aaa] focus:border-[#708565]"
+                class="h-12 w-full rounded-[18px] border border-[#e8d8c6] ps-10 pe-3 text-sm uppercase outline-none placeholder:text-[#aaa] focus:border-[#708565]"
                 type="text"
                 [ngModel]="promoCode()"
                 (ngModelChange)="promoCode.set($event)"
@@ -169,7 +173,7 @@
               />
             </div>
             <button
-              class="h-12 rounded-[17px] bg-[#708565] px-4 text-[16px] font-semibold text-white hover:bg-[#607456] disabled:opacity-60"
+              class="h-12 rounded-[17px] bg-[#708565] px-4 text-sm font-semibold text-white hover:bg-[#607456] disabled:opacity-60"
               type="button"
               [disabled]="applyingPromo()"
               (click)="applyPromo()"
@@ -177,7 +181,7 @@
               {{ 'CUSTOMER.CART.APPLY' | translate }}
             </button>
           </div>
-          <dl class="mt-6 border-t border-[#ebe7e1] pt-5 text-[16px]">
+          <dl class="mt-6 border-t border-[#ebe7e1] pt-5 text-sm">
             <div class="flex justify-between py-1.5">
               <dt class="text-[#888]">{{ 'CUSTOMER.CART.SUBTOTAL' | translate }}</dt>
               <dd>{{ shopping.subtotal() | currency: 'USD' }}</dd>
@@ -198,19 +202,23 @@
             }
             <div class="mt-4 flex items-center justify-between border-t border-[#ebe7e1] pt-6">
               <dt class="text-[20px] font-semibold">{{ 'CUSTOMER.CART.TOTAL' | translate }}</dt>
-              <dd class="text-[27px] font-bold">{{ total() | currency: 'USD' }}</dd>
+              <dd class="text-2xl font-bold">{{ total() | currency: 'USD' }}</dd>
             </div>
           </dl>
           <button
-            class="mt-12 flex h-[61px] w-full items-center justify-center gap-4 rounded-[20px] bg-[#708565] text-[17px] font-semibold text-white hover:bg-[#607456]"
+            class="mt-12 flex h-[61px] w-full items-center justify-center gap-4 rounded-[20px] bg-[#708565] text-sm font-semibold text-white hover:bg-[#607456] disabled:opacity-60"
             type="button"
+            [disabled]="checkingOut()"
             (click)="checkout()"
           >
-            {{ 'CUSTOMER.CART.CHECKOUT' | translate
-            }}<i class="pi pi-arrow-right text-sm rtl:rotate-180"></i>
+            @if (checkingOut()) {
+              <i class="pi pi-spin pi-spinner"></i>
+            }
+            {{ 'CUSTOMER.CART.CHECKOUT' | translate }}
+            <i class="pi pi-arrow-right text-sm rtl:rotate-180"></i>
           </button>
           <div
-            class="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[14px] text-[#aaa]"
+            class="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-[#aaa]"
             aria-label="Accepted payment methods"
           >
             <span>Visa</span><span>MC</span><span>PayPal</span><span>Apple Pay</span>
@@ -219,4 +227,22 @@
       </div>
     }
   </div>
+
+  <app-admin-form-modal
+    [isOpen]="removeModalVisible()"
+    variant="delete"
+    title="Remove item?"
+    [message]="removeModalDescription()"
+    submitLabel="Remove Item"
+    cancelLabel="Cancel"
+    [loading]="removingItem()"
+    (close)="closeRemoveModal()"
+    (submit)="confirmRemoveItem()"
+  >
+    @if (removeItemError()) {
+      <p class="mt-4 max-w-sm rounded-xl bg-[#fff1f0] px-4 py-3 text-sm font-bold text-[#b42318]">
+        {{ removeItemError() }}
+      </p>
+    }
+  </app-admin-form-modal>
 </main>

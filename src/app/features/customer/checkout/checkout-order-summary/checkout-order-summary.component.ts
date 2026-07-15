@@ -1,8 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-import { CustomerCartLine } from '../../models';
-import { CheckoutTotals } from '../checkout.models';
+import { CheckoutOrderItem, CheckoutTotals } from '../models';
 
 @Component({
   selector: 'app-checkout-order-summary',
@@ -13,6 +12,6 @@ import { CheckoutTotals } from '../checkout.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckoutOrderSummaryComponent {
-  readonly lines = input.required<CustomerCartLine[]>();
+  readonly items = input.required<readonly CheckoutOrderItem[]>();
   readonly totals = input.required<CheckoutTotals>();
 }

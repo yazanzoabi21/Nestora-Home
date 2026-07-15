@@ -90,7 +90,10 @@ export class CustomerCartService {
 
     const { data, error } = await this.supabase
       .from('cart_items')
-      .insert({ cart_id: cartId, product_id: productId, quantity })
+      .upsert(
+        { cart_id: cartId, product_id: productId, quantity },
+        { onConflict: 'cart_id,product_id' },
+      )
       .select('id')
       .single();
     if (error || !data) throw new Error('Unable to update your cart.');
@@ -106,7 +109,7 @@ export class CustomerCartService {
     if (error) throw new Error('Unable to remove this item.');
   }
 
-  async productsForGuest(items: GuestCartItem[]): Promise<CustomerCartLine[]> {
+  async productsForGuest(items: readonly GuestCartItem[]): Promise<CustomerCartLine[]> {
     if (!items.length) return [];
     const { data, error } = await this.supabase
       .from('products')

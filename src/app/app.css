@@ -1,0 +1,45 @@
+.nestora-toast {
+  width: min(320px, calc(100vw - 2rem)) !important;
+}
+
+.nestora-toast.p-toast-bottom-right {
+  right: 1.5rem !important;
+  bottom: 1.5rem !important;
+}
+
+.nestora-toast .p-toast-message {
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  color: #202820 !important;
+  box-shadow: 0 14px 40px rgba(40, 43, 37, 0.14) !important;
+}
+
+.nestora-toast .p-toast-message-content {
+  align-items: center !important;
+  padding: 12px 14px !important;
+  border: 0 !important;
+}
+
+.nestora-toast .p-toast-message-icon {
+  display: none !important;
+}
+
+.nestora-toast .p-toast-close-button {
+  width: 28px !important;
+  height: 28px !important;
+  color: #aaa6a0 !important;
+}
+
+.nestora-toast .p-toast-close-button:hover {
+  background: #f4f1ec !important;
+  color: #292929 !important;
+}
+
+@media (max-width: 640px) {
+  .nestora-toast.p-toast-bottom-right {
+    right: 1rem !important;
+    bottom: 1rem !important;
+  }
+}

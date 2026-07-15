@@ -8,8 +8,8 @@ import { CheckoutOrderSummaryComponent } from './checkout-order-summary/checkout
 import { CheckoutPaymentComponent } from './checkout-payment/checkout-payment.component';
 import { CheckoutShippingComponent } from './checkout-shipping/checkout-shipping.component';
 import { CheckoutStepperComponent } from './checkout-stepper/checkout-stepper.component';
-import { CheckoutStep } from './checkout.models';
-import { CustomerCheckoutStateService } from './customer-checkout-state.service';
+import { CheckoutShippingInformation, CheckoutStep } from './models';
+import { CustomerCheckoutOrderService, CustomerCheckoutStateService } from './services';
 
 @Component({
   selector: 'app-customer-checkout',
@@ -31,22 +31,49 @@ import { CustomerCheckoutStateService } from './customer-checkout-state.service'
 export class CustomerCheckoutComponent implements OnInit {
   readonly state = inject(CustomerCheckoutStateService);
   readonly currency = inject(CurrencyPipe);
+  private readonly orders = inject(CustomerCheckoutOrderService);
 
   readonly completedSteps = computed(() => {
     const completed = new Set<CheckoutStep>();
-    if (this.state.shippingInfo()) completed.add('shipping');
+    if (this.state.hasShippingInformation()) completed.add('shipping');
     if (
-      this.state.shippingInfo() &&
-      this.state.selectedDelivery() &&
-      (this.state.currentStep() === 'payment' || this.state.confirmation())
+      this.state.hasShippingInformation() &&
+      this.state.hasShippingMethod() &&
+      (this.state.currentStep() === 'payment' || this.state.placedOrder())
     ) {
       completed.add('delivery');
     }
-    if (this.state.confirmation()) completed.add('payment');
+    if (this.state.placedOrder()) completed.add('payment');
     return completed;
   });
 
   readonly canOpenStep = (step: CheckoutStep): boolean => this.state.canOpenStep(step);
+
+  saveShipping(value: CheckoutShippingInformation): void {
+    this.state.setShippingInformation(value);
+    this.state.goToDelivery();
+  }
+
+  selectShippingMethod(id: string): void {
+    const method = this.state.shippingMethods().find((item) => item.id === id);
+    if (method) this.state.selectShippingMethod(method);
+  }
+
+  selectPaymentMethod(id: string): void {
+    const method = this.state.paymentMethods().find((item) => item.id === id);
+    if (method) this.state.selectPaymentMethod(method);
+  }
+
+  async placeOrder(): Promise<void> {
+    try {
+      await this.orders.placeOrder(
+        this.state.shopping.checkoutCartId(),
+        this.state.checkoutItems(),
+      );
+    } catch {
+      // The order service preserves checkout state and exposes a user-facing error signal.
+    }
+  }
 
   async ngOnInit(): Promise<void> {
     if (await this.state.requireCheckoutAccess()) {

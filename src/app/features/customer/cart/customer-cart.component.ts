@@ -1,10 +1,12 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ToastService } from '../../../core/services';
 import { Discount, DiscountsService } from '../../../data-access';
+import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
+import { CustomerCartLine } from '../models';
 import { CustomerShoppingStateService } from '../services';
 
 const FREE_SHIPPING_THRESHOLD = 75;
@@ -13,9 +15,10 @@ const STANDARD_SHIPPING = 7.99;
 @Component({
   selector: 'app-customer-cart',
   standalone: true,
-  imports: [CurrencyPipe, FormsModule, RouterLink, TranslatePipe],
+  imports: [AdminFormModalComponent, CurrencyPipe, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './customer-cart.component.html',
   styleUrl: './customer-cart.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerCartComponent {
   readonly shopping = inject(CustomerShoppingStateService);
@@ -25,7 +28,16 @@ export class CustomerCartComponent {
   readonly promoCode = signal('');
   readonly appliedDiscount = signal<Discount | null>(null);
   readonly applyingPromo = signal(false);
+  readonly checkingOut = signal(false);
+  readonly selectedLineForRemoval = signal<CustomerCartLine | null>(null);
+  readonly removeModalVisible = signal(false);
+  readonly removingItem = signal(false);
+  readonly removeItemError = signal<string | null>(null);
   readonly shippingThreshold = FREE_SHIPPING_THRESHOLD;
+  readonly removeModalDescription = computed(() => {
+    const productName = this.selectedLineForRemoval()?.product.name ?? 'this item';
+    return `Are you sure you want to remove "${productName}" from your cart?`;
+  });
   readonly remainingForFreeShipping = computed(() =>
     Math.max(0, FREE_SHIPPING_THRESHOLD - this.shopping.subtotal()),
   );
@@ -58,10 +70,50 @@ export class CustomerCartComponent {
     Math.max(
       0,
       this.shopping.subtotal() +
-        (this.appliedDiscount()?.discount_type === 'free_shipping' ? 0 : this.shipping()) -
-        this.discountAmount(),
+      (this.appliedDiscount()?.discount_type === 'free_shipping' ? 0 : this.shipping()) -
+      this.discountAmount(),
     ),
   );
+
+  openRemoveModal(line: CustomerCartLine): void {
+    if (this.removingItem()) return;
+    this.selectedLineForRemoval.set(line);
+    this.removeItemError.set(null);
+    this.removeModalVisible.set(true);
+  }
+
+  closeRemoveModal(): void {
+    if (this.removingItem()) return;
+    this.removeModalVisible.set(false);
+    this.selectedLineForRemoval.set(null);
+    this.removeItemError.set(null);
+  }
+
+  async confirmRemoveItem(): Promise<void> {
+    const line = this.selectedLineForRemoval();
+    if (!line || this.removingItem()) return;
+
+    this.removingItem.set(true);
+    this.removeItemError.set(null);
+    try {
+      await this.shopping.removeFromCart(line.product.id);
+      this.toast.productRemoved(
+        line.product.name,
+        line.product.imageUrl,
+      );
+      this.removeModalVisible.set(false);
+      this.selectedLineForRemoval.set(null);
+      this.removeItemError.set(null);
+    } catch {
+      this.removeItemError.set('Unable to remove this item. Please try again.');
+    } finally {
+      this.removingItem.set(false);
+    }
+  }
+
+  isRemovingLine(line: CustomerCartLine): boolean {
+    return this.removingItem() && this.selectedLineForRemoval()?.product.id === line.product.id;
+  }
 
   async applyPromo(): Promise<void> {
     const code = this.promoCode().trim().toUpperCase();
@@ -104,15 +156,27 @@ export class CustomerCartComponent {
       this.applyingPromo.set(false);
     }
   }
-  checkout(): void {
+  async checkout(): Promise<void> {
     if (!this.shopping.cart().length) {
       this.toast.info('Your cart is empty', 'Add an item before checkout.');
       return;
     }
-    void this.router.navigate(['/shop/checkout']).then(() => {
+    if (this.checkingOut()) return;
+
+    this.checkingOut.set(true);
+    try {
+      await this.shopping.prepareCheckoutCart();
+      await this.router.navigate(['/shop/checkout']);
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    });
+    } catch (error) {
+      this.toast.error(
+        'Unable to start checkout',
+        error instanceof Error ? error.message : 'Please try again.',
+      );
+    } finally {
+      this.checkingOut.set(false);
+    }
   }
 }

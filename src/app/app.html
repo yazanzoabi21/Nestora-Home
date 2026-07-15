@@ -1,2 +1,37 @@
-<p-toast position="top-right" styleClass="nestora-toast"></p-toast>
+<!-- <p-toast position="top-right" styleClass="nestora-toast"></p-toast> -->
+
+<p-toast
+  position="bottom-right"
+  styleClass="nestora-toast"
+>
+  <ng-template #message let-message>
+    <div class="flex w-full min-w-0 items-center gap-3">
+      @if (message.data?.['imageUrl']) {
+        <img
+          class="size-14 shrink-0 rounded-xl bg-[#f4f1ec] object-cover"
+          [src]="message.data['imageUrl']"
+          [alt]="message.data['imageAlt'] || message.detail || message.summary"
+        />
+      } @else {
+        <span
+          class="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#eef3ea] text-[#708565]"
+        >
+          <i [class]="message.icon"></i>
+        </span>
+      }
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold text-[#202820]">
+          {{ message.summary }}
+        </p>
+
+        @if (message.detail) {
+          <p class="mt-1 truncate text-xs text-[#96918b]">
+            {{ message.detail }}
+          </p>
+        }
+      </div>
+    </div>
+  </ng-template>
+</p-toast>
 <router-outlet></router-outlet>

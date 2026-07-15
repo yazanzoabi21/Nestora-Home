@@ -1,8 +1,16 @@
 <section class="checkout-card">
   <h1 class="checkout-card__title">Payment Method</h1>
 
-  <div class="payment-options">
-    @for (method of methods(); track method.id) {
+  @if (loading()) {
+    <div class="checkout-empty" role="status">
+      <i class="pi pi-spin pi-spinner"></i>
+      <span>Loading payment methods...</span>
+    </div>
+  } @else if (error()) {
+    <p class="checkout-empty" role="alert">{{ error() }}</p>
+  } @else {
+    <div class="payment-options">
+      @for (method of methods(); track method.id) {
       <label class="payment-option" [class.payment-option--selected]="selectedId() === method.id">
         <input
           type="radio"
@@ -21,29 +29,27 @@
           @if (instructions(method)) {
             <span class="payment-option__instructions">{{ instructions(method) }}</span>
           }
-          @if (method.fee_fixed || method.fee_percentage) {
+          @if (method.calculatedFee) {
             <span class="payment-option__fee">
-              Fee: {{ method.fee_fixed | currency: 'USD' }} + {{ method.fee_percentage }}%
+              Fee: {{ method.calculatedFee | currency: 'USD' }}
             </span>
           }
         </span>
       </label>
-    } @empty {
-      <p class="checkout-empty">No active payment methods are available for this order total.</p>
-    }
-  </div>
+      } @empty {
+        <p class="checkout-empty">No active payment methods are available for this order total.</p>
+      }
+    </div>
+  }
 
-  @if (selectedMethod(); as method) {
-    @if (method.code !== 'cod') {
-      <div class="payment-reference">
-        <app-checkout-form-field
-          name="paymentReference"
-          label="Payment reference"
-          placeholder="Transaction ID or wallet reference"
-          [control]="referenceControl"
-        />
-      </div>
-    }
+  @if (providerRequired()) {
+    <p class="checkout-empty" role="status">
+      This online payment method requires a payment provider integration and is not available yet.
+    </p>
+  }
+
+  @if (placeOrderError()) {
+    <p class="checkout-empty" role="alert">{{ placeOrderError() }}</p>
   }
 
   <div class="checkout-actions">
@@ -51,7 +57,7 @@
     <button
       class="checkout-actions__primary"
       type="button"
-      [disabled]="!selectedId() || submitting()"
+      [disabled]="!canPlaceOrder() || providerRequired() || submitting()"
       (click)="placeOrder.emit()"
     >
       @if (submitting()) {
