@@ -12,6 +12,9 @@ import {
 import { CustomerShoppingStateService } from '../services';
 
 export abstract class ProductBrowserPage {
+  abstract readonly titleKey: string;
+
+  readonly pageTitle = computed(() => this.titleKey);
   readonly shopping = inject(CustomerShoppingStateService);
   readonly products = signal<CustomerProduct[]>([]);
   readonly loading = signal(true);
