@@ -8,6 +8,11 @@
       class="absolute inset-0 z-0 rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
       [attr.aria-label]="'View details for ' + product().name"
     ></a>
+    @if (soldOut()) {
+      <span class="customer-product-card__sold-out-badge absolute start-5 top-5 z-10">
+        Sold Out
+      </span>
+    }
     <img
       [src]="product().imageUrl"
       [alt]="product().name"
@@ -57,16 +62,18 @@
       <button
         type="button"
         class="customer-product-card__icon-button customer-product-card__icon-button--primary"
-        [disabled]="!canAddToCart() || cartLoading()"
-        [attr.aria-label]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
-        [attr.title]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
-        (click)="addToCart.emit(product()); $event.stopPropagation()"
+        [class.customer-product-card__icon-button--sold-out]="soldOut()"
+        [disabled]="soldOut() || !canAddToCart() || cartLoading()"
+        [attr.aria-label]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
+        [attr.title]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
+        (click)="requestAddToCart($event)"
       >
         <i
           class="pi"
-          [class.pi-shopping-cart]="!cartLoading()"
-          [class.pi-spinner]="cartLoading()"
-          [class.pi-spin]="cartLoading()"
+          [class.pi-shopping-cart]="!cartLoading() && !soldOut()"
+          [class.pi-ban]="soldOut()"
+          [class.pi-spinner]="cartLoading() && !soldOut()"
+          [class.pi-spin]="cartLoading() && !soldOut()"
         ></i>
       </button>
     </div>
@@ -89,6 +96,9 @@
         class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
       />
       <div class="absolute start-4 top-4 flex flex-col items-start gap-2">
+        @if (soldOut()) {
+          <span class="customer-product-card__sold-out-badge">Sold Out</span>
+        }
         @if (hasValidDiscount()) {
           <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white"
             >−{{ safeDiscountPercentage() }}%</span
@@ -129,19 +139,21 @@
         </button>
         <button
           type="button"
-          class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white disabled:opacity-60"
-          [disabled]="!canAddToCart() || cartLoading()"
-          [attr.aria-label]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
-          [attr.title]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
-          (click)="addToCart.emit(product()); $event.stopPropagation()"
+          class="customer-product-card__cart-button inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white"
+          [class.customer-product-card__cart-button--sold-out]="soldOut()"
+          [disabled]="soldOut() || !canAddToCart() || cartLoading()"
+          [attr.aria-label]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
+          [attr.title]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
+          (click)="requestAddToCart($event)"
         >
           <i
             class="pi"
-            [class.pi-shopping-cart]="!cartLoading()"
-            [class.pi-spinner]="cartLoading()"
-            [class.pi-spin]="cartLoading()"
+            [class.pi-shopping-cart]="!cartLoading() && !soldOut()"
+            [class.pi-ban]="soldOut()"
+            [class.pi-spinner]="cartLoading() && !soldOut()"
+            [class.pi-spin]="cartLoading() && !soldOut()"
           ></i
-          >{{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}
+          >{{ soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate) }}
         </button>
       </div>
     </div>

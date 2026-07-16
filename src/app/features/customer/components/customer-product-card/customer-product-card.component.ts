@@ -28,6 +28,16 @@ export class CustomerProductCardComponent {
   readonly starItems = [1, 2, 3, 4, 5];
 
   readonly detailUrl = computed(() => ['/shop/products', this.product().slug || this.product().id]);
+  readonly soldOut = computed(() => this.product().stock <= 0 || !this.product().inStock);
+
+  requestAddToCart(event: Event): void {
+    event.stopPropagation();
+    if (this.soldOut() || !this.canAddToCart() || this.cartLoading()) {
+      return;
+    }
+
+    this.addToCart.emit(this.product());
+  }
 
   isFilledStar(star: number): boolean {
     return star <= Math.round(this.product().rating);
