@@ -262,4 +262,55 @@ export class DiscountsService {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
   }
+
+  async getAutomaticFreeShippingDiscount(): Promise<Discount | null> {
+  const { data, error } = await this.supabase
+    .from('discounts')
+    .select(DISCOUNT_SELECT)
+    .eq('discount_type', 'free_shipping')
+    .eq('applies_to', 'all')
+    .eq('is_active', true)
+    .order('minimum_order_amount', { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const discounts = (data ?? []).map((discount) =>
+    this.mapDiscount(discount as unknown as Discount),
+  );
+
+  return discounts.find((discount) => this.isDiscountAvailable(discount)) ?? null;
+}
+
+async getDiscountByCode(code: string): Promise<Discount | null> {
+  const normalizedCode = code.trim().toUpperCase();
+
+  if (!normalizedCode) {
+    return null;
+  }
+
+  const { data, error } = await this.supabase
+    .from('discounts')
+    .select(DISCOUNT_SELECT)
+    .eq('code', normalizedCode)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ? this.mapDiscount(data as unknown as Discount) : null;
+}
+
+isDiscountAvailable(discount: Discount): boolean {
+  const usageLimitReached =
+    discount.usage_limit !== null &&
+    discount.usage_count >= discount.usage_limit;
+
+  return (
+    this.getDiscountStatus(discount) === 'active' &&
+    !usageLimitReached
+  );
+}
 }

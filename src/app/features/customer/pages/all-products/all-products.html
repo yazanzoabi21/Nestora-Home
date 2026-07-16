@@ -126,6 +126,7 @@
                 [view]="viewMode()"
                 [wishlistActive]="isWishlisted(product.id)"
                 [cartLoading]="isAddingToCart(product.id)"
+                [canAddToCart]="shopping.canAdd(product)"
                 [selected]="isSelected(product.id)"
                 (quickView)="selectProduct($event)"
                 (addToCart)="addProductToCart($event)"
@@ -165,8 +166,9 @@
             [product]="product"
             [wishlistActive]="isWishlisted(product.id)"
             [cartLoading]="isAddingToCart(product.id)"
-            (close)="closeQuickView()"
-            (addToCart)="addProductToCart($event)"
+            [availableQuantity]="shopping.remainingStock(product)"
+            (closeRequested)="closeQuickView()"
+            (addRequested)="addProductToCart($event.product, $event.quantity)"
             (toggleWishlist)="toggleWishlist($event)"
           />
         </aside>
@@ -231,8 +233,9 @@
         [product]="product"
         [wishlistActive]="isWishlisted(product.id)"
         [cartLoading]="isAddingToCart(product.id)"
-        (close)="closeQuickView()"
-        (addToCart)="addProductToCart($event)"
+        [availableQuantity]="shopping.remainingStock(product)"
+        (closeRequested)="closeQuickView()"
+        (addRequested)="addProductToCart($event.product, $event.quantity)"
         (toggleWishlist)="toggleWishlist($event)"
       />
     </div>

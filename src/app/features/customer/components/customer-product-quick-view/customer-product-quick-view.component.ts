@@ -4,6 +4,11 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CustomerProduct } from '../../models';
 
+export interface CustomerProductAddRequest {
+  product: CustomerProduct;
+  quantity: number;
+}
+
 @Component({
   selector: 'app-customer-product-quick-view',
   standalone: true,
@@ -15,9 +20,10 @@ export class CustomerProductQuickViewComponent {
   readonly product = input.required<CustomerProduct>();
   readonly wishlistActive = input(false);
   readonly cartLoading = input(false);
+  readonly availableQuantity = input(0);
 
-  readonly close = output<void>();
-  readonly addToCart = output<CustomerProduct>();
+  readonly closeRequested = output<void>();
+  readonly addRequested = output<CustomerProductAddRequest>();
   readonly toggleWishlist = output<CustomerProduct>();
 
   readonly starItems = [1, 2, 3, 4, 5];
@@ -43,6 +49,12 @@ export class CustomerProductQuickViewComponent {
   }
 
   increaseQuantity(): void {
-    this.quantity.update((quantity) => Math.min(this.product().stock, quantity + 1));
+    if (this.quantity() < this.availableQuantity()) {
+      this.quantity.update((quantity) => quantity + 1);
+    }
+  }
+
+  submitAddToCart(): void {
+    this.addRequested.emit({ product: this.product(), quantity: this.quantity() });
   }
 }

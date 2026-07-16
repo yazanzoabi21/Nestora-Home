@@ -57,7 +57,7 @@
       <button
         type="button"
         class="customer-product-card__icon-button customer-product-card__icon-button--primary"
-        [disabled]="!product().inStock || cartLoading()"
+        [disabled]="!canAddToCart() || cartLoading()"
         [attr.aria-label]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
         [attr.title]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
         (click)="addToCart.emit(product()); $event.stopPropagation()"
@@ -130,7 +130,7 @@
         <button
           type="button"
           class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white disabled:opacity-60"
-          [disabled]="!product().inStock || cartLoading()"
+          [disabled]="!canAddToCart() || cartLoading()"
           [attr.aria-label]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
           [attr.title]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
           (click)="addToCart.emit(product()); $event.stopPropagation()"

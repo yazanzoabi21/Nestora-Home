@@ -117,17 +117,28 @@ export class CustomerCartService {
       .in(
         'id',
         items.map((item) => item.productId),
-      )
-      .or('is_active.is.null,is_active.eq.true');
+      );
     if (error) throw new Error('Unable to restore your cart.');
     return (data ?? [])
       .map((row) => {
         const product = row as Product;
         const stored = items.find((item) => item.productId === product.id)!;
         const mapped = this.toCustomerProduct(product);
-        return { product: mapped, quantity: Math.min(mapped.stock, stored.quantity) };
+        return { product: mapped, quantity: stored.quantity };
       })
       .filter((line) => line.quantity > 0);
+  }
+
+  async loadProducts(productIds: readonly string[]): Promise<CustomerProduct[]> {
+    if (!productIds.length) return [];
+
+    const { data, error } = await this.supabase
+      .from('products')
+      .select('*,categories(name)')
+      .in('id', [...new Set(productIds)]);
+
+    if (error) throw new Error('Unable to refresh product availability.');
+    return (data ?? []).map((row) => this.toCustomerProduct(row as Product));
   }
 
   private toCustomerProduct(product: Product): CustomerProduct {
@@ -135,6 +146,7 @@ export class CustomerCartService {
     const sale = product.sale_price === null ? null : Number(product.sale_price);
     const price = sale !== null && sale < regular ? sale : regular;
     const relation = Array.isArray(product.categories) ? product.categories[0] : product.categories;
+    const stock = Math.max(0, Number(product.stock ?? 0));
     return {
       id: product.id,
       name: product.name,
@@ -149,8 +161,8 @@ export class CustomerCartService {
       badge: product.is_new ? 'New' : null,
       isFeatured: product.is_featured === true,
       isNew: product.is_new === true,
-      inStock: Number(product.stock ?? 0) > 0,
-      stock: Number(product.stock ?? 0),
+      inStock: product.is_active !== false && stock > 0,
+      stock,
       slug: product.slug,
     };
   }

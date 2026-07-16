@@ -28,10 +28,15 @@
       <dt>Subtotal</dt>
       <dd>{{ totals().subtotal | currency: 'USD' }}</dd>
     </div>
-    @if (totals().discountAmount) {
+    @if (totals().discountAmount > 0) {
       <div class="order-summary__row order-summary__row--green">
-        <dt>Discount</dt>
-        <dd>-{{ totals().discountAmount | currency: 'USD' }}</dd>
+        <dt>
+          Discount
+          @if (totals().discountCode) {
+            <span>({{ totals().discountCode }})</span>
+          }
+        </dt>
+        <dd>−{{ totals().discountAmount | currency: 'USD' }}</dd>
       </div>
     }
     <div class="order-summary__row">

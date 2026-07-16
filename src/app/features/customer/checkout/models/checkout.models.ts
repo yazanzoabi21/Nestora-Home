@@ -69,6 +69,7 @@ export interface CheckoutTotals {
   shippingCost: number;
   paymentFee: number;
   discountAmount: number;
+  discountCode: string | null;
   total: number;
 }
 
@@ -81,6 +82,8 @@ export interface PlacedOrderResult {
   shippingCost: number;
   paymentFee: number;
   discountAmount: number;
+  discountCode: string | null;
+  discountId: string | null;
   total: number;
 }
 

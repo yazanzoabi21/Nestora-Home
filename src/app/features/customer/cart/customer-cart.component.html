@@ -54,7 +54,7 @@
           >({{ shopping.cartQuantity() }} {{ 'CUSTOMER.CART.ITEMS' | translate }})</span
         >
       </header>
-      <section class="mb-7 rounded-[20px] bg-[#eadfce] px-5 py-5 lg:px-6">
+      <!-- <section class="mb-7 rounded-[20px] bg-[#eadfce] px-5 py-5 lg:px-6">
         <p class="mb-3 text-sm">
           @if (remainingForFreeShipping()) {
             {{ 'CUSTOMER.CART.FREE_REMAINING' | translate }}
@@ -70,7 +70,27 @@
             [style.width.%]="shippingProgress()"
           ></span>
         </div>
-      </section>
+      </section> -->
+      @if (freeShippingDiscount()) {
+        <section class="mb-7 rounded-[20px] bg-[#eadfce] px-5 py-5 lg:px-6">
+          <p class="mb-3 text-sm">
+            @if (freeShippingUnlocked()) {
+              <strong>Free shipping unlocked!</strong> 🚚
+            } @else {
+              Add
+              <strong>{{ remainingForFreeShipping() | currency: 'USD' }}</strong>
+              more for free shipping! 🚚
+            }
+          </p>
+
+          <div class="h-[7px] overflow-hidden rounded-full bg-[#d6cec1]">
+            <span
+              class="block h-full rounded-full bg-[#708565] transition-[width] duration-300"
+              [style.width.%]="shippingProgress()"
+            ></span>
+          </div>
+        </section>
+      }
       <div class="grid items-start gap-7 xl:grid-cols-[minmax(0,1fr)_488px] xl:gap-10">
         <div>
           <section class="grid gap-4" [attr.aria-label]="'CUSTOMER.CART.ITEMS' | translate">
@@ -115,6 +135,15 @@
                       +
                     </button>
                   </div>
+                  @if (!line.product.inStock || line.quantity > line.product.stock) {
+                    <p class="mt-2 text-xs font-semibold text-red-700" role="alert">
+                      @if (!line.product.inStock) {
+                        This item is currently out of stock.
+                      } @else {
+                        Only {{ line.product.stock }} available. Reduce the quantity to continue.
+                      }
+                    </p>
+                  }
                 </div>
                 <div
                   class="col-span-2 flex items-end justify-between sm:col-span-1 sm:flex-col sm:items-end"
@@ -122,7 +151,9 @@
                   <button
                     class="text-[#c8c8c8] transition-colors hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-500 disabled:opacity-35"
                     type="button"
-                    [disabled]="shopping.pendingProductIds().has(line.product.id) || isRemovingLine(line)"
+                    [disabled]="
+                      shopping.pendingProductIds().has(line.product.id) || isRemovingLine(line)
+                    "
                     (click)="$event.stopPropagation(); openRemoveModal(line)"
                     [attr.aria-label]="'Remove ' + line.product.name + ' from cart'"
                   >
@@ -158,29 +189,69 @@
           <label
             class="mt-7 block text-xs font-medium uppercase tracking-[.12em] text-[#929292]"
             for="cart-promo"
-            >Promo code</label
           >
-          <div class="mt-2 grid grid-cols-[minmax(0,1fr)_88px] gap-3">
+            Promo code
+          </label>
+
+          <div class="mt-2 grid grid-cols-[minmax(0,1fr)_104px] gap-3">
             <div class="relative">
-              <i class="pi pi-tag absolute start-4 top-1/2 -translate-y-1/2 text-[#999]"></i
-              ><input
+              <i class="pi pi-tag absolute start-4 top-1/2 -translate-y-1/2 text-[#999]"></i>
+
+              <input
                 id="cart-promo"
-                class="h-12 w-full rounded-[18px] border border-[#e8d8c6] ps-10 pe-3 text-sm uppercase outline-none placeholder:text-[#aaa] focus:border-[#708565]"
+                class="h-12 w-full rounded-[18px] border border-[#e8d8c6] ps-10 pe-3 text-sm uppercase outline-none placeholder:text-[#aaa] focus:border-[#708565] disabled:cursor-not-allowed disabled:bg-[#f7f7f7] disabled:text-[#777]"
                 type="text"
+                autocomplete="off"
                 [ngModel]="promoCode()"
                 (ngModelChange)="promoCode.set($event)"
-                [placeholder]="'CUSTOMER.CART.PROMO_PLACEHOLDER' | translate"
+                (keyup.enter)="applyPromo()"
+                [disabled]="applyingPromo() || !!appliedDiscount()"
+                placeholder="ENTER PROMO CODE"
               />
             </div>
-            <button
-              class="h-12 rounded-[17px] bg-[#708565] px-4 text-sm font-semibold text-white hover:bg-[#607456] disabled:opacity-60"
-              type="button"
-              [disabled]="applyingPromo()"
-              (click)="applyPromo()"
-            >
-              {{ 'CUSTOMER.CART.APPLY' | translate }}
-            </button>
+
+            @if (appliedDiscount()) {
+              <button
+                class="flex h-12 items-center justify-center gap-2 rounded-[17px] bg-[#b85c5c] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#a84d4d] disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+                [disabled]="applyingPromo()"
+                (click)="removePromo()"
+              >
+                <i class="pi pi-trash text-xs"></i>
+                Remove
+              </button>
+            } @else {
+              <button
+                class="flex h-12 items-center justify-center gap-2 rounded-[17px] bg-[#708565] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#607456] disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+                [disabled]="applyingPromo() || !promoCode().trim()"
+                (click)="applyPromo()"
+              >
+                @if (applyingPromo()) {
+                  <i class="pi pi-spin pi-spinner"></i>
+                } @else {
+                  {{ 'CUSTOMER.CART.APPLY' | translate }}
+                }
+              </button>
+            }
           </div>
+
+          @if (appliedDiscount(); as discount) {
+            <div
+              class="mt-3 flex items-center justify-between rounded-xl bg-[#edf4e9] px-4 py-3 text-sm text-[#58704e]"
+            >
+              <span class="flex items-center gap-2">
+                <i class="pi pi-check-circle"></i>
+                Code <strong>{{ discount.code }}</strong> applied
+              </span>
+
+              @if (discount.discount_type === 'percentage') {
+                <strong>{{ discount.discount_value }}% off</strong>
+              } @else if (discount.discount_type === 'fixed_amount') {
+                <strong>{{ discount.discount_value | currency: 'USD' }} off</strong>
+              }
+            </div>
+          }
           <dl class="mt-6 border-t border-[#ebe7e1] pt-5 text-sm">
             <div class="flex justify-between py-1.5">
               <dt class="text-[#888]">{{ 'CUSTOMER.CART.SUBTOTAL' | translate }}</dt>
@@ -188,17 +259,23 @@
             </div>
             <div class="flex justify-between py-1.5">
               <dt class="text-[#888]">{{ 'CUSTOMER.CART.SHIPPING' | translate }}</dt>
-              <dd>
-                {{
-                  shipping() ? (shipping() | currency: 'USD') : ('CUSTOMER.CART.FREE' | translate)
-                }}
-              </dd>
+              <!-- <dd>
+              {{
+              shipping() ? (shipping() | currency: 'USD') : ('CUSTOMER.CART.FREE' | translate)
+              }}
+            </dd> -->
             </div>
-            @if (discountAmount()) {
-              <div class="flex justify-between py-1.5 text-[#4f8a4b]">
-                <dt>{{ 'CUSTOMER.CART.DISCOUNT' | translate }}</dt>
-                <dd>−{{ discountAmount() | currency: 'USD' }}</dd>
-              </div>
+            @if (appliedDiscount(); as discount) {
+              @if (discountAmount() > 0) {
+                <div class="flex justify-between gap-4 py-1.5 text-[#58704e]">
+                  <dt>
+                    {{ 'CUSTOMER.CART.DISCOUNT' | translate }}
+                    <span class="ms-1 text-xs">({{ discount.code }})</span>
+                  </dt>
+
+                  <dd class="font-medium">−{{ discountAmount() | currency: 'USD' }}</dd>
+                </div>
+              }
             }
             <div class="mt-4 flex items-center justify-between border-t border-[#ebe7e1] pt-6">
               <dt class="text-[20px] font-semibold">{{ 'CUSTOMER.CART.TOTAL' | translate }}</dt>
@@ -208,7 +285,7 @@
           <button
             class="mt-12 flex h-[61px] w-full items-center justify-center gap-4 rounded-[20px] bg-[#708565] text-sm font-semibold text-white hover:bg-[#607456] disabled:opacity-60"
             type="button"
-            [disabled]="checkingOut()"
+            [disabled]="checkingOut() || shopping.stockConflicts().length > 0"
             (click)="checkout()"
           >
             @if (checkingOut()) {

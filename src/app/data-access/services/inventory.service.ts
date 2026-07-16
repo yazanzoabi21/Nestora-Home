@@ -67,32 +67,24 @@ export class InventoryService {
 
   async updateProductStock(
     productId: string,
-    previousStock: number,
+    _previousStock: number,
     newStock: number,
     changeType: InventoryChangeType,
-    note: string | null
+    note: string | null,
   ): Promise<void> {
-    const { error: updateError } = await this.supabase
-      .from('products')
-      .update({ stock: newStock })
-      .eq('id', productId);
-
-    if (updateError) {
-      throw new Error(updateError.message);
+    if (!Number.isInteger(newStock) || newStock < 0) {
+      throw new Error('Stock must be a non-negative integer.');
     }
 
-    const { error: logError } = await this.supabase
-      .from('inventory_logs')
-      .insert({
-        product_id: productId,
-        previous_stock: previousStock,
-        new_stock: newStock,
-        change_type: changeType,
-        note,
-      });
+    const { error } = await this.supabase.rpc('update_inventory_stock', {
+      p_product_id: productId,
+      p_new_stock: newStock,
+      p_change_type: changeType,
+      p_note: note,
+    });
 
-    if (logError) {
-      throw new Error(logError.message);
+    if (error) {
+      throw new Error(error.message);
     }
   }
 
@@ -134,7 +126,7 @@ export class InventoryService {
         lowStock: 0,
         outOfStock: 0,
         inventoryValue: 0,
-      }
+      },
     );
   }
 
@@ -171,7 +163,7 @@ export class InventoryService {
   }
 
   private resolveCategoryRelation(
-    categories: ProductCategoryRelation | ProductCategoryRelation[] | null | undefined
+    categories: ProductCategoryRelation | ProductCategoryRelation[] | null | undefined,
   ): ProductCategoryRelation | null {
     if (Array.isArray(categories)) {
       return categories[0] ?? null;

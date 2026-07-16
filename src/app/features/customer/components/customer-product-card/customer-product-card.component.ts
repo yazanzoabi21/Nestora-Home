@@ -18,6 +18,7 @@ export class CustomerProductCardComponent {
   readonly view = input<CustomerProductCardView>('grid');
   readonly wishlistActive = input(false);
   readonly cartLoading = input(false);
+  readonly canAddToCart = input(true);
   readonly selected = input(false);
 
   readonly quickView = output<CustomerProduct>();
@@ -34,12 +35,19 @@ export class CustomerProductCardComponent {
 
   hasValidDiscount(): boolean {
     const originalPrice = this.product().originalPrice;
-    return typeof originalPrice === 'number' && originalPrice > 0 && originalPrice > this.product().price;
+    return (
+      typeof originalPrice === 'number' && originalPrice > 0 && originalPrice > this.product().price
+    );
   }
 
   safeDiscountPercentage(): number {
     const originalPrice = this.product().originalPrice;
-    if (!this.hasValidDiscount() || !originalPrice) { return 0; }
-    return Math.max(0, Math.min(100, Math.round(((originalPrice - this.product().price) / originalPrice) * 100)));
+    if (!this.hasValidDiscount() || !originalPrice) {
+      return 0;
+    }
+    return Math.max(
+      0,
+      Math.min(100, Math.round(((originalPrice - this.product().price) / originalPrice) * 100)),
+    );
   }
 }

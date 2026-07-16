@@ -3,6 +3,7 @@ import { CustomerAuthService } from '../../../core/services/auth';
 import { ToastService } from '../../../core/services';
 import { CustomerCartLine, CustomerProduct, GuestCartItem } from '../models';
 import { CustomerCartService } from './customer-cart.service';
+import { Discount } from '../../../data-access';
 
 const GUEST_CART_KEY = 'nestora_guest_cart_v1';
 
@@ -24,6 +25,61 @@ export class CustomerShoppingStateService {
   readonly subtotal = computed(() =>
     this.cart().reduce((sum, line) => sum + line.product.price * line.quantity, 0),
   );
+  readonly stockConflicts = computed(() =>
+    this.cart().filter(
+      (line) =>
+        !line.product.inStock ||
+        !Number.isInteger(line.quantity) ||
+        line.quantity < 1 ||
+        line.quantity > line.product.stock,
+    ),
+  );
+
+  private readonly _appliedDiscount = signal<Discount | null>(null);
+
+  readonly appliedDiscount = this._appliedDiscount.asReadonly();
+
+  readonly discountAmount = computed(() => {
+    const discount = this._appliedDiscount();
+
+    if (!discount) {
+      return 0;
+    }
+
+    const eligibleSubtotal = this.cart()
+      .filter((line) => {
+        if (discount.applies_to === 'all') {
+          return true;
+        }
+
+        if (discount.applies_to === 'product') {
+          return discount.product_id === line.product.id;
+        }
+
+        if (discount.applies_to === 'category') {
+          return line.product.category === discount.categories?.name;
+        }
+
+        return false;
+      })
+      .reduce((total, line) => total + line.product.price * line.quantity, 0);
+
+    if (eligibleSubtotal <= 0) {
+      return 0;
+    }
+
+    if (discount.discount_type === 'percentage') {
+      const percentage = Math.min(100, Math.max(0, discount.discount_value ?? 0));
+
+      return (eligibleSubtotal * percentage) / 100;
+    }
+
+    if (discount.discount_type === 'fixed_amount') {
+      return Math.min(eligibleSubtotal, Math.max(0, discount.discount_value ?? 0));
+    }
+
+    return 0;
+  });
 
   constructor() {
     void this.initialize();
@@ -44,10 +100,19 @@ export class CustomerShoppingStateService {
         if (guestItems.length) {
           for (const guest of await this.carts.productsForGuest(guestItems)) {
             const existing = merged.get(guest.product.id);
-            const quantity = Math.min(
-              guest.product.stock,
-              (existing?.quantity ?? 0) + guest.quantity,
-            );
+            const quantity = (existing?.quantity ?? 0) + guest.quantity;
+            if (!this.canUseQuantity(guest.product, quantity)) {
+              this.toast.warn(
+                'Cart quantity needs review',
+                this.stockMessage(guest.product, quantity),
+              );
+              merged.set(guest.product.id, {
+                ...guest,
+                id: existing?.id,
+                quantity,
+              });
+              continue;
+            }
             const id = await this.carts.upsertItem(
               this.serverCartId,
               guest.product.id,
@@ -73,11 +138,14 @@ export class CustomerShoppingStateService {
   }
 
   async addToCart(product: CustomerProduct, requestedQuantity = 1): Promise<void> {
-    if (!product.inStock || requestedQuantity < 1 || this.pendingProductIds().has(product.id))
-      return;
-    this.setPending(product.id, true);
+    if (this.pendingProductIds().has(product.id)) return;
     const existing = this.cart().find((line) => line.product.id === product.id);
-    const quantity = Math.min(product.stock, (existing?.quantity ?? 0) + requestedQuantity);
+    const quantity = (existing?.quantity ?? 0) + requestedQuantity;
+    if (!this.canUseQuantity(product, quantity)) {
+      this.toast.warn('Stock unavailable', this.stockMessage(product, quantity));
+      return;
+    }
+    this.setPending(product.id, true);
     try {
       const id = this.serverCartId
         ? await this.carts.upsertItem(this.serverCartId, product.id, quantity, existing?.id)
@@ -103,16 +171,21 @@ export class CustomerShoppingStateService {
     if (!line || this.pendingProductIds().has(productId)) return;
     const requestedQuantity = Number(requested);
     if (!Number.isInteger(requestedQuantity)) return;
-    const quantity = Math.max(1, Math.min(line.product.stock, requestedQuantity));
-    if (quantity === line.quantity) return;
+    if (!this.canUseQuantity(line.product, requestedQuantity)) {
+      this.toast.warn('Stock unavailable', this.stockMessage(line.product, requestedQuantity));
+      return;
+    }
+    if (requestedQuantity === line.quantity) return;
     this.setPending(productId, true);
     try {
       const id = this.serverCartId
-        ? await this.carts.upsertItem(this.serverCartId, productId, quantity, line.id)
+        ? await this.carts.upsertItem(this.serverCartId, productId, requestedQuantity, line.id)
         : line.id;
       this.cart.update((lines) =>
         lines.map((item) =>
-          item.product.id === productId ? { ...item, id: id ?? item.id, quantity } : item,
+          item.product.id === productId
+            ? { ...item, id: id ?? item.id, quantity: requestedQuantity }
+            : item,
         ),
       );
       this.persistGuest();
@@ -139,6 +212,34 @@ export class CustomerShoppingStateService {
     }
   }
 
+  getEligibleSubtotal(discount: Discount): number {
+    return this.cart()
+      .filter((line) => {
+        if (discount.applies_to === 'all') {
+          return true;
+        }
+
+        if (discount.applies_to === 'product') {
+          return discount.product_id === line.product.id;
+        }
+
+        if (discount.applies_to === 'category') {
+          return line.product.category === discount.categories?.name;
+        }
+
+        return false;
+      })
+      .reduce((total, line) => total + line.product.price * line.quantity, 0);
+  }
+
+  setAppliedDiscount(discount: Discount): void {
+    this._appliedDiscount.set(discount);
+  }
+
+  clearAppliedDiscount(): void {
+    this._appliedDiscount.set(null);
+  }
+
   toggleWishlist(productId: string): void {
     this.wishlistIds.update((ids) => {
       const next = new Set(ids);
@@ -151,11 +252,20 @@ export class CustomerShoppingStateService {
   async prepareCheckoutCart(): Promise<string | null> {
     if (!this.cart().length) throw new Error('Your cart is empty.');
 
+    await this.refreshCartStock();
+
     const userId = await this.auth.getCurrentUserId();
     const hasInvalidItems = this.cart().some(
-      (line) => !line.product.id || !Number.isInteger(line.quantity) || line.quantity < 1,
+      (line) => !line.product.id || !this.canUseQuantity(line.product, line.quantity),
     );
-    if (hasInvalidItems) throw new Error('Your cart contains invalid items.');
+    if (hasInvalidItems) {
+      const conflict = this.stockConflicts()[0];
+      throw new Error(
+        conflict
+          ? this.stockMessage(conflict.product, conflict.quantity)
+          : 'Your cart contains invalid items.',
+      );
+    }
 
     const cartId = userId ? await this.carts.getOrCreateCart(userId) : null;
 
@@ -167,11 +277,57 @@ export class CustomerShoppingStateService {
 
   clearCompletedCart(): void {
     this.cart.set([]);
+    this.clearAppliedDiscount();
     this.clearGuestItems();
+
     if (this.isGuestCart) {
       this.serverCartId = null;
       this._checkoutCartId.set(null);
     }
+  }
+
+  quantityFor(productId: string): number {
+    return this.cart().find((line) => line.product.id === productId)?.quantity ?? 0;
+  }
+
+  remainingStock(product: CustomerProduct): number {
+    return Math.max(0, product.stock - this.quantityFor(product.id));
+  }
+
+  canAdd(product: CustomerProduct, requestedQuantity = 1): boolean {
+    return this.canUseQuantity(product, this.quantityFor(product.id) + requestedQuantity);
+  }
+
+  private async refreshCartStock(): Promise<void> {
+    const currentLines = this.cart();
+    const products = await this.carts.loadProducts(currentLines.map((line) => line.product.id));
+    const latestById = new Map(products.map((product) => [product.id, product]));
+
+    this.cart.set(
+      currentLines.map((line) => ({
+        ...line,
+        product: latestById.get(line.product.id) ?? {
+          ...line.product,
+          inStock: false,
+          stock: 0,
+        },
+      })),
+    );
+    this.persistGuest();
+  }
+
+  private canUseQuantity(product: CustomerProduct, quantity: number): boolean {
+    return (
+      product.inStock && Number.isInteger(quantity) && quantity >= 1 && quantity <= product.stock
+    );
+  }
+
+  private stockMessage(product: CustomerProduct, requestedQuantity: number): string {
+    if (!product.inStock || product.stock <= 0) {
+      return `${product.name} is currently out of stock.`;
+    }
+
+    return `Only ${product.stock} ${product.stock === 1 ? 'unit is' : 'units are'} available for ${product.name}; ${requestedQuantity} requested.`;
   }
 
   private setPending(id: string, pending: boolean): void {

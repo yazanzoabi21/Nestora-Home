@@ -64,7 +64,8 @@ export class NewArrivalsService {
   }
 
   async getProductDetails(identifier: string): Promise<CustomerProductDetails | null> {
-    const product = (await this.getProductBySlug(identifier)) ?? (await this.getProductById(identifier));
+    const product =
+      (await this.getProductBySlug(identifier)) ?? (await this.getProductById(identifier));
     if (!product || product.is_active === false) {
       return null;
     }
@@ -102,6 +103,7 @@ export class NewArrivalsService {
     const salePrice = product.sale_price === null ? null : Number(product.sale_price);
     const currentPrice = salePrice !== null && salePrice < regularPrice ? salePrice : regularPrice;
     const hasDiscount = regularPrice > 0 && currentPrice < regularPrice;
+    const stock = Math.max(0, Number(product.stock ?? 0));
 
     return {
       id: product.id,
@@ -120,8 +122,8 @@ export class NewArrivalsService {
       badge: product.is_new ? 'New' : null,
       isFeatured: product.is_featured === true,
       isNew: product.is_new === true,
-      inStock: Number(product.stock ?? 0) > 0,
-      stock: Number(product.stock ?? 0),
+      inStock: product.is_active !== false && stock > 0,
+      stock,
       createdAt: product.created_at,
       slug: product.slug,
     };

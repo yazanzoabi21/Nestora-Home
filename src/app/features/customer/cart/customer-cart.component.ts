@@ -9,8 +9,7 @@ import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { CustomerCartLine } from '../models';
 import { CustomerShoppingStateService } from '../services';
 
-const FREE_SHIPPING_THRESHOLD = 75;
-const STANDARD_SHIPPING = 7.99;
+// const STANDARD_SHIPPING = 7.99;
 
 @Component({
   selector: 'app-customer-cart',
@@ -25,55 +24,157 @@ export class CustomerCartComponent {
   private readonly discounts = inject(DiscountsService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
-  readonly promoCode = signal('');
-  readonly appliedDiscount = signal<Discount | null>(null);
+  readonly promoCode = signal(
+    this.shopping.appliedDiscount()?.code ?? '',
+  );
+  readonly appliedDiscount = this.shopping.appliedDiscount;
+  readonly discountAmount = this.shopping.discountAmount;
   readonly applyingPromo = signal(false);
+  // readonly appliedDiscount = signal<Discount | null>(null);
+  // readonly applyingPromo = signal(false);
   readonly checkingOut = signal(false);
   readonly selectedLineForRemoval = signal<CustomerCartLine | null>(null);
   readonly removeModalVisible = signal(false);
   readonly removingItem = signal(false);
   readonly removeItemError = signal<string | null>(null);
-  readonly shippingThreshold = FREE_SHIPPING_THRESHOLD;
+  readonly shippingThreshold = computed(
+    () => this.freeShippingDiscount()?.minimum_order_amount ?? 0,
+  );
+  readonly freeShippingUnlocked = computed(() => {
+    const discount = this.freeShippingDiscount();
+
+    if (!discount) {
+      return false;
+    }
+
+    return this.shopping.subtotal() >= this.shippingThreshold();
+  });
   readonly removeModalDescription = computed(() => {
     const productName = this.selectedLineForRemoval()?.product.name ?? 'this item';
     return `Are you sure you want to remove "${productName}" from your cart?`;
   });
-  readonly remainingForFreeShipping = computed(() =>
-    Math.max(0, FREE_SHIPPING_THRESHOLD - this.shopping.subtotal()),
-  );
-  readonly shippingProgress = computed(() =>
-    Math.min(100, (this.shopping.subtotal() / FREE_SHIPPING_THRESHOLD) * 100),
-  );
-  readonly shipping = computed(() =>
-    this.shopping.subtotal() >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING,
-  );
-  readonly discountAmount = computed(() => {
-    const discount = this.appliedDiscount();
-    if (!discount) return 0;
-    const eligible = this.shopping
-      .cart()
-      .filter(
-        (line) =>
-          discount.applies_to === 'all' ||
-          discount.product_id === line.product.id ||
-          (discount.applies_to === 'category' &&
-            line.product.category === discount.categories?.name),
-      );
-    const base = eligible.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
-    if (discount.discount_type === 'percentage')
-      return (base * Math.min(100, discount.discount_value ?? 0)) / 100;
-    if (discount.discount_type === 'fixed_amount')
-      return Math.min(base, discount.discount_value ?? 0);
-    return 0;
+  readonly remainingForFreeShipping = computed(() => {
+    const threshold = this.shippingThreshold();
+
+    if (!this.freeShippingDiscount() || threshold <= 0) {
+      return 0;
+    }
+
+    return Math.max(0, threshold - this.shopping.subtotal());
   });
+  readonly shippingProgress = computed(() => {
+    if (!this.freeShippingDiscount()) {
+      return 0;
+    }
+
+    const threshold = this.shippingThreshold();
+
+    if (threshold <= 0) {
+      return 100;
+    }
+
+    return Math.min(100, (this.shopping.subtotal() / threshold) * 100);
+  });
+  // readonly shipping = computed(() =>
+  //   this.freeShippingUnlocked() ? 0 : STANDARD_SHIPPING,
+  // );
+  // readonly discountAmount = computed(() => {
+  //   const discount = this.appliedDiscount();
+
+  //   if (!discount) {
+  //     return 0;
+  //   }
+
+  //   const eligibleSubtotal = this.getEligibleSubtotal(discount);
+
+  //   if (eligibleSubtotal <= 0) {
+  //     return 0;
+  //   }
+
+  //   switch (discount.discount_type) {
+  //     case 'percentage': {
+  //       const percentage = Math.min(
+  //         100,
+  //         Math.max(0, discount.discount_value ?? 0),
+  //       );
+
+  //       return (eligibleSubtotal * percentage) / 100;
+  //     }
+
+  //     case 'fixed_amount': {
+  //       return Math.min(
+  //         eligibleSubtotal,
+  //         Math.max(0, discount.discount_value ?? 0),
+  //       );
+  //     }
+
+  //     default:
+  //       return 0;
+  //   }
+  // });
+  // private getEligibleSubtotal(discount: Discount): number {
+  //   return this.shopping
+  //     .cart()
+  //     .filter((line) => {
+  //       if (discount.applies_to === 'all') {
+  //         return true;
+  //       }
+
+  //       if (discount.applies_to === 'product') {
+  //         return discount.product_id === line.product.id;
+  //       }
+
+  //       if (discount.applies_to === 'category') {
+  //         return line.product.category === discount.categories?.name;
+  //       }
+
+  //       return false;
+  //     })
+  //     .reduce(
+  //       (total, line) =>
+  //         total + line.product.price * line.quantity,
+  //       0,
+  //     );
+  // }
+
   readonly total = computed(() =>
     Math.max(
       0,
-      this.shopping.subtotal() +
-      (this.appliedDiscount()?.discount_type === 'free_shipping' ? 0 : this.shipping()) -
-      this.discountAmount(),
+      this.shopping.subtotal() -
+      this.shopping.discountAmount(),
     ),
   );
+
+  readonly freeShippingDiscount = signal<Discount | null>(null);
+  readonly loadingShippingDiscount = signal(false);
+
+  ngOnInit(): void {
+    void this.loadFreeShippingDiscount();
+  }
+
+  private async loadFreeShippingDiscount(): Promise<void> {
+    if (this.loadingShippingDiscount()) {
+      return;
+    }
+
+    this.loadingShippingDiscount.set(true);
+
+    try {
+      const discount =
+        await this.discounts.getAutomaticFreeShippingDiscount();
+
+      this.freeShippingDiscount.set(discount);
+    } catch {
+      this.freeShippingDiscount.set(null);
+
+      this.toast.error(
+        'Unable to load shipping offer',
+        'Standard shipping will be used.',
+      );
+    } finally {
+      this.loadingShippingDiscount.set(false);
+    }
+  }
 
   openRemoveModal(line: CustomerCartLine): void {
     if (this.removingItem()) return;
@@ -117,45 +218,104 @@ export class CustomerCartComponent {
 
   async applyPromo(): Promise<void> {
     const code = this.promoCode().trim().toUpperCase();
-    if (!code || this.applyingPromo()) return;
+
+    if (!code || this.applyingPromo()) {
+      return;
+    }
+
     this.applyingPromo.set(true);
+
     try {
-      const discount = (await this.discounts.getDiscounts()).find((item) => item.code === code);
-      const valid =
-        discount &&
-        this.discounts.getDiscountStatus(discount) === 'active' &&
-        (discount.usage_limit === null || discount.usage_count < discount.usage_limit) &&
-        this.shopping.subtotal() >= (discount.minimum_order_amount ?? 0);
-      if (!valid) {
-        this.appliedDiscount.set(null);
+      const discount = await this.discounts.getDiscountByCode(code);
+
+      if (!discount) {
         this.toast.error(
           'Invalid promo code',
-          'This code is expired, inactive, exhausted, or does not apply.',
+          'No promotion was found for this code.',
         );
         return;
       }
-      const applies =
-        discount.applies_to === 'all' ||
-        this.shopping
-          .cart()
-          .some(
-            (line) =>
-              discount.product_id === line.product.id ||
-              (discount.applies_to === 'category' &&
-                line.product.category === discount.categories?.name),
-          );
-      if (!applies) {
-        this.toast.error('Promo not applicable');
+
+      if (!this.discounts.isDiscountAvailable(discount)) {
+        this.toast.error(
+          'Promo code unavailable',
+          'This promotion is inactive, expired, scheduled, or exhausted.',
+        );
         return;
       }
-      this.appliedDiscount.set(discount);
-      this.toast.success('Promo code applied');
+
+      /*
+       * Free shipping is automatically controlled by the shipping bar.
+       * It is not applied through the percentage/fixed promo form.
+       */
+      if (discount.discount_type === 'free_shipping') {
+        this.toast.info(
+          'Automatic shipping offer',
+          'Free shipping is applied automatically when the required cart amount is reached.',
+        );
+        return;
+      }
+
+      const minimumOrderAmount =
+        discount.minimum_order_amount ?? 0;
+
+      if (this.shopping.subtotal() < minimumOrderAmount) {
+        const remaining =
+          minimumOrderAmount - this.shopping.subtotal();
+
+        this.toast.error(
+          'Minimum order not reached',
+          `Add $${remaining.toFixed(2)} more to use this code.`,
+        );
+        return;
+      }
+
+      const eligibleSubtotal =
+        this.shopping.getEligibleSubtotal(discount);
+
+      if (eligibleSubtotal <= 0) {
+        this.toast.error(
+          'Promo not applicable',
+          'This code does not apply to the products in your cart.',
+        );
+        return;
+      }
+
+      this.shopping.setAppliedDiscount(discount);
+      this.promoCode.set(discount.code);
+
+      this.toast.success(
+        'Promo code applied',
+        `${discount.code} was applied successfully.`,
+      );
     } catch {
-      this.toast.error('Unable to validate promo code');
+      this.toast.error(
+        'Unable to validate promo code',
+        'Please try again.',
+      );
     } finally {
       this.applyingPromo.set(false);
     }
   }
+
+  removePromo(): void {
+    if (this.applyingPromo()) {
+      return;
+    }
+
+    const removedCode = this.shopping.appliedDiscount()?.code;
+
+    this.shopping.clearAppliedDiscount();
+    this.promoCode.set('');
+
+    if (removedCode) {
+      this.toast.info(
+        'Promo code removed',
+        `${removedCode} was removed from your order.`,
+      );
+    }
+  }
+
   async checkout(): Promise<void> {
     if (!this.shopping.cart().length) {
       this.toast.info('Your cart is empty', 'Add an item before checkout.');

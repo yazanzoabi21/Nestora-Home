@@ -90,17 +90,24 @@ export class CustomerCheckoutStateService {
       lineTotal: line.product.price * line.quantity,
     })),
   );
+
   readonly totals = computed<CheckoutTotals>(() => {
     const subtotal = this.subtotal();
     const shippingCost = this.shippingCost();
     const paymentFee = this.paymentFee();
-    const discountAmount = 0;
+    const discountAmount = this.shopping.discountAmount();
+    const discountCode = this.shopping.appliedDiscount()?.code ?? null;
+
     return {
       subtotal,
       shippingCost,
       paymentFee,
       discountAmount,
-      total: Math.max(0, subtotal + shippingCost + paymentFee - discountAmount),
+      discountCode,
+      total: Math.max(
+        0,
+        subtotal + shippingCost + paymentFee - discountAmount,
+      ),
     };
   });
 
@@ -230,6 +237,7 @@ export class CustomerCheckoutStateService {
         shippingCost: value.shippingCost,
         paymentFee: value.paymentFee,
         discountAmount: value.discountAmount,
+        discountCode: value.discountCode,
         total: value.total,
       },
     });

@@ -120,7 +120,7 @@ export abstract class ProductBrowserPage {
   isAddingToCart(id: string): boolean {
     return this.shopping.pendingProductIds().has(id);
   }
-  addProductToCart(product: CustomerProduct): void {
-    this.shopping.addToCart(product);
+  addProductToCart(product: CustomerProduct, quantity = 1): void {
+    void this.shopping.addToCart(product, quantity);
   }
 }

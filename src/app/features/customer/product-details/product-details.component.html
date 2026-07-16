@@ -131,7 +131,7 @@
                 type="button"
                 class="w-12 disabled:opacity-40"
                 aria-label="Increase quantity"
-                [disabled]="quantity() >= item.stock"
+                [disabled]="quantity() >= availableQuantity()"
                 (click)="increase()"
               >
                 +
@@ -142,7 +142,9 @@
             <button
               type="button"
               class="h-14 rounded-2xl bg-[#6b7d5e] font-black text-white disabled:opacity-50"
-              [disabled]="!item.inStock || shopping.pendingProductIds().has(item.id)"
+              [disabled]="
+                availableQuantity() < quantity() || shopping.pendingProductIds().has(item.id)
+              "
               (click)="addToCart()"
             >
               <i class="pi pi-shopping-cart me-2"></i>Add to Cart
@@ -150,7 +152,7 @@
             <button
               type="button"
               class="h-14 rounded-2xl bg-[#2b2d2b] font-black text-white disabled:opacity-50"
-              [disabled]="!item.inStock"
+              [disabled]="availableQuantity() < quantity()"
               (click)="buyNow()"
             >
               Buy Now

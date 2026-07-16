@@ -37,6 +37,10 @@ export class ProductDetailsComponent {
       ? item.originalPrice - item.price
       : null;
   });
+  readonly availableQuantity = computed(() => {
+    const item = this.product();
+    return item ? this.shopping.remainingStock(item) : 0;
+  });
 
   constructor() {
     void this.load();
@@ -45,13 +49,14 @@ export class ProductDetailsComponent {
     this.quantity.update((value) => Math.max(1, value - 1));
   }
   increase(): void {
-    const stock = this.product()?.stock ?? 1;
-    this.quantity.update((value) => Math.min(stock, value + 1));
+    if (this.quantity() < this.availableQuantity()) {
+      this.quantity.update((value) => value + 1);
+    }
   }
   addToCart(): void {
     const item = this.product();
     if (item) {
-      this.shopping.addToCart(item, this.quantity());
+      void this.shopping.addToCart(item, this.quantity());
     }
   }
   buyNow(): void {
