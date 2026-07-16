@@ -22,6 +22,7 @@ export interface UserProfile {
     avatar_url: string | null;
     is_active: boolean;
     created_at: string;
+    birthday?: string | null;
 }
 
 export interface UserRole {
@@ -40,4 +41,10 @@ export interface CurrentUserProfileUpdate {
     phone?: string | null;
     avatar_media_id?: string | null;
     avatar_url?: string | null;
+}
+
+export interface CustomerProfileUpdate {
+    full_name: string;
+    phone: string | null;
+    birthday: string | null;
 }
