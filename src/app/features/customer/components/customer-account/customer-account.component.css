@@ -1,0 +1,151 @@
+.account-page {
+    background: #f8f7f5;
+    min-height: 650px;
+    padding: 2rem 0 4rem
+}
+
+.breadcrumb {
+    display: flex;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+    color: #858585;
+    font-size: .875rem
+}
+
+.breadcrumb a:hover {
+    color: #6b7d5e
+}
+
+.account-grid {
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 1fr);
+    gap: 2rem
+}
+
+.account-sidebar {
+    display: grid;
+    align-content: start;
+    gap: 1rem
+}
+
+.summary-card,
+.account-nav {
+    background: #fff;
+    border: 1px solid #eee8e1;
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 28px rgba(52, 47, 41, .06);
+    overflow: hidden
+}
+
+.summary-card {
+    padding: 1.25rem
+}
+
+.summary-person {
+    display: flex;
+    align-items: center;
+    gap: .9rem
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: #718369;
+    color: #fff;
+    font-size: 1.25rem
+}
+
+.summary-person h1 {
+    font-weight: 800;
+    color: #1f2a1f
+}
+
+.summary-person p {
+    font-size: .75rem;
+    color: #858585;
+    overflow-wrap: anywhere
+}
+
+.summary-counts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 1.25rem;
+    text-align: center
+}
+
+.summary-counts dt {
+    font-weight: 800
+}
+
+.summary-counts dd {
+    font-size: .75rem;
+    color: #858585
+}
+
+.account-nav a,
+.account-nav button {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1.25rem 1fr auto;
+    align-items: center;
+    gap: .7rem;
+    padding: 1rem;
+    border-bottom: 1px solid #eee8e1;
+    font-size: .9rem;
+    text-align: left
+}
+
+.account-nav button:last-child {
+    border: 0
+}
+
+.account-nav a:hover,
+.account-nav a.active {
+    background: #f2f4ed;
+    color: #5f714f
+}
+
+.account-nav .logout-action:hover:not(:disabled) {
+    background: #fff5f3;
+    color: #a64b43
+}
+
+.account-nav .logout-action:focus-visible {
+    outline: 3px solid rgba(113, 131, 105, .28);
+    outline-offset: -3px
+}
+
+.account-nav .logout-action:disabled {
+    cursor: wait;
+    opacity: .65
+}
+
+.arrow {
+    font-size: .65rem;
+    color: #aaa
+}
+
+@media(max-width:800px) {
+    .account-grid {
+        grid-template-columns: 1fr
+    }
+
+    .account-nav {
+        display: flex;
+        overflow: auto
+    }
+
+    .account-nav a,
+    .account-nav button {
+        min-width: max-content;
+        border-bottom: 0;
+        border-right: 1px solid #eee8e1
+    }
+
+    .arrow {
+        display: none
+    }
+}

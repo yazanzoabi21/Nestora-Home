@@ -16,8 +16,9 @@
         </span>
         <span>
           <span class="block text-3xl font-extrabold tracking-normal">{{ 'AUTH.BRAND' | translate }}</span>
-          <span class="mt-1 block text-sm font-semibold uppercase tracking-[0.28em] text-[#a9b79a]">{{
-            'AUTH.ADMIN_PANEL' | translate }}</span>
+          <span class="mt-1 block text-sm font-semibold uppercase tracking-[0.28em] text-[#a9b79a]">
+            {{ audience === 'customer' ? 'Customer Account' : ('AUTH.ADMIN_PANEL' | translate) }}
+          </span>
         </span>
       </div>
 
@@ -27,7 +28,9 @@
           {{ 'AUTH.BRAND' | translate }}
         </h1>
         <p class="mt-8 max-w-lg text-xl font-medium leading-8 text-[#e3e0d8]">
-          {{ 'AUTH.BRAND_DESCRIPTION' | translate }}
+          {{ audience === 'customer'
+            ? 'Discover home essentials, save your favorites, and manage your orders in one place.'
+            : ('AUTH.BRAND_DESCRIPTION' | translate) }}
         </p>
       </div>
 
@@ -39,8 +42,8 @@
             <i class="pi pi-shield text-2xl"></i>
           </span>
           <div>
-            <h2 class="text-lg font-bold text-white">{{ 'AUTH.FEATURE_SECURE_TITLE' | translate }}</h2>
-            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ 'AUTH.FEATURE_SECURE_TEXT' | translate }}
+            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Secure account' : ('AUTH.FEATURE_SECURE_TITLE' | translate) }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Protected authentication for your personal shopping account.' : ('AUTH.FEATURE_SECURE_TEXT' | translate) }}
             </p>
           </div>
         </div>
@@ -50,8 +53,8 @@
             <i class="pi pi-users text-2xl"></i>
           </span>
           <div>
-            <h2 class="text-lg font-bold text-white">{{ 'AUTH.FEATURE_ROLES_TITLE' | translate }}</h2>
-            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ 'AUTH.FEATURE_ROLES_TEXT' | translate }}
+            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Personalized shopping' : ('AUTH.FEATURE_ROLES_TITLE' | translate) }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Keep your profile, orders, and favorites together.' : ('AUTH.FEATURE_ROLES_TEXT' | translate) }}
             </p>
           </div>
         </div>
@@ -61,9 +64,8 @@
             <i class="pi pi-chart-line text-2xl"></i>
           </span>
           <div>
-            <h2 class="text-lg font-bold text-white">{{ 'AUTH.FEATURE_EFFICIENCY_TITLE' | translate }}</h2>
-            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ 'AUTH.FEATURE_EFFICIENCY_TEXT' | translate
-              }}</p>
+            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Easy ordering' : ('AUTH.FEATURE_EFFICIENCY_TITLE' | translate) }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Enjoy a smoother checkout and order history.' : ('AUTH.FEATURE_EFFICIENCY_TEXT' | translate) }}</p>
           </div>
         </div>
       </div>
@@ -81,8 +83,9 @@
           </span>
           <span>
             <span class="block text-xl font-extrabold">{{ 'AUTH.BRAND' | translate }}</span>
-            <span class="block text-xs font-bold uppercase tracking-[0.24em] text-[#8d877e]">{{ 'AUTH.ADMIN_PANEL' |
-              translate }}</span>
+            <span class="block text-xs font-bold uppercase tracking-[0.24em] text-[#8d877e]">
+              {{ audience === 'customer' ? 'Customer Account' : ('AUTH.ADMIN_PANEL' | translate) }}
+            </span>
           </span>
         </div>
 
@@ -161,6 +164,7 @@
               {{ 'AUTH.CONTINUE_GOOGLE' | translate }}
             </button>
 
+            @if (audience === 'customer') {
             <p class="text-center text-sm font-medium text-[#6f675e]">
               {{ 'AUTH.NO_ACCOUNT' | translate }}
               <button type="button" class="font-bold text-[#5f6f43] hover:text-[#495735]" (click)="setMode('register')"
@@ -168,6 +172,7 @@
                 {{ 'AUTH.CREATE_ACCOUNT' | translate }}
               </button>
             </p>
+            }
           </form>
           } @else {
           <form class="auth-form space-y-4" (submit)="$event.preventDefault(); submitRegister()">
@@ -175,10 +180,10 @@
               <span
                 class="inline-flex items-center gap-2 rounded-2xl border border-[#dce4d4] bg-[#f0f4ec] px-4 py-2 text-sm font-semibold text-[#3f4c2e]">
                 <i class="pi pi-shield text-sm"></i>
-                {{ 'AUTH.CREATE_ACCOUNT_BADGE' | translate }}
+                Create customer account
               </span>
               <h2 class="mt-6 text-4xl font-extrabold text-[#1f2a1f]">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</h2>
-              <p class="mt-3 text-base font-medium text-[#8d877e]">{{ 'AUTH.CREATE_ACCOUNT_SUBTITLE' | translate }}</p>
+              <p class="mt-3 text-base font-medium text-[#8d877e]">Create your account to start shopping with Nestora Home.</p>
             </div>
 
             <label class="auth-label">
@@ -232,15 +237,6 @@
               </span>
             </label>
 
-            <label class="auth-label">
-              <span>{{ 'AUTH.ROLE_ACCOUNT_TYPE' | translate }}</span>
-              <span class="auth-field bg-[#fbfaf8]">
-                <i class="pi pi-users text-[#8d877e]"></i>
-                <input type="text" readonly [value]="'AUTH.ALL_ROLES_SUPPORTED' | translate" />
-                <i class="pi pi-chevron-down text-xs text-[#8d877e]"></i>
-              </span>
-            </label>
-
             <label class="flex items-center gap-3 text-sm font-medium text-[#342f29]">
               <input type="checkbox" checked class="h-4 w-4 accent-[#5f6f43]" />
               <span>{{ 'AUTH.AGREE_TERMS' | translate }}</span>
@@ -248,11 +244,20 @@
 
             <ng-container *ngTemplateOutlet="authError"></ng-container>
 
-            <button type="submit" class="auth-primary" [disabled]="loading()">
-              @if (loading()) {
+            @if (successMessage()) {
+            <div class="flex items-start gap-3 rounded-2xl border border-[#cdddbf] bg-[#f1f7ec] px-4 py-3.5 text-[#3f5a32]" role="status" aria-live="polite">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#dfeeda] text-sm"><i class="pi pi-check"></i></span>
+              <p class="min-w-0 text-sm font-bold leading-relaxed">{{ successMessage() }}</p>
+            </div>
+            }
+
+            <button type="submit" class="auth-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
               <i class="pi pi-spin pi-spinner"></i>
-              }
+              <span class="ms-2">Creating Account...</span>
+              } @else {
               {{ 'AUTH.CREATE_ACCOUNT' | translate }}
+              }
             </button>
 
             <div class="auth-divider"><span>{{ 'AUTH.OR' | translate }}</span></div>
@@ -265,7 +270,7 @@
             <p class="text-center text-sm font-medium text-[#6f675e]">
               {{ 'AUTH.HAVE_ACCOUNT' | translate }}
               <button type="button" class="font-bold text-[#5f6f43] hover:text-[#495735]" (click)="setMode('login')"
-                [disabled]="loading()">
+                [disabled]="isSubmitting()">
                 {{ 'AUTH.SIGN_IN_LINK' | translate }}
               </button>
             </p>

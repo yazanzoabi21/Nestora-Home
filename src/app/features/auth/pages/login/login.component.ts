@@ -1,14 +1,19 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { TranslationService } from '../../../../core/services/translation';
-import { AdminAuthService, CustomerAuthService } from '../../../../core/services/auth';
+import {
+  AdminAuthService,
+  CustomerAuthService,
+  getCustomerSignupErrorMessage,
+} from '../../../../core/services/auth';
 import { CustomerShoppingStateService } from '../../../customer/services';
 
 type AuthMode = 'login' | 'register';
+type AuthAudience = 'admin' | 'customer';
 
 @Component({
   selector: 'app-login',
@@ -16,13 +21,17 @@ type AuthMode = 'login' | 'register';
   imports: [FormsModule, NgTemplateOutlet, TranslatePipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
-  readonly authMode = signal<AuthMode>('login');
+  readonly audience: AuthAudience;
+  readonly authMode: ReturnType<typeof signal<AuthMode>>;
   readonly passwordVisible = signal(false);
   readonly confirmPasswordVisible = signal(false);
   readonly loading = signal(false);
+  readonly isSubmitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly successMessage = signal<string | null>(null);
 
   private readonly translation = inject(TranslationService);
   private readonly translate = inject(TranslateService);
@@ -30,6 +39,7 @@ export class LoginComponent {
   private readonly customerAuth = inject(CustomerAuthService);
   private readonly shopping = inject(CustomerShoppingStateService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   loginForm = {
     email: '',
@@ -45,12 +55,15 @@ export class LoginComponent {
   };
 
   constructor() {
+    this.audience = this.route.snapshot.data['audience'] as AuthAudience ?? 'admin';
+    this.authMode = signal<AuthMode>(this.route.snapshot.data['initialMode'] as AuthMode ?? 'login');
     this.translation.currentLang();
   }
 
   setMode(mode: AuthMode): void {
-    this.authMode.set(mode);
-    this.errorMessage.set(null);
+    if (this.audience === 'customer') {
+      void this.router.navigate([mode === 'register' ? '/auth/customer-register' : '/auth/customer-login']);
+    }
   }
 
   togglePasswordVisibility(): void {
@@ -94,16 +107,10 @@ export class LoginComponent {
 
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
       const request = { email, password };
-      if (returnUrl?.startsWith('/shop')) {
+      if (this.audience === 'customer') {
         await this.customerAuth.login(request, returnUrl);
       } else {
-        try {
-          await this.adminAuth.login(request, returnUrl);
-        } catch (error) {
-          await this.customerAuth.login(request, returnUrl).catch(() => {
-            throw error;
-          });
-        }
+        await this.adminAuth.login(request, returnUrl);
       }
       await this.shopping.initialize();
     } catch {
@@ -114,9 +121,12 @@ export class LoginComponent {
   }
 
   async submitRegister(): Promise<void> {
+    if (this.isSubmitting()) return;
+    this.isSubmitting.set(true);
+
     try {
-      this.loading.set(true);
       this.errorMessage.set(null);
+      this.successMessage.set(null);
 
       const fullName = this.registerForm.fullName.trim();
       const email = this.registerForm.email.trim();
@@ -164,18 +174,32 @@ export class LoginComponent {
         return;
       }
 
-      await this.customerAuth.register({
+      const result = await this.customerAuth.register({
         fullName,
         email,
         phone,
         password,
       });
 
-      this.authMode.set('login');
-    } catch {
-      this.errorMessage.set(this.t('AUTH.ERRORS.REGISTER_FAILED'));
+      this.registerForm.password = '';
+      this.registerForm.confirmPassword = '';
+
+      if (result.status === 'confirmation-required') {
+        this.successMessage.set('Account created. Check your email to confirm your account.');
+        return;
+      }
+
+      await this.shopping.initialize();
+      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+      if (returnUrl?.startsWith('/shop') && !returnUrl.startsWith('//')) {
+        await this.router.navigateByUrl(returnUrl);
+      } else {
+        await this.router.navigate(['/shop/customer-account']);
+      }
+    } catch (error) {
+      this.errorMessage.set(getCustomerSignupErrorMessage(error));
     } finally {
-      this.loading.set(false);
+      this.isSubmitting.set(false);
     }
   }
 }

@@ -1,0 +1,80 @@
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AuthenticatedUserProfile } from '../../../../core/models/auth';
+import { CustomerAuthService } from '../../../../core/services/auth';
+import { ToastService } from '../../../../core/services/toast.service';
+
+interface CustomerProfileFormValue { firstName: string; lastName: string; email: string; phone: string; birthday: string; }
+
+@Component({
+  selector: 'app-customer-account-profile', standalone: true, imports: [ReactiveFormsModule],
+  templateUrl: './customer-account-profile.component.html', styleUrl: './customer-account-profile.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CustomerAccountProfileComponent {
+  readonly auth = inject(CustomerAuthService);
+  private readonly fb = inject(FormBuilder);
+  private readonly toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
+  readonly saving = signal(false);
+  readonly submitted = signal(false);
+  readonly profile = this.auth.customerProfile;
+  readonly today = new Date().toISOString().slice(0, 10);
+  readonly memberSince = computed(() => new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(this.profile()?.created_at ?? this.auth.user()?.created_at ?? Date.now())));
+  readonly form = this.fb.nonNullable.group({
+    firstName: ['', [trimmedRequired(), Validators.maxLength(60)]],
+    lastName: ['', [trimmedRequired(), Validators.maxLength(60)]],
+    email: [{ value: '', disabled: true }],
+    phone: ['', [Validators.maxLength(30), practicalPhone()]],
+    birthday: ['', [notFutureDate()]],
+  });
+  private readonly original = signal<CustomerProfileFormValue>(emptyFormValue());
+  private readonly current = signal<CustomerProfileFormValue>(emptyFormValue());
+  private readonly formRevision = signal(0);
+  readonly hasChanges = computed(() => !sameProfileValues(this.current(), this.original()));
+  readonly canSave = computed(() => { this.formRevision(); return this.hasChanges() && this.form.valid && !this.saving(); });
+
+  constructor() {
+    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => { this.current.set(this.form.getRawValue()); this.formRevision.update((revision) => revision + 1); });
+    effect(() => {
+      const profile = this.profile();
+      const userEmail = this.auth.user()?.email;
+      if (profile && !this.saving()) this.resetToProfile(profile, userEmail);
+    });
+  }
+
+  clearEdit(): void { if (this.hasChanges() && !this.saving()) this.resetForm(this.original()); }
+
+  async saveChanges(): Promise<void> {
+    if (this.saving()) return;
+    this.submitted.set(true);
+    if (this.form.invalid || !this.hasChanges()) { this.form.markAllAsTouched(); return; }
+    this.saving.set(true);
+    const value = this.form.getRawValue();
+    try {
+      const saved = await this.auth.updateProfile({ full_name: `${value.firstName.trim()} ${value.lastName.trim()}`.trim(), phone: value.phone.trim() || null, birthday: value.birthday || null });
+      this.resetToProfile(saved, this.auth.user()?.email);
+      this.toast.updated('Profile');
+    } catch (error) {
+      this.toast.failed('Profile update', error instanceof Error ? error.message : 'Unable to save your profile.');
+    } finally { this.saving.set(false); }
+  }
+
+  showError(control: AbstractControl): boolean { return control.invalid && (control.touched || this.submitted()); }
+  private resetToProfile(profile: AuthenticatedUserProfile, email?: string): void {
+    const names = splitName(profile.full_name ?? this.auth.displayName());
+    const value: CustomerProfileFormValue = { firstName: names.firstName, lastName: names.lastName, email: email ?? profile.email ?? '', phone: profile.phone ?? '', birthday: profile.birthday ?? '' };
+    this.original.set(value); this.resetForm(value);
+  }
+  private resetForm(value: CustomerProfileFormValue): void {
+    this.form.reset(value, { emitEvent: false }); this.form.markAsPristine(); this.form.markAsUntouched(); this.submitted.set(false); this.current.set({ ...value });
+  }
+}
+
+function trimmedRequired(): ValidatorFn { return (control): ValidationErrors | null => typeof control.value === 'string' && control.value.trim() ? null : { required: true }; }
+function practicalPhone(): ValidatorFn { return (control): ValidationErrors | null => !control.value || /^[+\d][\d\s().-]{5,29}$/.test(String(control.value).trim()) ? null : { phone: true }; }
+function notFutureDate(): ValidatorFn { return (control): ValidationErrors | null => !control.value || String(control.value) <= new Date().toISOString().slice(0, 10) ? null : { futureDate: true }; }
+function splitName(fullName: string): { firstName: string; lastName: string } { const parts = fullName.trim().split(/\s+/).filter(Boolean); return { firstName: parts[0] ?? '', lastName: parts.slice(1).join(' ') }; }
+function emptyFormValue(): CustomerProfileFormValue { return { firstName: '', lastName: '', email: '', phone: '', birthday: '' }; }
+function sameProfileValues(a: CustomerProfileFormValue, b: CustomerProfileFormValue): boolean { return a.firstName.trim() === b.firstName.trim() && a.lastName.trim() === b.lastName.trim() && a.email === b.email && a.phone.trim() === b.phone.trim() && a.birthday === b.birthday; }

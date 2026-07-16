@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { CustomerLayoutComponent } from './components/customer-layout/customer-layout.component';
+import { customerAuthGuard } from '../../core/guards/customer-auth.guard';
 
 export const CUSTOMER_ROUTES: Routes = [
   {
@@ -44,6 +45,19 @@ export const CUSTOMER_ROUTES: Routes = [
       {
         path: 'orders',
         loadComponent: () => import('./orders').then((m) => m.CustomerOrdersComponent),
+      },
+      {
+        path: 'customer-account',
+        canActivate: [customerAuthGuard],
+        loadComponent: () => import('./components/customer-account/customer-account.component').then(m => m.CustomerAccountComponent),
+        children: [
+          { path: '', redirectTo: 'profile', pathMatch: 'full' },
+          { path: 'profile', loadComponent: () => import('./components/customer-account-profile/customer-account-profile.component').then(m => m.CustomerAccountProfileComponent) },
+          { path: 'orders', loadComponent: () => import('./orders').then(m => m.CustomerOrdersComponent) },
+          { path: 'wishlist', loadComponent: () => import('./components/customer-account-placeholder/customer-account-placeholder.component').then(m => m.CustomerAccountPlaceholderComponent), data: { title: 'Wishlist' } },
+          { path: 'addresses', loadComponent: () => import('./components/customer-account-placeholder/customer-account-placeholder.component').then(m => m.CustomerAccountPlaceholderComponent), data: { title: 'Addresses' } },
+          { path: 'settings', loadComponent: () => import('./components/customer-account-placeholder/customer-account-placeholder.component').then(m => m.CustomerAccountPlaceholderComponent), data: { title: 'Settings' } },
+        ],
       },
     ],
   },

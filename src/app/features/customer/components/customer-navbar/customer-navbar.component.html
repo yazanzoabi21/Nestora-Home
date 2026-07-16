@@ -206,9 +206,12 @@
         <button
           type="button"
           class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:h-10 max-sm:w-10"
-          aria-label="Profile"
+          [attr.aria-label]="accountAriaLabel()"
+          [disabled]="customerAuth.isLoading()"
+          [attr.aria-busy]="customerAuth.isLoading()"
+          (click)="openAccount()"
         >
-          <i class="pi pi-user text-base"></i>
+          <i class="pi text-base" [class.pi-user]="!customerAuth.isLoading()" [class.pi-spinner]="customerAuth.isLoading()" [class.pi-spin]="customerAuth.isLoading()"></i>
         </button>
       </div>
     </div>

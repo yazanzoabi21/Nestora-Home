@@ -1,10 +1,11 @@
-import { Component, DestroyRef, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
 import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { Category, Discount } from '../../../../data-access/models';
 import { CategoriesService, DiscountsService } from '../../../../data-access/services';
 import { CustomerShoppingStateService } from '../../services';
+import { CustomerAuthService } from '../../../../core/services/auth';
 
 interface CustomerNavLink {
   label: string;
@@ -17,6 +18,7 @@ interface CustomerNavLink {
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './customer-navbar.component.html',
   styleUrl: './customer-navbar.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerNavbarComponent {
   readonly shopping = inject(CustomerShoppingStateService);
@@ -27,6 +29,9 @@ export class CustomerNavbarComponent {
     { label: 'All Products', path: '/shop/products' },
     { label: 'New Arrivals', path: '/shop/new-arrivals' },
   ];
+  readonly customerAuth = inject(CustomerAuthService);
+  readonly accountDestination = computed(() => this.customerAuth.isAuthenticated() ? '/shop/customer-account' : '/auth/customer-login');
+  readonly accountAriaLabel = computed(() => this.customerAuth.isLoading() ? 'Restoring customer session' : this.customerAuth.isAuthenticated() ? 'Open customer account' : 'Sign in to customer account');
 
   private readonly categoriesService = inject(CategoriesService);
   private readonly discountsService = inject(DiscountsService);
@@ -47,6 +52,11 @@ export class CustomerNavbarComponent {
 
   toggleCategoriesMenu(): void {
     this.categoriesMenuOpen.update((open) => !open);
+  }
+
+  async openAccount(): Promise<void> {
+    if (this.customerAuth.isLoading()) return;
+    await this.router.navigateByUrl(this.accountDestination());
   }
 
   closeCategoriesMenu(): void {
