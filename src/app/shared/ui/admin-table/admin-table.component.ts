@@ -41,6 +41,9 @@ export interface AdminTableColumn {
 export interface AdminTableImageTextCell {
   imageUrl?: string | null;
   imageFallbackLabel?: string;
+  avatarBackground?: string;
+  avatarTextColor?: string;
+  avatarShape?: 'rounded' | 'circle';
   title: string;
   subtitle?: string;
   initials?: string;

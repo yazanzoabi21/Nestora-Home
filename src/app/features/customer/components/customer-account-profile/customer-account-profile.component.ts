@@ -4,6 +4,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { AuthenticatedUserProfile } from '../../../../core/models/auth';
 import { CustomerAuthService } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
+import { splitFullName } from '../../../../shared/utils/name.util';
 
 interface CustomerProfileFormValue { firstName: string; lastName: string; email: string; phone: string; birthday: string; }
 
@@ -63,7 +64,7 @@ export class CustomerAccountProfileComponent {
 
   showError(control: AbstractControl): boolean { return control.invalid && (control.touched || this.submitted()); }
   private resetToProfile(profile: AuthenticatedUserProfile, email?: string): void {
-    const names = splitName(profile.full_name ?? this.auth.displayName());
+    const names = splitFullName(profile.full_name ?? this.auth.displayName());
     const value: CustomerProfileFormValue = { firstName: names.firstName, lastName: names.lastName, email: email ?? profile.email ?? '', phone: profile.phone ?? '', birthday: profile.birthday ?? '' };
     this.original.set(value); this.resetForm(value);
   }
@@ -75,6 +76,5 @@ export class CustomerAccountProfileComponent {
 function trimmedRequired(): ValidatorFn { return (control): ValidationErrors | null => typeof control.value === 'string' && control.value.trim() ? null : { required: true }; }
 function practicalPhone(): ValidatorFn { return (control): ValidationErrors | null => !control.value || /^[+\d][\d\s().-]{5,29}$/.test(String(control.value).trim()) ? null : { phone: true }; }
 function notFutureDate(): ValidatorFn { return (control): ValidationErrors | null => !control.value || String(control.value) <= new Date().toISOString().slice(0, 10) ? null : { futureDate: true }; }
-function splitName(fullName: string): { firstName: string; lastName: string } { const parts = fullName.trim().split(/\s+/).filter(Boolean); return { firstName: parts[0] ?? '', lastName: parts.slice(1).join(' ') }; }
 function emptyFormValue(): CustomerProfileFormValue { return { firstName: '', lastName: '', email: '', phone: '', birthday: '' }; }
 function sameProfileValues(a: CustomerProfileFormValue, b: CustomerProfileFormValue): boolean { return a.firstName.trim() === b.firstName.trim() && a.lastName.trim() === b.lastName.trim() && a.email === b.email && a.phone.trim() === b.phone.trim() && a.birthday === b.birthday; }

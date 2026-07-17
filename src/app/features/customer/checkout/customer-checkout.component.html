@@ -22,6 +22,7 @@
             @case ('shipping') {
               <app-checkout-shipping
                 [initialValue]="state.shippingInformation()"
+                [prefill]="state.shippingPrefill()"
                 (continue)="saveShipping($event)"
               />
             }

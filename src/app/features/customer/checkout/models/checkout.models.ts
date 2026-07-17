@@ -14,6 +14,20 @@ export interface CheckoutShippingInformation {
   deliveryInstructions: string | null;
 }
 
+export interface CheckoutShippingPrefill {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  streetAddress?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  country?: string;
+  deliveryInstructions?: string;
+}
+
 export interface CheckoutShippingMethod {
   id: string;
   code: string;

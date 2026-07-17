@@ -11,6 +11,7 @@ import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { AdminTableCellTemplateDirective, AdminTableColumn, AdminTableComponent, AdminTableRow } from '../../../shared/ui/admin-table';
 import { ExportReportComponent, ExportReportConfig } from '../../../shared/ui/export-report';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
+import { getInitialsAvatar } from '../../../shared/utils/initials-avatar.util';
 
 interface AdminSelectOption<T extends string = string> {
   label: string;
@@ -326,19 +327,8 @@ export class CustomersComponent implements OnInit {
     URL.revokeObjectURL(url);
   }
 
-  customerAvatarInitials(name: string): string {
-    const words = name.trim().split(/\s+/);
-    if (words.length === 0) {
-      return 'CU';
-    }
-    if (words.length === 1) {
-      return words[0].slice(0, 2).toUpperCase();
-    }
-    return `${words[0][0]}${words[1][0]}`.toUpperCase();
-  }
-
   formatCurrency(amount: number): string {
-    return `£${Number(amount ?? 0).toFixed(2)}`;
+    return `$${Number(amount ?? 0).toFixed(2)}`;
   }
 
   formatJoined(dateString: string): string {
@@ -428,17 +418,19 @@ export class CustomersComponent implements OnInit {
   }
 
   private toTableRow(customer: AdminCustomer): AdminTableRow {
-    const avatarText = customer.avatarUrl ? undefined : this.customerAvatarInitials(customer.fullName);
+    const avatar = getInitialsAvatar(customer.fullName, customer.email ?? customer.id);
 
     return {
       id: customer.id,
       raw: customer,
       customer: {
         imageUrl: customer.avatarUrl ?? undefined,
-        imageFallbackLabel: avatarText,
         title: customer.fullName,
         subtitle: customer.email ?? this.t('CUSTOMERS.NO_EMAIL'),
-        initials: avatarText,
+        initials: avatar.initials,
+        avatarBackground: avatar.backgroundColor,
+        avatarTextColor: avatar.textColor,
+        avatarShape: 'circle',
       },
       location: this.customerLocation(customer),
       orders: customer.totalOrders,

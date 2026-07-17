@@ -123,31 +123,79 @@ export class CustomerAuthService {
     }
   }
 
+  // async register(request: RegisterRequest): Promise<CustomerSignupResult> {
+  //   const { data, error } = await this.supabase.auth.signUp({
+  //     email: request.email,
+  //     password: request.password,
+  //     options: {
+  //       data: {
+  //         full_name: request.fullName,
+  //         phone: request.phone,
+  //         role: 'customer',
+  //       },
+  //     },
+  //   });
+
+  //   if (error) throw error;
+
+  //   if (!data.user?.id) throw new Error('Supabase did not return a user after signup.');
+
+  //   if (!data.session) {
+  //     return { status: 'confirmation-required', email: request.email };
+  //   }
+
+  //   this.session.set(data.session);
+  //   await this.restoreProfile(data.session);
+  //   return { status: 'authenticated', session: data.session };
+  // }
+
   async register(request: RegisterRequest): Promise<CustomerSignupResult> {
-    const { data, error } = await this.supabase.auth.signUp({
-      email: request.email,
-      password: request.password,
-      options: {
-        data: {
-          full_name: request.fullName,
-          phone: request.phone,
-          role: 'customer',
-        },
+  const email = request.email.trim().toLowerCase();
+  const fullName = request.fullName.trim();
+  const phone = request.phone.trim();
+
+  const { data, error } = await this.supabase.auth.signUp({
+    email,
+    password: request.password,
+    options: {
+      data: {
+        full_name: fullName,
+        phone,
+        role: 'customer',
       },
-    });
+    },
+  });
 
-    if (error) throw error;
-
-    if (!data.user?.id) throw new Error('Supabase did not return a user after signup.');
-
-    if (!data.session) {
-      return { status: 'confirmation-required', email: request.email };
-    }
-
-    this.session.set(data.session);
-    await this.restoreProfile(data.session);
-    return { status: 'authenticated', session: data.session };
+  if (error) {
+    throw error;
   }
+
+  if (!data.user?.id) {
+    throw new Error('Supabase did not return a user after signup.');
+  }
+
+  if (!data.session) {
+    return {
+      status: 'confirmation-required',
+      email,
+    };
+  }
+
+  this.session.set(data.session);
+  await this.restoreProfile(data.session);
+
+  const profile = this.currentCustomerProfile();
+
+  if (!profile) {
+    await this.logout(false);
+    throw new Error('Your customer profile could not be initialized.');
+  }
+
+  return {
+    status: 'authenticated',
+    session: data.session,
+  };
+}
 
   async logout(navigate = true): Promise<void> {
     const { error } = await this.supabase.auth.signOut({ scope: 'local' });
@@ -155,7 +203,7 @@ export class CustomerAuthService {
 
     this.currentCustomerProfile.set(null);
     this.session.set(null);
-    if (navigate) await this.router.navigate(['/auth/customer-login'], { replaceUrl: true });
+    if (navigate) await this.router.navigate(['/shop'], { replaceUrl: true });
   }
 
   async getCurrentCustomerProfile(): Promise<AuthenticatedUserProfile | null> {

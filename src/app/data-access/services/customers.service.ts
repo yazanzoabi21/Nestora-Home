@@ -49,7 +49,7 @@ export class CustomersService {
     return {
       id: String(customer['id'] ?? ''),
       profileId: customer['profile_id'] ? String(customer['profile_id']) : null,
-      fullName: String(customer['full_name'] ?? 'Unknown Customer'),
+      fullName: this.toDisplayName(customer['full_name']),
       email: customer['email'] ? String(customer['email']) : null,
       phone: customer['phone'] ? String(customer['phone']) : null,
       avatarUrl: customer['avatar_url'] ? String(customer['avatar_url']) : null,
@@ -93,5 +93,10 @@ export class CustomersService {
       default:
         return 'Bronze';
     }
+  }
+
+  private toDisplayName(value: unknown): string {
+    const name = String(value ?? '').trim().replace(/\s+/g, ' ');
+    return name || 'Unknown Customer';
   }
 }

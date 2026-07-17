@@ -10,12 +10,14 @@ import {
   CheckoutPaymentMethod,
   CheckoutSelection,
   CheckoutShippingInformation,
+  CheckoutShippingPrefill,
   CheckoutShippingMethod,
   CheckoutStep,
   CheckoutTotals,
   PlacedOrderResult,
 } from '../models';
 import { CustomerCheckoutDataService } from './customer-checkout-data.service';
+import { splitFullName } from '../../../../shared/utils/name.util';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerCheckoutStateService {
@@ -27,6 +29,7 @@ export class CustomerCheckoutStateService {
 
   private readonly _currentStep = signal<CheckoutStep>('shipping');
   private readonly _shippingInformation = signal<CheckoutShippingInformation | null>(null);
+  private readonly _shippingPrefill = signal<CheckoutShippingPrefill | null>(null);
   private readonly _selectedShippingMethod = signal<CheckoutShippingMethod | null>(null);
   private readonly _selectedPaymentMethod = signal<CheckoutPaymentMethod | null>(null);
   private readonly _isPlacingOrder = signal(false);
@@ -42,6 +45,7 @@ export class CustomerCheckoutStateService {
 
   readonly currentStep = this._currentStep.asReadonly();
   readonly shippingInformation = this._shippingInformation.asReadonly();
+  readonly shippingPrefill = this._shippingPrefill.asReadonly();
   readonly selectedShippingMethod = this._selectedShippingMethod.asReadonly();
   readonly selectedPaymentMethod = this._selectedPaymentMethod.asReadonly();
   readonly isPlacingOrder = this._isPlacingOrder.asReadonly();
@@ -116,7 +120,7 @@ export class CustomerCheckoutStateService {
     this._placedOrder.set(null);
     this._confirmation.set(null);
     this._placeOrderError.set(null);
-    await this.prefillProfile();
+    await this.loadShippingPrefill();
     await this.loadShippingMethods();
   }
 
@@ -246,6 +250,7 @@ export class CustomerCheckoutStateService {
   resetCheckout(): void {
     this._currentStep.set('shipping');
     this._shippingInformation.set(null);
+    this._shippingPrefill.set(null);
     this._selectedShippingMethod.set(null);
     this._selectedPaymentMethod.set(null);
     this._isPlacingOrder.set(false);
@@ -267,24 +272,36 @@ export class CustomerCheckoutStateService {
     return `Place Order - ${total}`;
   }
 
-  private async prefillProfile(): Promise<void> {
+  private async loadShippingPrefill(): Promise<void> {
     if (this._shippingInformation()) return;
+
+    await this.auth.initialize();
+    if (!this.auth.isAuthenticated()) {
+      this._shippingPrefill.set(null);
+      return;
+    }
+
     const profile = await this.auth.getCurrentCustomerProfile().catch(() => null);
-    if (!profile) return;
-    const [firstName = '', ...rest] = (profile.full_name ?? '').trim().split(/\s+/).filter(Boolean);
-    this._shippingInformation.set({
-      firstName,
-      lastName: rest.join(' '),
-      email: profile.email ?? '',
-      phone: profile.phone ?? null,
-      streetAddress: '',
-      addressLine2: null,
-      city: '',
-      stateProvince: '',
-      postalCode: '',
-      country: 'Lebanon',
-      deliveryInstructions: null,
+    if (!profile) {
+      this._shippingPrefill.set(null);
+      return;
+    }
+
+    const names = splitFullName(profile.full_name);
+    const prefill = this.compactPrefill({
+      firstName: names.firstName,
+      lastName: names.lastName,
+      email: this.auth.user()?.email ?? profile.email,
+      phone: profile.phone ?? undefined,
     });
+
+    this._shippingPrefill.set(Object.keys(prefill).length > 0 ? prefill : null);
+  }
+
+  private compactPrefill(value: CheckoutShippingPrefill): CheckoutShippingPrefill {
+    return Object.fromEntries(
+      Object.entries(value).filter(([, fieldValue]) => fieldValue?.trim()),
+    ) as CheckoutShippingPrefill;
   }
 
   private setStep(step: CheckoutStep): void {

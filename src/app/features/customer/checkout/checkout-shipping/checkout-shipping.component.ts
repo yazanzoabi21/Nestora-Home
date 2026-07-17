@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { CheckoutSelectOption, CheckoutShippingInformation } from '../models';
+import { CheckoutSelectOption, CheckoutShippingInformation, CheckoutShippingPrefill } from '../models';
 import { CheckoutFormFieldComponent } from '../shared/checkout-form-field';
 
 type ShippingForm = FormGroup<{
@@ -28,11 +28,14 @@ type ShippingFormControlName = keyof ShippingForm['controls'];
   styleUrl: './checkout-shipping.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CheckoutShippingComponent implements OnInit {
+export class CheckoutShippingComponent {
   readonly initialValue = input<CheckoutShippingInformation | null>(null);
+  readonly prefill = input<CheckoutShippingPrefill | null>(null);
   readonly continue = output<CheckoutShippingInformation>();
 
   private hasSubmitted = false;
+  private hasAppliedInitialValue = false;
+  private hasAppliedPrefill = false;
 
   readonly countries: CheckoutSelectOption[] = [
     { label: 'Lebanon', value: 'Lebanon' },
@@ -54,20 +57,27 @@ export class CheckoutShippingComponent implements OnInit {
     city: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     stateProvince: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     postalCode: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    country: new FormControl('Lebanon', { nonNullable: true, validators: [Validators.required] }),
+    country: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     deliveryInstructions: new FormControl('', { nonNullable: true }),
   });
 
-  ngOnInit(): void {
-    const value = this.initialValue();
-    if (value) {
-      this.form.patchValue({
-        ...value,
-        phone: value.phone ?? '',
-        addressLine2: value.addressLine2 ?? '',
-        deliveryInstructions: value.deliveryInstructions ?? '',
-      });
-    }
+  constructor() {
+    effect(() => {
+      const value = this.initialValue();
+      if (value && !this.hasAppliedInitialValue) {
+        this.form.patchValue(this.toFormValue(value), { emitEvent: false });
+        this.form.markAsPristine();
+        this.form.markAsUntouched();
+        this.hasAppliedInitialValue = true;
+        return;
+      }
+
+      const prefill = this.prefill();
+      if (!value && prefill && !this.hasAppliedPrefill) {
+        this.patchSafePrefill(prefill);
+        this.hasAppliedPrefill = true;
+      }
+    });
   }
 
   error(name: ShippingFormControlName): string | null {
@@ -88,5 +98,28 @@ export class CheckoutShippingComponent implements OnInit {
       addressLine2: value.addressLine2.trim() || null,
       deliveryInstructions: value.deliveryInstructions.trim() || null,
     });
+  }
+
+  private patchSafePrefill(prefill: CheckoutShippingPrefill): void {
+    for (const [name, value] of Object.entries(prefill) as Array<[ShippingFormControlName, string | undefined]>) {
+      const nextValue = value?.trim();
+      if (!nextValue) continue;
+
+      const control = this.form.controls[name];
+      if (!control || (!control.pristine && control.value.trim())) continue;
+
+      control.patchValue(nextValue, { emitEvent: false });
+      control.markAsPristine();
+      control.markAsUntouched();
+    }
+  }
+
+  private toFormValue(value: CheckoutShippingInformation): Record<ShippingFormControlName, string> {
+    return {
+      ...value,
+      phone: value.phone ?? '',
+      addressLine2: value.addressLine2 ?? '',
+      deliveryInstructions: value.deliveryInstructions ?? '',
+    };
   }
 }
