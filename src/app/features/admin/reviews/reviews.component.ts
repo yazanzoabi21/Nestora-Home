@@ -437,8 +437,8 @@ export class ReviewsComponent implements OnInit {
   private async afterMutation(): Promise<void> {
     await this.loadReviews();
     await Promise.all([
-      this.sidebarBadges.refreshBadge('reviews.pending'),
       this.sidebarBadges.refreshBadge('reviews.total'),
+      this.sidebarBadges.refreshBadge('reviews.pending'),
     ]);
   }
 

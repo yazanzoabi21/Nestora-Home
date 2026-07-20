@@ -4,6 +4,12 @@ import { AdminNavigationBadgeKey } from './admin-navigation.config';
 
 type BadgeState = Partial<Record<AdminNavigationBadgeKey, string | null>>;
 
+interface BadgeCountFilter {
+    column: string;
+    operator: 'eq' | 'gt' | 'lte';
+    value: boolean | number | string;
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -22,8 +28,8 @@ export class AdminSidebarBadgesService {
             this.refreshBadge('discounts.active'),
             this.refreshBadge('promotions.active'),
             this.refreshBadge('promotions.total'),
-            this.refreshBadge('reviews.pending'),
             this.refreshBadge('reviews.total'),
+            this.refreshBadge('reviews.pending'),
             this.refreshBadge('shipping.activeMethods'),
             this.refreshBadge('shipping.disabledMethods'),
             this.refreshBadge('shipping.activeZones'),
@@ -80,14 +86,10 @@ export class AdminSidebarBadgesService {
             }
 
             case 'discounts.active':
-                return this.countTable('discounts', (query) =>
-                    query.eq('is_active', true)
-                );
+                return this.countTable('discounts', { column: 'is_active', operator: 'eq', value: true });
 
             case 'promotions.active':
-                return this.countTable('promotions', (query) =>
-                    query.eq('is_active', true)
-                );
+                return this.countTable('promotions', { column: 'is_active', operator: 'eq', value: true });
 
             case 'promotions.total':
                 return this.countTable('promotions');
@@ -96,34 +98,22 @@ export class AdminSidebarBadgesService {
                 return this.countTable('reviews');
 
             case 'reviews.pending':
-                return this.countTable('reviews', (query) =>
-                    query.eq('status', 'pending')
-                );
+                return this.countTable('reviews', { column: 'status', operator: 'eq', value: 'pending' });
 
             case 'shipping.activeMethods':
-                return this.countTable('shipping_methods', (query) =>
-                    query.eq('is_active', true)
-                );
+                return this.countTable('shipping_methods', { column: 'is_active', operator: 'eq', value: true });
 
             case 'shipping.disabledMethods':
-                return this.countTable('shipping_methods', (query) =>
-                    query.eq('is_active', false)
-                );
+                return this.countTable('shipping_methods', { column: 'is_active', operator: 'eq', value: false });
 
             case 'shipping.activeZones':
-                return this.countTable('delivery_zones', (query) =>
-                    query.eq('is_active', true)
-                );
+                return this.countTable('delivery_zones', { column: 'is_active', operator: 'eq', value: true });
 
             case 'orders.pending':
-                return this.countTable('orders', (query) =>
-                    query.eq('status', 'pending')
-                );
+                return this.countTable('orders', { column: 'status', operator: 'eq', value: 'pending' });
 
             case 'notifications.unread':
-                return this.countTable('notifications', (query) =>
-                    query.eq('is_read', false)
-                );
+                return this.countTable('notifications', { column: 'is_read', operator: 'eq', value: false });
 
             case 'media.total':
                 return this.countTable('media_assets');
@@ -140,20 +130,19 @@ export class AdminSidebarBadgesService {
     }
 
     private countLowStockProducts(): Promise<number | null> {
-        return this.countTable('products', (query) =>
-            query.lte('stock', 25).gt('stock', 0)
-        );
+        return this.countTable('products', [
+            { column: 'stock', operator: 'lte', value: 25 },
+            { column: 'stock', operator: 'gt', value: 0 },
+        ]);
     }
 
     private countOutOfStockProducts(): Promise<number | null> {
-        return this.countTable('products', (query) =>
-            query.eq('stock', 0)
-        );
+        return this.countTable('products', { column: 'stock', operator: 'eq', value: 0 });
     }
 
     private async countTable(
         table: string,
-        applyFilters?: (query: any) => any,
+        filters: BadgeCountFilter | BadgeCountFilter[] = [],
     ): Promise<number | null> {
         let query = this.supabase
             .from(table)
@@ -162,8 +151,18 @@ export class AdminSidebarBadgesService {
                 head: true,
             });
 
-        if (applyFilters) {
-            query = applyFilters(query);
+        for (const filter of Array.isArray(filters) ? filters : [filters]) {
+            switch (filter.operator) {
+                case 'eq':
+                    query = query.eq(filter.column, filter.value);
+                    break;
+                case 'gt':
+                    query = query.gt(filter.column, filter.value);
+                    break;
+                case 'lte':
+                    query = query.lte(filter.column, filter.value);
+                    break;
+            }
         }
 
         const { count, error } = await query;

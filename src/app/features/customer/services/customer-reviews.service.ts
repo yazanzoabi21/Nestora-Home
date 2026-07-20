@@ -69,6 +69,12 @@ export class CustomerReviewsService {
   }
 
   async createReview(payload: CustomerReviewPayload): Promise<void> {
+    const { data, error: authError } = await this.supabase.auth.getUser();
+    const user = data?.user ?? null;
+
+    if (authError) throw new Error(authError.message ?? 'Unable to authenticate user.');
+    if (!user?.id) throw new Error('Authentication required.');
+
     const { error } = await this.supabase.rpc('submit_product_review', {
       p_product_id: payload.productId,
       p_rating: payload.rating,
@@ -81,6 +87,12 @@ export class CustomerReviewsService {
   }
 
   async updateOwnReview(payload: CustomerReviewEditPayload): Promise<void> {
+    const { data, error: authError } = await this.supabase.auth.getUser();
+    const user = data?.user ?? null;
+
+    if (authError) throw new Error(authError.message ?? 'Unable to authenticate user.');
+    if (!user?.id) throw new Error('Authentication required.');
+
     const { error } = await this.supabase.rpc('edit_own_product_review', {
       p_review_id: payload.reviewId,
       p_rating: payload.rating,

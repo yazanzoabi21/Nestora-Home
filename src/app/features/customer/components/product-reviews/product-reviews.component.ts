@@ -94,7 +94,7 @@ export class ProductReviewsComponent implements OnChanges {
     }
   }
   signIn(): void {
-    void this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.returnUrl } });
+    void this.router.navigate(['/auth/customer-login'], { queryParams: { returnUrl: this.returnUrl } });
   }
   openForm(): void {
     const own = this.ownReview();

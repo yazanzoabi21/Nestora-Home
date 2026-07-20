@@ -100,7 +100,7 @@ export const ADMIN_NAVIGATION_SECTIONS: AdminNavigationSection[] = [
         labelKey: 'SIDEBAR.REVIEWS',
         route: '/admin/reviews',
         icon: 'pi pi-star',
-        badgeKey: 'reviews.pending',
+        badgeKey: 'reviews.total',
       },
       {
         label: 'Discounts & Promotions',
