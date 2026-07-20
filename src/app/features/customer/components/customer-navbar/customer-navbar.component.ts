@@ -15,16 +15,18 @@ import { Category, Discount } from '../../../../data-access/models';
 import { CategoriesService, DiscountsService } from '../../../../data-access/services';
 import { CustomerShoppingStateService } from '../../services';
 import { CustomerAuthService } from '../../../../core/services/auth';
+import { TranslatePipe } from '@ngx-translate/core';
+import { CustomerLanguageSwitchComponent } from '../customer-language-switch/customer-language-switch.component';
 
 interface CustomerNavLink {
-  label: string;
+  labelKey: string;
   path: string;
 }
 
 @Component({
   selector: 'app-customer-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [CustomerLanguageSwitchComponent, RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './customer-navbar.component.html',
   styleUrl: './customer-navbar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,8 +38,8 @@ export class CustomerNavbarComponent {
   readonly navbarCategories = signal<Category[]>([]);
   readonly promotionalMessages = signal<string[]>([]);
   readonly navLinks: CustomerNavLink[] = [
-    { label: 'All Products', path: '/shop/products' },
-    { label: 'New Arrivals', path: '/shop/new-arrivals' },
+    { labelKey: 'CUSTOMER.PRODUCTS.ALL_PRODUCTS', path: '/shop/products' },
+    { labelKey: 'CUSTOMER.PRODUCTS.NEW_ARRIVALS', path: '/shop/new-arrivals' },
   ];
   readonly customerAuth = inject(CustomerAuthService);
   readonly accountDestination = computed(() => this.customerAuth.isAuthenticated() ? '/shop/customer-account' : '/auth/customer-login');

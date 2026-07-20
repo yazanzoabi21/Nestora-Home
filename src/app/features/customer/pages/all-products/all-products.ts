@@ -8,10 +8,11 @@ import { CustomerProductFiltersComponent } from '../../components/customer-produ
 import { CustomerProductQuickViewComponent } from '../../components/customer-product-quick-view';
 import { NewArrivalsService } from '../../services';
 import { ProductBrowserPage } from '../product-browser-page';
+import { CustomerProductCardSkeleton } from '../../components/customer-product-card-skeleton/customer-product-card-skeleton';
 
 @Component({
   selector: 'app-all-products', standalone: true,
-  imports: [CdkTrapFocus, CustomerProductCardComponent, CustomerProductFiltersComponent, CustomerProductQuickViewComponent, RouterLink, TranslatePipe],
+  imports: [CdkTrapFocus, CustomerProductCardComponent, CustomerProductFiltersComponent, CustomerProductCardSkeleton, CustomerProductQuickViewComponent, RouterLink, TranslatePipe],
   templateUrl: './all-products.html', styleUrl: './all-products.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

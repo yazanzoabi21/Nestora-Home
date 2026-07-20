@@ -1,0 +1,32 @@
+<div
+  class="language-switch"
+  role="group"
+  dir="ltr"
+  [attr.aria-label]="'COMMON.LANGUAGE_SELECTOR' | translate"
+>
+  <button
+    type="button"
+    class="language-switch__option"
+    lang="ar"
+    [class.language-switch__option--active]="translation.currentLang() === 'ar'"
+    [attr.aria-pressed]="translation.currentLang() === 'ar'"
+    [attr.aria-label]="'COMMON.SWITCH_TO_ARABIC' | translate"
+    (click)="selectLanguage('ar')"
+  >
+    AR
+  </button>
+
+  <span class="language-switch__divider" aria-hidden="true"></span>
+
+  <button
+    type="button"
+    class="language-switch__option"
+    lang="en"
+    [class.language-switch__option--active]="translation.currentLang() === 'en'"
+    [attr.aria-pressed]="translation.currentLang() === 'en'"
+    [attr.aria-label]="'COMMON.SWITCH_TO_ENGLISH' | translate"
+    (click)="selectLanguage('en')"
+  >
+    ENG
+  </button>
+</div>

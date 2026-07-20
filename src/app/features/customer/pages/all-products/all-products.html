@@ -1,9 +1,10 @@
 <section class="overflow-x-clip bg-[#f8f7f5]">
   <div class="customer-page-container py-5 sm:py-6 lg:py-7">
-    <nav class="flex items-center gap-2 text-xs font-semibold text-[#8a8f84] sm:text-sm sm:font-bold" aria-label="Breadcrumb">
+    <nav class="flex items-center gap-2 text-xs font-semibold text-[#8a8f84] sm:text-sm sm:font-bold"
+      aria-label="Breadcrumb">
       <a routerLink="/shop" class="transition hover:text-[#6b7d5e]">{{
         'CUSTOMER.PRODUCTS.HOME' | translate
-      }}</a>
+        }}</a>
       <span>/</span>
       <span class="text-[#30362f]">{{ pageTitle() | translate }}</span>
     </nav>
@@ -13,69 +14,58 @@
         <h1 class="text-[1.55rem] font-black leading-tight tracking-normal text-[#1f2a1f] sm:text-3xl lg:text-4xl">
           {{ pageTitle() | translate }}
         </h1>
-        <p class="text-sm font-semibold text-[#8a847c] sm:text-base">{{ productCountLabel() }}</p>
+        <!-- <p class="text-sm font-semibold text-[#8a847c] sm:text-base">{{ productCountLabel() }}</p> -->
+        @if (!loading()) {
+        <p class="text-sm font-semibold text-[#8a847c] sm:text-base">
+          {{ productCountLabel() }}
+        </p>
+        } @else {
+        <div class="mt-2 h-4 w-20 animate-pulse rounded-full bg-[#e7e2da]" aria-hidden="true"></div>
+        }
       </div>
 
       <div class="flex min-w-0 items-center gap-3">
         @if (filtersEnabled) {
-          <button
-            #filterButton
-            type="button"
-            class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e8dccf] bg-white px-4 text-sm font-bold text-[#30362f] shadow-sm transition hover:border-[#6b7d5e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:h-12 sm:px-5 sm:font-black lg:hidden"
-            aria-controls="customer-mobile-filter-drawer"
-            [attr.aria-expanded]="mobileFiltersOpen()"
-            (click)="openMobileFilters(filterButton)"
-          >
-            <i class="pi pi-filter text-xs"></i>
-            {{ 'CUSTOMER.PRODUCTS.FILTERS' | translate }}
-            @if (activeFilterCount() > 0) {
-              <span
-                class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#718369] px-1.5 text-[0.68rem] font-black leading-none text-white"
-                aria-label="Active filters"
-              >
-                {{ activeFilterCount() }}
-              </span>
-            }
-          </button>
+        <button #filterButton type="button"
+          class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e8dccf] bg-white px-4 text-sm font-bold text-[#30362f] shadow-sm transition hover:border-[#6b7d5e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:h-12 sm:px-5 sm:font-black lg:hidden"
+          aria-controls="customer-mobile-filter-drawer" [attr.aria-expanded]="mobileFiltersOpen()"
+          (click)="openMobileFilters(filterButton)">
+          <i class="pi pi-filter text-xs"></i>
+          {{ 'CUSTOMER.PRODUCTS.FILTERS' | translate }}
+          @if (activeFilterCount() > 0) {
+          <span
+            class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#718369] px-1.5 text-[0.68rem] font-black leading-none text-white"
+            aria-label="Active filters">
+            {{ activeFilterCount() }}
+          </span>
+          }
+        </button>
         }
 
         <label class="relative block">
           <span class="sr-only">{{ 'CUSTOMER.PRODUCTS.SORT_BY' | translate }}</span>
           <select
             class="h-10 min-w-0 w-[min(44vw,190px)] appearance-none rounded-full border border-[#e8dccf] bg-white py-0 ps-4 pe-9 text-sm font-semibold text-[#30362f] outline-none transition focus:border-[#6b7d5e] sm:h-12 sm:w-[190px] sm:rounded-2xl sm:ps-5 sm:pe-11 sm:text-base sm:font-bold"
-            [value]="sortBy()"
-            (change)="sortBy.set($any($event.target).value)"
-          >
+            [value]="sortBy()" (change)="sortBy.set($any($event.target).value)">
             @for (option of sortOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
+            <option [value]="option.value">{{ option.label }}</option>
             }
           </select>
           <i
-            class="pi pi-chevron-down pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-xs text-[#8a847c]"
-          ></i>
+            class="pi pi-chevron-down pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-xs text-[#8a847c]"></i>
         </label>
 
         <div class="inline-flex rounded-2xl border border-[#e8dccf] bg-white p-1 shadow-sm max-lg:hidden">
-          <button
-            type="button"
-            class="flex h-10 w-10 items-center justify-center rounded-xl text-[#8a847c] transition"
-            [class.bg-[#6b7d5e]]="viewMode() === 'grid'"
-            [class.text-white]="viewMode() === 'grid'"
-            [attr.aria-label]="'CUSTOMER.PRODUCTS.GRID_VIEW' | translate"
-            [attr.aria-pressed]="viewMode() === 'grid'"
-            (click)="viewMode.set('grid')"
-          >
+          <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-[#8a847c] transition"
+            [class.bg-[#6b7d5e]]="viewMode() === 'grid'" [class.text-white]="viewMode() === 'grid'"
+            [attr.aria-label]="'CUSTOMER.PRODUCTS.GRID_VIEW' | translate" [attr.aria-pressed]="viewMode() === 'grid'"
+            (click)="viewMode.set('grid')">
             <i class="pi pi-th-large text-sm"></i>
           </button>
-          <button
-            type="button"
-            class="flex h-10 w-10 items-center justify-center rounded-xl text-[#8a847c] transition"
-            [class.bg-[#6b7d5e]]="viewMode() === 'list'"
-            [class.text-white]="viewMode() === 'list'"
-            [attr.aria-label]="'CUSTOMER.PRODUCTS.LIST_VIEW' | translate"
-            [attr.aria-pressed]="viewMode() === 'list'"
-            (click)="viewMode.set('list')"
-          >
+          <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-[#8a847c] transition"
+            [class.bg-[#6b7d5e]]="viewMode() === 'list'" [class.text-white]="viewMode() === 'list'"
+            [attr.aria-label]="'CUSTOMER.PRODUCTS.LIST_VIEW' | translate" [attr.aria-pressed]="viewMode() === 'list'"
+            (click)="viewMode.set('list')">
             <i class="pi pi-list text-sm"></i>
           </button>
         </div>
@@ -83,31 +73,25 @@
     </div>
 
     @if (filtersEnabled && activeFilterChips().length > 0) {
-      <div class="-mt-1 mb-5 flex flex-wrap items-center gap-2 lg:mt-0 lg:mb-6" aria-label="Active filters">
-        @for (chip of activeFilterChips(); track chip.kind + ':' + chip.value) {
-          <button
-            type="button"
-            class="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full bg-[#eee5db] px-3 text-xs font-semibold text-[#1f2a1f] transition hover:bg-[#e8dccf] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:text-sm"
-            [attr.aria-label]="'Remove filter ' + chip.label"
-            (click)="removeActiveFilter(chip)"
-          >
-            <span class="truncate">{{ chip.label }}</span>
-            <i class="pi pi-times text-[0.62rem]" aria-hidden="true"></i>
-          </button>
-        }
+    <div class="-mt-1 mb-5 flex flex-wrap items-center gap-2 lg:mt-0 lg:mb-6" aria-label="Active filters">
+      @for (chip of activeFilterChips(); track chip.kind + ':' + chip.value) {
+      <button type="button"
+        class="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full bg-[#eee5db] px-3 text-xs font-semibold text-[#1f2a1f] transition hover:bg-[#e8dccf] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:text-sm"
+        [attr.aria-label]="'Remove filter ' + chip.label" (click)="removeActiveFilter(chip)">
+        <span class="truncate">{{ chip.label }}</span>
+        <i class="pi pi-times text-[0.62rem]" aria-hidden="true"></i>
+      </button>
+      }
 
-        <button
-          type="button"
-          class="inline-flex min-h-9 items-center rounded-full border border-[#e8dccf] bg-white px-3 text-xs font-semibold text-[#718369] transition hover:border-[#718369] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:text-sm"
-          (click)="clearFilters()"
-        >
-          Clear all
-        </button>
-      </div>
+      <button type="button"
+        class="inline-flex min-h-9 items-center rounded-full border border-[#e8dccf] bg-white px-3 text-xs font-semibold text-[#718369] transition hover:border-[#718369] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:text-sm"
+        (click)="clearFilters()">
+        Clear all
+      </button>
+    </div>
     }
 
-    <div
-      [class]="
+    <div [class]="
         selectedProduct()
           ? filtersEnabled
             ? 'mt-6 grid grid-cols-1 items-start gap-4 lg:mt-8 lg:grid-cols-[270px_minmax(0,1fr)] lg:gap-6 xl:grid-cols-[270px_minmax(0,1fr)_430px]'
@@ -115,211 +99,148 @@
           : filtersEnabled
             ? 'mt-6 grid grid-cols-1 items-start gap-4 lg:mt-8 lg:grid-cols-[270px_minmax(0,1fr)] lg:gap-6'
             : 'mt-6 grid grid-cols-1 items-start gap-4 lg:mt-8 lg:gap-6'
-      "
-    >
+      ">
       @if (filtersEnabled) {
-        <aside
-          class="hidden min-w-0 lg:sticky lg:top-[110px] lg:block lg:max-h-[calc(100vh-130px)] lg:self-start lg:overflow-y-auto lg:overscroll-contain"
-        >
-          <app-customer-product-filters
-            [categories]="categoryOptions()"
-            [priceRanges]="priceRanges"
-            [ratings]="ratingOptions"
-            [selectedCategories]="selectedCategories()"
-            [selectedPriceRange]="selectedPriceRange()"
-            [selectedRating]="selectedRating()"
-            [inStockOnly]="inStockOnly()"
-            (categoryToggle)="toggleCategory($event)"
-            (priceRangeChange)="setPriceRange($event)"
-            (ratingChange)="setRating($event)"
-            (inStockOnlyChange)="inStockOnly.set($event)"
-            (clearFilters)="clearFilters()"
-          />
-        </aside>
+      <aside
+        class="hidden min-w-0 lg:sticky lg:top-[110px] lg:block lg:max-h-[calc(100vh-130px)] lg:self-start lg:overflow-y-auto lg:overscroll-contain">
+        <app-customer-product-filters [categories]="categoryOptions()" [priceRanges]="priceRanges"
+          [ratings]="ratingOptions" [selectedCategories]="selectedCategories()"
+          [selectedPriceRange]="selectedPriceRange()" [selectedRating]="selectedRating()" [inStockOnly]="inStockOnly()"
+          (categoryToggle)="toggleCategory($event)" (priceRangeChange)="setPriceRange($event)"
+          (ratingChange)="setRating($event)" (inStockOnlyChange)="inStockOnly.set($event)"
+          (clearFilters)="clearFilters()" />
+      </aside>
       }
 
       <div class="min-w-0">
         @if (loading()) {
-          <div class="rounded-[1.5rem] bg-white px-6 py-16 text-center shadow-sm" role="status">
-            <i class="pi pi-spin pi-spinner text-3xl text-[#6b7d5e]"></i>
-            <p class="mt-4 font-semibold text-[#77736d]">
-              {{ 'CUSTOMER.PRODUCTS.LOADING' | translate }}
-            </p>
+        <div role="status" aria-live="polite" aria-busy="true" class="w-full">
+          <span class="sr-only">
+            {{ 'CUSTOMER.PRODUCTS.LOADING' | translate }}
+          </span>
+
+          <div class="grid grid-cols-1 gap-4 min-[340px]:grid-cols-2
+             sm:gap-6 xl:mx-auto xl:w-full xl:max-w-[1068px]
+             xl:grid-cols-3">
+            @for (_ of loadingCards; track $index) {
+            <app-customer-product-card-skeleton />
+            }
           </div>
+        </div>
         } @else if (error()) {
-          <div
-            class="rounded-[1.5rem] border border-red-200 bg-white px-6 py-16 text-center shadow-sm"
-            role="alert"
-          >
-            <h2 class="text-xl font-black text-[#1f2a1f]">
-              {{ 'CUSTOMER.PRODUCTS.LOAD_ERROR' | translate }}
-            </h2>
-            <p class="mt-2 text-sm text-[#77736d]">{{ error() }}</p>
-          </div>
+        <div class="rounded-[1.5rem] border border-red-200 bg-white px-6 py-16 text-center shadow-sm" role="alert">
+          <h2 class="text-xl font-black text-[#1f2a1f]">
+            {{ 'CUSTOMER.PRODUCTS.LOAD_ERROR' | translate }}
+          </h2>
+          <p class="mt-2 text-sm text-[#77736d]">{{ error() }}</p>
+        </div>
         } @else if (visibleProducts().length) {
-          <div
-            [class]="
+        <div [class]="
               viewMode() === 'grid'
                 ? selectedProduct()
                   ? 'mx-auto grid w-full max-w-[704px] grid-cols-1 gap-4 min-[340px]:grid-cols-2 sm:gap-6'
                   : 'grid grid-cols-1 gap-4 min-[340px]:grid-cols-2 sm:gap-6 xl:mx-auto xl:w-full xl:max-w-[1068px] xl:grid-cols-3'
                 : 'grid grid-cols-1 gap-6'
-            "
-          >
-            @for (product of visibleProducts(); track product.id) {
-              <app-customer-product-card
-                [product]="product"
-                [view]="viewMode()"
-                [wishlistActive]="isWishlisted(product.id)"
-                [cartLoading]="isAddingToCart(product.id)"
-                [canAddToCart]="shopping.canAdd(product)"
-                [selected]="isSelected(product.id)"
-                (quickView)="selectProduct($event)"
-                (addToCart)="addProductToCart($event)"
-                (toggleWishlist)="toggleWishlist($event)"
-              />
-            }
-          </div>
+            ">
+          @for (product of visibleProducts(); track product.id) {
+          <app-customer-product-card [product]="product" [view]="viewMode()" [wishlistActive]="isWishlisted(product.id)"
+            [cartLoading]="isAddingToCart(product.id)" [canAddToCart]="shopping.canAdd(product)"
+            [selected]="isSelected(product.id)" (quickView)="selectProduct($event)"
+            (addToCart)="addProductToCart($event)" (toggleWishlist)="toggleWishlist($event)" />
+          }
+        </div>
         } @else {
-          <div
-            class="rounded-[1.5rem] border border-[#e8dccf] bg-white px-6 py-16 text-center shadow-sm"
-          >
-            <div
-              class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]"
-            >
-              <i class="pi pi-search text-2xl"></i>
-            </div>
-            <h2 class="mt-5 text-2xl font-black text-[#1f2a1f]">
-              {{ 'CUSTOMER.PRODUCTS.NO_RESULTS' | translate }}
-            </h2>
-            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-[#77736d]">
-              {{ 'CUSTOMER.PRODUCTS.NO_RESULTS_DETAIL' | translate }}
-            </p>
-            <button
-              type="button"
-              class="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white transition hover:bg-[#596b4e]"
-              (click)="clearFilters()"
-            >
-              {{ 'CUSTOMER.PRODUCTS.CLEAR_FILTERS' | translate }}
-            </button>
+        <div class="rounded-[1.5rem] border border-[#e8dccf] bg-white px-6 py-16 text-center shadow-sm">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]">
+            <i class="pi pi-search text-2xl"></i>
           </div>
+          <h2 class="mt-5 text-2xl font-black text-[#1f2a1f]">
+            {{ 'CUSTOMER.PRODUCTS.NO_RESULTS' | translate }}
+          </h2>
+          <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-[#77736d]">
+            {{ 'CUSTOMER.PRODUCTS.NO_RESULTS_DETAIL' | translate }}
+          </p>
+          <button type="button"
+            class="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white transition hover:bg-[#596b4e]"
+            (click)="clearFilters()">
+            {{ 'CUSTOMER.PRODUCTS.CLEAR_FILTERS' | translate }}
+          </button>
+        </div>
         }
       </div>
 
       @if (selectedProduct(); as product) {
-        <aside class="hidden min-w-0 xl:sticky xl:top-[110px] xl:block xl:self-start">
-          <app-customer-product-quick-view
-            [product]="product"
-            [wishlistActive]="isWishlisted(product.id)"
-            [cartLoading]="isAddingToCart(product.id)"
-            [availableQuantity]="shopping.remainingStock(product)"
-            (closeRequested)="closeQuickView()"
-            (addRequested)="addProductToCart($event.product, $event.quantity)"
-            (toggleWishlist)="toggleWishlist($event)"
-          />
-        </aside>
+      <aside class="hidden min-w-0 xl:sticky xl:top-[110px] xl:block xl:self-start">
+        <app-customer-product-quick-view [product]="product" [wishlistActive]="isWishlisted(product.id)"
+          [cartLoading]="isAddingToCart(product.id)" [availableQuantity]="shopping.remainingStock(product)"
+          (closeRequested)="closeQuickView()" (addRequested)="addProductToCart($event.product, $event.quantity)"
+          (toggleWishlist)="toggleWishlist($event)" />
+      </aside>
       }
     </div>
   </div>
 </section>
 
 @if (filtersEnabled && mobileFiltersOpen()) {
+<div class="customer-filter-drawer-shell fixed inset-0 z-[1200] lg:hidden" role="dialog" aria-modal="true"
+  aria-labelledby="customer-mobile-filter-title" id="customer-mobile-filter-drawer">
+  <button type="button" class="absolute inset-0 bg-[#1f2a1f]/38" [attr.aria-label]="'COMMON.CLOSE' | translate"
+    (click)="closeMobileFilters()"></button>
   <div
-    class="customer-filter-drawer-shell fixed inset-0 z-[1200] lg:hidden"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="customer-mobile-filter-title"
-    id="customer-mobile-filter-drawer"
-  >
-    <button
-      type="button"
-      class="absolute inset-0 bg-[#1f2a1f]/38"
-      [attr.aria-label]="'COMMON.CLOSE' | translate"
-      (click)="closeMobileFilters()"
-    ></button>
-    <div
-      class="customer-filter-drawer absolute inset-y-0 end-0 flex w-full max-w-[480px] flex-col overflow-hidden bg-white shadow-2xl"
-      cdkTrapFocus
-      [cdkTrapFocusAutoCapture]="true"
-    >
-      <div class="sticky top-0 z-10 flex min-h-16 items-center justify-between border-b border-[#e8dccf] bg-white px-5">
-        <div class="min-w-0">
-          <h2 id="customer-mobile-filter-title" class="text-lg font-black text-[#1f2a1f]">
-            Filter Products
-          </h2>
-          @if (activeFilterCount() > 0) {
-            <p class="mt-0.5 text-xs font-bold text-[#718369]">
-              {{ activeFilterCount() }} active
-            </p>
-          }
-        </div>
-        <button
-          id="customer-mobile-filter-close"
-          type="button"
-          class="flex h-10 w-10 items-center justify-center rounded-full text-[#1f2a1f] transition hover:bg-[#f7f4ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
-          [attr.aria-label]="'COMMON.CLOSE' | translate"
-          (click)="closeMobileFilters()"
-        >
-          <i class="pi pi-times"></i>
-        </button>
+    class="customer-filter-drawer absolute inset-y-0 end-0 flex w-full max-w-[480px] flex-col overflow-hidden bg-white shadow-2xl"
+    cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+    <div class="sticky top-0 z-10 flex min-h-16 items-center justify-between border-b border-[#e8dccf] bg-white px-5">
+      <div class="min-w-0">
+        <h2 id="customer-mobile-filter-title" class="text-lg font-black text-[#1f2a1f]">
+          Filter Products
+        </h2>
+        @if (activeFilterCount() > 0) {
+        <p class="mt-0.5 text-xs font-bold text-[#718369]">
+          {{ activeFilterCount() }} active
+        </p>
+        }
       </div>
+      <button id="customer-mobile-filter-close" type="button"
+        class="flex h-10 w-10 items-center justify-center rounded-full text-[#1f2a1f] transition hover:bg-[#f7f4ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
+        [attr.aria-label]="'COMMON.CLOSE' | translate" (click)="closeMobileFilters()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
 
-      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6">
-        <app-customer-product-filters
-          [framed]="false"
-          [categories]="categoryOptions()"
-          [priceRanges]="priceRanges"
-          [ratings]="ratingOptions"
-          [selectedCategories]="selectedCategories()"
-          [selectedPriceRange]="selectedPriceRange()"
-          [selectedRating]="selectedRating()"
-          [inStockOnly]="inStockOnly()"
-          (categoryToggle)="toggleCategory($event)"
-          (priceRangeChange)="setPriceRange($event)"
-          (ratingChange)="setRating($event)"
-          (inStockOnlyChange)="inStockOnly.set($event)"
-          (clearFilters)="clearFilters()"
-        />
-      </div>
+    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6">
+      <app-customer-product-filters [framed]="false" [categories]="categoryOptions()" [priceRanges]="priceRanges"
+        [ratings]="ratingOptions" [selectedCategories]="selectedCategories()"
+        [selectedPriceRange]="selectedPriceRange()" [selectedRating]="selectedRating()" [inStockOnly]="inStockOnly()"
+        (categoryToggle)="toggleCategory($event)" (priceRangeChange)="setPriceRange($event)"
+        (ratingChange)="setRating($event)" (inStockOnlyChange)="inStockOnly.set($event)"
+        (clearFilters)="clearFilters()" />
+    </div>
 
-      <div class="sticky bottom-0 grid grid-cols-[0.85fr_1.15fr] gap-3 border-t border-[#e8dccf] bg-white p-4">
-        <button
-          type="button"
-          class="inline-flex h-11 items-center justify-center rounded-full border border-[#e8dccf] bg-white px-4 text-sm font-black text-[#30362f] transition hover:border-[#6b7d5e]"
-          (click)="clearFilters()"
-        >
-          {{ 'CUSTOMER.PRODUCTS.CLEAR' | translate }}
-        </button>
-        <button
-          type="button"
-          class="inline-flex h-11 items-center justify-center rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white transition hover:bg-[#596b4e]"
-          (click)="closeMobileFilters()"
-        >
-          Show {{ visibleProducts().length }} Products
-        </button>
-      </div>
+    <div class="sticky bottom-0 grid grid-cols-[0.85fr_1.15fr] gap-3 border-t border-[#e8dccf] bg-white p-4">
+      <button type="button"
+        class="inline-flex h-11 items-center justify-center rounded-full border border-[#e8dccf] bg-white px-4 text-sm font-black text-[#30362f] transition hover:border-[#6b7d5e]"
+        (click)="clearFilters()">
+        {{ 'CUSTOMER.PRODUCTS.CLEAR' | translate }}
+      </button>
+      <button type="button"
+        class="inline-flex h-11 items-center justify-center rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white transition hover:bg-[#596b4e]"
+        (click)="closeMobileFilters()">
+        Show {{ visibleProducts().length }} Products
+      </button>
     </div>
   </div>
+</div>
 }
 
 @if (selectedProduct(); as product) {
-  <div class="fixed inset-0 z-50 xl:hidden" role="dialog" aria-modal="true">
-    <button
-      type="button"
-      class="absolute inset-0 bg-[#1f2a1f]/35"
-      [attr.aria-label]="'COMMON.CLOSE' | translate"
-      (click)="closeQuickView()"
-    ></button>
-    <div class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden px-3 sm:px-6">
-      <app-customer-product-quick-view
-        [product]="product"
-        [wishlistActive]="isWishlisted(product.id)"
-        [cartLoading]="isAddingToCart(product.id)"
-        [availableQuantity]="shopping.remainingStock(product)"
-        (closeRequested)="closeQuickView()"
-        (addRequested)="addProductToCart($event.product, $event.quantity)"
-        (toggleWishlist)="toggleWishlist($event)"
-      />
-    </div>
+<div class="fixed inset-0 z-50 xl:hidden" role="dialog" aria-modal="true">
+  <button type="button" class="absolute inset-0 bg-[#1f2a1f]/35" [attr.aria-label]="'COMMON.CLOSE' | translate"
+    (click)="closeQuickView()"></button>
+  <div class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden px-3 sm:px-6">
+    <app-customer-product-quick-view [product]="product" [wishlistActive]="isWishlisted(product.id)"
+      [cartLoading]="isAddingToCart(product.id)" [availableQuantity]="shopping.remainingStock(product)"
+      (closeRequested)="closeQuickView()" (addRequested)="addProductToCart($event.product, $event.quantity)"
+      (toggleWishlist)="toggleWishlist($event)" />
   </div>
+</div>
 }

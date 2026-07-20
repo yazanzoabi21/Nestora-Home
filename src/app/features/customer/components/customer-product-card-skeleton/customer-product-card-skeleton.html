@@ -1,0 +1,63 @@
+<article class="overflow-hidden rounded-[1.5rem] border border-[#e9e1d8]
+         bg-white shadow-[0_14px_35px_rgba(31,42,31,0.08)]" aria-hidden="true">
+    <!-- Product image section -->
+    <div class="relative aspect-[1/0.97] overflow-hidden bg-[#f5efe7]">
+        <!-- Animated background -->
+        <p-skeleton width="100%" height="100%" borderRadius="0" styleClass="!bg-[#f1ebe3]"></p-skeleton>
+
+        <!-- Discount badge -->
+        <div class="absolute start-4 top-4 z-10">
+            <p-skeleton width="3.7rem" height="1.55rem" borderRadius="999px" styleClass="!bg-[#d9dfd3]"></p-skeleton>
+        </div>
+
+        <!-- Wishlist button -->
+        <div class="absolute end-4 top-4 z-10 flex h-11 w-11 items-center
+             justify-center rounded-full bg-white shadow-md">
+            <p-skeleton shape="circle" size="1.1rem" styleClass="!bg-[#dedbd6]"></p-skeleton>
+        </div>
+
+        <!-- Neutral product image placeholder -->
+        <div class="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+            <div class="relative h-[58%] w-[58%]
+           motion-safe:animate-pulse
+           motion-safe:[animation-duration:2.2s]">
+                <p-skeleton width="100%" height="100%" borderRadius="1.75rem" styleClass="!bg-[#e4ded5]"></p-skeleton>
+
+                <div class="absolute inset-x-[16%] bottom-[14%]">
+                    <p-skeleton width="100%" height="18%" borderRadius="999px" styleClass="!bg-[#eee9e2]"></p-skeleton>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product information section -->
+    <div class="px-5 pb-5 pt-4">
+        <!-- Category -->
+        <p-skeleton width="4.5rem" height="0.85rem" borderRadius="999px" styleClass="!bg-[#dfe4da]"></p-skeleton>
+
+        <!-- Product name -->
+        <div class="mt-4 space-y-2.5">
+            <p-skeleton width="86%" height="1rem" borderRadius="999px" styleClass="!bg-[#e5e1dc]"></p-skeleton>
+
+            <p-skeleton width="56%" height="1rem" borderRadius="999px" styleClass="!bg-[#e5e1dc]"></p-skeleton>
+        </div>
+
+        <!-- Rating -->
+        <div class="mt-4 flex items-center gap-2">
+            <div class="flex items-center gap-1">
+                @for (_ of [1, 2, 3, 4, 5]; track $index) {
+                <p-skeleton shape="circle" size="0.9rem" styleClass="!bg-[#ebe3d9]"></p-skeleton>
+                }
+            </div>
+
+            <p-skeleton width="1.7rem" height="0.75rem" borderRadius="999px" styleClass="!bg-[#e5e1dc]"></p-skeleton>
+        </div>
+
+        <!-- Prices -->
+        <div class="mt-4 flex items-center gap-2">
+            <p-skeleton width="4.8rem" height="1.3rem" borderRadius="999px" styleClass="!bg-[#d9ded4]"></p-skeleton>
+
+            <p-skeleton width="3.4rem" height="0.85rem" borderRadius="999px" styleClass="!bg-[#e7e2dc]"></p-skeleton>
+        </div>
+    </div>
+</article>

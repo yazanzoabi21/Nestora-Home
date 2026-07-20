@@ -43,6 +43,7 @@ export abstract class ProductBrowserPage {
   readonly wishlistProductIds = this.shopping.wishlistIds;
   readonly selectedProduct = signal<CustomerProduct | null>(null);
   readonly cartCount = signal(0);
+  readonly loadingCards = Array.from({ length: 6 });
 
   readonly priceRanges: CustomerPriceRange[] = [
     { label: 'Under $30', value: 'under-30', min: 0, max: 30 },
