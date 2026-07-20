@@ -80,39 +80,39 @@
   </article>
 } @else {
   <article
-    class="customer-product-card group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white"
+    class="customer-product-card group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[1.15rem] border bg-white sm:rounded-3xl"
     [class.customer-product-card--selected]="selected()"
   >
     <a
       [routerLink]="detailUrl()"
-      class="absolute inset-0 z-0 rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
+      class="absolute inset-0 z-0 rounded-[1.15rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:rounded-3xl"
       [attr.aria-label]="'View details for ' + product().name"
     ></a>
-    <div class="pointer-events-none relative h-72 overflow-hidden bg-[#f5f2ee]">
+    <div class="pointer-events-none relative h-[164px] overflow-hidden bg-[#f5f2ee] min-[390px]:h-[184px] sm:h-72">
       <img
         [src]="product().imageUrl"
         [alt]="product().name"
         loading="lazy"
         class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
       />
-      <div class="absolute start-4 top-4 flex flex-col items-start gap-2">
+      <div class="absolute start-3 top-3 flex flex-col items-start gap-1.5 sm:start-4 sm:top-4 sm:gap-2">
         @if (soldOut()) {
           <span class="customer-product-card__sold-out-badge">Sold Out</span>
         }
         @if (hasValidDiscount()) {
-          <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white"
+          <span class="rounded-full bg-[#6b7d5e] px-2.5 py-1 text-[0.68rem] font-black text-white sm:px-3 sm:text-xs"
             >−{{ safeDiscountPercentage() }}%</span
           >
         }
         @if (product().badge) {
-          <span class="rounded-full bg-[#eee5db] px-3 py-1 text-xs font-bold text-[#4f473f]">{{
+          <span class="rounded-full bg-[#eee5db] px-2.5 py-1 text-[0.68rem] font-bold text-[#4f473f] sm:px-3 sm:text-xs">{{
             product().badge
           }}</span>
         }
       </div>
       <button
         type="button"
-        class="pointer-events-auto absolute end-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg"
+        class="pointer-events-auto absolute end-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm shadow-lg sm:end-4 sm:top-4 sm:h-11 sm:w-11 sm:text-base"
         [class.text-[#6b7d5e]]="wishlistActive()"
         [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
         [attr.aria-pressed]="wishlistActive()"
@@ -157,25 +157,25 @@
         </button>
       </div>
     </div>
-    <div class="pointer-events-none relative z-[1] flex flex-1 flex-col gap-2 p-5">
-      <p class="text-sm font-bold text-[#6b7d5e]">{{ product().brand }}</p>
-      <h2 class="text-base font-bold leading-6 text-[#30362f]">{{ product().name }}</h2>
-      <div class="flex items-center gap-1">
+    <div class="pointer-events-none relative z-[1] flex flex-1 flex-col gap-1.5 p-3.5 sm:gap-2 sm:p-5">
+      <p class="truncate text-[0.72rem] font-bold text-[#6b7d5e] sm:text-sm">{{ product().brand }}</p>
+      <h2 class="line-clamp-2 min-h-[2.45rem] text-[0.95rem] font-bold leading-5 text-[#30362f] sm:min-h-0 sm:text-base sm:leading-6">{{ product().name }}</h2>
+      <div class="flex flex-wrap items-center gap-0.5 sm:gap-1">
         @for (star of starItems; track star) {
           <i
-            class="pi pi-star-fill text-sm"
+            class="pi pi-star-fill text-[0.72rem] sm:text-sm"
             [class.text-[#f2aa2f]]="isFilledStar(star)"
             [class.text-[#d8d1c8]]="!isFilledStar(star)"
           ></i>
         }
-        <span class="ms-1 text-sm text-[#8a847c]">({{ product().reviewCount }})</span>
+        <span class="ms-1 text-[0.72rem] text-[#8a847c] sm:text-sm">({{ product().reviewCount }})</span>
       </div>
-      <div class="flex items-baseline gap-2">
-        <span class="text-xl font-black">{{
+      <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span class="text-base font-black sm:text-xl">{{
           product().price | currency: 'USD' : 'symbol' : '1.2-2'
         }}</span>
         @if (hasValidDiscount()) {
-          <span class="text-sm font-bold text-[#b8b0a7] line-through">{{
+          <span class="text-[0.72rem] font-bold text-[#b8b0a7] line-through sm:text-sm">{{
             product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2'
           }}</span>
         }

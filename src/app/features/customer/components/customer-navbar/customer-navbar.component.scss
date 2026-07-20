@@ -1,3 +1,86 @@
 :host {
   display: contents;
 }
+
+.mobile-nav-icon {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: #1f2a1f;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.mobile-nav-icon:hover {
+  background: #f3f0ea;
+  color: #6b7d5e;
+}
+
+.mobile-nav-icon:focus-visible,
+.mobile-menu-link:focus-visible {
+  outline: 3px solid rgba(107, 125, 94, 0.28);
+  outline-offset: 2px;
+}
+
+.customer-mobile-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.35rem);
+  transition:
+    grid-template-rows 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.customer-mobile-menu > div {
+  min-height: 0;
+}
+
+.customer-mobile-menu--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.mobile-menu-link {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: 0.85rem;
+  padding: 0.55rem 0;
+  color: #1f2a1f;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    padding-inline 160ms ease;
+}
+
+.mobile-menu-link:hover,
+.mobile-menu-link--active {
+  color: #5f704f;
+}
+
+.mobile-menu-link:hover {
+  padding-inline: 0.5rem;
+  background: #f7f4ef;
+}
+
+.mobile-menu-link--category {
+  color: #536b50;
+  padding-left: 1rem;
+}

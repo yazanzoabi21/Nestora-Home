@@ -11,6 +11,37 @@ select {
   background-image: none;
 }
 
+.customer-filter-drawer-shell {
+  padding-top: env(safe-area-inset-top);
+}
+
+.customer-filter-drawer {
+  animation: customer-filter-drawer-in 180ms ease-out both;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@keyframes customer-filter-drawer-in {
+  from {
+    opacity: 0.78;
+    transform: translateX(1.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .customer-filter-drawer {
+    top: max(1rem, env(safe-area-inset-top));
+    right: 1rem;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    border: 1px solid #e8dccf;
+    border-radius: 1.25rem;
+  }
+}
+
 .customer-products-sticky-panel {
   position: sticky;
   top: var(--customer-products-sticky-top);

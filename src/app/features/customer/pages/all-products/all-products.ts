@@ -1,7 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { CustomerProductCardComponent } from '../../components/customer-product-card';
 import { CustomerProductFiltersComponent } from '../../components/customer-product-filters';
 import { CustomerProductQuickViewComponent } from '../../components/customer-product-quick-view';
@@ -10,8 +11,9 @@ import { ProductBrowserPage } from '../product-browser-page';
 
 @Component({
   selector: 'app-all-products', standalone: true,
-  imports: [CustomerProductCardComponent, CustomerProductFiltersComponent, CustomerProductQuickViewComponent, RouterLink, TranslatePipe],
+  imports: [CdkTrapFocus, CustomerProductCardComponent, CustomerProductFiltersComponent, CustomerProductQuickViewComponent, RouterLink, TranslatePipe],
   templateUrl: './all-products.html', styleUrl: './all-products.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AllProducts extends ProductBrowserPage {
   override readonly titleKey = 'CUSTOMER.PRODUCTS.ALL_PRODUCTS';
@@ -36,8 +38,14 @@ export class AllProducts extends ProductBrowserPage {
       this.requestedCategorySlug.set(params.get('category'));
       this.navigationSource.set(params.get('source'));
       this.applyRouteCategory();
+      this.closeMobileFilters();
     });
     void this.load();
+  }
+
+  @HostListener('document:keydown.escape')
+  closePanelsOnEscape(): void {
+    this.closeMobileFilters();
   }
   private async load(): Promise<void> {
     try {

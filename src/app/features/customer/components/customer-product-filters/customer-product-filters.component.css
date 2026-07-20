@@ -2,6 +2,18 @@
   display: block;
 }
 
+.customer-product-filters {
+  background: transparent;
+}
+
+.customer-product-filters--framed {
+  border: 1px solid #eee7df;
+  border-radius: 1.5rem;
+  background: #fff;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(31, 42, 31, 0.04);
+}
+
 .filter-heading {
   font-size: 0.78rem;
   font-weight: 900;
@@ -15,9 +27,16 @@
   cursor: pointer;
   align-items: center;
   gap: 0.75rem;
+  min-height: 2rem;
   font-size: 0.95rem;
   font-weight: 800;
   color: #3d403a;
+}
+
+.filter-option:focus-within {
+  outline: 3px solid rgba(107, 125, 94, 0.2);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
 }
 
 .filter-box,

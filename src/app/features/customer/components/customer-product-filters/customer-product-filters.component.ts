@@ -28,6 +28,7 @@ export class CustomerProductFiltersComponent {
   readonly selectedPriceRange = input<string | null>(null);
   readonly selectedRating = input<number | null>(null);
   readonly inStockOnly = input(false);
+  readonly framed = input(true);
 
   readonly categoryToggle = output<string>();
   readonly priceRangeChange = output<string | null>();

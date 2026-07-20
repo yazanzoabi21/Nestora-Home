@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
@@ -23,6 +32,7 @@ interface CustomerNavLink {
 export class CustomerNavbarComponent {
   readonly shopping = inject(CustomerShoppingStateService);
   readonly categoriesMenuOpen = signal(false);
+  readonly mobileMenuOpen = signal(false);
   readonly navbarCategories = signal<Category[]>([]);
   readonly promotionalMessages = signal<string[]>([]);
   readonly navLinks: CustomerNavLink[] = [
@@ -32,6 +42,7 @@ export class CustomerNavbarComponent {
   readonly customerAuth = inject(CustomerAuthService);
   readonly accountDestination = computed(() => this.customerAuth.isAuthenticated() ? '/shop/customer-account' : '/auth/customer-login');
   readonly accountAriaLabel = computed(() => this.customerAuth.isLoading() ? 'Restoring customer session' : this.customerAuth.isAuthenticated() ? 'Open customer account' : 'Sign in to customer account');
+  readonly customerInitials = computed(() => this.customerAuth.isAuthenticated() ? this.customerAuth.initials() : 'N');
 
   private readonly categoriesService = inject(CategoriesService);
   private readonly discountsService = inject(DiscountsService);
@@ -47,7 +58,10 @@ export class CustomerNavbarComponent {
         filter((event): event is NavigationStart => event instanceof NavigationStart),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => this.closeCategoriesMenu());
+      .subscribe(() => {
+        this.closeCategoriesMenu();
+        this.closeMobileMenu();
+      });
   }
 
   toggleCategoriesMenu(): void {
@@ -61,6 +75,15 @@ export class CustomerNavbarComponent {
 
   closeCategoriesMenu(): void {
     this.categoriesMenuOpen.set(false);
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen.update((open) => !open);
+    this.closeCategoriesMenu();
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen.set(false);
   }
 
   categoryIconClass(category: Category): string {
@@ -81,6 +104,7 @@ export class CustomerNavbarComponent {
   @HostListener('document:keydown.escape')
   closeMenuOnEscape(): void {
     this.closeCategoriesMenu();
+    this.closeMobileMenu();
   }
 
   private async loadCategories(): Promise<void> {

@@ -1,5 +1,8 @@
-<aside class="rounded-3xl border border-[#eee7df] bg-white p-6 shadow-sm">
-  <div class="flex items-center justify-between gap-4">
+<aside
+  class="customer-product-filters"
+  [class.customer-product-filters--framed]="framed()"
+>
+  <div class="flex items-center justify-between gap-4" [class.sr-only]="!framed()">
     <h2 class="text-lg font-black text-[#30362f]">{{ 'CUSTOMER.PRODUCTS.FILTERS' | translate }}</h2>
     <button
       type="button"
