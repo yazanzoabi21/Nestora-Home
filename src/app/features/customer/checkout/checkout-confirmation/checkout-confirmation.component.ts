@@ -1,7 +1,8 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { CustomerAuthService } from '../../../../core/services/auth';
 import { CheckoutConfirmation } from '../models';
 import { CheckoutOrderSummaryComponent } from '../checkout-order-summary/checkout-order-summary.component';
 
@@ -14,5 +15,6 @@ import { CheckoutOrderSummaryComponent } from '../checkout-order-summary/checkou
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckoutConfirmationComponent {
+  readonly isAuthenticated = inject(CustomerAuthService).isAuthenticated;
   readonly confirmation = input.required<CheckoutConfirmation | null>();
 }

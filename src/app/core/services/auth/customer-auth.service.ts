@@ -9,7 +9,6 @@ import {
   LoginRequest,
   RegisterRequest,
 } from '../../models/auth';
-import { uploadAvatar } from '../../../shared/utils/avatar-upload.util';
 
 export type CustomerSignupResult =
   | { status: 'confirmation-required'; email: string }
@@ -228,12 +227,6 @@ export class CustomerAuthService {
     if (profile.roles?.name !== 'customer') throw new Error('Customer profile not found.');
     this.currentCustomerProfile.set(profile);
     return profile;
-  }
-
-  async uploadCurrentUserAvatar(file: File): Promise<string> {
-    const userId = await this.getCurrentUserId();
-    if (!userId) throw new Error('You must be signed in to upload an avatar.');
-    return uploadAvatar(this.supabase, userId, file);
   }
 
   private readonly profileSelect = `

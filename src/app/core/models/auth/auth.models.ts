@@ -47,6 +47,4 @@ export interface CustomerProfileUpdate {
     full_name: string;
     phone: string | null;
     birthday: string | null;
-    avatar_media_id?: string | null;
-    avatar_url?: string | null;
 }

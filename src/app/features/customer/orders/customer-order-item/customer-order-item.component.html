@@ -1,0 +1,35 @@
+<article class="order-item">
+  <div class="order-item__media">
+    <img
+      [src]="imageUrl()"
+      [alt]="item().productName || ('CUSTOMER.ACCOUNT.ORDERS.PRODUCT_UNAVAILABLE' | translate)"
+      loading="lazy"
+      (error)="handleImageError()"
+    />
+  </div>
+
+  <div class="order-item__content">
+    @if (hasProductDetails()) {
+      <a class="order-item__name" [routerLink]="productUrl()">
+        {{ item().productName }}
+      </a>
+    } @else {
+      <span class="order-item__name order-item__name--muted">
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.PRODUCT_UNAVAILABLE' | translate }}
+      </span>
+    }
+
+    <p class="order-item__quantity">
+      {{ 'CUSTOMER.ACCOUNT.ORDERS.QUANTITY' | translate }}: {{ item().quantity }}
+    </p>
+
+    <p class="order-item__unit-price">
+      {{ item().unitPrice | currency: 'USD' : 'symbol' : '1.2-2' }}
+      {{ 'CUSTOMER.ACCOUNT.ORDERS.EACH' | translate }}
+    </p>
+  </div>
+
+  <strong class="order-item__total">
+    {{ item().lineTotal | currency: 'USD' : 'symbol' : '1.2-2' }}
+  </strong>
+</article>

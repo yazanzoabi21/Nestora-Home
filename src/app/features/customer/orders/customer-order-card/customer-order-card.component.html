@@ -1,0 +1,118 @@
+<article class="order-card" [class.order-card--expanded]="expanded()">
+  <button
+    type="button"
+    class="order-card__toggle"
+    [attr.aria-expanded]="expanded()"
+    [attr.aria-controls]="detailsId()"
+    [attr.aria-label]="
+      (expanded()
+        ? 'CUSTOMER.ACCOUNT.ORDERS.COLLAPSE_ORDER'
+        : 'CUSTOMER.ACCOUNT.ORDERS.EXPAND_ORDER') | translate: { orderNumber: order().orderNumber }
+    "
+    (click)="requestToggle()"
+  >
+    <span class="order-card__package" aria-hidden="true">
+      <i class="pi pi-box"></i>
+    </span>
+
+    <span class="order-card__identity">
+      <strong>{{ order().orderNumber }}</strong>
+      <span>
+        @if (order().createdAt) {
+          {{ order().createdAt | date: 'mediumDate' }}
+        } @else {
+          {{ 'CUSTOMER.ACCOUNT.ORDERS.DATE_UNAVAILABLE' | translate }}
+        }
+      </span>
+    </span>
+
+    <span class="order-card__summary">
+      <span class="status-badge" [attr.data-tone]="statusTone()">
+        @if (statusTranslationKey(order().status); as translationKey) {
+          {{ translationKey | translate }}
+        } @else {
+          {{ readableStatus(order().status) | titlecase }}
+        }
+      </span>
+      <strong>{{ order().total | currency: 'USD' : 'symbol' : '1.2-2' }}</strong>
+      <i class="pi pi-chevron-down order-card__chevron" aria-hidden="true"></i>
+    </span>
+  </button>
+
+  @if (expanded()) {
+    <div class="order-card__details" [id]="detailsId()">
+      <section class="order-card__items" [attr.aria-label]="'CUSTOMER.ACCOUNT.ORDERS.ITEMS_ARIA' | translate">
+        <h3>
+          {{ 'CUSTOMER.ACCOUNT.ORDERS.ITEMS' | translate }}
+          <span>{{ itemCount() }}</span>
+        </h3>
+
+        @if (order().items.length) {
+          <div class="order-card__item-list">
+            @for (item of order().items; track item.id) {
+              <app-customer-order-item [item]="item" />
+            }
+          </div>
+        } @else {
+          <p class="order-card__missing-items">
+            {{ 'CUSTOMER.ACCOUNT.ORDERS.ITEMS_UNAVAILABLE' | translate }}
+          </p>
+        }
+      </section>
+
+      <aside class="order-card__meta">
+        <dl class="order-card__totals">
+          <div>
+            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.SUBTOTAL' | translate }}</dt>
+            <dd>{{ order().subtotal | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+          </div>
+          @if (order().discountAmount > 0) {
+            <div class="order-card__discount">
+              <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DISCOUNT' | translate }}</dt>
+              <dd>−{{ order().discountAmount | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+            </div>
+          }
+          <div>
+            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.SHIPPING' | translate }}</dt>
+            <dd>{{ order().shipping | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+          </div>
+          @if (order().paymentFee > 0) {
+            <div>
+              <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.PAYMENT_FEE' | translate }}</dt>
+              <dd>{{ order().paymentFee | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+            </div>
+          }
+          <div class="order-card__grand-total">
+            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.TOTAL' | translate }}</dt>
+            <dd>{{ order().total | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+          </div>
+        </dl>
+
+        <dl class="order-card__information">
+          <div>
+            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.PAYMENT_STATUS_LABEL' | translate }}</dt>
+            <dd>
+              @if (paymentStatusTranslationKey(order().paymentStatus); as translationKey) {
+                {{ translationKey | translate }}
+              } @else {
+                {{ readableStatus(order().paymentStatus) | titlecase }}
+              }
+            </dd>
+          </div>
+          @if (deliveryAddress()) {
+            <div>
+              <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DELIVERY_ADDRESS' | translate }}</dt>
+              <dd>{{ deliveryAddress() }}</dd>
+            </div>
+          }
+          @if (order().discountCode) {
+            <div>
+              <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DISCOUNT_CODE' | translate }}</dt>
+              <dd>{{ order().discountCode }}</dd>
+            </div>
+          }
+        </dl>
+      </aside>
+    </div>
+  }
+</article>

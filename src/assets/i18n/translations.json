@@ -1708,6 +1708,76 @@
         "TOGGLE_WISHLIST": "Toggle wishlist",
         "NO_RESULTS": "No products match your filters",
         "NO_RESULTS_DETAIL": "Try removing a filter or changing your sort to discover more Nestora Home essentials."
+      },
+      "ACCOUNT": {
+        "HOME": "Home",
+        "TITLE": "Account",
+        "CUSTOMER_SUMMARY": "Customer summary",
+        "SECTIONS": "Account sections",
+        "LOGOUT": "Logout",
+        "LOGGING_OUT": "Logging out...",
+        "LOGOUT_ARIA": "Logout from customer account",
+        "COUNTS": {
+          "ORDERS": "Orders",
+          "WISHLIST": "Wishlist",
+          "REVIEWS": "Reviews"
+        },
+        "NAV": {
+          "PROFILE": "My Profile",
+          "ORDERS": "Orders",
+          "WISHLIST": "Wishlist",
+          "ADDRESSES": "Addresses",
+          "SETTINGS": "Settings"
+        },
+        "ORDERS": {
+          "EYEBROW": "Your account",
+          "TITLE": "Order History",
+          "ORDER_COUNT": "{{count}} orders",
+          "LOADING": "Loading orders",
+          "ERROR_TITLE": "We could not load your orders",
+          "ERROR_TEXT": "Something went wrong while loading your order history. Please try again.",
+          "RETRY": "Try again",
+          "EMPTY_TITLE": "No orders yet",
+          "EMPTY_TEXT": "Your completed purchases will appear here. Discover something special for your home.",
+          "START_SHOPPING": "Start Shopping",
+          "EXPAND_ORDER": "Expand order {{orderNumber}}",
+          "COLLAPSE_ORDER": "Collapse order {{orderNumber}}",
+          "ITEMS": "Order items",
+          "ITEMS_ARIA": "Products in this order",
+          "ITEMS_UNAVAILABLE": "The products for this order are currently unavailable.",
+          "PRODUCT_UNAVAILABLE": "Product unavailable",
+          "QUANTITY": "Qty",
+          "EACH": "each",
+          "SUBTOTAL": "Subtotal",
+          "DISCOUNT": "Discount",
+          "SHIPPING": "Shipping",
+          "PAYMENT_FEE": "Payment fee",
+          "TOTAL": "Total",
+          "PAYMENT_STATUS_LABEL": "Payment status",
+          "DELIVERY_ADDRESS": "Delivery address",
+          "DISCOUNT_CODE": "Discount code",
+          "STATUS": {
+            "PENDING": "Pending",
+            "PROCESSING": "Processing",
+            "CONFIRMED": "Confirmed",
+            "SHIPPED": "Shipped",
+            "DELIVERED": "Delivered",
+            "CANCELLED": "Cancelled",
+            "CANCELED": "Cancelled",
+            "REFUNDED": "Refunded",
+            "RETURNED": "Returned"
+          },
+          "PAYMENT_STATUS": {
+            "UNPAID": "Unpaid",
+            "PENDING": "Pending",
+            "PAID": "Paid",
+            "FAILED": "Failed",
+            "REFUNDED": "Refunded",
+            "PARTIALLY_REFUNDED": "Partially refunded"
+          },
+          "DATE_UNAVAILABLE": "Date unavailable"
+        },
+        "EMAIL_NOT_PROVIDED": "Not provided"
       }
     },
     "ANALYTICS": {
@@ -3558,6 +3628,76 @@
           "VIEW_ORDERS": "عرض الطلبات",
           "BACK_HOME": "العودة للرئيسية"
         }
+      },
+      "ACCOUNT": {
+        "HOME": "الرئيسية",
+        "TITLE": "الحساب",
+        "CUSTOMER_SUMMARY": "ملخص العميل",
+        "SECTIONS": "أقسام الحساب",
+        "LOGOUT": "تسجيل الخروج",
+        "LOGGING_OUT": "جارٍ تسجيل الخروج...",
+        "LOGOUT_ARIA": "تسجيل الخروج من حساب العميل",
+        "COUNTS": {
+          "ORDERS": "الطلبات",
+          "WISHLIST": "المفضلة",
+          "REVIEWS": "التقييمات"
+        },
+        "NAV": {
+          "PROFILE": "ملفي الشخصي",
+          "ORDERS": "الطلبات",
+          "WISHLIST": "المفضلة",
+          "ADDRESSES": "العناوين",
+          "SETTINGS": "الإعدادات"
+        },
+        "ORDERS": {
+          "EYEBROW": "حسابك",
+          "TITLE": "سجل الطلبات",
+          "ORDER_COUNT": "{{count}} طلبات",
+          "LOADING": "جارٍ تحميل الطلبات",
+          "ERROR_TITLE": "تعذر تحميل طلباتك",
+          "ERROR_TEXT": "حدث خطأ أثناء تحميل سجل الطلبات. يرجى المحاولة مرة أخرى.",
+          "RETRY": "إعادة المحاولة",
+          "EMPTY_TITLE": "لا توجد طلبات بعد",
+          "EMPTY_TEXT": "ستظهر مشترياتك المكتملة هنا. اكتشف منتجات مميزة لمنزلك.",
+          "START_SHOPPING": "ابدأ التسوق",
+          "EXPAND_ORDER": "فتح تفاصيل الطلب {{orderNumber}}",
+          "COLLAPSE_ORDER": "إغلاق تفاصيل الطلب {{orderNumber}}",
+          "ITEMS": "منتجات الطلب",
+          "ITEMS_ARIA": "المنتجات الموجودة في هذا الطلب",
+          "ITEMS_UNAVAILABLE": "منتجات هذا الطلب غير متوفرة حالياً.",
+          "PRODUCT_UNAVAILABLE": "المنتج غير متوفر",
+          "QUANTITY": "الكمية",
+          "EACH": "للقطعة",
+          "SUBTOTAL": "المجموع الفرعي",
+          "DISCOUNT": "الخصم",
+          "SHIPPING": "الشحن",
+          "PAYMENT_FEE": "رسوم الدفع",
+          "TOTAL": "الإجمالي",
+          "PAYMENT_STATUS_LABEL": "حالة الدفع",
+          "DELIVERY_ADDRESS": "عنوان التوصيل",
+          "DISCOUNT_CODE": "رمز الخصم",
+          "STATUS": {
+            "PENDING": "قيد الانتظار",
+            "PROCESSING": "قيد المعالجة",
+            "CONFIRMED": "تم التأكيد",
+            "SHIPPED": "تم الشحن",
+            "DELIVERED": "تم التسليم",
+            "CANCELLED": "ملغي",
+            "CANCELED": "ملغي",
+            "REFUNDED": "مسترد",
+            "RETURNED": "مرتجع"
+          },
+          "PAYMENT_STATUS": {
+            "UNPAID": "غير مدفوع",
+            "PENDING": "قيد الانتظار",
+            "PAID": "مدفوع",
+            "FAILED": "فشل الدفع",
+            "REFUNDED": "مسترد",
+            "PARTIALLY_REFUNDED": "مسترد جزئياً"
+          },
+          "DATE_UNAVAILABLE": "التاريخ غير متوفر"
+        },
+        "EMAIL_NOT_PROVIDED": "غير متوفر"
       }
     },
     "ANALYTICS": {

@@ -1,0 +1,221 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.orders-page {
+  min-width: 0;
+}
+
+.orders-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+}
+
+.orders-page__header p {
+  margin-bottom: 0.3rem;
+  color: #718369;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.orders-page__header h1 {
+  color: #1f2a1f;
+  font-size: clamp(1.65rem, 3vw, 2.1rem);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.orders-page__count {
+  flex-shrink: 0;
+  border: 1px solid #dfe5da;
+  border-radius: 999px;
+  background: #f2f5ef;
+  padding: 0.45rem 0.8rem;
+  color: #607253;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.orders-page__list,
+.orders-page__skeletons {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.order-skeleton {
+  display: grid;
+  min-height: 4.75rem;
+  grid-template-columns: 2.35rem minmax(0, 1fr) 5.5rem 4.5rem;
+  align-items: center;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid #eee8e1;
+  border-radius: 1.25rem;
+  background: #fff;
+  padding: 1rem 1.25rem;
+}
+
+.order-skeleton__icon,
+.order-skeleton__identity span,
+.order-skeleton__badge,
+.order-skeleton__price {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f1ede8 25%, #faf8f5 50%, #f1ede8 75%);
+  background-size: 200% 100%;
+  animation: order-skeleton-loading 1.35s ease-in-out infinite;
+}
+
+.order-skeleton__icon {
+  width: 2.35rem;
+  height: 2.35rem;
+}
+
+.order-skeleton__identity {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.order-skeleton__identity span:first-child {
+  width: min(10rem, 70%);
+  height: 0.85rem;
+}
+
+.order-skeleton__identity span:last-child {
+  width: min(7rem, 50%);
+  height: 0.65rem;
+}
+
+.order-skeleton__badge {
+  width: 5.5rem;
+  height: 1.55rem;
+}
+
+.order-skeleton__price {
+  width: 4.5rem;
+  height: 0.9rem;
+}
+
+.orders-page__state {
+  display: grid;
+  min-height: 20rem;
+  place-items: center;
+  align-content: center;
+  gap: 0.8rem;
+  border: 1px solid #eee8e1;
+  border-radius: 1.5rem;
+  background: #fff;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(52, 47, 41, 0.055);
+}
+
+.orders-page__state-icon {
+  display: inline-flex;
+  width: 4.25rem;
+  height: 4.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eef3ea;
+  color: #6b7d5e;
+  font-size: 1.45rem;
+}
+
+.orders-page__state h2 {
+  color: #1f2a1f;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.orders-page__state p {
+  max-width: 31rem;
+  color: #817a71;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+.orders-page__state a,
+.orders-page__state button {
+  display: inline-flex;
+  min-height: 2.85rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: #6b7d5e;
+  padding: 0.7rem 1.25rem;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.orders-page__state a:hover,
+.orders-page__state button:hover {
+  background: #596b4d;
+  transform: translateY(-1px);
+}
+
+.orders-page__state a:focus-visible,
+.orders-page__state button:focus-visible {
+  outline: 3px solid rgba(113, 131, 105, 0.3);
+  outline-offset: 3px;
+}
+
+.orders-page__state--error .orders-page__state-icon {
+  background: #f8e8e5;
+  color: #a64b43;
+}
+
+@keyframes order-skeleton-loading {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .order-skeleton__icon,
+  .order-skeleton__identity span,
+  .order-skeleton__badge,
+  .order-skeleton__price {
+    animation: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .orders-page__header {
+    align-items: flex-start;
+  }
+
+  .order-skeleton {
+    grid-template-columns: 2.35rem minmax(0, 1fr);
+  }
+
+  .order-skeleton__badge,
+  .order-skeleton__price {
+    grid-column: 2;
+  }
+
+  .order-skeleton__price {
+    display: none;
+  }
+
+  .orders-page__state {
+    min-height: 17rem;
+    padding: 1.5rem 1rem;
+  }
+}

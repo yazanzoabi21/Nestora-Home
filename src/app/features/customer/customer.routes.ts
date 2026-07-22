@@ -44,7 +44,8 @@ export const CUSTOMER_ROUTES: Routes = [
       },
       {
         path: 'orders',
-        loadComponent: () => import('./orders').then((m) => m.CustomerOrdersComponent),
+        redirectTo: 'customer-account/orders',
+        pathMatch: 'full',
       },
       {
         path: 'customer-account',

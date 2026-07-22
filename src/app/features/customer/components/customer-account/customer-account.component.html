@@ -1,28 +1,82 @@
 <section class="account-page">
   <div class="customer-page-container">
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a routerLink="/shop">Home</a><span>/</span><span>Account</span></nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/shop">{{ 'CUSTOMER.ACCOUNT.HOME' | translate }}</a>
+      <span>/</span>
+      <span>{{ 'CUSTOMER.ACCOUNT.TITLE' | translate }}</span>
+    </nav>
+
     <div class="account-grid">
       <aside class="account-sidebar">
-        <section class="summary-card" aria-label="Customer summary">
-          <div class="summary-person"><span class="avatar">@if (auth.customerProfile()?.avatar_url; as avatarUrl) {<img [src]="avatarUrl" [alt]="auth.displayName()" />} @else { {{ auth.initials() }} }</span><div><h1>{{ auth.displayName() }}</h1><p>{{ email() }}</p></div></div>
+        <section
+          class="summary-card"
+          [attr.aria-label]="'CUSTOMER.ACCOUNT.CUSTOMER_SUMMARY' | translate"
+        >
+          <div class="summary-person">
+            <span class="avatar">{{ auth.initials() }}</span>
+            <div>
+              <h1>{{ auth.displayName() }}</h1>
+              <p>{{ email() || ('CUSTOMER.ACCOUNT.EMAIL_NOT_PROVIDED' | translate) }}</p>
+            </div>
+          </div>
+
           <dl class="summary-counts">
-            <div><dt>{{ counts().orders }}</dt><dd>Orders</dd></div>
-            <div><dt>{{ counts().wishlist }}</dt><dd>Wishlist</dd></div>
-            <div><dt>{{ counts().reviews }}</dt><dd>Reviews</dd></div>
+            <div>
+              <dt>{{ counts().orders }}</dt>
+              <dd>{{ 'CUSTOMER.ACCOUNT.COUNTS.ORDERS' | translate }}</dd>
+            </div>
+            <div>
+              <dt>{{ counts().wishlist }}</dt>
+              <dd>{{ 'CUSTOMER.ACCOUNT.COUNTS.WISHLIST' | translate }}</dd>
+            </div>
+            <div>
+              <dt>{{ counts().reviews }}</dt>
+              <dd>{{ 'CUSTOMER.ACCOUNT.COUNTS.REVIEWS' | translate }}</dd>
+            </div>
           </dl>
         </section>
-        <nav class="account-nav" aria-label="Account sections">
+
+        <nav
+          class="account-nav"
+          [attr.aria-label]="'CUSTOMER.ACCOUNT.SECTIONS' | translate"
+        >
           @for (item of navigation; track item.path) {
-            <a [routerLink]="item.path" routerLinkActive="active"><i class="pi {{ item.icon }}" aria-hidden="true"></i><span>{{ item.label }}</span><i class="pi pi-chevron-right arrow" aria-hidden="true"></i></a>
+            <a [routerLink]="item.path" routerLinkActive="active">
+              <i class="pi {{ item.icon }}" aria-hidden="true"></i>
+              <span>{{ item.labelKey | translate }}</span>
+              <i class="pi pi-chevron-right arrow" aria-hidden="true"></i>
+            </a>
           }
-          <button type="button" class="logout-action" aria-label="Logout from customer account" [disabled]="isLoggingOut()" (click)="logout()">
-            <i class="pi" [class.pi-sign-out]="!isLoggingOut()" [class.pi-spinner]="isLoggingOut()" [class.pi-spin]="isLoggingOut()" aria-hidden="true"></i>
-            <span>{{ isLoggingOut() ? 'Logging out...' : 'Logout' }}</span>
+
+          <button
+            type="button"
+            class="logout-action"
+            [attr.aria-label]="'CUSTOMER.ACCOUNT.LOGOUT_ARIA' | translate"
+            [disabled]="isLoggingOut()"
+            (click)="logout()"
+          >
+            <i
+              class="pi"
+              [class.pi-sign-out]="!isLoggingOut()"
+              [class.pi-spinner]="isLoggingOut()"
+              [class.pi-spin]="isLoggingOut()"
+              aria-hidden="true"
+            ></i>
+            <span>
+              {{
+                (isLoggingOut()
+                  ? 'CUSTOMER.ACCOUNT.LOGGING_OUT'
+                  : 'CUSTOMER.ACCOUNT.LOGOUT') | translate
+              }}
+            </span>
             <i class="pi pi-chevron-right arrow" aria-hidden="true"></i>
           </button>
         </nav>
       </aside>
-      <main class="account-content"><router-outlet /></main>
+
+      <main class="account-content">
+        <router-outlet />
+      </main>
     </div>
   </div>
 </section>

@@ -35,7 +35,9 @@
     />
 
     <div class="confirmation__actions">
-      <a class="confirmation__primary" routerLink="/shop/orders">View Orders</a>
+      @if (isAuthenticated()) {
+        <a class="confirmation__primary" routerLink="/shop/customer-account/orders">View Orders</a>
+      }
       <a class="confirmation__secondary" routerLink="/shop">Back to Home</a>
     </div>
   </section>

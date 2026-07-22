@@ -12,20 +12,13 @@
 </header>
 <section class="profile-card">
   <div class="profile-hero">
-    <div class="avatar-picker">
-      <input #avatarInput class="avatar-input" type="file" accept="image/png,image/jpeg,image/webp"
-        aria-label="Choose customer profile image" [disabled]="saving()" (change)="onAvatarSelected($event)" />
-      <button type="button" class="avatar" aria-label="Choose or replace customer profile image"
-        [disabled]="saving()" (click)="avatarInput.click()">
-      @if (displayedAvatarUrl(); as avatarUrl) {
+    <span class="avatar">
+      @if (profile()?.avatar_url; as avatarUrl) {
       <img class="avatar-image" [src]="avatarUrl" [alt]="auth.displayName()" />
       } @else {
       {{ auth.initials() }}
       }
-      </button>
-      <button type="button" class="avatar-add" aria-label="Choose or replace customer profile image"
-        [disabled]="saving()" (click)="avatarInput.click()"><i class="pi pi-plus" aria-hidden="true"></i></button>
-    </div>
+    </span>
 
     <div>
       <h2>{{ auth.displayName() }}</h2>

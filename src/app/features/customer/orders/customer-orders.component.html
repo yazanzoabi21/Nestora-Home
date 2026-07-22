@@ -1,0 +1,63 @@
+<section class="orders-page" aria-labelledby="orders-page-title">
+  <header class="orders-page__header">
+    <div>
+      <p>{{ 'CUSTOMER.ACCOUNT.ORDERS.EYEBROW' | translate }}</p>
+      <h1 id="orders-page-title">{{ 'CUSTOMER.ACCOUNT.ORDERS.TITLE' | translate }}</h1>
+    </div>
+    @if (!loading() && orders().length) {
+      <span class="orders-page__count">
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.ORDER_COUNT' | translate: { count: orders().length } }}
+      </span>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="orders-page__skeletons" aria-busy="true" [attr.aria-label]="'CUSTOMER.ACCOUNT.ORDERS.LOADING' | translate">
+      @for (skeleton of [1, 2, 3]; track skeleton) {
+        <article class="order-skeleton">
+          <span class="order-skeleton__icon"></span>
+          <span class="order-skeleton__identity">
+            <span></span>
+            <span></span>
+          </span>
+          <span class="order-skeleton__badge"></span>
+          <span class="order-skeleton__price"></span>
+        </article>
+      }
+    </div>
+  } @else if (error()) {
+    <section class="orders-page__state orders-page__state--error" role="alert">
+      <span class="orders-page__state-icon" aria-hidden="true">
+        <i class="pi pi-exclamation-circle"></i>
+      </span>
+      <h2>{{ 'CUSTOMER.ACCOUNT.ORDERS.ERROR_TITLE' | translate }}</h2>
+      <p>{{ 'CUSTOMER.ACCOUNT.ORDERS.ERROR_TEXT' | translate }}</p>
+      <button type="button" (click)="loadOrders()">
+        <i class="pi pi-refresh" aria-hidden="true"></i>
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.RETRY' | translate }}
+      </button>
+    </section>
+  } @else if (!orders().length) {
+    <section class="orders-page__state">
+      <span class="orders-page__state-icon" aria-hidden="true">
+        <i class="pi pi-shopping-bag"></i>
+      </span>
+      <h2>{{ 'CUSTOMER.ACCOUNT.ORDERS.EMPTY_TITLE' | translate }}</h2>
+      <p>{{ 'CUSTOMER.ACCOUNT.ORDERS.EMPTY_TEXT' | translate }}</p>
+      <a routerLink="/shop/products">
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.START_SHOPPING' | translate }}
+        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+      </a>
+    </section>
+  } @else {
+    <div class="orders-page__list">
+      @for (order of orders(); track order.id) {
+        <app-customer-order-card
+          [order]="order"
+          [expanded]="expandedOrderId() === order.id"
+          (toggleRequested)="toggleOrder(order.id)"
+        />
+      }
+    </div>
+  }
+</section>

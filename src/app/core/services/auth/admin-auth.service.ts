@@ -9,8 +9,11 @@ import {
   LoginRequest,
   UserProfile,
 } from '../../models/auth';
-import { uploadAvatar } from '../../../shared/utils/avatar-upload.util';
 
+const AVATAR_STORAGE_BUCKET = 'avatars';
+const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
+const MISSING_AVATAR_BUCKET_MESSAGE =
+  'Avatar storage bucket is missing. Please create a Supabase Storage bucket named avatars.';
 const ADMIN_ROLES: AppRoleName[] = ['admin', 'super_admin'];
 
 @Injectable({ providedIn: 'root' })
@@ -118,7 +121,21 @@ export class AdminAuthService {
   async uploadCurrentUserAvatar(file: File): Promise<string> {
     const userId = await this.getCurrentUserId();
     if (!userId) throw new Error('You must be signed in to upload an avatar.');
-    return uploadAvatar(this.supabase, userId, file);
+    if (!file.type.startsWith('image/')) throw new Error('Please select a valid image file.');
+    if (file.size > MAX_AVATAR_SIZE_BYTES) throw new Error('Avatar image must be 10 MB or smaller.');
+
+    const safeFileName = sanitizeFileName(file.name);
+    const filePath = `${userId}/${Date.now()}-${safeFileName}`;
+    const { error } = await this.supabase.storage.from(AVATAR_STORAGE_BUCKET).upload(filePath, file, {
+      cacheControl: '3600',
+      contentType: file.type,
+      upsert: false,
+    });
+
+    if (error) throw new Error(formatAvatarUploadError(error.message));
+
+    const { data } = this.supabase.storage.from(AVATAR_STORAGE_BUCKET).getPublicUrl(filePath);
+    return data.publicUrl;
   }
 
   async isAuthenticated(): Promise<boolean> {
@@ -178,3 +195,17 @@ function isAdminRole(roleName: AppRoleName | undefined | null): boolean {
   return !!roleName && ADMIN_ROLES.includes(roleName);
 }
 
+function sanitizeFileName(fileName: string): string {
+  const sanitized = fileName
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9._-]/g, '-')
+    .replace(/-+/g, '-');
+
+  return sanitized || 'avatar';
+}
+
+function formatAvatarUploadError(message: string): string {
+  if (message.toLowerCase().includes('bucket not found')) return MISSING_AVATAR_BUCKET_MESSAGE;
+  return `Avatar upload failed. ${message}`;
+}
