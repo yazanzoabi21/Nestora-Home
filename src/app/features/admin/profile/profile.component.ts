@@ -5,6 +5,7 @@ import { AdminAuthService } from '../../../core/services/auth';
 import { MediaAsset, MediaFileType, MediaLibraryService } from '../../../data-access';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
+import { prepareAvatarImage } from '../../../shared/utils/avatar-upload.util';
 
 interface ProfileSummaryItem {
   icon: string;
@@ -72,9 +73,6 @@ const EMPTY_FORM_STATE: ProfileFormState = {
   avatarUrl: null,
 };
 
-const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
-const AVATAR_UPLOAD_SIZE = 512;
-const AVATAR_UPLOAD_QUALITY = 0.82;
 const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
 
 @Component({
@@ -264,22 +262,8 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
-
-    if (!allowedTypes.includes(file.type)) {
-      this.errorMessage.set('Please select a PNG, JPG, or WebP image.');
-      this.toast.warn('Invalid avatar', 'Please select a PNG, JPG, or WebP image.');
-      return;
-    }
-
-    if (file.size > MAX_AVATAR_SIZE_BYTES) {
-      this.errorMessage.set('Avatar image must be 10 MB or smaller.');
-      this.toast.warn('Avatar too large', 'Avatar image must be 10 MB or smaller.');
-      return;
-    }
-
     try {
-      const optimizedAvatar = await resizeAvatarImage(file);
+      const optimizedAvatar = await prepareAvatarImage(file);
 
       this.revokeAvatarPreview();
       this.selectedAvatarFile.set(optimizedAvatar);
@@ -288,9 +272,10 @@ export class ProfileComponent implements OnInit {
       this.avatarImageFailed.set(false);
       this.formState.update((state) => ({ ...state, avatarMediaId: null }));
       this.errorMessage.set(null);
-    } catch {
-      this.errorMessage.set('Unable to process avatar image.');
-      this.toast.failed('Avatar image', 'Unable to process avatar image.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to process avatar image.';
+      this.errorMessage.set(message);
+      this.toast.failed('Avatar image', message);
     }
   }
 
@@ -658,68 +643,6 @@ function getProvidedValue(value: string | null): string {
 
 function emptyToNull(value: string): string | null {
   return value.trim() || null;
-}
-
-function resizeAvatarImage(file: File): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    image.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = AVATAR_UPLOAD_SIZE;
-      canvas.height = AVATAR_UPLOAD_SIZE;
-
-      const context = canvas.getContext('2d');
-
-      if (!context) {
-        reject(new Error('Canvas is not supported.'));
-        return;
-      }
-
-      const sourceSize = Math.min(image.width, image.height);
-      const sourceX = (image.width - sourceSize) / 2;
-      const sourceY = (image.height - sourceSize) / 2;
-
-      context.drawImage(
-        image,
-        sourceX,
-        sourceY,
-        sourceSize,
-        sourceSize,
-        0,
-        0,
-        AVATAR_UPLOAD_SIZE,
-        AVATAR_UPLOAD_SIZE
-      );
-
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error('Unable to create optimized avatar.'));
-            return;
-          }
-
-          resolve(
-            new File([blob], `avatar-${Date.now()}.webp`, {
-              type: 'image/webp',
-            })
-          );
-        },
-        'image/webp',
-        AVATAR_UPLOAD_QUALITY
-      );
-    };
-
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error('Unable to load image.'));
-    };
-
-    image.src = objectUrl;
-  });
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {

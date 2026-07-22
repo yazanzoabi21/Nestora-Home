@@ -1,17 +1,54 @@
 <header class="profile-heading">
-  <div><h1>My Profile</h1><p>Manage your personal information and customer account details.</p></div>
+  <div>
+    <h1>My Profile</h1>
+    <p>Manage your personal information and customer account details.</p>
+  </div>
   <div class="profile-actions">
-    <button type="button" class="secondary-action" [disabled]="!hasChanges() || saving()" (click)="clearEdit()">Clear Edit</button>
-    <button type="button" class="primary-action" [disabled]="!canSave()" (click)="saveChanges()">@if(saving()){<i class="pi pi-spin pi-spinner"></i> Saving...} @else {Save Changes}</button>
+    <button type="button" class="secondary-action" [disabled]="!hasChanges() || saving()" (click)="clearEdit()">Clear
+      Edit</button>
+    <button type="button" class="primary-action" [disabled]="!canSave()" (click)="saveChanges()">@if(saving()){<i
+        class="pi pi-spin pi-spinner"></i> Saving...} @else {Save Changes}</button>
   </div>
 </header>
 <section class="profile-card">
-  <div class="profile-hero"><span class="avatar">{{ auth.initials() }}</span><div><h2>{{ auth.displayName() }}</h2><p>Member since {{ memberSince() }}</p>@if(profile()?.is_active){<span class="status">Active member</span>}</div></div>
+  <div class="profile-hero">
+    <div class="avatar-picker">
+      <input #avatarInput class="avatar-input" type="file" accept="image/png,image/jpeg,image/webp"
+        aria-label="Choose customer profile image" [disabled]="saving()" (change)="onAvatarSelected($event)" />
+      <button type="button" class="avatar" aria-label="Choose or replace customer profile image"
+        [disabled]="saving()" (click)="avatarInput.click()">
+      @if (displayedAvatarUrl(); as avatarUrl) {
+      <img class="avatar-image" [src]="avatarUrl" [alt]="auth.displayName()" />
+      } @else {
+      {{ auth.initials() }}
+      }
+      </button>
+      <button type="button" class="avatar-add" aria-label="Choose or replace customer profile image"
+        [disabled]="saving()" (click)="avatarInput.click()"><i class="pi pi-plus" aria-hidden="true"></i></button>
+    </div>
+
+    <div>
+      <h2>{{ auth.displayName() }}</h2>
+      <p>Member since {{ memberSince() }}</p>
+
+      @if (profile()?.is_active) {
+      <span class="status">Active member</span>
+      }
+    </div>
+  </div>
   <form class="fields" [formGroup]="form" (ngSubmit)="saveChanges()" novalidate>
-    <label><span>First Name</span><input type="text" formControlName="firstName" autocomplete="given-name" />@if(showError(form.controls.firstName)){<small>@if(form.controls.firstName.hasError('required')){First name is required.} @else {First name must be 60 characters or fewer.}</small>}</label>
-    <label><span>Last Name</span><input type="text" formControlName="lastName" autocomplete="family-name" />@if(showError(form.controls.lastName)){<small>@if(form.controls.lastName.hasError('required')){Last name is required.} @else {Last name must be 60 characters or fewer.}</small>}</label>
-    <label><span>Email Address</span><input type="email" formControlName="email" autocomplete="email" /><em>Email changes require verification.</em></label>
-    <label><span>Phone Number</span><input type="tel" formControlName="phone" autocomplete="tel" placeholder="Not provided" />@if(showError(form.controls.phone)){<small>Enter a valid international phone number.</small>}</label>
-    <label><span>Birthday</span><input type="date" formControlName="birthday" [max]="today" />@if(showError(form.controls.birthday)){<small>Birthday cannot be in the future.</small>}</label>
+    <label><span>First Name</span><input type="text" formControlName="firstName"
+        autocomplete="given-name" />@if(showError(form.controls.firstName)){<small>@if(form.controls.firstName.hasError('required')){First
+        name is required.} @else {First name must be 60 characters or fewer.}</small>}</label>
+    <label><span>Last Name</span><input type="text" formControlName="lastName"
+        autocomplete="family-name" />@if(showError(form.controls.lastName)){<small>@if(form.controls.lastName.hasError('required')){Last
+        name is required.} @else {Last name must be 60 characters or fewer.}</small>}</label>
+    <label><span>Email Address</span><input type="email" formControlName="email" autocomplete="email" /><em>Email
+        changes require verification.</em></label>
+    <label><span>Phone Number</span><input type="tel" formControlName="phone" autocomplete="tel"
+        placeholder="Not provided" />@if(showError(form.controls.phone)){<small>Enter a valid international phone
+        number.</small>}</label>
+    <label><span>Birthday</span><input type="date" formControlName="birthday"
+        [max]="today" />@if(showError(form.controls.birthday)){<small>Birthday cannot be in the future.</small>}</label>
   </form>
 </section>

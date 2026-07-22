@@ -84,3 +84,17 @@
   color: #536b50;
   padding-left: 1rem;
 }
+
+.mobile-language-row {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #eee7df;
+  color: #53604f;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
