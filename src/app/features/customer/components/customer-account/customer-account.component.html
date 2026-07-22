@@ -1,65 +1,249 @@
-<section class="account-page">
+<section class="min-h-[650px] bg-[#f8f7f5] py-8 pb-16
+         max-[800px]:py-5 max-[800px]:pb-12
+         max-[520px]:pt-4">
   <div class="customer-page-container">
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/shop">{{ 'CUSTOMER.ACCOUNT.HOME' | translate }}</a>
-      <span>/</span>
-      <span>{{ 'CUSTOMER.ACCOUNT.TITLE' | translate }}</span>
+    <nav class="mb-6 flex items-center gap-3 text-sm text-[#858585]
+             max-[800px]:mb-4" aria-label="Breadcrumb">
+      <a routerLink="/shop" class="rounded transition-colors duration-200
+               hover:text-[#6b7d5e]
+               focus-visible:outline-none
+               focus-visible:ring-[3px]
+               focus-visible:ring-[rgba(113,131,105,0.25)]
+               focus-visible:ring-offset-[0.2rem]">
+        {{ 'CUSTOMER.ACCOUNT.HOME' | translate }}
+      </a>
+
+      <span aria-hidden="true">/</span>
+
+      <span>
+        {{ 'CUSTOMER.ACCOUNT.TITLE' | translate }}
+      </span>
     </nav>
 
-    <div class="account-grid">
-      <aside class="account-sidebar">
-        <section class="summary-card" [attr.aria-label]="'CUSTOMER.ACCOUNT.CUSTOMER_SUMMARY' | translate">
-          <div class="summary-person">
-            <span class="avatar">@if (auth.customerProfile()?.avatar_url; as avatarUrl) {<img [src]="avatarUrl"
-                [alt]="auth.displayName()" />} @else { {{ auth.initials() }} }</span>
-            <div>
-              <h1>{{ auth.displayName() }}</h1>
-              <p>{{ email() }}</p>
+    <div class="grid grid-cols-[16rem_minmax(0,1fr)] items-start gap-8
+             max-[1000px]:grid-cols-[14.5rem_minmax(0,1fr)]
+             max-[1000px]:gap-6
+             max-[800px]:grid-cols-1
+             max-[800px]:gap-5">
+      <aside class="grid min-w-0 content-start gap-4
+               max-[800px]:gap-3.5">
+        <!-- Customer summary -->
+        <section class="overflow-hidden rounded-[1.25rem] border border-[#eee8e1]
+                 bg-white p-5
+                 shadow-[0_10px_28px_rgba(52,47,41,0.06)]
+                 max-[1000px]:p-4
+                 max-[800px]:rounded-2xl" [attr.aria-label]="
+            'CUSTOMER.ACCOUNT.CUSTOMER_SUMMARY' | translate
+          ">
+          <div class="flex min-w-0 items-center gap-[0.9rem]">
+            <span class="grid size-14 shrink-0 place-items-center overflow-hidden
+                     rounded-full bg-[#718369] text-xl font-bold text-white
+                     max-[520px]:size-[3.25rem]">
+              @if (
+              auth.customerProfile()?.avatar_url;
+              as avatarUrl
+              ) {
+              <img class="block size-full rounded-[inherit] object-cover" [src]="avatarUrl"
+                [alt]="auth.displayName()" />
+              } @else {
+              {{ auth.initials() }}
+              }
+            </span>
+
+            <div class="min-w-0">
+              <h1 class="m-0 truncate text-base font-extrabold
+                       leading-[1.3] text-[#1f2a1f]
+                       max-[520px]:text-[0.95rem]">
+                {{ auth.displayName() }}
+              </h1>
+
+              <p class="mt-1 overflow-hidden text-ellipsis
+                       break-words text-xs leading-[1.4]
+                       text-[#858585]">
+                {{ email() }}
+              </p>
             </div>
           </div>
 
-          <dl class="summary-counts">
+          <dl class="mt-5 grid grid-cols-3 text-center
+                   [&>div]:min-w-0
+                   [&>div]:px-[0.35rem]
+                   [&>div+div]:border-s
+                   [&>div+div]:border-[#eee8e1]
+                   max-[520px]:mt-4">
             <div>
-              <dt>{{ counts().orders }}</dt>
-              <dd>{{ 'CUSTOMER.ACCOUNT.COUNTS.ORDERS' | translate }}</dd>
+              <dt class="m-0 text-base font-extrabold leading-[1.2]
+                       text-[#172117]
+                       max-[520px]:text-[0.95rem]">
+                {{ counts().orders }}
+              </dt>
+
+              <dd class="mt-[0.35rem] truncate text-xs leading-[1.3]
+                       text-[#858585]
+                       max-[520px]:text-[0.7rem]">
+                {{ 'CUSTOMER.ACCOUNT.COUNTS.ORDERS' | translate }}
+              </dd>
             </div>
+
             <div>
-              <dt>{{ counts().wishlist }}</dt>
-              <dd>{{ 'CUSTOMER.ACCOUNT.COUNTS.WISHLIST' | translate }}</dd>
+              <dt class="m-0 text-base font-extrabold leading-[1.2]
+                       text-[#172117]
+                       max-[520px]:text-[0.95rem]">
+                {{ counts().wishlist }}
+              </dt>
+
+              <dd class="mt-[0.35rem] truncate text-xs leading-[1.3]
+                       text-[#858585]
+                       max-[520px]:text-[0.7rem]">
+                {{ 'CUSTOMER.ACCOUNT.COUNTS.WISHLIST' | translate }}
+              </dd>
             </div>
+
             <div>
-              <dt>{{ counts().reviews }}</dt>
-              <dd>{{ 'CUSTOMER.ACCOUNT.COUNTS.REVIEWS' | translate }}</dd>
+              <dt class="m-0 text-base font-extrabold leading-[1.2]
+                       text-[#172117]
+                       max-[520px]:text-[0.95rem]">
+                {{ counts().reviews }}
+              </dt>
+
+              <dd class="mt-[0.35rem] truncate text-xs leading-[1.3]
+                       text-[#858585]
+                       max-[520px]:text-[0.7rem]">
+                {{ 'CUSTOMER.ACCOUNT.COUNTS.REVIEWS' | translate }}
+              </dd>
             </div>
           </dl>
         </section>
 
-        <nav class="account-nav" [attr.aria-label]="'CUSTOMER.ACCOUNT.SECTIONS' | translate">
+        <!-- Account navigation -->
+        <nav class="block overflow-hidden rounded-[1.25rem]
+                 border border-[#eee8e1] bg-white
+                 shadow-[0_10px_28px_rgba(52,47,41,0.06)]
+                 max-[800px]:flex
+                 max-[800px]:overflow-x-auto
+                 max-[800px]:overflow-y-hidden
+                 max-[800px]:rounded-2xl
+                 max-[800px]:[overscroll-behavior-inline:contain]
+                 max-[800px]:[scrollbar-width:thin]" [attr.aria-label]="
+            'CUSTOMER.ACCOUNT.SECTIONS' | translate
+          ">
           @for (item of navigation; track item.path) {
-          <a [routerLink]="item.path" routerLinkActive="active">
-            <i class="pi {{ item.icon }}" aria-hidden="true"></i>
-            <span>{{ item.labelKey | translate }}</span>
-            <i class="pi pi-chevron-right arrow" aria-hidden="true"></i>
+          <a class="group flex min-h-14 w-full items-center gap-3
+                     border-b border-[#eee8e1] bg-transparent p-4
+                     text-start text-[0.9rem] leading-[1.3]
+                     text-[#263326] no-underline
+                     transition-colors duration-200
+                     last:border-b-0
+                     hover:bg-[#f2f4ed]
+                     hover:text-[#5f714f]
+                     focus-visible:relative
+                     focus-visible:z-10
+                     focus-visible:outline-none
+                     focus-visible:ring-[3px]
+                     focus-visible:ring-inset
+                     focus-visible:ring-[rgba(113,131,105,0.28)]
+                     [&.active]:bg-[#f2f4ed]
+                     [&.active]:text-[#5f714f]
+                     [&.active_.arrow]:translate-x-[0.1rem]
+                     [&.active_.arrow]:text-[#5f714f]
+                     max-[1000px]:px-3.5
+                     max-[800px]:min-h-[3.25rem]
+                     max-[800px]:w-auto
+                     max-[800px]:min-w-max
+                     max-[800px]:shrink-0
+                     max-[800px]:border-b-0
+                     max-[800px]:border-e
+                     max-[800px]:px-4
+                     max-[800px]:py-3.5
+                     max-[800px]:whitespace-nowrap
+                     max-[800px]:last:border-e-0" [routerLink]="item.path" routerLinkActive="active">
+            <i class="pi {{ item.icon }} w-5 shrink-0
+                       text-center text-[0.95rem]" aria-hidden="true"></i>
+
+            <span class="min-w-0 flex-1 truncate
+                       max-[800px]:flex-none
+                       max-[800px]:overflow-visible
+                       max-[800px]:text-clip">
+              {{ item.labelKey | translate }}
+            </span>
+
+            @if (item.badgeKey; as badgeKey) {
+            <app-count-badge class="ms-auto shrink-0
+                         max-[800px]:ms-[0.2rem]" [value]="counts()[badgeKey]" [hideWhenZero]="true" [ariaLabel]="
+                    counts()[badgeKey] +
+                    ' ' +
+                    (item.labelKey | translate)
+                  " />
+            }
+
+            <i class="arrow pi pi-chevron-right
+                       ms-[0.15rem] shrink-0
+                       text-[0.65rem] text-[#aaaaaa]
+                       transition-all duration-200
+                       group-hover:translate-x-[0.1rem]
+                       group-hover:text-[#5f714f]
+                       max-[800px]:hidden" aria-hidden="true"></i>
           </a>
           }
 
-          <button type="button" class="logout-action" [attr.aria-label]="'CUSTOMER.ACCOUNT.LOGOUT_ARIA' | translate"
-            [disabled]="isLoggingOut()" (click)="logout()">
-            <i class="pi" [class.pi-sign-out]="!isLoggingOut()" [class.pi-spinner]="isLoggingOut()"
-              [class.pi-spin]="isLoggingOut()" aria-hidden="true"></i>
-            <span>
+          <!-- Logout -->
+          <button type="button" class="group flex min-h-14 w-full items-center gap-3
+                   border-0 border-b border-[#eee8e1]
+                   bg-[#fff0f0] p-4
+                   text-start text-[0.9rem] leading-[1.3]
+                   text-[#b43f4d]
+                   transition-colors duration-200
+                   last:border-b-0
+                   enabled:cursor-pointer
+                   enabled:hover:bg-[#f9dddd]
+                   enabled:hover:text-[#9f303d]
+                   focus-visible:relative
+                   focus-visible:z-10
+                   focus-visible:outline-none
+                   focus-visible:ring-[3px]
+                   focus-visible:ring-inset
+                   focus-visible:ring-[rgba(113,131,105,0.28)]
+                   disabled:cursor-wait
+                   disabled:opacity-[0.65]
+                   [&:enabled:hover_.arrow]:text-[#9f303d]
+                   max-[1000px]:px-3.5
+                   max-[800px]:min-h-[3.25rem]
+                   max-[800px]:w-auto
+                   max-[800px]:min-w-max
+                   max-[800px]:shrink-0
+                   max-[800px]:border-b-0
+                   max-[800px]:border-e
+                   max-[800px]:px-4
+                   max-[800px]:py-3.5
+                   max-[800px]:whitespace-nowrap
+                   max-[800px]:last:border-e-0" [attr.aria-label]="
+              'CUSTOMER.ACCOUNT.LOGOUT_ARIA' | translate
+            " [disabled]="isLoggingOut()" (click)="logout()">
+            <i class="pi w-5 shrink-0 text-center text-[0.95rem]" [class.pi-sign-out]="!isLoggingOut()"
+              [class.pi-spinner]="isLoggingOut()" [class.pi-spin]="isLoggingOut()" aria-hidden="true"></i>
+
+            <span class="min-w-0 flex-1 truncate
+                     max-[800px]:flex-none
+                     max-[800px]:overflow-visible
+                     max-[800px]:text-clip">
               {{
               (isLoggingOut()
               ? 'CUSTOMER.ACCOUNT.LOGGING_OUT'
-              : 'CUSTOMER.ACCOUNT.LOGOUT') | translate
+              : 'CUSTOMER.ACCOUNT.LOGOUT'
+              ) | translate
               }}
             </span>
-            <i class="pi pi-chevron-right arrow" aria-hidden="true"></i>
+
+            <i class="arrow pi pi-chevron-right
+                     ms-auto shrink-0 text-[0.65rem]
+                     text-[#b43f4d]
+                     transition-colors duration-200
+                     max-[800px]:hidden" aria-hidden="true"></i>
           </button>
         </nav>
       </aside>
 
-      <main class="account-content">
+      <main class="min-w-0">
         <router-outlet />
       </main>
     </div>

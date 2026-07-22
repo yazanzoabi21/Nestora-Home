@@ -7,6 +7,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { CUSTOMER_SUPABASE } from '../../../../core/tokens';
 import { CustomerOrdersService } from '../../orders/customer-orders.service';
 import { CustomerShoppingStateService } from '../../services';
+import { CountBadgeComponent } from '../../../../shared/ui/count-badge';
 
 interface AccountNavItem {
   labelKey: string;
@@ -20,10 +21,19 @@ interface AccountCounts {
   reviews: number;
 }
 
+type AccountCountKey = keyof AccountCounts;
+
+interface AccountNavItem {
+  labelKey: string;
+  icon: string;
+  path: string;
+  badgeKey?: AccountCountKey;
+}
+
 @Component({
   selector: 'app-customer-account',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslatePipe, CountBadgeComponent],
   templateUrl: './customer-account.component.html',
   styleUrl: './customer-account.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,12 +48,42 @@ export class CustomerAccountComponent {
 
   readonly isLoggingOut = signal(false);
   readonly counts = signal<AccountCounts>({ orders: 0, wishlist: 0, reviews: 0 });
+  // readonly navigation: readonly AccountNavItem[] = [
+  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.PROFILE', icon: 'pi-user', path: 'profile' },
+  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.ORDERS', icon: 'pi-shopping-bag', path: 'orders' },
+  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.WISHLIST', icon: 'pi-heart', path: 'wishlist' },
+  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.ADDRESSES', icon: 'pi-map-marker', path: 'addresses' },
+  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.SETTINGS', icon: 'pi-cog', path: 'settings' },
+  // ];
+
   readonly navigation: readonly AccountNavItem[] = [
-    { labelKey: 'CUSTOMER.ACCOUNT.NAV.PROFILE', icon: 'pi-user', path: 'profile' },
-    { labelKey: 'CUSTOMER.ACCOUNT.NAV.ORDERS', icon: 'pi-shopping-bag', path: 'orders' },
-    { labelKey: 'CUSTOMER.ACCOUNT.NAV.WISHLIST', icon: 'pi-heart', path: 'wishlist' },
-    { labelKey: 'CUSTOMER.ACCOUNT.NAV.ADDRESSES', icon: 'pi-map-marker', path: 'addresses' },
-    { labelKey: 'CUSTOMER.ACCOUNT.NAV.SETTINGS', icon: 'pi-cog', path: 'settings' },
+    {
+      labelKey: 'CUSTOMER.ACCOUNT.NAV.PROFILE',
+      icon: 'pi-user',
+      path: 'profile',
+    },
+    {
+      labelKey: 'CUSTOMER.ACCOUNT.NAV.ORDERS',
+      icon: 'pi-shopping-bag',
+      path: 'orders',
+      badgeKey: 'orders',
+    },
+    {
+      labelKey: 'CUSTOMER.ACCOUNT.NAV.WISHLIST',
+      icon: 'pi-heart',
+      path: 'wishlist',
+      badgeKey: 'wishlist',
+    },
+    {
+      labelKey: 'CUSTOMER.ACCOUNT.NAV.ADDRESSES',
+      icon: 'pi-map-marker',
+      path: 'addresses',
+    },
+    {
+      labelKey: 'CUSTOMER.ACCOUNT.NAV.SETTINGS',
+      icon: 'pi-cog',
+      path: 'settings',
+    },
   ];
   readonly email = computed(
     () => this.auth.user()?.email ?? this.auth.customerProfile()?.email ?? null,

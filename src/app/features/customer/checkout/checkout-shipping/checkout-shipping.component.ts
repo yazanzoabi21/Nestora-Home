@@ -34,8 +34,7 @@ export class CheckoutShippingComponent {
   readonly continue = output<CheckoutShippingInformation>();
 
   private hasSubmitted = false;
-  private hasAppliedInitialValue = false;
-  private hasAppliedPrefill = false;
+  private appliedValueKey: string | null = null;
 
   readonly countries: CheckoutSelectOption[] = [
     { label: 'Lebanon', value: 'Lebanon' },
@@ -62,23 +61,102 @@ export class CheckoutShippingComponent {
   });
 
   constructor() {
-    effect(() => {
-      const value = this.initialValue();
-      if (value && !this.hasAppliedInitialValue) {
-        this.form.patchValue(this.toFormValue(value), { emitEvent: false });
-        this.form.markAsPristine();
-        this.form.markAsUntouched();
-        this.hasAppliedInitialValue = true;
+  effect(() => {
+    const initialValue = this.initialValue();
+    const prefill = this.prefill();
+
+    const initialEmail =
+      initialValue?.email.trim().toLowerCase() ?? '';
+
+    const prefillEmail =
+      prefill?.email?.trim().toLowerCase() ?? '';
+
+    const initialValueBelongsToCurrentCustomer =
+      !!initialValue &&
+      !!prefill &&
+      !!initialEmail &&
+      initialEmail === prefillEmail;
+
+    /*
+     * Keep the current checkout value when:
+     * 1. There is no logged-in profile prefill, or
+     * 2. The saved checkout email belongs to the same customer.
+     */
+    if (
+      initialValue &&
+      (!prefill || initialValueBelongsToCurrentCustomer)
+    ) {
+      const valueKey = `initial:${JSON.stringify(initialValue)}`;
+
+      if (this.appliedValueKey === valueKey) {
         return;
       }
 
-      const prefill = this.prefill();
-      if (!value && prefill && !this.hasAppliedPrefill) {
-        this.patchSafePrefill(prefill);
-        this.hasAppliedPrefill = true;
+      this.resetForm(this.toFormValue(initialValue));
+      this.appliedValueKey = valueKey;
+      return;
+    }
+
+    /*
+     * A profile prefill exists, but the previous checkout data
+     * belongs to another email/customer.
+     *
+     * Clear all previous guest information before applying
+     * the logged-in customer's profile.
+     */
+    if (prefill) {
+      const valueKey = `prefill:${JSON.stringify(prefill)}`;
+
+      if (this.appliedValueKey === valueKey) {
+        return;
       }
-    });
-  }
+
+      this.resetForm(this.emptyFormValue());
+      this.patchSafePrefill(prefill);
+
+      this.form.markAsPristine();
+      this.form.markAsUntouched();
+      this.hasSubmitted = false;
+
+      this.appliedValueKey = valueKey;
+      return;
+    }
+
+    /*
+     * The parent cleared both values, for example after
+     * completing an order.
+     */
+    if (!initialValue && !prefill && this.appliedValueKey !== null) {
+      this.resetForm(this.emptyFormValue());
+      this.appliedValueKey = null;
+    }
+  });
+}
+
+private resetForm(
+  value: Record<ShippingFormControlName, string>,
+): void {
+  this.form.reset(value, { emitEvent: false });
+  this.form.markAsPristine();
+  this.form.markAsUntouched();
+  this.hasSubmitted = false;
+}
+
+private emptyFormValue(): Record<ShippingFormControlName, string> {
+  return {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    streetAddress: '',
+    addressLine2: '',
+    city: '',
+    stateProvince: '',
+    postalCode: '',
+    country: '',
+    deliveryInstructions: '',
+  };
+}
 
   error(name: ShippingFormControlName): string | null {
     const control = this.form.controls[name];

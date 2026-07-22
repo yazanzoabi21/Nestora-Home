@@ -13,6 +13,7 @@ export class CustomerShoppingStateService {
   private readonly auth = inject(CustomerAuthService);
   private readonly toast = inject(ToastService);
   private serverCartId: string | null = null;
+  private serverCartUserId: string | null = null;
   private isGuestCart = false;
   private readonly _checkoutCartId = signal<string | null>(null);
   readonly checkoutCartId = this._checkoutCartId.asReadonly();
@@ -88,50 +89,107 @@ export class CustomerShoppingStateService {
   async initialize(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
+
     try {
       const userId = await this.auth.getCurrentUserId();
       const guestItems = this.readGuestItems();
-      if (userId) {
-        this.isGuestCart = false;
-        this.serverCartId = await this.carts.getOrCreateCart(userId);
-        this._checkoutCartId.set(this.serverCartId);
-        const serverLines = await this.carts.loadLines(this.serverCartId);
-        const merged = new Map(serverLines.map((line) => [line.product.id, line]));
-        if (guestItems.length) {
-          for (const guest of await this.carts.productsForGuest(guestItems)) {
-            const existing = merged.get(guest.product.id);
-            const quantity = (existing?.quantity ?? 0) + guest.quantity;
-            if (!this.canUseQuantity(guest.product, quantity)) {
-              this.toast.warn(
-                'Cart quantity needs review',
-                this.stockMessage(guest.product, quantity),
-              );
-              merged.set(guest.product.id, {
-                ...guest,
-                id: existing?.id,
+
+      // Guest customer: use localStorage only.
+      if (!userId) {
+        this.isGuestCart = true;
+        this.serverCartId = null;
+        this.serverCartUserId = null;
+        this._checkoutCartId.set(null);
+
+        const guestLines =
+          await this.carts.productsForGuest(guestItems);
+
+        this.cart.set(guestLines);
+        return;
+      }
+
+      // Logged-in customer: use Supabase cart.
+      this.isGuestCart = false;
+      this.serverCartUserId = userId;
+
+      const cartId =
+        await this.carts.getOrCreateCart(userId);
+
+      this.serverCartId = cartId;
+      this._checkoutCartId.set(cartId);
+
+      const serverLines =
+        await this.carts.loadLines(cartId);
+
+      const merged = new Map(
+        serverLines.map((line) => [
+          line.product.id,
+          line,
+        ]),
+      );
+
+      // Move existing guest cart items into the user's server cart.
+      if (guestItems.length > 0) {
+        const guestLines =
+          await this.carts.productsForGuest(guestItems);
+
+        for (const guest of guestLines) {
+          const existing =
+            merged.get(guest.product.id);
+
+          const quantity =
+            (existing?.quantity ?? 0) +
+            guest.quantity;
+
+          if (
+            !this.canUseQuantity(
+              guest.product,
+              quantity,
+            )
+          ) {
+            this.toast.warn(
+              'Cart quantity needs review',
+              this.stockMessage(
+                guest.product,
                 quantity,
-              });
-              continue;
-            }
-            const id = await this.carts.upsertItem(
-              this.serverCartId,
+              ),
+            );
+
+            merged.set(guest.product.id, {
+              ...guest,
+              id: existing?.id,
+              quantity,
+            });
+
+            continue;
+          }
+
+          const itemId =
+            await this.carts.upsertItem(
+              cartId,
               guest.product.id,
               quantity,
               existing?.id,
             );
-            merged.set(guest.product.id, { ...guest, id, quantity });
-          }
-          this.clearGuestItems();
+
+          merged.set(guest.product.id, {
+            ...guest,
+            id: itemId,
+            quantity,
+          });
         }
-        this.cart.set([...merged.values()]);
-      } else {
-        this.isGuestCart = true;
-        this.serverCartId = null;
-        this._checkoutCartId.set(null);
-        this.cart.set(await this.carts.productsForGuest(guestItems));
+
+        this.clearGuestItems();
       }
+
+      this.cart.set([...merged.values()]);
     } catch (error) {
-      this.error.set(error instanceof Error ? error.message : 'Unable to load your cart.');
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Unable to load your cart.';
+
+      this.error.set(message);
     } finally {
       this.loading.set(false);
     }
@@ -153,8 +211,8 @@ export class CustomerShoppingStateService {
       this.cart.update((lines) =>
         existing
           ? lines.map((line) =>
-              line.product.id === product.id ? { ...line, id: id ?? line.id, quantity } : line,
-            )
+            line.product.id === product.id ? { ...line, id: id ?? line.id, quantity } : line,
+          )
           : [...lines, { id, product, quantity }],
       );
       this.persistGuest();
@@ -353,12 +411,12 @@ export class CustomerShoppingStateService {
       const value: unknown = JSON.parse(window.localStorage.getItem(GUEST_CART_KEY) ?? '[]');
       return Array.isArray(value)
         ? value.filter(
-            (item): item is GuestCartItem =>
-              typeof item === 'object' &&
-              item !== null &&
-              typeof (item as GuestCartItem).productId === 'string' &&
-              Number.isInteger((item as GuestCartItem).quantity),
-          )
+          (item): item is GuestCartItem =>
+            typeof item === 'object' &&
+            item !== null &&
+            typeof (item as GuestCartItem).productId === 'string' &&
+            Number.isInteger((item as GuestCartItem).quantity),
+        )
         : [];
     } catch {
       return [];

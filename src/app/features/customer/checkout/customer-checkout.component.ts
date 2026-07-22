@@ -80,4 +80,20 @@ export class CustomerCheckoutComponent implements OnInit {
       await this.state.initialize();
     }
   }
+
+  private emptyShippingValue() {
+  return {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    streetAddress: '',
+    addressLine2: '',
+    city: '',
+    stateProvince: '',
+    postalCode: '',
+    country: '',
+    deliveryInstructions: '',
+  };
+}
 }

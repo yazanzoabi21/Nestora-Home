@@ -244,7 +244,9 @@ export class OrdersComponent implements OnInit {
         order.id.toLowerCase().includes(searchTerm) ||
         order.orderId.toLowerCase().includes(searchTerm) ||
         order.customerName.toLowerCase().includes(searchTerm) ||
-        order.customerEmail.toLowerCase().includes(searchTerm) ||
+        (order.customerEmail ?? '')
+          .toLowerCase()
+          .includes(searchTerm) ||
         (order.phone && order.phone.toLowerCase().includes(searchTerm)) ||
         (order.city && order.city.toLowerCase().includes(searchTerm));
 
@@ -460,7 +462,7 @@ export class OrdersComponent implements OnInit {
   }
 
   private formatCurrency(value: number): string {
-    return `£${Number(value ?? 0).toFixed(2)}`;
+    return `${Number(value ?? 0).toFixed(2)}`;
   }
 
   private parseCurrency(value: string): number {
