@@ -1,6 +1,7 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import type { Session, User } from '@supabase/supabase-js';
+import { uploadAvatar } from '../../../shared/utils/avatar-upload.util';
 
 import { CUSTOMER_SUPABASE } from '../../tokens';
 import {
@@ -293,4 +294,13 @@ export class CustomerAuthService {
     return profile?.roles?.name === 'customer' ? profile : null;
   }
 
+  async uploadCurrentUserAvatar(file: File): Promise<string> {
+  const userId = this.user()?.id;
+
+  if (!userId) {
+    throw new Error('You must be logged in to upload a profile image.');
+  }
+
+  return uploadAvatar(this.supabase, userId, file);
+}
 }

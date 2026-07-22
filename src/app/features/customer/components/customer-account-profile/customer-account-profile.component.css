@@ -207,6 +207,9 @@
     font-size: 28px;
     font-weight: 600;
     text-transform: uppercase;
+    cursor: pointer;
+    border: 0;
+    padding: 0;
 }
 
 .avatar-image {
@@ -215,3 +218,14 @@
     display: block;
     object-fit: cover;
 }
+
+.avatar-picker { position: relative; flex-shrink: 0; }
+.avatar-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.avatar-add {
+    position: absolute; right: -.15rem; bottom: -.15rem; display: grid; place-items: center;
+    width: 1.75rem; height: 1.75rem; border: 3px solid #fff; border-radius: 50%;
+    background: #718369; color: #fff; font-size: .7rem; transition: background-color .16s, transform .16s;
+}
+.avatar:hover:not(:disabled) + .avatar-add, .avatar-add:hover:not(:disabled) { background: #5f714f; transform: scale(1.05); }
+.avatar:focus-visible, .avatar-add:focus-visible { outline: 3px solid rgba(113, 131, 105, .3); outline-offset: 2px; }
+.avatar:disabled, .avatar-add:disabled { cursor: wait; opacity: .65; }
