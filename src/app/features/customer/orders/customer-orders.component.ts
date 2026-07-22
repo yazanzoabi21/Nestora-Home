@@ -16,7 +16,7 @@ import { CustomerOrdersService } from './customer-orders.service';
 })
 export class CustomerOrdersComponent implements OnInit {
   private readonly customerOrders = inject(CustomerOrdersService);
-
+  
   readonly orders = signal<CustomerOrder[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -29,12 +29,14 @@ export class CustomerOrdersComponent implements OnInit {
   async loadOrders(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
+    console.log('');
 
     try {
       this.orders.set(await this.customerOrders.getCustomerOrders());
     } catch (error) {
       this.orders.set([]);
       this.error.set(
+        
         error instanceof Error
           ? error.message
           : 'Unable to load your orders. Please try again.',
