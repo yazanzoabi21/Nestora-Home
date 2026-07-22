@@ -1325,6 +1325,52 @@
       "TOAST": {
         "LOAD_FAILED_TITLE": "Customers could not be loaded",
         "LOAD_FAILED_DETAIL": "Please try again."
+      },
+      "FOOTER": {
+        "NEWSLETTER": {
+          "TITLE": "Stay in the loop",
+          "DESCRIPTION": "New arrivals, exclusive deals, and home inspiration — weekly.",
+          "EMAIL_LABEL": "Email address",
+          "EMAIL_PLACEHOLDER": "Enter your email",
+          "SUBSCRIBE": "Subscribe"
+        },
+        "BRAND_DESCRIPTION": "Elevating everyday living with premium home accessories, kitchen tools, cookware, and smart home solutions.",
+        "SOCIAL": {
+          "INSTAGRAM": "Visit our Instagram page",
+          "FACEBOOK": "Visit our Facebook page",
+          "TWITTER": "Visit our Twitter page",
+          "YOUTUBE": "Visit our YouTube channel"
+        },
+        "SHOP": {
+          "TITLE": "Shop",
+          "KITCHEN_TOOLS": "Kitchen Tools",
+          "COOKWARE": "Cookware",
+          "CLEANING": "Cleaning",
+          "SMART_TOOLS": "Smart Tools",
+          "NEW_ARRIVALS": "New Arrivals",
+          "BEST_SELLERS": "Best Sellers"
+        },
+        "ACCOUNT": {
+          "TITLE": "Account",
+          "MY_PROFILE": "My Profile",
+          "ORDERS": "Orders",
+          "WISHLIST": "Wishlist",
+          "ADDRESSES": "Addresses",
+          "SETTINGS": "Settings"
+        },
+        "HELP": {
+          "TITLE": "Help",
+          "ABOUT_US": "About Us",
+          "CONTACT_US": "Contact Us",
+          "FAQ": "FAQ",
+          "SHIPPING_POLICY": "Shipping Policy",
+          "RETURN_POLICY": "Return Policy",
+          "PRIVACY_POLICY": "Privacy Policy"
+        },
+        "BOTTOM": {
+          "COPYRIGHT": "© 2026 Nestora Home. All rights reserved.",
+          "PAYMENT_METHODS": "We accept Whish payments"
+        }
       }
     },
     "ORDERS": {
@@ -1846,7 +1892,7 @@
       "OPEN_USER_MENU": "فتح قائمة المستخدم"
     },
     "SIDEBAR": {
-      "BRAND": "نيستورا هوم",
+      "BRAND": "Nestora Home",
       "ADMIN_PANEL": "لوحة الإدارة",
       "MAIN": "الرئيسية",
       "CATALOGUE": "الكتالوج",
@@ -1926,7 +1972,7 @@
       "NORDIC_CERAMIC_BOWL_SET": "طقم أوعية سيراميك نورديك",
       "SOLD": "مباع",
       "OVERVIEW": "نظرة عامة",
-      "EXPORT_REPORT_TITLE": "نيستورا هوم - تقرير لوحة التحكم",
+      "EXPORT_REPORT_TITLE": "Nestora Home - تقرير لوحة التحكم",
       "KPI_SUMMARY": "ملخص المؤشرات",
       "METRIC": "المؤشر",
       "VALUE": "القيمة",
@@ -2019,7 +2065,7 @@
     },
     "HELP_SUPPORT": {
       "TITLE": "المساعدة والدعم",
-      "SUBTITLE": "احصل على المساعدة وتصفح موارد الدعم وتواصل مع فريق دعم نيستورا هوم.",
+      "SUBTITLE": "احصل على المساعدة وتصفح موارد الدعم وتواصل مع فريق دعم Nestora Home.",
       "HERO_TITLE": "كيف يمكننا مساعدتك اليوم؟",
       "SEARCH_PLACEHOLDER": "ابحث في مقالات المساعدة والأدلة والأسئلة الشائعة",
       "ORDERS": "الطلبات",
@@ -3092,7 +3138,7 @@
       "EXPORT": "تصدير",
       "NA": "غير متوفر",
       "NO_EMAIL": "لا يوجد بريد إلكتروني",
-      "EXPORT_REPORT_TITLE": "نيستورا هوم - تقرير العملاء",
+      "EXPORT_REPORT_TITLE": "Nestora Home - تقرير العملاء",
       "EXPORT_SUBTITLE": "تم تصدير {{count}} عميل",
       "KPI": {
         "TOTAL_CUSTOMERS": "إجمالي العملاء",
@@ -3166,6 +3212,52 @@
       "TOAST": {
         "LOAD_FAILED_TITLE": "تعذر تحميل العملاء",
         "LOAD_FAILED_DETAIL": "يرجى المحاولة مرة أخرى."
+      },
+      "FOOTER": {
+        "NEWSLETTER": {
+          "TITLE": "ابقَ على اطلاع",
+          "DESCRIPTION": "منتجات جديدة وعروض حصرية وأفكار ملهمة للمنزل أسبوعياً.",
+          "EMAIL_LABEL": "البريد الإلكتروني",
+          "EMAIL_PLACEHOLDER": "أدخل بريدك الإلكتروني",
+          "SUBSCRIBE": "اشتراك"
+        },
+        "BRAND_DESCRIPTION": "نرتقي بتفاصيل الحياة اليومية من خلال إكسسوارات منزلية مميزة وأدوات مطبخ وأواني طهي وحلول منزلية ذكية.",
+        "SOCIAL": {
+          "INSTAGRAM": "زيارة صفحتنا على إنستغرام",
+          "FACEBOOK": "زيارة صفحتنا على فيسبوك",
+          "TWITTER": "زيارة صفحتنا على تويتر",
+          "YOUTUBE": "زيارة قناتنا على يوتيوب"
+        },
+        "SHOP": {
+          "TITLE": "تسوق",
+          "KITCHEN_TOOLS": "أدوات المطبخ",
+          "COOKWARE": "أواني الطهي",
+          "CLEANING": "التنظيف",
+          "SMART_TOOLS": "الأدوات الذكية",
+          "NEW_ARRIVALS": "وصل حديثاً",
+          "BEST_SELLERS": "الأكثر مبيعاً"
+        },
+        "ACCOUNT": {
+          "TITLE": "الحساب",
+          "MY_PROFILE": "ملفي الشخصي",
+          "ORDERS": "الطلبات",
+          "WISHLIST": "المفضلة",
+          "ADDRESSES": "العناوين",
+          "SETTINGS": "الإعدادات"
+        },
+        "HELP": {
+          "TITLE": "المساعدة",
+          "ABOUT_US": "من نحن",
+          "CONTACT_US": "تواصل معنا",
+          "FAQ": "الأسئلة الشائعة",
+          "SHIPPING_POLICY": "سياسة الشحن",
+          "RETURN_POLICY": "سياسة الإرجاع",
+          "PRIVACY_POLICY": "سياسة الخصوصية"
+        },
+        "BOTTOM": {
+          "COPYRIGHT": "© 2026 Nestora Home. جميع الحقوق محفوظة.",
+          "PAYMENT_METHODS": "نقبل الدفع عبر Whish"
+        }
       }
     },
     "ORDERS": {
@@ -3173,7 +3265,7 @@
       "SUBTITLE": "{{total}} إجمالي الطلبات · {{processing}} قيد المعالجة",
       "EXPORT": "تصدير",
       "NA": "غير متوفر",
-      "EXPORT_REPORT_TITLE": "نيستورا هوم - تقرير الطلبات",
+      "EXPORT_REPORT_TITLE": "Nestora Home - تقرير الطلبات",
       "EXPORT_SUBTITLE": "تم تصدير {{count}} طلب",
       "KPI": {
         "TOTAL_ORDERS": "إجمالي الطلبات",
@@ -3426,7 +3518,7 @@
         "ADD_TO_CART": "أضف إلى السلة",
         "TOGGLE_WISHLIST": "تبديل المفضلة",
         "NO_RESULTS": "لا توجد منتجات تطابق الفلاتر",
-        "NO_RESULTS_DETAIL": "جرّب إزالة فلتر أو تغيير الترتيب لاكتشاف المزيد من أساسيات نيستورا هوم."
+        "NO_RESULTS_DETAIL": "جرّب إزالة فلتر أو تغيير الترتيب لاكتشاف المزيد من أساسيات Nestora Home."
       },
       "CHECKOUT": {
         "BREADCRUMB": "الرئيسية / السلة / الدفع",
@@ -3474,7 +3566,7 @@
       "PERIOD": "الفترة",
       "EXPORT": "تصدير",
       "LOADING": "جار تحميل التحليلات...",
-      "EXPORT_REPORT_TITLE": "نيستورا هوم - تقرير التحليلات",
+      "EXPORT_REPORT_TITLE": "Nestora Home - تقرير التحليلات",
       "EXPORT_SUBTITLE": "نظرة عامة على الأداء لفترة {{period}}",
       "EMPTY": {
         "TITLE": "لا توجد بيانات تحليلات",

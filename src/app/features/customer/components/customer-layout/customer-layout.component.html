@@ -9,23 +9,31 @@
     <section class="border-b border-white/10 py-9">
       <div class="customer-page-container flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 class="text-xl font-black text-white">Stay in the loop</h2>
-          <p class="mt-2 text-sm font-semibold text-[#a9aca5]">New arrivals, exclusive deals, and home inspiration - weekly.</p>
+          <h2 class="text-xl font-black text-white">
+            {{ 'CUSTOMERS.FOOTER.NEWSLETTER.TITLE' | translate }}
+          </h2>
+
+          <p class="mt-2 text-sm font-semibold text-[#a9aca5]">
+            {{ 'CUSTOMERS.FOOTER.NEWSLETTER.DESCRIPTION' | translate }}
+          </p>
         </div>
 
         <form class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
           <label class="relative min-w-0 flex-1">
-            <span class="sr-only">Email address</span>
+            <span class="sr-only">
+              {{ 'CUSTOMERS.FOOTER.NEWSLETTER.EMAIL_LABEL' | translate }}
+            </span>
+
             <i class="pi pi-envelope absolute start-4 top-1/2 -translate-y-1/2 text-sm text-[#a9aca5]"></i>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              class="h-12 w-full rounded-2xl border border-white/15 bg-white/5 ps-11 pe-4 text-sm font-semibold text-white outline-none placeholder:text-[#8f928d] focus:border-[#7d8f70]"
-            />
+
+            <input type="email" placeholder="{{ 'CUSTOMERS.FOOTER.NEWSLETTER.EMAIL_PLACEHOLDER' | translate }}"
+              class="h-12 w-full rounded-2xl border border-white/15 bg-white/5 ps-11 pe-4 text-sm font-semibold text-white outline-none placeholder:text-[#8f928d] focus:border-[#7d8f70]" />
           </label>
-          <button type="button" class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#7d8f70] px-6 text-sm font-black text-white transition hover:bg-[#6b7d5e]">
-            Subscribe
-            <i class="pi pi-arrow-right text-xs"></i>
+
+          <button type="button"
+            class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#7d8f70] px-6 text-sm font-black text-white transition hover:bg-[#6b7d5e]">
+            {{ 'CUSTOMERS.FOOTER.NEWSLETTER.SUBSCRIBE' | translate }}
+            <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i>
           </button>
         </form>
       </div>
@@ -34,60 +42,146 @@
     <div class="customer-page-container grid grid-cols-1 gap-10 py-12 md:grid-cols-2 lg:grid-cols-4">
       <div>
         <a routerLink="/shop" class="inline-flex items-center gap-3 text-white">
-          <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#7d8f70] text-sm font-black">N</span>
-          <span class="text-xl font-black">Nestora <span class="text-[#7d8f70]">Home</span></span>
+          <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#7d8f70] text-sm font-black">
+            N
+          </span>
+
+          <span class="text-xl font-black">
+            Nestora
+            <span class="text-[#7d8f70]">Home</span>
+          </span>
         </a>
+
         <p class="mt-5 max-w-xs text-sm font-semibold leading-6 text-[#a9aca5]">
-          Elevating everyday living with premium home accessories, kitchen tools, cookware, and smart home solutions.
+          {{ 'CUSTOMERS.FOOTER.BRAND_DESCRIPTION' | translate }}
         </p>
+
         <div class="mt-6 flex items-center gap-4 text-[#a9aca5]">
-          <i class="pi pi-instagram"></i>
-          <i class="pi pi-facebook"></i>
-          <i class="pi pi-twitter"></i>
-          <i class="pi pi-youtube"></i>
+          <a href="#" aria-label="{{ 'CUSTOMERS.FOOTER.SOCIAL.INSTAGRAM' | translate }}"
+            class="transition hover:text-white">
+            <i class="pi pi-instagram"></i>
+          </a>
+
+          <a href="#" aria-label="{{ 'CUSTOMERS.FOOTER.SOCIAL.FACEBOOK' | translate }}"
+            class="transition hover:text-white">
+            <i class="pi pi-facebook"></i>
+          </a>
+
+          <a href="#" aria-label="{{ 'CUSTOMERS.FOOTER.SOCIAL.TWITTER' | translate }}"
+            class="transition hover:text-white">
+            <i class="pi pi-twitter"></i>
+          </a>
+
+          <a href="#" aria-label="{{ 'CUSTOMERS.FOOTER.SOCIAL.YOUTUBE' | translate }}"
+            class="transition hover:text-white">
+            <i class="pi pi-youtube"></i>
+          </a>
         </div>
       </div>
 
       <div>
-        <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">Shop</h3>
+        <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">
+          {{ 'CUSTOMERS.FOOTER.SHOP.TITLE' | translate }}
+        </h3>
+
         <div class="mt-5 grid gap-3 text-sm font-semibold text-[#a9aca5]">
-          <a routerLink="/shop/products" class="transition hover:text-white">Kitchen Tools</a>
-          <a routerLink="/shop/products" class="transition hover:text-white">Cookware</a>
-          <a routerLink="/shop/products" class="transition hover:text-white">Cleaning</a>
-          <a routerLink="/shop/products" class="transition hover:text-white">Smart Tools</a>
-          <a routerLink="/shop/new-arrivals" class="transition hover:text-white">New Arrivals</a>
-          <a routerLink="/shop/products" class="transition hover:text-white">Best Sellers</a>
+          <a routerLink="/shop/products" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.SHOP.KITCHEN_TOOLS' | translate }}
+          </a>
+
+          <a routerLink="/shop/products" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.SHOP.COOKWARE' | translate }}
+          </a>
+
+          <a routerLink="/shop/products" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.SHOP.CLEANING' | translate }}
+          </a>
+
+          <a routerLink="/shop/products" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.SHOP.SMART_TOOLS' | translate }}
+          </a>
+
+          <a routerLink="/shop/new-arrivals" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.SHOP.NEW_ARRIVALS' | translate }}
+          </a>
+
+          <a routerLink="/shop/products" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.SHOP.BEST_SELLERS' | translate }}
+          </a>
         </div>
       </div>
 
       <div>
-        <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">Account</h3>
+        <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">
+          {{ 'CUSTOMERS.FOOTER.ACCOUNT.TITLE' | translate }}
+        </h3>
+
         <div class="mt-5 grid gap-3 text-sm font-semibold text-[#a9aca5]">
-          <a routerLink="/shop/customer-account/profile" class="transition hover:text-white">My Profile</a>
-          <a routerLink="/shop/customer-account/orders" class="transition hover:text-white">Orders</a>
-          <a routerLink="/shop/customer-account/wishlist" class="transition hover:text-white">Wishlist</a>
-          <a routerLink="/shop/customer-account/addresses" class="transition hover:text-white">Addresses</a>
-          <a routerLink="/shop/customer-account/settings" class="transition hover:text-white">Settings</a>
+          <a routerLink="/shop/customer-account/profile" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.ACCOUNT.MY_PROFILE' | translate }}
+          </a>
+
+          <a routerLink="/shop/customer-account/orders" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.ACCOUNT.ORDERS' | translate }}
+          </a>
+
+          <a routerLink="/shop/customer-account/wishlist" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.ACCOUNT.WISHLIST' | translate }}
+          </a>
+
+          <a routerLink="/shop/customer-account/addresses" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.ACCOUNT.ADDRESSES' | translate }}
+          </a>
+
+          <a routerLink="/shop/customer-account/settings" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.ACCOUNT.SETTINGS' | translate }}
+          </a>
         </div>
       </div>
 
       <div>
-        <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">Help</h3>
+        <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">
+          {{ 'CUSTOMERS.FOOTER.HELP.TITLE' | translate }}
+        </h3>
+
         <div class="mt-5 grid gap-3 text-sm font-semibold text-[#a9aca5]">
-          <a routerLink="/shop" class="transition hover:text-white">About Us</a>
-          <a routerLink="/shop" class="transition hover:text-white">Contact Us</a>
-          <a routerLink="/shop" class="transition hover:text-white">FAQ</a>
-          <a routerLink="/shop" class="transition hover:text-white">Shipping Policy</a>
-          <a routerLink="/shop" class="transition hover:text-white">Return Policy</a>
-          <a routerLink="/shop" class="transition hover:text-white">Privacy Policy</a>
+          <a routerLink="/shop" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.HELP.ABOUT_US' | translate }}
+          </a>
+
+          <a routerLink="/shop" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.HELP.CONTACT_US' | translate }}
+          </a>
+
+          <a routerLink="/shop" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.HELP.FAQ' | translate }}
+          </a>
+
+          <a routerLink="/shop" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.HELP.SHIPPING_POLICY' | translate }}
+          </a>
+
+          <a routerLink="/shop" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.HELP.RETURN_POLICY' | translate }}
+          </a>
+
+          <a routerLink="/shop" class="transition hover:text-white">
+            {{ 'CUSTOMERS.FOOTER.HELP.PRIVACY_POLICY' | translate }}
+          </a>
         </div>
       </div>
     </div>
 
     <div class="border-t border-white/10 py-6">
-      <div class="customer-page-container flex flex-col gap-4 text-xs font-semibold text-[#8f928d] sm:flex-row sm:items-center sm:justify-between">
-        <p>© 2024 Nestora Home. All rights reserved.</p>
-        <p>We accept: Visa · MC · PayPal · Apple Pay</p>
+      <div
+        class="customer-page-container flex flex-col gap-4 text-xs font-semibold text-[#8f928d] sm:flex-row sm:items-center sm:justify-between">
+        <p>
+          {{ 'CUSTOMERS.FOOTER.BOTTOM.COPYRIGHT' | translate }}
+        </p>
+
+        <p>
+          {{ 'CUSTOMERS.FOOTER.BOTTOM.PAYMENT_METHODS' | translate }}
+        </p>
       </div>
     </div>
   </footer>

@@ -1,177 +1,127 @@
 <section class="bg-[#f8f7f5]">
   <div class="customer-page-container py-6 lg:py-7">
     @if (loading()) {
-      <div class="py-32 text-center" role="status">
-        <i class="pi pi-spin pi-spinner text-4xl text-[#6b7d5e]"></i>
-        <p class="mt-4">Loading product...</p>
-      </div>
+    <div class="py-32 text-center" role="status">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#6b7d5e]"></i>
+      <p class="mt-4">Loading product...</p>
+    </div>
     } @else if (error()) {
-      <div class="rounded-3xl bg-white p-16 text-center" role="alert">
-        <h1 class="text-2xl font-black">Unable to load this product</h1>
-        <p class="mt-3 text-[#77736d]">Please try again later.</p>
-      </div>
+    <div class="rounded-3xl bg-white p-16 text-center" role="alert">
+      <h1 class="text-2xl font-black">Unable to load this product</h1>
+      <p class="mt-3 text-[#77736d]">Please try again later.</p>
+    </div>
     } @else if (!product()) {
-      <div class="rounded-3xl bg-white p-16 text-center">
-        <h1 class="text-2xl font-black">Product not found</h1>
-        <a routerLink="/shop/products" class="mt-5 inline-block font-bold text-[#6b7d5e]"
-          >Browse all products</a
-        >
-      </div>
+    <div class="rounded-3xl bg-white p-16 text-center">
+      <h1 class="text-2xl font-black">Product not found</h1>
+      <a routerLink="/shop/products" class="mt-5 inline-block font-bold text-[#6b7d5e]">Browse all products</a>
+    </div>
     } @else if (product(); as item) {
-      <nav
-        class="mb-10 flex flex-wrap items-center gap-2 text-sm text-[#8a847c]"
-        aria-label="Breadcrumb"
-      >
-        <a routerLink="/shop">Home</a><i class="pi pi-chevron-right text-[10px]"></i
-        ><a routerLink="/shop/products">Products</a> <i class="pi pi-chevron-right text-[10px]"></i
-        ><span>{{ item.category }}</span
-        ><i class="pi pi-chevron-right text-[10px]"></i
-        ><span class="text-[#1f2a1f]">{{ item.name }}</span>
-      </nav>
+    <nav class="mb-10 flex flex-wrap items-center gap-2 text-sm text-[#8a847c]" aria-label="Breadcrumb">
+      <a routerLink="/shop">Home</a><i class="pi pi-chevron-right text-[10px]"></i><a
+        routerLink="/shop/products">Products</a> <i class="pi pi-chevron-right text-[10px]"></i><span>{{ item.category
+        }}</span><i class="pi pi-chevron-right text-[10px]"></i><span class="text-[#1f2a1f]">{{ item.name }}</span>
+    </nav>
 
-      <div class="grid gap-10 lg:grid-cols-2 lg:gap-12">
-        <section aria-label="Product gallery">
-          <div class="relative aspect-square overflow-hidden rounded-[2rem] bg-[#eeeae4]">
-            <img
-              [src]="selectedImage() || item.imageUrl"
-              [alt]="item.name"
-              class="h-full w-full object-cover"
-            />
-            @if (item.discountPercentage) {
-              <span
-                class="absolute start-5 top-5 rounded-full bg-[#6b7d5e] px-4 py-2 text-sm font-black text-white"
-                >−{{ item.discountPercentage }}% OFF</span
-              >
-            }
-          </div>
-          @if (item.gallery.length > 1) {
-            <div class="mt-4 flex gap-3 overflow-x-auto pb-2">
-              @for (image of item.gallery; track image; let index = $index) {
-                <button
-                  type="button"
-                  class="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 bg-white p-1"
-                  [class.border-[#6b7d5e]]="selectedImage() === image"
-                  [class.border-transparent]="selectedImage() !== image"
-                  [attr.aria-label]="'View product image ' + (index + 1)"
-                  [attr.aria-pressed]="selectedImage() === image"
-                  (click)="selectedImage.set(image)"
-                >
-                  <img
-                    [src]="image"
-                    [alt]="item.name + ' image ' + (index + 1)"
-                    class="h-full w-full rounded-xl object-cover"
-                  />
-                </button>
-              }
-            </div>
+    <div class="grid gap-10 lg:grid-cols-2 lg:gap-12">
+      <section aria-label="Product gallery">
+        <div class="relative aspect-square overflow-hidden rounded-[2rem] bg-[#eeeae4]">
+          <img [src]="selectedImage() || item.imageUrl" [alt]="item.name" class="h-full w-full object-cover" />
+          @if (item.discountPercentage) {
+          <span class="absolute start-5 top-5 rounded-full bg-[#6b7d5e] px-4 py-2 text-sm font-black text-white">−{{
+            item.discountPercentage }}% OFF</span>
           }
-        </section>
+        </div>
+        @if (item.gallery.length > 1) {
+        <div class="mt-4 flex gap-3 overflow-x-auto pb-2">
+          @for (image of item.gallery; track image; let index = $index) {
+          <button type="button" class="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 bg-white p-1"
+            [class.border-[#6b7d5e]]="selectedImage() === image" [class.border-transparent]="selectedImage() !== image"
+            [attr.aria-label]="'View product image ' + (index + 1)" [attr.aria-pressed]="selectedImage() === image"
+            (click)="selectedImage.set(image)">
+            <img [src]="image" [alt]="item.name + ' image ' + (index + 1)"
+              class="h-full w-full rounded-xl object-cover" />
+          </button>
+          }
+        </div>
+        }
+      </section>
 
-        <section class="min-w-0 py-1 lg:ps-2">
-          <div class="flex flex-wrap items-center gap-2 text-sm font-bold">
-            <span class="text-[#6b7d5e]">{{ item.brand }}</span>
-            @if (item.badge) {
-              <span class="rounded-full bg-[#eee5db] px-3 py-1">{{ item.badge }}</span>
+      <section class="min-w-0 py-1 lg:ps-2">
+        <div class="flex flex-wrap items-center gap-2 text-sm font-bold">
+          <span class="text-[#6b7d5e]">{{ item.brand }}</span>
+          @if (item.badge) {
+          <span class="rounded-full bg-[#eee5db] px-3 py-1">{{ item.badge }}</span>
+          }
+          <span class="rounded-full px-3 py-1" [class.bg-[#eef6ea]]="item.inStock" [class.text-[#4f8a4b]]="item.inStock"
+            [class.bg-red-50]="!item.inStock" [class.text-red-700]="!item.inStock">• {{ item.inStock ? 'In Stock' : 'Out
+            of Stock' }}</span>
+        </div>
+        <h1 class="mt-4 text-4xl font-black leading-tight text-[#1f2a1f]">{{ item.name }}</h1>
+        <div class="mt-5 flex flex-wrap items-center gap-3">
+          <span class="flex gap-1">
+            @for (star of stars; track star) {
+            <i class="pi pi-star-fill" [class.text-[#f2aa2f]]="star <= item.rating"
+              [class.text-[#d8d1c8]]="star > item.rating"></i>
             }
-            <span
-              class="rounded-full px-3 py-1"
-              [class.bg-[#eef6ea]]="item.inStock"
-              [class.text-[#4f8a4b]]="item.inStock"
-              [class.bg-red-50]="!item.inStock"
-              [class.text-red-700]="!item.inStock"
-              >• {{ item.inStock ? 'In Stock' : 'Out of Stock' }}</span
-            >
-          </div>
-          <h1 class="mt-4 text-4xl font-black leading-tight text-[#1f2a1f]">{{ item.name }}</h1>
-          <div class="mt-5 flex flex-wrap items-center gap-3">
-            <span class="flex gap-1">
-              @for (star of stars; track star) {
-                <i
-                  class="pi pi-star-fill"
-                  [class.text-[#f2aa2f]]="star <= item.rating"
-                  [class.text-[#d8d1c8]]="star > item.rating"
-                ></i>
-              }
+          </span>
+          <strong>{{ item.rating | number: '1.1-1' }}</strong><span class="text-[#8a847c]">{{ item.reviewCount }}
+            reviews</span><span class="text-[#8a847c]">{{ item.category }}</span>
+        </div>
+        <div class="mt-10 flex flex-wrap items-center gap-4">
+          <span class="text-4xl font-black">{{ item.price | currency: 'USD' }}</span>
+          @if (item.originalPrice) {
+          <span class="text-lg font-bold text-[#aaa39b] line-through">{{
+            item.originalPrice | currency: 'USD'
+            }}</span>
+          }
+          @if (savings(); as amount) {
+          <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-sm font-black text-white">Save {{ amount | currency:
+            'USD' }}</span>
+          }
+        </div>
+        <p class="mt-10 text-base font-medium leading-7 text-[#67645f]">
+          {{ item.description || 'No description is available for this product.' }}
+        </p>
+        <div class="mt-8 flex items-center gap-4">
+          <span class="font-bold">Quantity:</span>
+
+          <div class="inline-grid h-12 grid-cols-3 overflow-hidden rounded-2xl border border-[#e8dccf] bg-white">
+            <button type="button"
+              class="w-12 cursor-pointer transition hover:bg-[#f3f0eb] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Decrease quantity" [disabled]="quantity() <= 1" (click)="decrease()">
+              −
+            </button>
+
+            <span class="flex w-12 items-center justify-center font-bold">
+              {{ quantity() }}
             </span>
-            <strong>{{ item.rating | number: '1.1-1' }}</strong
-            ><span class="text-[#8a847c]">{{ item.reviewCount }} reviews</span
-            ><span class="text-[#8a847c]">{{ item.category }}</span>
+
+            <button type="button"
+              class="w-12 cursor-pointer transition hover:bg-[#f3f0eb] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Increase quantity" [disabled]="quantity() >= availableQuantity()" (click)="increase()">
+              +
+            </button>
           </div>
-          <div class="mt-10 flex flex-wrap items-center gap-4">
-            <span class="text-4xl font-black">{{ item.price | currency: 'USD' }}</span>
-            @if (item.originalPrice) {
-              <span class="text-lg font-bold text-[#aaa39b] line-through">{{
-                item.originalPrice | currency: 'USD'
-              }}</span>
-            }
-            @if (savings(); as amount) {
-              <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-sm font-black text-white"
-                >Save {{ amount | currency: 'USD' }}</span
-              >
-            }
-          </div>
-          <p class="mt-10 text-base font-medium leading-7 text-[#67645f]">
-            {{ item.description || 'No description is available for this product.' }}
-          </p>
-          <div class="mt-8 flex items-center gap-4">
-            <span class="font-bold">Quantity:</span>
-            <div
-              class="inline-grid h-12 grid-cols-3 overflow-hidden rounded-2xl border border-[#e8dccf] bg-white"
-            >
-              <button
-                type="button"
-                class="w-12 disabled:opacity-40"
-                aria-label="Decrease quantity"
-                [disabled]="quantity() <= 1"
-                (click)="decrease()"
-              >
-                −</button
-              ><span class="flex w-12 items-center justify-center font-bold">{{ quantity() }}</span
-              ><button
-                type="button"
-                class="w-12 disabled:opacity-40"
-                aria-label="Increase quantity"
-                [disabled]="quantity() >= availableQuantity()"
-                (click)="increase()"
-              >
-                +
-              </button>
-            </div>
-          </div>
-          <div class="mt-8 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-            <button
-              type="button"
-              class="h-14 rounded-2xl bg-[#6b7d5e] font-black text-white disabled:opacity-50"
-              [disabled]="
+        </div>
+        <div class="mt-8 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+          <button type="button"
+            class="h-14 rounded-2xl bg-[#6b7d5e] font-black text-white disabled:opacity-50 cursor-pointer" [disabled]="
                 availableQuantity() < quantity() || shopping.pendingProductIds().has(item.id)
-              "
-              (click)="addToCart()"
-            >
-              <i class="pi pi-shopping-cart me-2"></i>Add to Cart
-            </button>
-            <button
-              type="button"
-              class="h-14 rounded-2xl bg-[#2b2d2b] font-black text-white disabled:opacity-50"
-              [disabled]="availableQuantity() < quantity()"
-              (click)="buyNow()"
-            >
-              Buy Now
-            </button>
-            <button
-              type="button"
-              class="h-14 w-14 rounded-2xl border border-[#e8dccf] bg-white"
-              [attr.aria-pressed]="wishlisted()"
-              aria-label="Toggle wishlist"
-              (click)="toggleWishlist()"
-            >
-              <i
-                class="pi"
-                [class.pi-heart]="!wishlisted()"
-                [class.pi-heart-fill]="wishlisted()"
-              ></i>
-            </button>
-          </div>
-          <!-- <div class="mt-10 grid gap-4 text-sm">
+              " (click)="addToCart()">
+            <i class="pi pi-shopping-cart me-2"></i>Add to Cart
+          </button>
+          <button type="button"
+            class="h-14 rounded-2xl bg-[#2b2d2b] font-black text-white disabled:opacity-50 cursor-pointer"
+            [disabled]="availableQuantity() < quantity()" (click)="buyNow()">
+            Buy Now
+          </button>
+          <button type="button" class="h-14 w-14 rounded-2xl border border-[#e8dccf] bg-white cursor-pointer"
+            [attr.aria-pressed]="wishlisted()" aria-label="Toggle wishlist" (click)="toggleWishlist()"
+            [class.text-[#6b7d5e]]="wishlisted()">
+            <i class="pi" [class.pi-heart]="!wishlisted()" [class.pi-heart-fill]="wishlisted()"></i>
+          </button>
+        </div>
+        <!-- <div class="mt-10 grid gap-4 text-sm">
             <p>
               <i class="pi pi-truck me-3 text-[#6b7d5e]"></i><strong>Free Delivery</strong
               ><span class="ms-2 text-[#8a847c]">On orders over $75 · 2–5 business days</span>
@@ -179,108 +129,93 @@
             <p><i class="pi pi-refresh me-3 text-[#6b7d5e]"></i><strong>30-Day Returns</strong></p>
             <p><i class="pi pi-shield me-3 text-[#6b7d5e]"></i><strong>Secure Checkout</strong></p>
           </div> -->
-          <div class="mt-9 grid gap-3" aria-label="Shopping benefits">
-            <div class="flex items-center gap-4">
-              <span
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#eee8df] bg-white text-[#6b7d5e] shadow-sm"
-                aria-hidden="true"
-              >
-                <i class="pi pi-truck text-[15px]"></i>
-              </span>
+        <div class="mt-9 grid gap-3" aria-label="Shopping benefits">
+          <div class="flex items-center gap-4">
+            <span
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#eee8df] bg-white text-[#6b7d5e] shadow-sm"
+              aria-hidden="true">
+              <i class="pi pi-truck text-[15px]"></i>
+            </span>
 
-              <div class="min-w-0">
-                <p class="text-[15px] font-bold leading-5 text-[#242824]">Free Delivery</p>
-                <p class="mt-0.5 text-sm leading-5 text-[#8a847c]">
-                  On orders over $75 · 2–5 business days
-                </p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-4">
-              <span
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#eee8df] bg-white text-[#6b7d5e] shadow-sm"
-                aria-hidden="true"
-              >
-                <i class="pi pi-refresh text-[15px]"></i>
-              </span>
-
-              <div class="min-w-0">
-                <p class="text-[15px] font-bold leading-5 text-[#242824]">30-Day Returns</p>
-                <p class="mt-0.5 text-sm leading-5 text-[#8a847c]">
-                  Hassle-free, no questions asked
-                </p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-4">
-              <span
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#eee8df] bg-white text-[#6b7d5e] shadow-sm"
-                aria-hidden="true"
-              >
-                <i class="pi pi-shield text-[15px]"></i>
-              </span>
-
-              <div class="min-w-0">
-                <p class="text-[15px] font-bold leading-5 text-[#242824]">Secure Checkout</p>
-                <p class="mt-0.5 text-sm leading-5 text-[#8a847c]">256-bit SSL encryption</p>
-              </div>
+            <div class="min-w-0">
+              <p class="text-[15px] font-bold leading-5 text-[#242824]">Free Delivery</p>
+              <p class="mt-0.5 text-sm leading-5 text-[#8a847c]">
+                On orders over $75 · 2–5 business days
+              </p>
             </div>
           </div>
-        </section>
-      </div>
 
-      <section class="mt-16" aria-label="Product information">
-        <div class="flex gap-2 border-b border-[#e8dccf]" role="tablist">
-          @for (tab of ['description', 'features', 'reviews']; track tab) {
-            <button
-              type="button"
-              role="tab"
-              class="rounded-t-xl px-5 py-4 font-bold capitalize"
-              [attr.aria-selected]="activeTab() === tab"
-              [class.text-[#6b7d5e]]="activeTab() === tab"
-              (click)="selectTab($any(tab))"
-            >
-              {{ tab }}
-              @if (tab === 'reviews') {
-                ({{ item.reviewCount }})
-              }
-            </button>
-          }
-        </div>
-        <div class="min-h-32 py-8 text-base leading-7 text-[#67645f]" role="tabpanel">
-          @if (activeTab() === 'description') {
-            <p>{{ item.longDescription || item.description || 'No description is available.' }}</p>
-          } @else if (activeTab() === 'features') {
-            @if (item.features.length) {
-              <ul
-                class="grid gap-3 sm:grid-cols-2"
-                [attr.aria-label]="'PRODUCTS.FEATURES.TITLE' | translate"
-              >
-                @for (feature of item.features; track feature) {
-                  <li
-                    class="flex items-start gap-3 rounded-2xl border border-[#e8dccf] bg-white px-4 py-4 font-semibold text-[#4f4b46] shadow-sm"
-                  >
-                    <span
-                      class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#6B7D5E] text-xs text-[#ffffff]"
-                      ><i class="pi pi-check"></i
-                    ></span>
-                    <span>{{ feature }}</span>
-                  </li>
-                }
-              </ul>
-            } @else {
-              <div
-                class="rounded-2xl border border-dashed border-[#e8dccf] bg-white px-6 py-10 text-center text-[#8a847c]"
-              >
-                <i class="pi pi-list mb-3 block text-2xl text-[#6b7d5e]"></i>
-                <p>{{ 'PRODUCTS.FEATURES.EMPTY' | translate }}</p>
-              </div>
-            }
-          } @else {
-            <app-product-reviews [productId]="item.id" [returnUrl]="returnUrl" />
-          }
+          <div class="flex items-center gap-4">
+            <span
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#eee8df] bg-white text-[#6b7d5e] shadow-sm"
+              aria-hidden="true">
+              <i class="pi pi-refresh text-[15px]"></i>
+            </span>
+
+            <div class="min-w-0">
+              <p class="text-[15px] font-bold leading-5 text-[#242824]">30-Day Returns</p>
+              <p class="mt-0.5 text-sm leading-5 text-[#8a847c]">
+                Hassle-free, no questions asked
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <span
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#eee8df] bg-white text-[#6b7d5e] shadow-sm"
+              aria-hidden="true">
+              <i class="pi pi-shield text-[15px]"></i>
+            </span>
+
+            <div class="min-w-0">
+              <p class="text-[15px] font-bold leading-5 text-[#242824]">Secure Checkout</p>
+              <p class="mt-0.5 text-sm leading-5 text-[#8a847c]">256-bit SSL encryption</p>
+            </div>
+          </div>
         </div>
       </section>
+    </div>
+
+    <section class="mt-16" aria-label="Product information">
+      <div class="flex gap-2 border-b border-[#e8dccf]" role="tablist">
+        @for (tab of ['description', 'features', 'reviews']; track tab) {
+        <button type="button" role="tab" class="rounded-t-xl px-5 py-4 font-bold capitalize cursor-pointer"
+          [attr.aria-selected]="activeTab() === tab" [class.text-[#6b7d5e]]="activeTab() === tab"
+          (click)="selectTab($any(tab))">
+          {{ tab }}
+          @if (tab === 'reviews') {
+          ({{ item.reviewCount }})
+          }
+        </button>
+        }
+      </div>
+      <div class="min-h-32 py-8 text-base leading-7 text-[#67645f]" role="tabpanel">
+        @if (activeTab() === 'description') {
+        <p>{{ item.longDescription || item.description || 'No description is available.' }}</p>
+        } @else if (activeTab() === 'features') {
+        @if (item.features.length) {
+        <ul class="grid gap-3 sm:grid-cols-2" [attr.aria-label]="'PRODUCTS.FEATURES.TITLE' | translate">
+          @for (feature of item.features; track feature) {
+          <li
+            class="flex items-start gap-3 rounded-2xl border border-[#e8dccf] bg-white px-4 py-4 font-semibold text-[#4f4b46] shadow-sm">
+            <span
+              class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#6B7D5E] text-xs text-[#ffffff]"><i
+                class="pi pi-check"></i></span>
+            <span>{{ feature }}</span>
+          </li>
+          }
+        </ul>
+        } @else {
+        <div class="rounded-2xl border border-dashed border-[#e8dccf] bg-white px-6 py-10 text-center text-[#8a847c]">
+          <i class="pi pi-list mb-3 block text-2xl text-[#6b7d5e]"></i>
+          <p>{{ 'PRODUCTS.FEATURES.EMPTY' | translate }}</p>
+        </div>
+        }
+        } @else {
+        <app-product-reviews [productId]="item.id" [returnUrl]="returnUrl" />
+        }
+      </div>
+    </section>
     }
   </div>
 </section>
