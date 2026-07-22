@@ -58,6 +58,8 @@
     font-size: 1.25rem
 }
 
+.avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
 .summary-person h1 {
     font-weight: 800;
     color: #1f2a1f
@@ -108,9 +110,16 @@
     color: #5f714f
 }
 
+.account-nav .logout-action {
+    background: #fff0f0;
+    color: #b43f4d
+}
+
+.account-nav .logout-action .arrow { color: #b43f4d }
+
 .account-nav .logout-action:hover:not(:disabled) {
-    background: #fff5f3;
-    color: #a64b43
+    background: #f9dddd;
+    color: #9f303d
 }
 
 .account-nav .logout-action:focus-visible {

@@ -4,7 +4,7 @@
     <div class="account-grid">
       <aside class="account-sidebar">
         <section class="summary-card" aria-label="Customer summary">
-          <div class="summary-person"><span class="avatar">{{ auth.initials() }}</span><div><h1>{{ auth.displayName() }}</h1><p>{{ email() }}</p></div></div>
+          <div class="summary-person"><span class="avatar">@if (auth.customerProfile()?.avatar_url; as avatarUrl) {<img [src]="avatarUrl" [alt]="auth.displayName()" />} @else { {{ auth.initials() }} }</span><div><h1>{{ auth.displayName() }}</h1><p>{{ email() }}</p></div></div>
           <dl class="summary-counts">
             <div><dt>{{ counts().orders }}</dt><dd>Orders</dd></div>
             <div><dt>{{ counts().wishlist }}</dt><dd>Wishlist</dd></div>
