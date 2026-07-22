@@ -41,6 +41,7 @@ export class CustomerAccountProfileComponent {
     effect(() => {
       const profile = this.profile();
       const userEmail = this.auth.user()?.email;
+      console.log();
       if (profile && !this.saving()) this.resetToProfile(profile, userEmail);
     });
   }
