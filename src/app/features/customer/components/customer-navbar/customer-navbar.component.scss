@@ -42,8 +42,9 @@
     transform 180ms ease;
 }
 
-.customer-mobile-menu > div {
+.customer-mobile-menu__content {
   min-height: 0;
+  overflow: hidden;
 }
 
 .customer-mobile-menu--open {

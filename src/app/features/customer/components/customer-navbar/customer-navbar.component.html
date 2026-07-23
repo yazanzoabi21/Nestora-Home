@@ -222,9 +222,16 @@
       </label>
     </div>
 
-    <div id="customer-mobile-menu" class="customer-mobile-menu border-t border-[#e8dccf] bg-white min-[1181px]:hidden"
-      [class.customer-mobile-menu--open]="mobileMenuOpen()" [attr.inert]="mobileMenuOpen() ? null : ''">
-      <div class="customer-page-container grid gap-1 py-4">
+    <div
+  id="customer-mobile-menu"
+  class="customer-mobile-menu bg-white min-[1181px]:!hidden"
+  [class.customer-mobile-menu--open]="mobileMenuOpen()"
+  [class.border-t]="mobileMenuOpen()"
+  [class.border-[#e8dccf]]="mobileMenuOpen()"
+  [attr.inert]="mobileMenuOpen() ? null : ''"
+>
+  <div class="customer-mobile-menu__content">
+    <div class="customer-page-container grid gap-1 py-4">
         <div class="mobile-language-row">
           <span>{{ 'COMMON.LANGUAGE' | translate }}</span>
           <app-customer-language-switch />
@@ -263,6 +270,7 @@
           Wishlist
         </a>
       </div>
+    </div>
     </div>
   </nav>
 </header>

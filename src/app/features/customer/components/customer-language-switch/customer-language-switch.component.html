@@ -1,32 +1,26 @@
-<div
-  class="language-switch"
-  role="group"
-  dir="ltr"
-  [attr.aria-label]="'COMMON.LANGUAGE_SELECTOR' | translate"
->
-  <button
-    type="button"
-    class="language-switch__option"
-    lang="ar"
-    [class.language-switch__option--active]="translation.currentLang() === 'ar'"
-    [attr.aria-pressed]="translation.currentLang() === 'ar'"
-    [attr.aria-label]="'COMMON.SWITCH_TO_ARABIC' | translate"
-    (click)="selectLanguage('ar')"
-  >
+<div class="inline-flex h-11 items-center overflow-hidden rounded-full border border-[#718369] bg-white text-[#1f2a1f]"
+  role="group" dir="ltr" [attr.aria-label]="'COMMON.LANGUAGE_SELECTOR' | translate">
+  <button type="button" lang="ar"
+    class="inline-flex h-full min-w-[2.8rem] cursor-pointer items-center justify-center px-[0.7rem] text-[0.72rem] leading-none transition-colors duration-[160ms] focus-visible:relative focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b7d5e] focus-visible:[outline-offset:-3px]"
+    [ngClass]="
+      translation.currentLang() === 'ar'
+        ? 'bg-[#eef1ea] text-[#5b704f] [font-weight:850] hover:bg-[#eef1ea] hover:text-[#5b704f]'
+        : 'text-[#53604f] [font-weight:750] hover:bg-[#f3f5f0] hover:text-[#1f2a1f]'
+    " [attr.aria-pressed]="translation.currentLang() === 'ar'"
+    [attr.aria-label]="'COMMON.SWITCH_TO_ARABIC' | translate" (click)="selectLanguage('ar')">
     AR
   </button>
 
-  <span class="language-switch__divider" aria-hidden="true"></span>
+  <span class="h-6 w-px shrink-0 bg-[#c8d0c2]" aria-hidden="true"></span>
 
-  <button
-    type="button"
-    class="language-switch__option"
-    lang="en"
-    [class.language-switch__option--active]="translation.currentLang() === 'en'"
-    [attr.aria-pressed]="translation.currentLang() === 'en'"
-    [attr.aria-label]="'COMMON.SWITCH_TO_ENGLISH' | translate"
-    (click)="selectLanguage('en')"
-  >
+  <button type="button" lang="en"
+    class="inline-flex h-full min-w-[2.8rem] cursor-pointer items-center justify-center px-[0.7rem] text-[0.72rem] leading-none transition-colors duration-[160ms] focus-visible:relative focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b7d5e] focus-visible:[outline-offset:-3px]"
+    [ngClass]="
+      translation.currentLang() === 'en'
+        ? 'bg-[#eef1ea] text-[#5b704f] [font-weight:850] hover:bg-[#eef1ea] hover:text-[#5b704f]'
+        : 'text-[#53604f] [font-weight:750] hover:bg-[#f3f5f0] hover:text-[#1f2a1f]'
+    " [attr.aria-pressed]="translation.currentLang() === 'en'"
+    [attr.aria-label]="'COMMON.SWITCH_TO_ENGLISH' | translate" (click)="selectLanguage('en')">
     ENG
   </button>
 </div>

@@ -4,11 +4,12 @@ import {
   SupportedLanguage,
   TranslationService,
 } from '../../../../core/services/translation';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-customer-language-switch',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, NgClass],
   templateUrl: './customer-language-switch.component.html',
   styleUrl: './customer-language-switch.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
