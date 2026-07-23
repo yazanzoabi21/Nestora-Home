@@ -1656,17 +1656,56 @@
         },
         "SHIPPING": {
           "TITLE": "Shipping Information",
-          "CONTINUE": "Continue to Delivery"
+          "CONTINUE": "Continue to Delivery",
+          "FIELDS": {
+            "FIRST_NAME": "First Name",
+            "LAST_NAME": "Last Name",
+            "EMAIL": "Email",
+            "PHONE": "Phone",
+            "STREET_ADDRESS": "Street Address",
+            "ADDRESS_LINE_2": "Apartment, suite, etc.",
+            "CITY": "City",
+            "STATE_PROVINCE": "State / Province",
+            "POSTAL_CODE": "ZIP / Postal Code",
+            "COUNTRY": "Country",
+            "DELIVERY_INSTRUCTIONS": "Delivery Instructions"
+          },
+          "PLACEHOLDERS": {
+            "DELIVERY_INSTRUCTIONS": "Optional notes for the courier"
+          },
+          "ERRORS": {
+            "REQUIRED": "This field is required.",
+            "INVALID_EMAIL": "Enter a valid email address."
+          },
+          "COUNTRIES": {
+            "LEBANON": "Lebanon"
+          }
         },
         "DELIVERY": {
           "TITLE": "Delivery Method",
+          "LOADING": "Loading delivery methods...",
           "CONTINUE": "Continue to Payment",
-          "EMPTY": "No active delivery methods are configured yet."
+          "BACK": "Back",
+          "FREE": "Free",
+          "EMPTY": "No active delivery methods are configured yet.",
+          "ESTIMATED_AT_CHECKOUT": "Estimated at checkout",
+          "ETA_RANGE": "{{min}}-{{max}} days",
+          "ETA_MINIMUM": "{{min}}+ days"
         },
         "PAYMENT": {
           "TITLE": "Payment Method",
+          "LOADING": "Loading payment methods...",
           "PLACE_ORDER": "Place Order · {{total}}",
-          "EMPTY": "No active payment methods are available for this order total."
+          "BACK": "Back",
+          "FEE": "Fee: {{amount}}",
+          "EMPTY": "No active payment methods are available for this order total.",
+          "PROVIDER_REQUIRED": "This online payment method requires a payment provider integration and is not available yet.",
+          "METHODS": {
+            "COD": {
+              "NAME": "Cash on Delivery",
+              "DESCRIPTION": "Collect payment from the customer at delivery."
+            }
+          }
         },
         "SUMMARY": {
           "TITLE": "Your Order",
@@ -1679,7 +1718,11 @@
         },
         "CONFIRMATION": {
           "TITLE": "Order Confirmed!",
+          "MESSAGE": "Thank you. Your order has been received and we will email the confirmation details shortly.",
+          "MESSAGE_WITH_NAME": "Thank you, {{name}}. Your order has been received and we will email the confirmation details shortly.",
           "ORDER_SUMMARY": "Order Summary",
+          "ORDER_NUMBER": "Order number",
+          "PAYMENT_METHOD": "Payment method",
           "ORDER_TOTAL": "Order Total",
           "TOTAL_PAID": "Total Paid",
           "VIEW_ORDERS": "View Orders",
@@ -1778,6 +1821,79 @@
           "DATE_UNAVAILABLE": "Date unavailable"
         },
         "EMAIL_NOT_PROVIDED": "Not provided"
+      },
+      "PRODUCT_DETAILS": {
+        "LOADING": "Loading product...",
+        "ERROR": {
+          "TITLE": "Unable to load this product",
+          "TRY_AGAIN": "Please try again later."
+        },
+        "NOT_FOUND": {
+          "TITLE": "Product not found",
+          "BROWSE_PRODUCTS": "Browse all products"
+        },
+        "BREADCRUMB_ARIA": "Breadcrumb",
+        "HOME": "Home",
+        "PRODUCTS": "Products",
+        "GALLERY": {
+          "ARIA": "Product gallery",
+          "DISCOUNT_OFF": "−{{percentage}}% OFF",
+          "VIEW_IMAGE": "View product image {{number}}",
+          "IMAGE_ALT": "{{product}} image {{number}}"
+        },
+        "STATUS": {
+          "IN_STOCK": "In Stock",
+          "OUT_OF_STOCK": "Out of Stock"
+        },
+        "REVIEWS_COUNT": "{{count}} reviews",
+        "SAVE_AMOUNT": "Save {{amount}}",
+        "NO_DESCRIPTION_PRODUCT": "No description is available for this product.",
+        "NO_DESCRIPTION": "No description is available.",
+        "QUANTITY": "Quantity:",
+        "DECREASE_QUANTITY": "Decrease quantity",
+        "INCREASE_QUANTITY": "Increase quantity",
+        "ADD_TO_CART": "Add to Cart",
+        "BUY_NOW": "Buy Now",
+        "TOGGLE_WISHLIST": "Toggle wishlist",
+        "BENEFITS": {
+          "ARIA": "Shopping benefits",
+          "FREE_DELIVERY": "Free Delivery",
+          "FREE_DELIVERY_DETAIL": "On orders over $75 · 2–5 business days",
+          "RETURNS": "30-Day Returns",
+          "RETURNS_DETAIL": "Hassle-free, no questions asked",
+          "SECURE_CHECKOUT": "Secure Checkout",
+          "SECURE_CHECKOUT_DETAIL": "256-bit SSL encryption"
+        },
+        "INFORMATION_ARIA": "Product information",
+        "TABS": {
+          "DESCRIPTION": "Description",
+          "FEATURES": "Features",
+          "REVIEWS": "Reviews"
+        },
+        "FEATURES": {
+          "ARIA": "Product features",
+          "EMPTY": "No product features have been added."
+        }
+      },
+      "PRODUCT_QUICK_VIEW": {
+        "DISCOUNT_OFF": "-{{percentage}}% OFF",
+        "ZOOM": "Zoom",
+        "VIEW_IMAGE": "View product image",
+        "IN_STOCK": "In Stock",
+        "OUT_OF_STOCK": "Out of Stock",
+        "REVIEWS_COUNT": "({{count}} reviews)",
+        "SAVE_AMOUNT": "Save {{amount}}",
+        "QUANTITY": "Qty",
+        "DECREASE_QUANTITY": "Decrease quantity",
+        "INCREASE_QUANTITY": "Increase quantity",
+        "FREE_DELIVERY": "Free delivery over $75",
+        "DELIVERY_TIME": "Est. 2–5 business days",
+        "RETURNS": "30-day easy returns",
+        "RETURNS_DETAIL": "No questions asked",
+        "VIEW_DETAILS": "View full product details",
+        "TOTAL": "Total",
+        "ADD_TO_CART": "Add to Cart",
+        "TOGGLE_WISHLIST": "Toggle wishlist"
       }
     },
     "ANALYTICS": {
@@ -3599,17 +3715,56 @@
         },
         "SHIPPING": {
           "TITLE": "معلومات الشحن",
-          "CONTINUE": "المتابعة إلى التوصيل"
+          "CONTINUE": "المتابعة إلى التوصيل",
+          "FIELDS": {
+            "FIRST_NAME": "الاسم الأول",
+            "LAST_NAME": "اسم العائلة",
+            "EMAIL": "البريد الإلكتروني",
+            "PHONE": "رقم الهاتف",
+            "STREET_ADDRESS": "عنوان الشارع",
+            "ADDRESS_LINE_2": "الشقة أو الطابق أو تفاصيل إضافية",
+            "CITY": "المدينة",
+            "STATE_PROVINCE": "المحافظة / المنطقة",
+            "POSTAL_CODE": "الرمز البريدي",
+            "COUNTRY": "البلد",
+            "DELIVERY_INSTRUCTIONS": "تعليمات التوصيل"
+          },
+          "PLACEHOLDERS": {
+            "DELIVERY_INSTRUCTIONS": "ملاحظات اختيارية لموظف التوصيل"
+          },
+          "ERRORS": {
+            "REQUIRED": "هذا الحقل مطلوب.",
+            "INVALID_EMAIL": "أدخل بريداً إلكترونياً صالحاً."
+          },
+          "COUNTRIES": {
+            "LEBANON": "لبنان"
+          }
         },
         "DELIVERY": {
           "TITLE": "طريقة التوصيل",
+          "LOADING": "جارٍ تحميل طرق التوصيل...",
           "CONTINUE": "المتابعة إلى الدفع",
-          "EMPTY": "لا توجد طرق توصيل نشطة حالياً."
+          "BACK": "رجوع",
+          "FREE": "مجاني",
+          "EMPTY": "لا توجد طرق توصيل نشطة حالياً.",
+          "ESTIMATED_AT_CHECKOUT": "يتم تقدير المدة عند إتمام الطلب",
+          "ETA_RANGE": "من {{min}} إلى {{max}} أيام",
+          "ETA_MINIMUM": "{{min}} أيام أو أكثر"
         },
         "PAYMENT": {
           "TITLE": "طريقة الدفع",
+          "LOADING": "جارٍ تحميل طرق الدفع...",
           "PLACE_ORDER": "تأكيد الطلب · {{total}}",
-          "EMPTY": "لا توجد طرق دفع نشطة لهذا الإجمالي."
+          "BACK": "رجوع",
+          "FEE": "الرسوم: {{amount}}",
+          "EMPTY": "لا توجد طرق دفع نشطة لهذا الإجمالي.",
+          "PROVIDER_REQUIRED": "تتطلب طريقة الدفع الإلكترونية هذه ربط مزود دفع، وهي غير متاحة حالياً.",
+          "METHODS": {
+            "COD": {
+              "NAME": "الدفع عند الاستلام",
+              "DESCRIPTION": "يتم تحصيل المبلغ من العميل عند التوصيل."
+            }
+          }
         },
         "SUMMARY": {
           "TITLE": "طلبك",
@@ -3622,11 +3777,15 @@
         },
         "CONFIRMATION": {
           "TITLE": "تم تأكيد الطلب!",
+          "MESSAGE": "شكراً لك. تم استلام طلبك وسنرسل تفاصيل التأكيد إلى بريدك الإلكتروني قريباً.",
+          "MESSAGE_WITH_NAME": "شكراً لك، {{name}}. تم استلام طلبك وسنرسل تفاصيل التأكيد إلى بريدك الإلكتروني قريباً.",
           "ORDER_SUMMARY": "ملخص الطلب",
+          "ORDER_NUMBER": "رقم الطلب",
+          "PAYMENT_METHOD": "طريقة الدفع",
           "ORDER_TOTAL": "إجمالي الطلب",
           "TOTAL_PAID": "المبلغ المدفوع",
           "VIEW_ORDERS": "عرض الطلبات",
-          "BACK_HOME": "العودة للرئيسية"
+          "BACK_HOME": "العودة إلى الرئيسية"
         }
       },
       "ACCOUNT": {
@@ -3698,6 +3857,79 @@
           "DATE_UNAVAILABLE": "التاريخ غير متوفر"
         },
         "EMAIL_NOT_PROVIDED": "غير متوفر"
+      },
+      "PRODUCT_DETAILS": {
+        "LOADING": "جارٍ تحميل المنتج...",
+        "ERROR": {
+          "TITLE": "تعذر تحميل هذا المنتج",
+          "TRY_AGAIN": "يرجى المحاولة مرة أخرى لاحقاً."
+        },
+        "NOT_FOUND": {
+          "TITLE": "المنتج غير موجود",
+          "BROWSE_PRODUCTS": "تصفح جميع المنتجات"
+        },
+        "BREADCRUMB_ARIA": "مسار التنقل",
+        "HOME": "الرئيسية",
+        "PRODUCTS": "المنتجات",
+        "GALLERY": {
+          "ARIA": "معرض صور المنتج",
+          "DISCOUNT_OFF": "خصم {{percentage}}٪",
+          "VIEW_IMAGE": "عرض صورة المنتج رقم {{number}}",
+          "IMAGE_ALT": "صورة {{product}} رقم {{number}}"
+        },
+        "STATUS": {
+          "IN_STOCK": "متوفر",
+          "OUT_OF_STOCK": "نفد المخزون"
+        },
+        "REVIEWS_COUNT": "{{count}} تقييم",
+        "SAVE_AMOUNT": "وفّر {{amount}}",
+        "NO_DESCRIPTION_PRODUCT": "لا يوجد وصف متاح لهذا المنتج.",
+        "NO_DESCRIPTION": "لا يوجد وصف متاح.",
+        "QUANTITY": "الكمية:",
+        "DECREASE_QUANTITY": "تقليل الكمية",
+        "INCREASE_QUANTITY": "زيادة الكمية",
+        "ADD_TO_CART": "أضف إلى السلة",
+        "BUY_NOW": "اشترِ الآن",
+        "TOGGLE_WISHLIST": "إضافة أو إزالة من المفضلة",
+        "BENEFITS": {
+          "ARIA": "مزايا التسوق",
+          "FREE_DELIVERY": "توصيل مجاني",
+          "FREE_DELIVERY_DETAIL": "للطلبات التي تتجاوز 75$ · خلال 2–5 أيام عمل",
+          "RETURNS": "إرجاع خلال 30 يوماً",
+          "RETURNS_DETAIL": "إرجاع سهل من دون تعقيدات",
+          "SECURE_CHECKOUT": "دفع آمن",
+          "SECURE_CHECKOUT_DETAIL": "تشفير SSL بمستوى 256 بت"
+        },
+        "INFORMATION_ARIA": "معلومات المنتج",
+        "TABS": {
+          "DESCRIPTION": "الوصف",
+          "FEATURES": "الميزات",
+          "REVIEWS": "التقييمات"
+        },
+        "FEATURES": {
+          "ARIA": "ميزات المنتج",
+          "EMPTY": "لم تتم إضافة ميزات لهذا المنتج."
+        }
+      },
+      "PRODUCT_QUICK_VIEW": {
+        "DISCOUNT_OFF": "خصم {{percentage}}٪",
+        "ZOOM": "تكبير",
+        "VIEW_IMAGE": "عرض صورة المنتج",
+        "IN_STOCK": "متوفر",
+        "OUT_OF_STOCK": "نفد المخزون",
+        "REVIEWS_COUNT": "({{count}} تقييم)",
+        "SAVE_AMOUNT": "وفّر {{amount}}",
+        "QUANTITY": "الكمية",
+        "DECREASE_QUANTITY": "تقليل الكمية",
+        "INCREASE_QUANTITY": "زيادة الكمية",
+        "FREE_DELIVERY": "توصيل مجاني للطلبات فوق 75$",
+        "DELIVERY_TIME": "التوصيل خلال 2–5 أيام عمل",
+        "RETURNS": "إرجاع سهل خلال 30 يوماً",
+        "RETURNS_DETAIL": "من دون أسئلة أو تعقيدات",
+        "VIEW_DETAILS": "عرض تفاصيل المنتج كاملة",
+        "TOTAL": "الإجمالي",
+        "ADD_TO_CART": "أضف إلى السلة",
+        "TOGGLE_WISHLIST": "إضافة أو إزالة من المفضلة"
       }
     },
     "ANALYTICS": {

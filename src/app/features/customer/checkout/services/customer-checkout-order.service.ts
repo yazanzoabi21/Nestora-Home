@@ -74,17 +74,23 @@ export class CustomerCheckoutOrderService {
       p_discount_code: appliedDiscount?.code ?? null,
       p_expected_subtotal: items.reduce((sum, item) => sum + item.lineTotal, 0),
       p_shipping_address: {
-        first_name: shippingInformation.firstName,
-        last_name: shippingInformation.lastName,
-        email: shippingInformation.email,
-        phone: shippingInformation.phone,
-        street_address: shippingInformation.streetAddress,
-        address_line_2: shippingInformation.addressLine2,
-        city: shippingInformation.city,
-        state_province: shippingInformation.stateProvince,
-        postal_code: shippingInformation.postalCode,
-        country: shippingInformation.country,
-        delivery_instructions: shippingInformation.deliveryInstructions,
+        first_name: shippingInformation.firstName.trim(),
+        last_name: shippingInformation.lastName.trim(),
+        email: shippingInformation.email.trim(),
+        phone: shippingInformation.phone?.trim() || null,
+        street_address:
+          shippingInformation.streetAddress.trim(),
+        address_line_2:
+          shippingInformation.addressLine2?.trim() || null,
+        city: shippingInformation.city.trim(),
+        state_province:
+          shippingInformation.stateProvince.trim(),
+        postal_code:
+          shippingInformation.postalCode?.trim() || null,
+        country: shippingInformation.country.trim(),
+        delivery_instructions:
+          shippingInformation.deliveryInstructions?.trim() ||
+          null,
       },
       p_items: items.map((item) => ({
         product_id: item.productId,

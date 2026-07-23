@@ -8,7 +8,7 @@
 
     <button
       type="button"
-      class="inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-bold text-[#8a847c] transition hover:bg-[#f8f7f5] hover:text-[#1f2a1f]"
+      class="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-full px-3 text-sm font-bold text-[#8a847c] transition hover:bg-[#f8f7f5] hover:text-[#1f2a1f]"
       [attr.aria-label]="'COMMON.CLOSE' | translate"
       (click)="closeRequested.emit()"
     >
@@ -19,21 +19,29 @@
 
   <div class="quick-view-scroll">
     <section class="relative aspect-[4/3] max-h-[330px] w-full overflow-hidden bg-[#f5f2ee]">
-      <img [src]="product().imageUrl" [alt]="product().name" class="h-full w-full object-cover" />
+      <img
+        [src]="product().imageUrl"
+        [alt]="product().name"
+        class="h-full w-full object-cover"
+      />
 
       @if (product().discountPercentage) {
         <span
           class="absolute start-4 top-4 rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white"
         >
-          -{{ product().discountPercentage }}% OFF
+          {{
+            'CUSTOMER.PRODUCT_QUICK_VIEW.DISCOUNT_OFF'
+              | translate: { percentage: product().discountPercentage }
+          }}
         </span>
       }
 
       <button
         type="button"
-        class="absolute end-4 top-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#1f2a1f] shadow-[0_8px_24px_rgba(31,42,31,0.12)] transition hover:text-[#6b7d5e]"
+        class="absolute end-4 top-4 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-white text-[#1f2a1f] shadow-[0_8px_24px_rgba(31,42,31,0.12)] transition hover:text-[#6b7d5e]"
         [class.text-[#6b7d5e]]="wishlistActive()"
-        [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
+        [attr.aria-label]="'CUSTOMER.PRODUCT_QUICK_VIEW.TOGGLE_WISHLIST' | translate"
+        [attr.aria-pressed]="wishlistActive()"
         (click)="toggleWishlist.emit(product())"
       >
         <i
@@ -47,14 +55,15 @@
         class="absolute bottom-4 end-4 inline-flex h-8 items-center gap-1 rounded-full bg-white/90 px-3 text-xs font-bold text-[#8a847c] shadow-sm"
       >
         <i class="pi pi-search-plus text-[10px]"></i>
-        Zoom
+        {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.ZOOM' | translate }}
       </span>
     </section>
 
     <div class="flex gap-3 border-b border-[#e8dccf] px-5 py-4">
       <button
         type="button"
-        class="h-16 w-16 overflow-hidden rounded-xl border-2 border-[#6b7d5e] bg-[#f5f2ee] p-1"
+        class="h-16 w-16 cursor-pointer overflow-hidden rounded-xl border-2 border-[#6b7d5e] bg-[#f5f2ee] p-1"
+        [attr.aria-label]="'CUSTOMER.PRODUCT_QUICK_VIEW.VIEW_IMAGE' | translate"
       >
         <img
           [src]="product().imageUrl"
@@ -67,11 +76,20 @@
     <section class="space-y-5 p-5">
       <div class="flex flex-wrap gap-2">
         <span
-          class="inline-flex h-7 items-center gap-1 rounded-full bg-[#eef6ea] px-3 text-xs font-bold text-[#4f8a4b]"
+          class="inline-flex h-7 items-center gap-1 rounded-full px-3 text-xs font-bold"
+          [class.bg-[#eef6ea]]="product().inStock"
+          [class.text-[#4f8a4b]]="product().inStock"
+          [class.bg-red-50]="!product().inStock"
+          [class.text-red-700]="!product().inStock"
         >
           <span class="h-2 w-2 rounded-full bg-current"></span>
-          {{ product().inStock ? 'In Stock' : 'Out of Stock' }}
+          {{
+            product().inStock
+              ? ('CUSTOMER.PRODUCT_QUICK_VIEW.IN_STOCK' | translate)
+              : ('CUSTOMER.PRODUCT_QUICK_VIEW.OUT_OF_STOCK' | translate)
+          }}
         </span>
+
         @if (product().badge) {
           <span
             class="inline-flex h-7 items-center rounded-full bg-[#eee5db] px-3 text-xs font-bold text-[#5f564c]"
@@ -81,7 +99,9 @@
         }
       </div>
 
-      <h2 class="text-2xl font-black tracking-normal text-[#30362f]">{{ product().name }}</h2>
+      <h2 class="text-2xl font-black tracking-normal text-[#30362f]">
+        {{ product().name }}
+      </h2>
 
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex items-center gap-1">
@@ -93,26 +113,42 @@
             ></i>
           }
         </div>
-        <span class="text-sm font-bold text-[#30362f]">{{ product().rating.toFixed(1) }}</span>
-        <span class="text-sm font-semibold text-[#9a948d]"
-          >({{ product().reviewCount }} reviews)</span
-        >
+
+        <span class="text-sm font-bold text-[#30362f]">
+          {{ product().rating.toFixed(1) }}
+        </span>
+
+        <span class="text-sm font-semibold text-[#9a948d]">
+          {{
+            'CUSTOMER.PRODUCT_QUICK_VIEW.REVIEWS_COUNT'
+              | translate: { count: product().reviewCount }
+          }}
+        </span>
       </div>
 
       <div
         class="flex flex-wrap items-center gap-3 rounded-2xl border border-[#e8dccf] bg-white px-5 py-4"
       >
-        <span class="text-3xl font-black text-[#30362f]">{{
-          product().price | currency: 'USD' : 'symbol' : '1.2-2'
-        }}</span>
+        <span class="text-3xl font-black text-[#30362f]">
+          {{ product().price | currency: 'USD' : 'symbol' : '1.2-2' }}
+        </span>
+
         @if (product().originalPrice) {
           <span class="text-base font-bold text-[#b8b0a7] line-through">
             {{ product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2' }}
           </span>
         }
+
         @if (savingsAmount(product()); as savings) {
           <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white">
-            Save {{ savings | currency: 'USD' : 'symbol' : '1.2-2' }}
+            {{
+              'CUSTOMER.PRODUCT_QUICK_VIEW.SAVE_AMOUNT'
+                | translate
+                  : {
+                      amount:
+                        (savings | currency: 'USD' : 'symbol' : '1.2-2'),
+                    }
+            }}
           </span>
         }
       </div>
@@ -124,36 +160,47 @@
       <hr class="border-[#e8dccf]" />
 
       <div class="flex flex-wrap items-center gap-4">
-        <span class="text-sm font-black text-[#30362f]">Qty</span>
+        <span class="text-sm font-black text-[#30362f]">
+          {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.QUANTITY' | translate }}
+        </span>
+
         <div
           class="inline-grid h-10 grid-cols-3 overflow-hidden rounded-full border border-[#e8dccf] bg-white"
         >
           <button
             type="button"
-            class="flex w-11 items-center justify-center text-[#30362f] transition hover:bg-[#f8f7f5] disabled:opacity-40"
+            class="flex w-11 cursor-pointer items-center justify-center text-[#30362f] transition hover:bg-[#f8f7f5] disabled:cursor-not-allowed disabled:opacity-40"
             [disabled]="quantity() === 1"
-            aria-label="Decrease quantity"
+            [attr.aria-label]="
+              'CUSTOMER.PRODUCT_QUICK_VIEW.DECREASE_QUANTITY' | translate
+            "
             (click)="decreaseQuantity()"
           >
             <i class="pi pi-minus text-xs"></i>
           </button>
-          <span class="flex w-11 items-center justify-center text-sm font-black text-[#30362f]">{{
-            quantity()
-          }}</span>
+
+          <span class="flex w-11 items-center justify-center text-sm font-black text-[#30362f]">
+            {{ quantity() }}
+          </span>
+
           <button
             type="button"
-            class="flex w-11 items-center justify-center text-[#30362f] transition hover:bg-[#f8f7f5] disabled:opacity-40"
+            class="flex w-11 cursor-pointer items-center justify-center text-[#30362f] transition hover:bg-[#f8f7f5] disabled:cursor-not-allowed disabled:opacity-40"
             [disabled]="quantity() >= availableQuantity()"
-            aria-label="Increase quantity"
+            [attr.aria-label]="
+              'CUSTOMER.PRODUCT_QUICK_VIEW.INCREASE_QUANTITY' | translate
+            "
             (click)="increaseQuantity()"
           >
             <i class="pi pi-plus text-xs"></i>
           </button>
         </div>
+
         <span class="text-sm font-bold text-[#8a847c]">=</span>
-        <span class="text-sm font-black text-[#30362f]">{{
-          subtotal() | currency: 'USD' : 'symbol' : '1.2-2'
-        }}</span>
+
+        <span class="text-sm font-black text-[#30362f]">
+          {{ subtotal() | currency: 'USD' : 'symbol' : '1.2-2' }}
+        </span>
       </div>
 
       <hr class="border-[#e8dccf]" />
@@ -162,24 +209,36 @@
         <div class="flex gap-3">
           <span
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]"
+            aria-hidden="true"
           >
             <i class="pi pi-truck text-sm"></i>
           </span>
+
           <div>
-            <p class="text-sm font-black text-[#30362f]">Free delivery over $75</p>
-            <p class="mt-1 text-sm font-semibold text-[#9a948d]">Est. 2-5 business days</p>
+            <p class="text-sm font-black text-[#30362f]">
+              {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.FREE_DELIVERY' | translate }}
+            </p>
+            <p class="mt-1 text-sm font-semibold text-[#9a948d]">
+              {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.DELIVERY_TIME' | translate }}
+            </p>
           </div>
         </div>
 
         <div class="flex gap-3">
           <span
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]"
+            aria-hidden="true"
           >
             <i class="pi pi-refresh text-sm"></i>
           </span>
+
           <div>
-            <p class="text-sm font-black text-[#30362f]">30-day easy returns</p>
-            <p class="mt-1 text-sm font-semibold text-[#9a948d]">No questions asked</p>
+            <p class="text-sm font-black text-[#30362f]">
+              {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.RETURNS' | translate }}
+            </p>
+            <p class="mt-1 text-sm font-semibold text-[#9a948d]">
+              {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.RETURNS_DETAIL' | translate }}
+            </p>
           </div>
         </div>
       </div>
@@ -189,8 +248,8 @@
         class="inline-flex items-center gap-2 rounded text-sm font-black text-[#9a948d] transition hover:text-[#6b7d5e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b7d5e]"
         (click)="closeRequested.emit(); $event.stopPropagation()"
       >
-        View full product details
-        <i class="pi pi-arrow-right text-xs"></i>
+        {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.VIEW_DETAILS' | translate }}
+        <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i>
       </a>
     </section>
   </div>
@@ -198,14 +257,17 @@
   <footer class="quick-view-actions border-t border-[#e8dccf] bg-white/95 px-5 py-4 backdrop-blur">
     <div class="grid grid-cols-[auto_minmax(0,1fr)_3.25rem] items-center gap-3">
       <div>
-        <p class="text-xs font-bold text-[#9a948d]">Total</p>
+        <p class="text-xs font-bold text-[#9a948d]">
+          {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.TOTAL' | translate }}
+        </p>
         <p class="text-xl font-black text-[#30362f]">
           {{ subtotal() | currency: 'USD' : 'symbol' : '1.2-2' }}
         </p>
       </div>
+
       <button
         type="button"
-        class="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#596b4e]"
+        class="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#596b4e] disabled:cursor-not-allowed disabled:opacity-50"
         [disabled]="cartLoading() || availableQuantity() < quantity()"
         (click)="submitAddToCart()"
       >
@@ -215,13 +277,15 @@
           [class.pi-spinner]="cartLoading()"
           [class.pi-spin]="cartLoading()"
         ></i>
-        {{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}
+        {{ 'CUSTOMER.PRODUCT_QUICK_VIEW.ADD_TO_CART' | translate }}
       </button>
+
       <button
         type="button"
-        class="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#e8dccf] bg-white text-[#1f2a1f] transition hover:border-[#6b7d5e] hover:text-[#6b7d5e]"
+        class="flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl border border-[#e8dccf] bg-white text-[#1f2a1f] transition hover:border-[#6b7d5e] hover:text-[#6b7d5e]"
         [class.text-[#6b7d5e]]="wishlistActive()"
-        [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
+        [attr.aria-label]="'CUSTOMER.PRODUCT_QUICK_VIEW.TOGGLE_WISHLIST' | translate"
+        [attr.aria-pressed]="wishlistActive()"
         (click)="toggleWishlist.emit(product())"
       >
         <i

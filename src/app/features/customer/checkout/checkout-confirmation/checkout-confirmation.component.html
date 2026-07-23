@@ -1,44 +1,101 @@
 @if (confirmation(); as order) {
-  <section class="confirmation">
-    <span class="confirmation__icon">
-      <i class="pi pi-check"></i>
-    </span>
+<section class="confirmation">
+  <span class="confirmation__icon">
+    <i class="pi pi-check" aria-hidden="true"></i>
+  </span>
 
-    <h1 class="confirmation__title">Order Confirmed!</h1>
-    <p class="confirmation__message">
-      Thank you{{ order.customerName ? ', ' + order.customerName : '' }}. Your order has been
-      received and we will email the confirmation details shortly.
+  <h1 class="confirmation__title">
+    {{
+    'CUSTOMER.CHECKOUT.CONFIRMATION.TITLE'
+    | translate
+    }}
+  </h1>
+
+  <p class="confirmation__message">
+    @if (order.customerName) {
+    {{
+    'CUSTOMER.CHECKOUT.CONFIRMATION.MESSAGE_WITH_NAME'
+    | translate: { name: order.customerName }
+    }}
+    } @else {
+    {{
+    'CUSTOMER.CHECKOUT.CONFIRMATION.MESSAGE'
+    | translate
+    }}
+    }
+  </p>
+
+  <div class="confirmation__details">
+    <p>
+      {{
+      'CUSTOMER.CHECKOUT.CONFIRMATION.ORDER_SUMMARY'
+      | translate
+      }}
     </p>
 
-    <div class="confirmation__details">
-      <p>Order Summary</p>
-      <dl>
-        <div>
-          <dt>Order number</dt>
-          <dd>{{ order.order.orderNumber }}</dd>
-        </div>
-        <div>
-          <dt>Payment method</dt>
-          <dd>{{ order.paymentMethodName }}</dd>
-        </div>
-        <div>
-          <dt>{{ order.order.paymentStatus === 'paid' ? 'Total Paid' : 'Order Total' }}</dt>
-          <dd>{{ order.totals.total | currency: 'USD' }}</dd>
-        </div>
-      </dl>
-    </div>
+    <dl>
+      <div>
+        <dt>
+          {{
+          'CUSTOMER.CHECKOUT.CONFIRMATION.ORDER_NUMBER'
+          | translate
+          }}
+        </dt>
 
-    <app-checkout-order-summary
-      class="confirmation__summary"
-      [items]="order.items"
-      [totals]="order.totals"
-    />
+        <dd>
+          {{ order.order.orderNumber }}
+        </dd>
+      </div>
 
-    <div class="confirmation__actions">
-      @if (isAuthenticated()) {
-        <a class="confirmation__primary" routerLink="/shop/customer-account/orders">View Orders</a>
-      }
-      <a class="confirmation__secondary" routerLink="/shop">Back to Home</a>
-    </div>
-  </section>
+      <div>
+        <dt>
+          {{
+          'CUSTOMER.CHECKOUT.CONFIRMATION.PAYMENT_METHOD'
+          | translate
+          }}
+        </dt>
+
+        <dd>
+          {{ order.paymentMethodName }}
+        </dd>
+      </div>
+
+      <div>
+        <dt>
+          {{
+          (
+          order.order.paymentStatus === 'paid'
+          ? 'CUSTOMER.CHECKOUT.CONFIRMATION.TOTAL_PAID'
+          : 'CUSTOMER.CHECKOUT.CONFIRMATION.ORDER_TOTAL'
+          ) | translate
+          }}
+        </dt>
+
+        <dd>
+          {{ order.totals.total | currency: 'USD' }}
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <app-checkout-order-summary class="confirmation__summary" [items]="order.items" [totals]="order.totals" />
+
+  <div class="confirmation__actions">
+    @if (isAuthenticated()) {
+    <a class="confirmation__primary" routerLink="/shop/customer-account/orders">
+      {{
+      'CUSTOMER.CHECKOUT.CONFIRMATION.VIEW_ORDERS'
+      | translate
+      }}
+    </a>
+    }
+
+    <a class="confirmation__secondary" routerLink="/shop">
+      {{
+      'CUSTOMER.CHECKOUT.CONFIRMATION.BACK_HOME'
+      | translate
+      }}
+    </a>
+  </div>
+</section>
 }

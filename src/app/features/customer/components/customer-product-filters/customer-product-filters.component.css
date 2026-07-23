@@ -71,7 +71,7 @@
   border-radius: 9999px;
 }
 
-.peer:checked + .filter-radio::after {
+.peer:checked+.filter-radio::after {
   content: '';
   height: 0.55rem;
   width: 0.55rem;

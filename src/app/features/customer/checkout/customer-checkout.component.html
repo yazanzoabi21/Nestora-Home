@@ -41,7 +41,7 @@
               <app-checkout-payment
                 [methods]="state.paymentMethods()"
                 [selectedId]="state.selectedPaymentMethod()?.id ?? null"
-                [totalLabel]="state.formatTotalLabel(currency)"
+                [total]="state.totals().total"
                 [loading]="state.loadingPaymentMethods()"
                 [error]="state.paymentMethodsError()"
                 [placeOrderError]="state.placeOrderError()"

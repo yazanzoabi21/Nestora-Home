@@ -1,31 +1,75 @@
-import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { CurrencyPipe, NgClass } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  output,
+} from '@angular/core';
+import {
+  TranslatePipe,
+  TranslateService,
+} from '@ngx-translate/core';
 
 import { CheckoutShippingMethod } from '../models';
 
 @Component({
   selector: 'app-checkout-delivery',
   standalone: true,
-  imports: [CurrencyPipe],
+  imports: [
+    CurrencyPipe,
+    NgClass,
+    TranslatePipe,
+  ],
   templateUrl: './checkout-delivery.component.html',
-  styleUrl: './checkout-delivery.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckoutDeliveryComponent {
-  readonly options = input.required<readonly CheckoutShippingMethod[]>();
+  private readonly translate = inject(TranslateService);
+
+  readonly options =
+    input.required<readonly CheckoutShippingMethod[]>();
+
   readonly selectedId = input<string | null>(null);
   readonly loading = input(false);
   readonly error = input<string | null>(null);
+
   readonly select = output<string>();
   readonly back = output<void>();
   readonly continue = output<void>();
 
   eta(method: CheckoutShippingMethod): string {
-    if (method.etaLabel) return method.etaLabel;
-    if (method.etaMinDays !== null && method.etaMaxDays !== null) {
-      return `${method.etaMinDays}-${method.etaMaxDays} days`;
+    if (method.etaLabel?.trim()) {
+      return method.etaLabel;
     }
-    if (method.etaMinDays !== null) return `${method.etaMinDays}+ days`;
-    return method.description ?? 'Estimated at checkout';
+
+    if (
+      method.etaMinDays !== null &&
+      method.etaMaxDays !== null
+    ) {
+      return this.translate.instant(
+        'CUSTOMER.CHECKOUT.DELIVERY.ETA_RANGE',
+        {
+          min: method.etaMinDays,
+          max: method.etaMaxDays,
+        },
+      );
+    }
+
+    if (method.etaMinDays !== null) {
+      return this.translate.instant(
+        'CUSTOMER.CHECKOUT.DELIVERY.ETA_MINIMUM',
+        {
+          min: method.etaMinDays,
+        },
+      );
+    }
+
+    return (
+      method.description?.trim() ||
+      this.translate.instant(
+        'CUSTOMER.CHECKOUT.DELIVERY.ESTIMATED_AT_CHECKOUT',
+      )
+    );
   }
 }

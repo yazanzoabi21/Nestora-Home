@@ -1,102 +1,107 @@
-<section class="checkout-card">
-  <h1 class="checkout-card__title">Shipping Information</h1>
+<section class="rounded-2xl bg-white p-6
+         shadow-[0_12px_32px_rgba(52,47,41,0.07)]
+         max-sm:p-[1.1rem]">
+  <h1 class="m-0 text-[1.125rem] font-bold text-[#1f2a1f]">
+    {{ 'CUSTOMER.CHECKOUT.SHIPPING.TITLE' | translate }}
+  </h1>
 
-  <form class="shipping-form" [formGroup]="form" (ngSubmit)="submit()">
-    <app-checkout-form-field
-      name="firstName"
-      label="First Name"
-      autocomplete="given-name"
-      [required]="true"
-      [control]="form.controls.firstName"
-      [error]="error('firstName')"
-    />
-    <app-checkout-form-field
-      name="lastName"
-      label="Last Name"
-      autocomplete="family-name"
-      [required]="true"
-      [control]="form.controls.lastName"
-      [error]="error('lastName')"
-    />
-    <app-checkout-form-field
-      name="email"
-      label="Email"
-      type="email"
-      autocomplete="email"
-      [required]="true"
-      [control]="form.controls.email"
-      [error]="error('email')"
-    />
-    <app-checkout-form-field
-      name="phone"
-      label="Phone"
-      type="tel"
-      autocomplete="tel"
-      [control]="form.controls.phone"
-      [error]="error('phone')"
-    />
-    <app-checkout-form-field
-      name="streetAddress"
-      label="Street Address"
-      autocomplete="street-address"
-      [required]="true"
-      [fullWidth]="true"
-      [control]="form.controls.streetAddress"
-      [error]="error('streetAddress')"
-    />
-    <app-checkout-form-field
-      name="addressLine2"
-      label="Apartment, suite, etc."
-      autocomplete="address-line2"
-      [fullWidth]="true"
-      [control]="form.controls.addressLine2"
-      [error]="error('addressLine2')"
-    />
-    <app-checkout-form-field
-      name="city"
-      label="City"
-      autocomplete="address-level2"
-      [required]="true"
-      [control]="form.controls.city"
-      [error]="error('city')"
-    />
-    <app-checkout-form-field
-      name="stateProvince"
-      label="State / Province"
-      autocomplete="address-level1"
-      [required]="true"
-      [control]="form.controls.stateProvince"
-      [error]="error('stateProvince')"
-    />
+  <form class="mt-[1.35rem] grid grid-cols-2
+           gap-x-[1.1rem] gap-y-4
+           max-sm:grid-cols-1" [formGroup]="form" (ngSubmit)="submit()">
+    <app-checkout-form-field name="firstName" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.FIRST_NAME'
+          | translate
+      " autocomplete="given-name" [required]="true" [control]="form.controls.firstName" [error]="error('firstName')" />
+
+    <app-checkout-form-field name="lastName" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.LAST_NAME'
+          | translate
+      " autocomplete="family-name" [required]="true" [control]="form.controls.lastName" [error]="error('lastName')" />
+
+    <app-checkout-form-field name="email" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.EMAIL'
+          | translate
+      " type="email" autocomplete="email" [required]="true" [control]="form.controls.email" [error]="error('email')" />
+
+    <app-checkout-form-field name="phone" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.PHONE'
+          | translate
+      " type="tel" autocomplete="tel" [control]="form.controls.phone" [error]="error('phone')" />
+
+    <app-checkout-form-field name="streetAddress" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.STREET_ADDRESS'
+          | translate
+      " autocomplete="street-address" [required]="true" [fullWidth]="true" [control]="form.controls.streetAddress"
+      [error]="error('streetAddress')" />
+
+    <app-checkout-form-field name="addressLine2" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.ADDRESS_LINE_2'
+          | translate
+      " autocomplete="address-line2" [fullWidth]="true" [control]="form.controls.addressLine2"
+      [error]="error('addressLine2')" />
+
+    <app-checkout-form-field name="city" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.CITY'
+          | translate
+      " autocomplete="address-level2" [required]="true" [control]="form.controls.city" [error]="error('city')" />
+
+    <app-checkout-form-field name="stateProvince" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.STATE_PROVINCE'
+          | translate
+      " autocomplete="address-level1" [required]="true" [control]="form.controls.stateProvince"
+      [error]="error('stateProvince')" />
+
+    <!-- Enable this when postal code is required. -->
+    <!--
     <app-checkout-form-field
       name="postalCode"
-      label="ZIP / Postal Code"
+      [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.POSTAL_CODE'
+          | translate
+      "
       autocomplete="postal-code"
-      [required]="true"
       [control]="form.controls.postalCode"
       [error]="error('postalCode')"
     />
-    <app-checkout-form-field
-      name="country"
-      label="Country"
-      type="select"
-      autocomplete="country-name"
-      [options]="countries"
-      [control]="form.controls.country"
-      [error]="error('country')"
-    />
-    <app-checkout-form-field
-      name="deliveryInstructions"
-      label="Delivery Instructions"
-      placeholder="Optional notes for the courier"
-      [fullWidth]="true"
-      [control]="form.controls.deliveryInstructions"
-      [error]="error('deliveryInstructions')"
-    />
+    -->
 
-    <button class="shipping-form__continue" type="submit" [disabled]="form.invalid">
-      <span>Continue to Delivery</span>
-      <i class="pi pi-chevron-right"></i>
+    <app-checkout-form-field name="country" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.COUNTRY'
+          | translate
+      " type="select" autocomplete="country-name" [options]="countries()" [control]="form.controls.country"
+      [error]="error('country')" />
+
+    <app-checkout-form-field name="deliveryInstructions" [label]="
+        'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.DELIVERY_INSTRUCTIONS'
+          | translate
+      " [placeholder]="
+        'CUSTOMER.CHECKOUT.SHIPPING.PLACEHOLDERS.DELIVERY_INSTRUCTIONS'
+          | translate
+      " [control]="form.controls.deliveryInstructions" [error]="error('deliveryInstructions')" />
+
+    <button class="col-span-full inline-flex h-[2.95rem]
+             cursor-pointer items-center justify-center
+             gap-[0.6rem] rounded-[0.875rem]
+             bg-[#738665] px-5 text-[0.95rem]
+             font-extrabold text-white
+             transition-[background-color,opacity,transform]
+             duration-150 ease-in-out
+             hover:bg-[#627557]
+             active:translate-y-px
+             focus-visible:outline
+             focus-visible:outline-[3px]
+             focus-visible:outline-offset-[3px]
+             focus-visible:outline-[rgba(115,134,101,0.25)]
+             disabled:cursor-not-allowed
+             disabled:opacity-55
+             disabled:hover:bg-[#738665]
+             disabled:active:translate-y-0
+             max-sm:col-span-1" type="submit">
+      <span>
+        {{ 'CUSTOMER.CHECKOUT.SHIPPING.CONTINUE' | translate }}
+      </span>
+
+      <i class="pi pi-chevron-right text-xs rtl:rotate-180" aria-hidden="true"></i>
     </button>
   </form>
 </section>

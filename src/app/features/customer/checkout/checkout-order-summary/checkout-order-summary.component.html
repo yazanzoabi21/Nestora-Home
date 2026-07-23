@@ -1,59 +1,98 @@
 <aside class="order-summary">
-  <h2 class="order-summary__title">Your Order</h2>
+  <h2 class="order-summary__title">
+    {{ 'CUSTOMER.CHECKOUT.SUMMARY.TITLE' | translate }}
+  </h2>
 
   <div class="order-summary__items">
     @for (item of items(); track item.productId) {
-      <div class="order-summary__item">
-        <div class="order-summary__image-wrap">
-          <img
-            class="order-summary__image"
-            [src]="item.productImageUrl"
-            [alt]="item.productName"
-            loading="lazy"
-          />
-          <span class="order-summary__quantity">{{ item.quantity }}</span>
-        </div>
+    <div class="order-summary__item">
+      <div class="order-summary__image-wrap">
+        <img class="order-summary__image" [src]="item.productImageUrl" [alt]="item.productName" loading="lazy" />
 
-        <p class="order-summary__name">{{ item.productName }}</p>
-
-        <strong class="order-summary__price">
-          {{ item.lineTotal | currency: 'USD' }}
-        </strong>
+        <span class="order-summary__quantity">
+          {{ item.quantity }}
+        </span>
       </div>
+
+      <p class="order-summary__name">
+        {{ item.productName }}
+      </p>
+
+      <strong class="order-summary__price">
+        {{ item.lineTotal | currency: 'USD' }}
+      </strong>
+    </div>
     }
   </div>
 
   <dl class="order-summary__totals">
     <div class="order-summary__row">
-      <dt>Subtotal</dt>
-      <dd>{{ totals().subtotal | currency: 'USD' }}</dd>
-    </div>
-    @if (totals().discountAmount > 0) {
-      <div class="order-summary__row order-summary__row--green">
-        <dt>
-          Discount
-          @if (totals().discountCode) {
-            <span>({{ totals().discountCode }})</span>
-          }
-        </dt>
-        <dd>−{{ totals().discountAmount | currency: 'USD' }}</dd>
-      </div>
-    }
-    <div class="order-summary__row">
-      <dt>Delivery</dt>
-      <dd [class.order-summary__row--green]="!totals().shippingCost">
-        {{ totals().shippingCost ? (totals().shippingCost | currency: 'USD') : 'Free' }}
+      <dt>
+        {{ 'CUSTOMER.CHECKOUT.SUMMARY.SUBTOTAL' | translate }}
+      </dt>
+
+      <dd>
+        {{ totals().subtotal | currency: 'USD' }}
       </dd>
     </div>
-    @if (totals().paymentFee) {
-      <div class="order-summary__row">
-        <dt>Payment fee</dt>
-        <dd>{{ totals().paymentFee | currency: 'USD' }}</dd>
-      </div>
+
+    @if (totals().discountAmount > 0) {
+    <div class="order-summary__row order-summary__row--green">
+      <dt>
+        {{ 'CUSTOMER.CHECKOUT.SUMMARY.DISCOUNT' | translate }}
+
+        @if (totals().discountCode) {
+        <span>
+          ({{ totals().discountCode }})
+        </span>
+        }
+      </dt>
+
+      <dd>
+        −{{ totals().discountAmount | currency: 'USD' }}
+      </dd>
+    </div>
     }
+
+    <div class="order-summary__row">
+      <dt>
+        {{ 'CUSTOMER.CHECKOUT.SUMMARY.DELIVERY' | translate }}
+      </dt>
+
+      <dd [class.order-summary__row--green]="
+          !totals().shippingCost
+        ">
+        @if (totals().shippingCost) {
+        {{ totals().shippingCost | currency: 'USD' }}
+        } @else {
+        {{ 'CUSTOMER.CHECKOUT.SUMMARY.FREE' | translate }}
+        }
+      </dd>
+    </div>
+
+    @if (totals().paymentFee) {
+    <div class="order-summary__row">
+      <dt>
+        {{
+        'CUSTOMER.CHECKOUT.SUMMARY.PAYMENT_FEE'
+        | translate
+        }}
+      </dt>
+
+      <dd>
+        {{ totals().paymentFee | currency: 'USD' }}
+      </dd>
+    </div>
+    }
+
     <div class="order-summary__row order-summary__row--total">
-      <dt>Total</dt>
-      <dd>{{ totals().total | currency: 'USD' }}</dd>
+      <dt>
+        {{ 'CUSTOMER.CHECKOUT.SUMMARY.TOTAL' | translate }}
+      </dt>
+
+      <dd>
+        {{ totals().total | currency: 'USD' }}
+      </dd>
     </div>
   </dl>
 </aside>

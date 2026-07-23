@@ -9,7 +9,7 @@ export interface CheckoutShippingInformation {
   addressLine2: string | null;
   city: string;
   stateProvince: string;
-  postalCode: string;
+  postalCode: string | null;
   country: string;
   deliveryInstructions: string | null;
 }

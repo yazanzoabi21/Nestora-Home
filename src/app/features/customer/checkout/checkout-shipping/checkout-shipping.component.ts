@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { CheckoutSelectOption, CheckoutShippingInformation, CheckoutShippingPrefill } from '../models';
 import { CheckoutFormFieldComponent } from '../shared/checkout-form-field';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 type ShippingForm = FormGroup<{
   firstName: FormControl<string>;
@@ -23,7 +25,7 @@ type ShippingFormControlName = keyof ShippingForm['controls'];
 @Component({
   selector: 'app-checkout-shipping',
   standalone: true,
-  imports: [ReactiveFormsModule, CheckoutFormFieldComponent],
+  imports: [ReactiveFormsModule, CheckoutFormFieldComponent, TranslatePipe],
   templateUrl: './checkout-shipping.component.html',
   styleUrl: './checkout-shipping.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,12 +38,10 @@ export class CheckoutShippingComponent {
   private hasSubmitted = false;
   private appliedValueKey: string | null = null;
 
-  readonly countries: CheckoutSelectOption[] = [
-    { label: 'Lebanon', value: 'Lebanon' },
-    { label: 'United States', value: 'United States' },
-    { label: 'United Kingdom', value: 'United Kingdom' },
-    { label: 'United Arab Emirates', value: 'United Arab Emirates' },
-  ];
+  private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly countries = signal<CheckoutSelectOption[]>([]);
 
   readonly form: ShippingForm = new FormGroup({
     firstName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -55,126 +55,156 @@ export class CheckoutShippingComponent {
     addressLine2: new FormControl('', { nonNullable: true }),
     city: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     stateProvince: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    postalCode: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    country: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    postalCode: new FormControl('', { nonNullable: true }),
+    // country: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    country: new FormControl('Lebanon', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     deliveryInstructions: new FormControl('', { nonNullable: true }),
   });
 
   constructor() {
-  effect(() => {
-    const initialValue = this.initialValue();
-    const prefill = this.prefill();
+    this.updateCountries();
 
-    const initialEmail =
-      initialValue?.email.trim().toLowerCase() ?? '';
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateCountries());
 
-    const prefillEmail =
-      prefill?.email?.trim().toLowerCase() ?? '';
+    effect(() => {
+      const initialValue = this.initialValue();
+      const prefill = this.prefill();
 
-    const initialValueBelongsToCurrentCustomer =
-      !!initialValue &&
-      !!prefill &&
-      !!initialEmail &&
-      initialEmail === prefillEmail;
+      const initialEmail =
+        initialValue?.email.trim().toLowerCase() ?? '';
 
-    /*
-     * Keep the current checkout value when:
-     * 1. There is no logged-in profile prefill, or
-     * 2. The saved checkout email belongs to the same customer.
-     */
-    if (
-      initialValue &&
-      (!prefill || initialValueBelongsToCurrentCustomer)
-    ) {
-      const valueKey = `initial:${JSON.stringify(initialValue)}`;
+      const prefillEmail =
+        prefill?.email?.trim().toLowerCase() ?? '';
 
-      if (this.appliedValueKey === valueKey) {
+      const initialValueBelongsToCurrentCustomer =
+        !!initialValue &&
+        !!prefill &&
+        !!initialEmail &&
+        initialEmail === prefillEmail;
+
+      if (
+        initialValue &&
+        (!prefill || initialValueBelongsToCurrentCustomer)
+      ) {
+        const valueKey = `initial:${JSON.stringify(initialValue)}`;
+
+        if (this.appliedValueKey === valueKey) {
+          return;
+        }
+
+        this.resetForm(this.toFormValue(initialValue));
+        this.appliedValueKey = valueKey;
         return;
       }
 
-      this.resetForm(this.toFormValue(initialValue));
-      this.appliedValueKey = valueKey;
-      return;
-    }
+      if (prefill) {
+        const valueKey = `prefill:${JSON.stringify(prefill)}`;
 
-    /*
-     * A profile prefill exists, but the previous checkout data
-     * belongs to another email/customer.
-     *
-     * Clear all previous guest information before applying
-     * the logged-in customer's profile.
-     */
-    if (prefill) {
-      const valueKey = `prefill:${JSON.stringify(prefill)}`;
+        if (this.appliedValueKey === valueKey) {
+          return;
+        }
 
-      if (this.appliedValueKey === valueKey) {
+        this.resetForm(this.emptyFormValue());
+        this.patchSafePrefill(prefill);
+
+        this.form.markAsPristine();
+        this.form.markAsUntouched();
+        this.hasSubmitted = false;
+
+        this.appliedValueKey = valueKey;
         return;
       }
 
-      this.resetForm(this.emptyFormValue());
-      this.patchSafePrefill(prefill);
+      if (
+        !initialValue &&
+        !prefill &&
+        this.appliedValueKey !== null
+      ) {
+        this.resetForm(this.emptyFormValue());
+        this.appliedValueKey = null;
+      }
+    });
+  }
 
-      this.form.markAsPristine();
-      this.form.markAsUntouched();
-      this.hasSubmitted = false;
+  private resetForm(
+    value: Record<ShippingFormControlName, string>,
+  ): void {
+    this.form.reset(value, { emitEvent: false });
+    this.form.markAsPristine();
+    this.form.markAsUntouched();
+    this.hasSubmitted = false;
+  }
 
-      this.appliedValueKey = valueKey;
-      return;
-    }
+  private emptyFormValue(): Record<ShippingFormControlName, string> {
+    return {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      streetAddress: '',
+      addressLine2: '',
+      city: '',
+      stateProvince: '',
+      postalCode: '',
+      country: 'Lebanon',
+      deliveryInstructions: '',
+    };
+  }
 
-    /*
-     * The parent cleared both values, for example after
-     * completing an order.
-     */
-    if (!initialValue && !prefill && this.appliedValueKey !== null) {
-      this.resetForm(this.emptyFormValue());
-      this.appliedValueKey = null;
-    }
-  });
-}
-
-private resetForm(
-  value: Record<ShippingFormControlName, string>,
-): void {
-  this.form.reset(value, { emitEvent: false });
-  this.form.markAsPristine();
-  this.form.markAsUntouched();
-  this.hasSubmitted = false;
-}
-
-private emptyFormValue(): Record<ShippingFormControlName, string> {
-  return {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    streetAddress: '',
-    addressLine2: '',
-    city: '',
-    stateProvince: '',
-    postalCode: '',
-    country: '',
-    deliveryInstructions: '',
-  };
-}
-
-  error(name: ShippingFormControlName): string | null {
+  error(name: ShippingFormControlName): string {
     const control = this.form.controls[name];
-    if (!control.invalid || (!control.touched && !this.hasSubmitted)) return null;
-    if (control.hasError('email')) return 'Enter a valid email address.';
-    return 'This field is required.';
+
+    if (
+      !control.invalid ||
+      (!control.touched && !this.hasSubmitted)
+    ) {
+      return '';
+    }
+
+    if (control.hasError('email')) {
+      return this.translate.instant(
+        'CUSTOMER.CHECKOUT.SHIPPING.ERRORS.INVALID_EMAIL',
+      );
+    }
+
+    return this.translate.instant(
+      'CUSTOMER.CHECKOUT.SHIPPING.ERRORS.REQUIRED',
+    );
+  }
+
+  private updateCountries(): void {
+    this.countries.set([
+      {
+        label: this.translate.instant(
+          'CUSTOMER.CHECKOUT.SHIPPING.COUNTRIES.LEBANON',
+        ),
+        value: 'Lebanon',
+      },
+    ]);
   }
 
   submit(): void {
     this.hasSubmitted = true;
     this.form.markAllAsTouched();
-    if (this.form.invalid) return;
+
+    if (this.form.invalid) {
+      return;
+    }
+
     const value = this.form.getRawValue();
+
     this.continue.emit({
       ...value,
       phone: value.phone.trim() || null,
       addressLine2: value.addressLine2.trim() || null,
-      deliveryInstructions: value.deliveryInstructions.trim() || null,
+      postalCode: value.postalCode.trim() || null,
+      deliveryInstructions:
+        value.deliveryInstructions.trim() || null,
     });
   }
 
@@ -192,12 +222,22 @@ private emptyFormValue(): Record<ShippingFormControlName, string> {
     }
   }
 
-  private toFormValue(value: CheckoutShippingInformation): Record<ShippingFormControlName, string> {
+  private toFormValue(
+    value: CheckoutShippingInformation,
+  ): Record<ShippingFormControlName, string> {
     return {
-      ...value,
+      firstName: value.firstName,
+      lastName: value.lastName,
+      email: value.email,
       phone: value.phone ?? '',
+      streetAddress: value.streetAddress,
       addressLine2: value.addressLine2 ?? '',
-      deliveryInstructions: value.deliveryInstructions ?? '',
+      city: value.city,
+      stateProvince: value.stateProvince,
+      postalCode: value.postalCode ?? '',
+      country: value.country?.trim() || 'Lebanon',
+      deliveryInstructions:
+        value.deliveryInstructions ?? '',
     };
   }
 }

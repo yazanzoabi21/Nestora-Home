@@ -62,7 +62,7 @@
           @if (ownReview(); as own) {
             <span class="status">{{ statusKey(own.status) | translate }}</span>
           }
-          <button type="button" class="primary" (click)="openForm()">
+          <button type="button" class="primary cursor-pointer" (click)="openForm()">
             {{ (ownReview() ? 'PRODUCT_REVIEWS.EDIT' : 'PRODUCT_REVIEWS.WRITE') | translate }}
           </button>
         </div>
@@ -79,6 +79,7 @@
           <div class="rating-input" (mouseleave)="hoverRating.set(0)">
             @for (star of stars; track star) {
               <button
+              class="cursor-pointer"
                 type="button"
                 (mouseenter)="hoverRating.set(star)"
                 (focus)="hoverRating.set(star)"
@@ -109,9 +110,10 @@
           <p class="form-error" role="alert">{{ formError()! | translate }}</p>
         }
         <div class="form-actions">
-          <button type="button" class="secondary" [disabled]="saving()" (click)="closeForm()">
+          <button type="button" class="secondary cursor-pointer" [disabled]="saving()" (click)="closeForm()">
             {{ 'COMMON.CANCEL' | translate }}</button
-          ><button type="submit" class="primary" [disabled]="saving()">
+          >
+          <button type="submit" class="primary cursor-pointer" [disabled]="saving()">
             @if (saving()) {
               <i class="pi pi-spin pi-spinner"></i>
             }

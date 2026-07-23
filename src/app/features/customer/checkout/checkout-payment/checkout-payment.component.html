@@ -1,69 +1,172 @@
-<section class="checkout-card">
-  <h1 class="checkout-card__title">Payment Method</h1>
+<section class="rounded-2xl bg-white p-6
+         shadow-[0_12px_32px_rgba(52,47,41,0.07)]
+         max-[560px]:p-[1.1rem]">
+  <h1 class="m-0 text-[1.125rem] font-bold text-[#1f2a1f]">
+    {{ 'CUSTOMER.CHECKOUT.PAYMENT.TITLE' | translate }}
+  </h1>
 
   @if (loading()) {
-    <div class="checkout-empty" role="status">
-      <i class="pi pi-spin pi-spinner"></i>
-      <span>Loading payment methods...</span>
-    </div>
+  <div class="m-0 flex items-center justify-center gap-2
+             rounded-[0.9rem] bg-[#f4efe8] p-[1.4rem]
+             text-center font-bold text-[#8a847c]" role="status">
+    <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+
+    <span>
+      {{
+      'CUSTOMER.CHECKOUT.PAYMENT.LOADING'
+      | translate
+      }}
+    </span>
+  </div>
   } @else if (error()) {
-    <p class="checkout-empty" role="alert">{{ error() }}</p>
+  <p class="m-0 rounded-[0.9rem] bg-[#f4efe8]
+             p-[1.4rem] text-center font-bold
+             text-[#8a847c]" role="alert">
+    {{ error() }}
+  </p>
   } @else {
-    <div class="payment-options">
-      @for (method of methods(); track method.id) {
-      <label class="payment-option" [class.payment-option--selected]="selectedId() === method.id">
-        <input
-          type="radio"
-          name="payment"
-          [checked]="selectedId() === method.id"
-          (change)="select.emit(method.id)"
-        />
-        <span class="payment-option__icon">
-          <i [class]="method.icon || 'pi pi-credit-card'"></i>
-        </span>
-        <span class="payment-option__body">
-          <span class="payment-option__header">
-            <span>{{ method.name }}</span>
-            <span class="payment-option__code">{{ method.code }}</span>
+  <div class="mt-[1.3rem] grid gap-[0.9rem]">
+    @for (method of methods(); track method.id) {
+    <label class="grid cursor-pointer
+                 grid-cols-[auto_2.6rem_minmax(0,1fr)]
+                 gap-[0.9rem] rounded-[0.9rem]
+                 border border-[#e6d6c4] p-4
+                 transition-[border-color,background-color]
+                 duration-150 ease-in-out
+                 hover:border-[#738665]
+                 hover:bg-[#f3f6f0]
+                 max-[560px]:grid-cols-[auto_2.4rem_minmax(0,1fr)]" [ngClass]="
+            selectedId() === method.id
+              ? '!border-[#738665] !bg-[#f3f6f0]'
+              : ''
+          ">
+      <input class="mt-[0.8rem] h-4 w-4 cursor-pointer
+                   accent-[#738665]" type="radio" name="payment" [checked]="selectedId() === method.id"
+        (change)="select.emit(method.id)" />
+
+      <span class="inline-flex h-[2.6rem] w-[2.6rem]
+                   items-center justify-center
+                   rounded-[0.8rem] bg-[#eee5db]
+                   text-[#738665]">
+        <i [class]="method.icon || 'pi pi-credit-card'" aria-hidden="true"></i>
+      </span>
+
+      <span class="min-w-0">
+        <span class="flex flex-wrap items-center gap-[0.45rem]
+                     text-[0.95rem] font-extrabold
+                     text-[#1f2a1f]">
+          <span>
+            {{ methodName(method) }}
           </span>
-          @if (instructions(method)) {
-            <span class="payment-option__instructions">{{ instructions(method) }}</span>
-          }
-          @if (method.calculatedFee) {
-            <span class="payment-option__fee">
-              Fee: {{ method.calculatedFee | currency: 'USD' }}
-            </span>
-          }
+
+          <span class="rounded-full bg-[#eee5db]
+                       px-[0.55rem] py-[0.2rem]
+                       text-[0.68rem] uppercase
+                       text-[#675f55]">
+            {{ method.code }}
+          </span>
         </span>
-      </label>
-      } @empty {
-        <p class="checkout-empty">No active payment methods are available for this order total.</p>
-      }
-    </div>
+
+        @if (instructions(method); as text) {
+        <span class="mt-[0.35rem] block text-[0.82rem]
+                       font-[650] leading-[1.45]
+                       text-[#8a847c]">
+          {{ text }}
+        </span>
+        }
+
+        @if (method.calculatedFee) {
+        <span class="mt-[0.35rem] block text-[0.82rem]
+                       font-extrabold leading-[1.45]
+                       text-[#738665]">
+          {{
+          'CUSTOMER.CHECKOUT.PAYMENT.FEE'
+          | translate: {
+          amount:
+          (
+          method.calculatedFee
+          | currency: 'USD'
+          )
+          }
+          }}
+        </span>
+        }
+      </span>
+    </label>
+    } @empty {
+    <p class="m-0 rounded-[0.9rem] bg-[#f4efe8]
+                 p-[1.4rem] text-center font-bold
+                 text-[#8a847c]">
+      {{
+      'CUSTOMER.CHECKOUT.PAYMENT.EMPTY'
+      | translate
+      }}
+    </p>
+    }
+  </div>
   }
 
   @if (providerRequired()) {
-    <p class="checkout-empty" role="status">
-      This online payment method requires a payment provider integration and is not available yet.
-    </p>
+  <p class="m-0 rounded-[0.9rem] bg-[#f4efe8]
+             p-[1.4rem] text-center font-bold
+             text-[#8a847c]" role="status">
+    {{
+    'CUSTOMER.CHECKOUT.PAYMENT.PROVIDER_REQUIRED'
+    | translate
+    }}
+  </p>
   }
 
   @if (placeOrderError()) {
-    <p class="checkout-empty" role="alert">{{ placeOrderError() }}</p>
+  <p class="m-0 rounded-[0.9rem] bg-[#f4efe8]
+             p-[1.4rem] text-center font-bold
+             text-[#8a847c]" role="alert">
+    {{ placeOrderError() }}
+  </p>
   }
 
-  <div class="checkout-actions">
-    <button class="checkout-actions__secondary" type="button" (click)="back.emit()">Back</button>
-    <button
-      class="checkout-actions__primary"
-      type="button"
-      [disabled]="!canPlaceOrder() || providerRequired() || submitting()"
-      (click)="placeOrder.emit()"
-    >
+  <div class="mt-[1.4rem] flex justify-between
+           gap-[0.85rem]
+           max-[560px]:flex-col-reverse">
+    <button class="min-h-[2.8rem] cursor-pointer
+             rounded-[0.875rem] border
+             border-[#e6d6c4] bg-transparent
+             px-[1.2rem] font-extrabold
+             text-[#1f2a1f]
+             transition-[border-color,background-color]
+             duration-150
+             hover:border-[#738665]
+             hover:bg-[#f3f6f0]" type="button" (click)="back.emit()">
+      {{ 'CUSTOMER.CHECKOUT.PAYMENT.BACK' | translate }}
+    </button>
+
+    <button class="inline-flex min-h-[2.8rem]
+             cursor-pointer items-center justify-center
+             gap-2 rounded-[0.875rem]
+             bg-[#738665] px-[1.2rem]
+             font-extrabold text-white
+             transition-[background-color,opacity,transform]
+             duration-150
+             hover:bg-[#627557]
+             active:translate-y-px
+             disabled:cursor-not-allowed
+             disabled:opacity-55
+             disabled:hover:bg-[#738665]
+             disabled:active:translate-y-0" type="button" [disabled]="
+        !canPlaceOrder() ||
+        providerRequired() ||
+        submitting()
+      " (click)="placeOrder.emit()">
       @if (submitting()) {
-        <i class="pi pi-spin pi-spinner"></i>
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
       }
-      {{ totalLabel() }}
+
+      {{
+      'CUSTOMER.CHECKOUT.PAYMENT.PLACE_ORDER'
+      | translate: {
+      total: (total() | currency: 'USD')
+      }
+      }}
     </button>
   </div>
 </section>

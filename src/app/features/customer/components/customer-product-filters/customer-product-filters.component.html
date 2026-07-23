@@ -1,14 +1,8 @@
-<aside
-  class="customer-product-filters"
-  [class.customer-product-filters--framed]="framed()"
->
+<aside class="customer-product-filters" [class.customer-product-filters--framed]="framed()">
   <div class="flex items-center justify-between gap-4" [class.sr-only]="!framed()">
     <h2 class="text-lg font-black text-[#30362f]">{{ 'CUSTOMER.PRODUCTS.FILTERS' | translate }}</h2>
-    <button
-      type="button"
-      class="text-sm font-black text-[#6b7d5e] transition hover:text-[#1f2a1f]"
-      (click)="clearFilters.emit()"
-    >
+    <button type="button" class="text-sm font-black text-[#6b7d5e] transition hover:text-[#1f2a1f]"
+      (click)="clearFilters.emit()">
       {{ 'CUSTOMER.PRODUCTS.CLEAR' | translate }}
     </button>
   </div>
@@ -18,30 +12,22 @@
       <h3 class="filter-heading">{{ 'CUSTOMER.PRODUCTS.CATEGORY' | translate }}</h3>
       <div class="space-y-3">
         @for (category of categories(); track category.value) {
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              class="sr-only"
-              [checked]="isCategorySelected(category.value)"
-              (change)="categoryToggle.emit(category.value)"
-            />
+        <label class="filter-option">
+          <input type="checkbox" class="sr-only" [checked]="isCategorySelected(category.value)"
+            (change)="categoryToggle.emit(category.value)" />
 
-            <span
-              class="filter-box"
-              [class.filter-box--checked]="isCategorySelected(category.value)"
-              aria-hidden="true"
-            >
-              @if (isCategorySelected(category.value)) {
-                <i class="pi pi-check text-[10px] font-bold text-white"></i>
-              }
-            </span>
-
-            @if (category.icon) {
-              <i [class]="category.icon + ' text-sm text-[#6b7d5e]'"></i>
+          <span class="filter-box" [class.filter-box--checked]="isCategorySelected(category.value)" aria-hidden="true">
+            @if (isCategorySelected(category.value)) {
+            <i class="pi pi-check text-[10px] font-bold text-white"></i>
             }
+          </span>
 
-            <span>{{ category.label }}</span>
-          </label>
+          @if (category.icon) {
+          <i [class]="category.icon + ' text-sm text-[#6b7d5e]'"></i>
+          }
+
+          <span>{{ category.label }}</span>
+        </label>
         }
       </div>
     </section>
@@ -50,17 +36,12 @@
       <h3 class="filter-heading">{{ 'CUSTOMER.PRODUCTS.PRICE_RANGE' | translate }}</h3>
       <div class="space-y-3">
         @for (range of priceRanges(); track range.value) {
-          <label class="filter-option">
-            <input
-              type="radio"
-              name="customer-price-range"
-              class="peer sr-only"
-              [checked]="isPriceRangeSelected(range.value)"
-              (change)="priceRangeChange.emit(range.value)"
-            />
-            <span class="filter-radio peer-checked:border-[#6b7d5e]"></span>
-            <span>{{ range.label }}</span>
-          </label>
+        <label class="filter-option">
+          <input type="radio" name="customer-price-range" class="peer sr-only"
+            [checked]="isPriceRangeSelected(range.value)" (change)="priceRangeChange.emit(range.value)" />
+          <span class="filter-radio peer-checked:border-[#6b7d5e]"></span>
+          <span>{{ range.label }}</span>
+        </label>
         }
       </div>
     </section>
@@ -69,17 +50,12 @@
       <h3 class="filter-heading">{{ 'CUSTOMER.PRODUCTS.MIN_RATING' | translate }}</h3>
       <div class="space-y-3">
         @for (rating of ratings(); track rating.value) {
-          <label class="filter-option">
-            <input
-              type="radio"
-              name="customer-rating"
-              class="peer sr-only"
-              [checked]="isRatingSelected(rating.value)"
-              (change)="ratingChange.emit(rating.value)"
-            />
-            <span class="filter-radio peer-checked:border-[#6b7d5e]"></span>
-            <span>{{ rating.label }}</span>
-          </label>
+        <label class="filter-option">
+          <input type="radio" name="customer-rating" class="peer sr-only" [checked]="isRatingSelected(rating.value)"
+            (change)="ratingChange.emit(rating.value)" />
+          <span class="filter-radio peer-checked:border-[#6b7d5e]"></span>
+          <span>{{ rating.label }}</span>
+        </label>
         }
       </div>
     </section>
@@ -87,16 +63,12 @@
     <section class="space-y-3">
       <h3 class="filter-heading">{{ 'CUSTOMER.PRODUCTS.AVAILABILITY' | translate }}</h3>
       <label class="filter-option">
-        <input
-          type="checkbox"
-          class="sr-only"
-          [checked]="inStockOnly()"
-          (change)="inStockOnlyChange.emit(!inStockOnly())"
-        />
+        <input type="checkbox" class="sr-only" [checked]="inStockOnly()"
+          (change)="inStockOnlyChange.emit(!inStockOnly())" />
 
         <span class="filter-box" [class.filter-box--checked]="inStockOnly()" aria-hidden="true">
           @if (inStockOnly()) {
-            <i class="pi pi-check text-[10px] font-bold text-white"></i>
+          <i class="pi pi-check text-[10px] font-bold text-white"></i>
           }
         </span>
 
