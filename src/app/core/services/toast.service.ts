@@ -35,6 +35,16 @@ export class ToastService {
     });
   }
 
+  wishlist(summary: string): void {
+    this.messageService.add({
+      severity: 'success',
+      summary,
+      icon: 'pi pi-heart-fill',
+      life: 3000,
+      data: { wishlist: true },
+    });
+  }
+
   error(summary: string, detail?: string): void {
     this.messageService.add({
       severity: 'error',

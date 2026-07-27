@@ -1,0 +1,55 @@
+<section class="rounded-[1.25rem] border border-[#eee8e1] bg-white p-5 shadow-[0_10px_28px_rgba(52,47,41,0.06)] sm:p-7">
+  <div class="mb-6 flex items-end justify-between gap-4">
+    <div>
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-[#718369]">
+        {{ 'CUSTOMER.ACCOUNT.TITLE' | translate }}
+      </p>
+      <h1 class="mt-2 text-2xl font-black text-[#172117]">
+        {{ 'CUSTOMER.WISHLIST.TITLE' | translate }}
+      </h1>
+    </div>
+    @if (!shopping.wishlistLoading()) {
+      <span class="rounded-full bg-[#f2f4ed] px-3 py-1 text-sm font-bold text-[#5f714f]">
+        {{ shopping.wishlistCount() }}
+      </span>
+    }
+  </div>
+
+  @if (shopping.wishlistLoading()) {
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+      @for (_ of [1, 2, 3]; track $index) {
+        <div class="h-[26rem] animate-pulse rounded-3xl bg-[#f4f1ec]"></div>
+      }
+    </div>
+  } @else if (shopping.wishlistProducts().length) {
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      @for (product of shopping.wishlistProducts(); track product.id) {
+        <app-customer-product-card
+          [product]="product"
+          [wishlistActive]="true"
+          [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
+          [cartLoading]="shopping.pendingProductIds().has(product.id)"
+          [canAddToCart]="shopping.canAdd(product)"
+          (toggleWishlist)="toggleWishlist($event)"
+          (addToCart)="addToCart($event)"
+        />
+      }
+    </div>
+  } @else {
+    <div class="grid min-h-80 place-content-center justify-items-center px-4 text-center">
+      <span class="grid size-16 place-items-center rounded-full bg-[#fde8ec] text-2xl text-[#d83b54]">
+        <i class="pi pi-heart" aria-hidden="true"></i>
+      </span>
+      <h2 class="mt-5 text-xl font-black text-[#172117]">
+        {{ 'CUSTOMER.WISHLIST.EMPTY_TITLE' | translate }}
+      </h2>
+      <p class="mt-2 max-w-md text-sm leading-6 text-[#858585]">
+        {{ 'CUSTOMER.WISHLIST.EMPTY_TEXT' | translate }}
+      </p>
+      <a routerLink="/shop/products"
+        class="mt-6 rounded-full bg-[#6b7d5e] px-6 py-3 text-sm font-black text-white no-underline transition hover:bg-[#596b4e]">
+        {{ 'CUSTOMER.WISHLIST.BROWSE' | translate }}
+      </a>
+    </div>
+  }
+</section>

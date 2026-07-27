@@ -36,10 +36,14 @@
   <div class="relative z-10 col-span-2 flex items-center justify-end gap-3 sm:col-span-1 sm:self-center">
     <button type="button" class="customer-product-card__icon-button"
       [class.customer-product-card__icon-button--active]="wishlistActive()"
-      [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate" [attr.aria-pressed]="wishlistActive()"
-      [attr.title]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
-      (click)="toggleWishlist.emit(product()); $event.stopPropagation()">
-      <i class="pi" [class.pi-heart]="!wishlistActive()" [class.pi-heart-fill]="wishlistActive()"></i>
+      [disabled]="wishlistLoading()"
+      [attr.aria-label]="(wishlistActive() ? 'CUSTOMER.WISHLIST.REMOVE' : 'CUSTOMER.WISHLIST.ADD') | translate"
+      [attr.aria-pressed]="wishlistActive()"
+      [attr.title]="(wishlistActive() ? 'CUSTOMER.WISHLIST.REMOVE' : 'CUSTOMER.WISHLIST.ADD') | translate"
+      (click)="requestToggleWishlist($event)">
+      <i class="pi" [class.pi-heart]="!wishlistActive() && !wishlistLoading()"
+        [class.pi-heart-fill]="wishlistActive() && !wishlistLoading()" [class.pi-spinner]="wishlistLoading()"
+        [class.pi-spin]="wishlistLoading()"></i>
     </button>
     <button type="button" class="customer-product-card__icon-button customer-product-card__icon-button--primary"
       [class.customer-product-card__icon-button--sold-out]="soldOut()"
@@ -78,10 +82,14 @@
     </div>
     <button type="button"
       class="pointer-events-auto absolute end-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm shadow-lg sm:end-4 sm:top-4 sm:h-11 sm:w-11 sm:text-base cursor-pointer"
-      [class.text-[#6b7d5e]]="wishlistActive()" [attr.aria-label]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
-      [attr.aria-pressed]="wishlistActive()" [attr.title]="'CUSTOMER.PRODUCTS.TOGGLE_WISHLIST' | translate"
-      (click)="toggleWishlist.emit(product()); $event.stopPropagation()">
-      <i class="pi" [class.pi-heart]="!wishlistActive()" [class.pi-heart-fill]="wishlistActive()"></i>
+      [class.text-[#d83b54]]="wishlistActive()" [disabled]="wishlistLoading()"
+      [attr.aria-label]="(wishlistActive() ? 'CUSTOMER.WISHLIST.REMOVE' : 'CUSTOMER.WISHLIST.ADD') | translate"
+      [attr.aria-pressed]="wishlistActive()"
+      [attr.title]="(wishlistActive() ? 'CUSTOMER.WISHLIST.REMOVE' : 'CUSTOMER.WISHLIST.ADD') | translate"
+      (click)="requestToggleWishlist($event)">
+      <i class="pi" [class.pi-heart]="!wishlistActive() && !wishlistLoading()"
+        [class.pi-heart-fill]="wishlistActive() && !wishlistLoading()" [class.pi-spinner]="wishlistLoading()"
+        [class.pi-spin]="wishlistLoading()"></i>
     </button>
     <div
       class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 hidden translate-y-2 items-center gap-3 opacity-0 transition group-hover:flex group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:flex group-focus-within:opacity-100">

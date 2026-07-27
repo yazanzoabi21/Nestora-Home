@@ -126,11 +126,16 @@
         <app-customer-language-switch />
 
         <!-- Wishlist -->
-        <button type="button"
-          class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:hidden"
-          aria-label="Wishlist">
+        <a routerLink="/shop/customer-account/wishlist"
+          class="relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] no-underline transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:hidden"
+          [attr.aria-label]="'CUSTOMER.WISHLIST.TITLE' | translate">
           <i class="pi pi-heart text-base"></i>
-        </button>
+          @if (shopping.wishlistCount() > 0) {
+          <span class="absolute -end-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-[#d83b54] px-1 text-[10px] font-black text-white">
+            {{ shopping.wishlistCount() }}
+          </span>
+          }
+        </a>
 
         <!-- Cart -->
         <a routerLink="/shop/cart"
@@ -183,9 +188,14 @@
         </a>
 
         <div class="ml-auto flex shrink-0 items-center gap-3 text-[#1f2a1f]">
-          <a routerLink="/shop/customer-account/wishlist" class="mobile-nav-icon" aria-label="Wishlist"
+          <a routerLink="/shop/customer-account/wishlist" class="mobile-nav-icon relative" [attr.aria-label]="'CUSTOMER.WISHLIST.TITLE' | translate"
             (click)="closeMobileMenu()">
             <i class="pi pi-heart text-[1.15rem]" aria-hidden="true"></i>
+            @if (shopping.wishlistCount() > 0) {
+            <span class="absolute -end-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#d83b54] px-1 text-[9px] font-black text-white">
+              {{ shopping.wishlistCount() }}
+            </span>
+            }
           </a>
 
           <a routerLink="/shop/cart" class="mobile-nav-icon relative"

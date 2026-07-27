@@ -227,14 +227,14 @@ export class ProductDetailsComponent {
     );
   }
 
-  toggleWishlist(): void {
+  async toggleWishlist(): Promise<void> {
     const item = this.product();
 
     if (!item) {
       return;
     }
 
-    this.shopping.toggleWishlist(item.id);
+    await this.shopping.toggleWishlist(item);
   }
 
   selectTab(tab: DetailsTab): void {

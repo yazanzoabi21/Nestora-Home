@@ -75,9 +75,9 @@
 }
 
 .customer-product-card__icon-button--active {
-  border-color: rgba(107, 125, 94, 0.32);
-  background: #eef1ea;
-  color: #6b7d5e;
+  border-color: rgba(216, 59, 84, 0.3);
+  background: #fde8ec;
+  color: #d83b54;
 }
 
 .customer-product-card__icon-button--primary {

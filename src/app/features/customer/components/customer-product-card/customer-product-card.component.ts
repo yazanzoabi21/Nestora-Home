@@ -17,6 +17,7 @@ export class CustomerProductCardComponent {
   readonly product = input.required<CustomerProduct>();
   readonly view = input<CustomerProductCardView>('grid');
   readonly wishlistActive = input(false);
+  readonly wishlistLoading = input(false);
   readonly cartLoading = input(false);
   readonly canAddToCart = input(true);
   readonly selected = input(false);
@@ -37,6 +38,12 @@ export class CustomerProductCardComponent {
     }
 
     this.addToCart.emit(this.product());
+  }
+
+  requestToggleWishlist(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!this.wishlistLoading()) this.toggleWishlist.emit(this.product());
   }
 
   isFilledStar(star: number): boolean {

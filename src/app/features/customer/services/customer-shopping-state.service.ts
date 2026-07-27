@@ -1,8 +1,11 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { CustomerAuthService } from '../../../core/services/auth';
 import { ToastService } from '../../../core/services';
 import { CustomerCartLine, CustomerProduct, GuestCartItem } from '../models';
 import { CustomerCartService } from './customer-cart.service';
+import { CustomerWishlistService } from './customer-wishlist.service';
 import { Discount } from '../../../data-access';
 
 const GUEST_CART_KEY = 'nestora_guest_cart_v1';
@@ -12,6 +15,9 @@ export class CustomerShoppingStateService {
   private readonly carts = inject(CustomerCartService);
   private readonly auth = inject(CustomerAuthService);
   private readonly toast = inject(ToastService);
+  private readonly wishlistRepository = inject(CustomerWishlistService);
+  private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
   private serverCartId: string | null = null;
   private serverCartUserId: string | null = null;
   private isGuestCart = false;
@@ -22,6 +28,11 @@ export class CustomerShoppingStateService {
   readonly error = signal<string | null>(null);
   readonly pendingProductIds = signal<Set<string>>(new Set());
   readonly wishlistIds = signal<Set<string>>(new Set());
+  readonly wishlistProducts = signal<CustomerProduct[]>([]);
+  readonly wishlistLoading = signal(true);
+  readonly wishlistError = signal<string | null>(null);
+  readonly wishlistPendingProductIds = signal<Set<string>>(new Set());
+  readonly wishlistCount = computed(() => this.wishlistIds().size);
   readonly cartQuantity = computed(() => this.cart().reduce((sum, line) => sum + line.quantity, 0));
   readonly subtotal = computed(() =>
     this.cart().reduce((sum, line) => sum + line.product.price * line.quantity, 0),
@@ -84,6 +95,11 @@ export class CustomerShoppingStateService {
 
   constructor() {
     void this.initialize();
+    effect(() => {
+      const authLoading = this.auth.isLoading();
+      const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
+      if (!authLoading) void this.loadWishlistForUser(userId);
+    });
   }
 
   async initialize(): Promise<void> {
@@ -298,13 +314,70 @@ export class CustomerShoppingStateService {
     this._appliedDiscount.set(null);
   }
 
-  toggleWishlist(productId: string): void {
+  isInWishlist(productId: string): boolean {
+    return this.wishlistIds().has(productId);
+  }
+
+  async loadWishlist(): Promise<void> {
+    await this.loadWishlistForUser(await this.auth.getCurrentUserId());
+  }
+
+  async toggleWishlist(product: CustomerProduct): Promise<void> {
+    if (this.wishlistPendingProductIds().has(product.id)) return;
+    const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
+    if (!userId) {
+      await this.router.navigate(['/auth/customer-login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      return;
+    }
+    if (this.isInWishlist(product.id)) await this.removeFromWishlist(product.id);
+    else await this.addToWishlist(product);
+  }
+
+  async addToWishlist(product: CustomerProduct): Promise<void> {
+    const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
+    if (!userId || this.isInWishlist(product.id) || this.wishlistPendingProductIds().has(product.id)) return;
+    this.setWishlistPending(product.id, true);
+    this.wishlistIds.update((ids) => new Set(ids).add(product.id));
+    this.wishlistProducts.update((products) => [product, ...products.filter((item) => item.id !== product.id)]);
+    try {
+      await this.wishlistRepository.add(userId, product.id);
+      this.toast.wishlist(this.translate.instant('CUSTOMER.WISHLIST.SAVED'));
+    } catch (error) {
+      this.wishlistIds.update((ids) => {
+        const next = new Set(ids);
+        next.delete(product.id);
+        return next;
+      });
+      this.wishlistProducts.update((products) => products.filter((item) => item.id !== product.id));
+      this.showWishlistError(error);
+    } finally {
+      this.setWishlistPending(product.id, false);
+    }
+  }
+
+  async removeFromWishlist(productId: string): Promise<void> {
+    const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
+    if (!userId || !this.isInWishlist(productId) || this.wishlistPendingProductIds().has(productId)) return;
+    const previousProducts = this.wishlistProducts();
+    this.setWishlistPending(productId, true);
     this.wishlistIds.update((ids) => {
       const next = new Set(ids);
-      if (next.has(productId)) next.delete(productId);
-      else next.add(productId);
+      next.delete(productId);
       return next;
     });
+    this.wishlistProducts.update((products) => products.filter((item) => item.id !== productId));
+    try {
+      await this.wishlistRepository.remove(userId, productId);
+      this.toast.wishlist(this.translate.instant('CUSTOMER.WISHLIST.REMOVED'));
+    } catch (error) {
+      this.wishlistIds.update((ids) => new Set(ids).add(productId));
+      this.wishlistProducts.set(previousProducts);
+      this.showWishlistError(error);
+    } finally {
+      this.setWishlistPending(productId, false);
+    }
   }
 
   async prepareCheckoutCart(): Promise<string | null> {
@@ -395,6 +468,47 @@ export class CustomerShoppingStateService {
       else next.delete(id);
       return next;
     });
+  }
+
+  private wishlistLoadSequence = 0;
+
+  private async loadWishlistForUser(userId: string | null): Promise<void> {
+    const sequence = ++this.wishlistLoadSequence;
+    this.wishlistProducts.set([]);
+    this.wishlistIds.set(new Set());
+    this.wishlistPendingProductIds.set(new Set());
+    this.wishlistError.set(null);
+    if (!userId) {
+      this.wishlistLoading.set(false);
+      return;
+    }
+    this.wishlistLoading.set(true);
+    try {
+      const products = await this.wishlistRepository.load(userId);
+      if (sequence !== this.wishlistLoadSequence) return;
+      this.wishlistProducts.set(products);
+      this.wishlistIds.set(new Set(products.map((product) => product.id)));
+    } catch (error) {
+      if (sequence !== this.wishlistLoadSequence) return;
+      this.wishlistError.set(error instanceof Error ? error.message : 'Unable to load your wishlist.');
+      this.showWishlistError(error);
+    } finally {
+      if (sequence === this.wishlistLoadSequence) this.wishlistLoading.set(false);
+    }
+  }
+
+  private setWishlistPending(id: string, pending: boolean): void {
+    this.wishlistPendingProductIds.update((current) => {
+      const next = new Set(current);
+      if (pending) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  private showWishlistError(error: unknown): void {
+    console.error('Wishlist request failed', error);
+    this.toast.failed(this.translate.instant('CUSTOMER.WISHLIST.UPDATE_FAILED'));
   }
   private persistGuest(): void {
     if (this.isGuestCart && typeof window !== 'undefined')

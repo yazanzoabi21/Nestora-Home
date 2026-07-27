@@ -191,8 +191,8 @@ export abstract class ProductBrowserPage {
         break;
     }
   }
-  toggleWishlist(product: CustomerProduct): void {
-    this.shopping.toggleWishlist(product.id);
+  async toggleWishlist(product: CustomerProduct): Promise<void> {
+    await this.shopping.toggleWishlist(product);
   }
   isWishlisted(id: string): boolean {
     return this.wishlistProductIds().has(id);

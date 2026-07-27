@@ -205,6 +205,7 @@
             ">
           @for (product of visibleProducts(); track product.id) {
           <app-customer-product-card [product]="product" [view]="viewMode()" [wishlistActive]="isWishlisted(product.id)"
+            [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
             [cartLoading]="isAddingToCart(product.id)" [canAddToCart]="shopping.canAdd(product)"
             [selected]="isSelected(product.id)" (quickView)="selectProduct($event)"
             (addToCart)="addProductToCart($event)" (toggleWishlist)="toggleWishlist($event)" />

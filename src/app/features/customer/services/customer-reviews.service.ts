@@ -44,6 +44,20 @@ interface ReviewRecord {
 export class CustomerReviewsService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
 
+  async getPublishedReviews(limit = 3): Promise<Review[]> {
+    const { data, error } = await this.supabase
+      .from('reviews')
+      .select(PUBLIC_REVIEW_SELECT)
+      .eq('status', 'published')
+      .not('comment', 'is', null)
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw new Error('Unable to load reviews.');
+    return (data ?? []).map((review) => this.mapReview(review as ReviewRecord));
+  }
+
   async getPublishedReviewsByProduct(productId: string): Promise<Review[]> {
     const { data, error } = await this.supabase
       .from('reviews')

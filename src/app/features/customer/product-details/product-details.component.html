@@ -235,9 +235,10 @@
           </button>
 
           <button type="button" class="h-14 w-14 cursor-pointer rounded-2xl border border-[#e8dccf] bg-white"
+            [disabled]="shopping.wishlistPendingProductIds().has(item.id)"
             [attr.aria-pressed]="wishlisted()"
-            [attr.aria-label]="'CUSTOMER.PRODUCT_DETAILS.TOGGLE_WISHLIST' | translate" (click)="toggleWishlist()"
-            [class.text-[#6b7d5e]]="wishlisted()">
+            [attr.aria-label]="(wishlisted() ? 'CUSTOMER.WISHLIST.REMOVE' : 'CUSTOMER.WISHLIST.ADD') | translate"
+            (click)="toggleWishlist()" [class.text-[#d83b54]]="wishlisted()">
             <i class="pi" [class.pi-heart]="!wishlisted()" [class.pi-heart-fill]="wishlisted()"></i>
           </button>
         </div>

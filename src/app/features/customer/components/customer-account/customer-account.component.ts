@@ -47,7 +47,11 @@ export class CustomerAccountComponent {
   private readonly toast = inject(ToastService);
 
   readonly isLoggingOut = signal(false);
-  readonly counts = signal<AccountCounts>({ orders: 0, wishlist: 0, reviews: 0 });
+  private readonly loadedCounts = signal({ orders: 0, reviews: 0 });
+  readonly counts = computed<AccountCounts>(() => ({
+    ...this.loadedCounts(),
+    wishlist: this.shopping.wishlistCount(),
+  }));
   // readonly navigation: readonly AccountNavItem[] = [
   //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.PROFILE', icon: 'pi-user', path: 'profile' },
   //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.ORDERS', icon: 'pi-shopping-bag', path: 'orders' },
@@ -120,10 +124,9 @@ export class CustomerAccountComponent {
         .eq('user_id', userId),
     ]);
 
-    this.counts.set({
+    this.loadedCounts.set({
       orders: ordersCount,
       reviews: reviewsResult.count ?? 0,
-      wishlist: this.shopping.wishlistIds().size,
     });
   }
 }

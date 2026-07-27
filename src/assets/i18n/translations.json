@@ -1822,6 +1822,58 @@
         },
         "EMAIL_NOT_PROVIDED": "Not provided"
       },
+      "HOME": {
+        "VIEW_ALL": "View all",
+        "RETRY": "Try loading again",
+        "HERO": {
+          "EYEBROW": "Premium home essentials",
+          "TITLE": "Upgrade Your Home Essentials",
+          "TEXT": "Discover thoughtfully designed kitchen tools, cookware, and smart home products that transform everyday routines into moments of joy.",
+          "SHOP": "Shop now",
+          "NEW": "New arrivals"
+        },
+        "STATS": { "PRODUCTS": "Products", "CATEGORIES": "Categories", "REVIEWS": "Customer reviews" },
+        "BENEFITS": {
+          "SHIPPING": "Free Shipping", "SHIPPING_TEXT": "On orders over $75",
+          "RETURNS": "Easy Returns", "RETURNS_TEXT": "30-day hassle-free returns",
+          "QUALITY": "Premium Quality", "QUALITY_TEXT": "Curated for your home",
+          "SUPPORT": "24/7 Support", "SUPPORT_TEXT": "Always here to help"
+        },
+        "FLASH": { "EYEBROW": "Limited time", "TITLE": "Flash Deals", "EMPTY": "New offers are on the way." },
+        "NEW_CUSTOMER": { "TITLE": "New Customer Exclusive", "TEXT": "Create an account to unlock your welcome offer.", "ACTION": "Join now" },
+        "CATEGORIES": { "EYEBROW": "Shop by", "TITLE": "Category", "ITEMS": "products" },
+        "BEST": { "EYEBROW": "Top picks", "TITLE": "Best Sellers" },
+        "SEASONAL": { "EYEBROW": "Seasonal edit", "TITLE": "Refresh Your Home", "ACTION": "Shop the collection" },
+        "NEW_ARRIVALS": { "EYEBROW": "Fresh in", "TITLE": "New Arrivals" },
+        "OFFERS": {
+          "EYEBROW": "Member benefits", "TITLE": "Exclusive Offers", "TEXT": "Take advantage of special deals made for Nestora customers.",
+          "FIRST": "Welcome Offer", "FIRST_TEXT": "Create your account and discover a special first-order benefit.", "CLAIM": "Claim offer",
+          "REFER": "Refer a Friend", "REFER_TEXT": "Share Nestora with someone who loves thoughtful home essentials.", "INVITE": "Invite friends",
+          "APP": "Member Exclusives", "APP_TEXT": "Stay close to new launches and offers created for members.", "GET_APP": "Explore benefits",
+          "POINTS": "Loyalty Rewards", "POINTS_TEXT": "Make every purchase count and enjoy more ways to save.", "JOIN": "Join now"
+        },
+        "DIFFERENCE": {
+          "EYEBROW": "Why us", "TITLE": "The Nestora Difference",
+          "CURATION": "Premium Curation", "CURATION_TEXT": "Every product is selected for quality, durability, and design.",
+          "ECO": "Eco-Conscious", "ECO_TEXT": "We prioritize materials and packaging that are kinder to the planet.",
+          "DESIGN": "Smart Designs", "DESIGN_TEXT": "Beautiful essentials with genuine everyday function.",
+          "DELIVERY": "Fast Delivery", "DELIVERY_TEXT": "Reliable delivery options designed around your schedule.",
+          "EXPERTS": "Expert Support", "EXPERTS_TEXT": "Helpful guidance is available whenever you need it.",
+          "SATISFACTION": "Satisfaction Guaranteed", "SATISFACTION_TEXT": "Simple returns and customer-first care."
+        },
+        "REVIEWS": { "EYEBROW": "What people say", "TITLE": "Customer Reviews", "EMPTY": "Customer stories will appear here soon." }
+      },
+      "WISHLIST": {
+        "TITLE": "Wishlist",
+        "SAVED": "Saved to wishlist",
+        "REMOVED": "Removed from wishlist",
+        "UPDATE_FAILED": "Could not update wishlist",
+        "EMPTY_TITLE": "Your wishlist is empty",
+        "EMPTY_TEXT": "Save products you love and find them here later.",
+        "BROWSE": "Browse products",
+        "ADD": "Add to wishlist",
+        "REMOVE": "Remove from wishlist"
+      },
       "PRODUCT_DETAILS": {
         "LOADING": "Loading product...",
         "ERROR": {
@@ -3857,6 +3909,58 @@
           "DATE_UNAVAILABLE": "التاريخ غير متوفر"
         },
         "EMAIL_NOT_PROVIDED": "غير متوفر"
+      },
+      "HOME": {
+        "VIEW_ALL": "عرض الكل",
+        "RETRY": "إعادة محاولة التحميل",
+        "HERO": {
+          "EYEBROW": "أساسيات منزلية فاخرة",
+          "TITLE": "ارتقِ بأساسيات منزلك",
+          "TEXT": "اكتشف أدوات المطبخ وأواني الطهي ومنتجات المنزل الذكي المصممة بعناية لتحويل روتينك اليومي إلى لحظات ممتعة.",
+          "SHOP": "تسوق الآن",
+          "NEW": "وصل حديثاً"
+        },
+        "STATS": { "PRODUCTS": "المنتجات", "CATEGORIES": "الفئات", "REVIEWS": "آراء العملاء" },
+        "BENEFITS": {
+          "SHIPPING": "شحن مجاني", "SHIPPING_TEXT": "للطلبات التي تتجاوز 75$",
+          "RETURNS": "إرجاع سهل", "RETURNS_TEXT": "إرجاع ميسر خلال 30 يوماً",
+          "QUALITY": "جودة ممتازة", "QUALITY_TEXT": "مختارة بعناية لمنزلك",
+          "SUPPORT": "دعم على مدار الساعة", "SUPPORT_TEXT": "نحن دائماً هنا للمساعدة"
+        },
+        "FLASH": { "EYEBROW": "لفترة محدودة", "TITLE": "عروض سريعة", "EMPTY": "عروض جديدة في الطريق." },
+        "NEW_CUSTOMER": { "TITLE": "عرض حصري للعملاء الجدد", "TEXT": "أنشئ حساباً للاستفادة من عرض الترحيب.", "ACTION": "انضم الآن" },
+        "CATEGORIES": { "EYEBROW": "تسوق حسب", "TITLE": "الفئة", "ITEMS": "منتجات" },
+        "BEST": { "EYEBROW": "اختيارات مميزة", "TITLE": "الأكثر مبيعاً" },
+        "SEASONAL": { "EYEBROW": "تشكيلة الموسم", "TITLE": "جدّد منزلك", "ACTION": "تسوق التشكيلة" },
+        "NEW_ARRIVALS": { "EYEBROW": "وصل حديثاً", "TITLE": "منتجات جديدة" },
+        "OFFERS": {
+          "EYEBROW": "مزايا الأعضاء", "TITLE": "عروض حصرية", "TEXT": "استفد من عروض خاصة صممت لعملاء نيستورا.",
+          "FIRST": "عرض الترحيب", "FIRST_TEXT": "أنشئ حسابك واكتشف ميزة خاصة لأول طلب.", "CLAIM": "احصل على العرض",
+          "REFER": "ادعُ صديقاً", "REFER_TEXT": "شارك نيستورا مع من يحب أساسيات المنزل المختارة بعناية.", "INVITE": "دعوة الأصدقاء",
+          "APP": "مزايا الأعضاء", "APP_TEXT": "تابع أحدث المنتجات والعروض المخصصة للأعضاء.", "GET_APP": "اكتشف المزايا",
+          "POINTS": "مكافآت الولاء", "POINTS_TEXT": "اجعل كل عملية شراء ذات قيمة واستمتع بطرق أكثر للتوفير.", "JOIN": "انضم الآن"
+        },
+        "DIFFERENCE": {
+          "EYEBROW": "لماذا نحن", "TITLE": "ما يميز نيستورا",
+          "CURATION": "اختيار فاخر", "CURATION_TEXT": "يتم اختيار كل منتج بعناية للجودة والمتانة والتصميم.",
+          "ECO": "وعي بيئي", "ECO_TEXT": "نعطي الأولوية للمواد والتغليف الأكثر لطفاً على البيئة.",
+          "DESIGN": "تصاميم ذكية", "DESIGN_TEXT": "أساسيات جميلة بوظائف عملية حقيقية.",
+          "DELIVERY": "توصيل سريع", "DELIVERY_TEXT": "خيارات توصيل موثوقة تناسب جدولك.",
+          "EXPERTS": "دعم متخصص", "EXPERTS_TEXT": "إرشادات مفيدة متاحة عندما تحتاج إليها.",
+          "SATISFACTION": "رضاك مضمون", "SATISFACTION_TEXT": "إرجاع بسيط وعناية تضع العميل أولاً."
+        },
+        "REVIEWS": { "EYEBROW": "ماذا يقول العملاء", "TITLE": "آراء العملاء", "EMPTY": "ستظهر تجارب العملاء هنا قريباً." }
+      },
+      "WISHLIST": {
+        "TITLE": "المفضلة",
+        "SAVED": "تم الحفظ في المفضلة",
+        "REMOVED": "تمت الإزالة من المفضلة",
+        "UPDATE_FAILED": "تعذر تحديث المفضلة",
+        "EMPTY_TITLE": "قائمة المفضلة فارغة",
+        "EMPTY_TEXT": "احفظ المنتجات التي تحبها لتجدها هنا لاحقاً.",
+        "BROWSE": "تصفح المنتجات",
+        "ADD": "إضافة إلى المفضلة",
+        "REMOVE": "إزالة من المفضلة"
       },
       "PRODUCT_DETAILS": {
         "LOADING": "جارٍ تحميل المنتج...",
