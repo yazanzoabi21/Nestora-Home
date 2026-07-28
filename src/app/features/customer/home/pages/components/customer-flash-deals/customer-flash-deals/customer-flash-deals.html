@@ -1,0 +1,119 @@
+<section class="customer-page-container py-16">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div class="flex items-center gap-3">
+            <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#2b2d2b] text-white">
+                <i class="pi pi-bolt"></i>
+            </span>
+
+            <div>
+                <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
+                    {{ 'CUSTOMER.HOME.FLASH.EYEBROW' | translate }}
+                </p>
+
+                <h2 class="mt-[.3rem] text-[clamp(1.35rem,3vw,1.8rem)] font-black leading-[1.1] text-[#1f2a1f]">
+                    {{ 'CUSTOMER.HOME.FLASH.TITLE' | translate }}
+                </h2>
+            </div>
+        </div>
+
+        @if (deadline()) {
+        <div class="flex items-center gap-2">
+            <span class="me-2 whitespace-nowrap text-xs text-[#858585]">
+                <i class="pi pi-clock me-1 text-[11px]"></i>
+                {{ 'CUSTOMER.HOME.FLASH.ENDS_TONIGHT' | translate }}
+            </span>
+
+            <div class="text-center">
+                <span class="grid size-13 place-items-center rounded-xl bg-[#2b2d2b] text-xl font-black text-white">
+                    {{ countdown().hours }}
+                </span>
+
+                <small class="mt-1 block text-[8px] font-bold uppercase tracking-wider text-[#aaa]">
+                    Hrs
+                </small>
+            </div>
+
+            <strong class="mb-4 text-lg text-[#2b2d2b]">:</strong>
+
+            <div class="text-center">
+                <span class="grid size-13 place-items-center rounded-xl bg-[#2b2d2b] text-xl font-black text-white">
+                    {{ countdown().minutes }}
+                </span>
+
+                <small class="mt-1 block text-[8px] font-bold uppercase tracking-wider text-[#aaa]">
+                    Min
+                </small>
+            </div>
+
+            <strong class="mb-4 text-lg text-[#2b2d2b]">:</strong>
+
+            <div class="text-center">
+                <span class="grid size-13 place-items-center rounded-xl bg-[#2b2d2b] text-xl font-black text-white">
+                    {{ countdown().seconds }}
+                </span>
+
+                <small class="mt-1 block text-[8px] font-bold uppercase tracking-wider text-[#aaa]">
+                    Sec
+                </small>
+            </div>
+        </div>
+        }
+    </div>
+
+    @if (promotions().length) {
+    <div class="mt-10 grid gap-5 md:grid-cols-3">
+        @for (promotion of promotions(); track promotion.id) {
+        <a [routerLink]="promotionLink(promotion)"
+            class="group relative flex min-h-[18.5rem] overflow-hidden rounded-[1.5rem] no-underline shadow-[0_16px_36px_rgba(31,42,31,.1)] max-sm:min-h-[14rem]"
+            [style.background-color]="promotion.background_color || '#6b7d5e'">
+            @if (promotion.image_url) {
+            <img [src]="promotion.image_url" [alt]="promotion.title"
+                class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+            }
+
+            <span class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent"></span>
+
+            <div class="absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-3 p-4">
+                @if (promotion.badge_text) {
+                <span class="rounded-full bg-[#718369] px-3 py-1.5 text-[11px] font-black text-white">
+                    {{ promotion.badge_text }}
+                </span>
+                }
+
+                @if (promotion.secondary_badge_text) {
+                <span
+                    class="ms-auto rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur">
+                    {{ promotion.secondary_badge_text }}
+                </span>
+                }
+            </div>
+
+            <div class="relative z-10 mt-auto p-5 text-white">
+                <strong class="block text-xl font-black">
+                    {{ promotion.title }}
+                </strong>
+
+                @if (promotion.description) {
+                <small class="mt-1 block text-sm text-white/80">
+                    {{ promotion.description }}
+                </small>
+                }
+            </div>
+        </a>
+        }
+    </div>
+
+    <div class="mt-7 text-center">
+        <a routerLink="/shop/products"
+            class="inline-flex items-center gap-2 text-sm font-medium text-[#858585] no-underline transition hover:text-[#526148]">
+            {{ 'CUSTOMER.HOME.VIEW_ALL' | translate }}
+
+            <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i>
+        </a>
+    </div>
+    } @else {
+    <div class="mt-7 rounded-3xl border border-[#e8dccf] bg-white p-10 text-center text-sm text-[#858585]">
+        {{ 'CUSTOMER.HOME.FLASH.EMPTY' | translate }}
+    </div>
+    }
+</section>

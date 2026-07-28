@@ -1,13 +1,83 @@
-:host { display: block; min-width: 0; }
-.home-hero { background: #263326; }
-.home-eyebrow { color: #718369; font-size: .7rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
-.home-title { margin-top: .55rem; color: #1f2a1f; font-size: clamp(1.65rem, 3vw, 2.25rem); font-weight: 900; line-height: 1.1; }
-.home-view-link { display: inline-flex; align-items: center; gap: .45rem; color: #526148; font-size: .8rem; font-weight: 900; text-decoration: none; white-space: nowrap; }
-.promotion-card { position: relative; display: flex; min-height: 17rem; overflow: hidden; border-radius: 1.5rem; text-decoration: none; box-shadow: 0 16px 36px rgba(31,42,31,.1); }
-.category-card { position: relative; min-height: 15rem; overflow: hidden; border-radius: 1.5rem; background: #e8dccf; box-shadow: 0 14px 32px rgba(31,42,31,.08); }
-.seasonal-banner { position: relative; overflow: hidden; min-height: 25rem; border-radius: 2rem; padding: clamp(2rem, 6vw, 5rem); display: flex; align-items: center; background: linear-gradient(90deg, rgba(31,42,31,.92), rgba(31,42,31,.25)), linear-gradient(135deg,#718369,#c39a6b); background-position: center; background-size: cover; box-shadow: 0 20px 50px rgba(31,42,31,.13); }
-@media (max-width: 639px) {
-  .category-card { min-height: 12rem; }
-  .promotion-card { min-height: 14rem; }
-  .seasonal-banner { min-height: 21rem; border-radius: 1.5rem; }
-}
+// :host {
+//   display: block;
+//   min-width: 0;
+// }
+
+// .home-hero {
+//   background: #263326;
+// }
+
+// .home-eyebrow {
+//   color: #718369;
+//   font-size: .7rem;
+//   font-weight: 900;
+//   letter-spacing: .18em;
+//   text-transform: uppercase;
+// }
+
+// .home-title {
+//   margin-top: .55rem;
+//   color: #1f2a1f;
+//   font-size: clamp(1.65rem, 3vw, 2.25rem);
+//   font-weight: 900;
+//   line-height: 1.1;
+// }
+
+// .home-view-link {
+//   display: inline-flex;
+//   align-items: center;
+//   gap: .45rem;
+//   color: #526148;
+//   font-size: .8rem;
+//   font-weight: 900;
+//   text-decoration: none;
+//   white-space: nowrap;
+// }
+
+// .promotion-card {
+//   position: relative;
+//   display: flex;
+//   min-height: 17rem;
+//   overflow: hidden;
+//   border-radius: 1.5rem;
+//   text-decoration: none;
+//   box-shadow: 0 16px 36px rgba(31, 42, 31, .1);
+// }
+
+// .category-card {
+//   position: relative;
+//   min-height: 15rem;
+//   overflow: hidden;
+//   border-radius: 1.5rem;
+//   background: #e8dccf;
+//   box-shadow: 0 14px 32px rgba(31, 42, 31, .08);
+// }
+
+// .seasonal-banner {
+//   position: relative;
+//   overflow: hidden;
+//   min-height: 25rem;
+//   border-radius: 2rem;
+//   padding: clamp(2rem, 6vw, 5rem);
+//   display: flex;
+//   align-items: center;
+//   background: linear-gradient(90deg, rgba(31, 42, 31, .92), rgba(31, 42, 31, .25)), linear-gradient(135deg, #718369, #c39a6b);
+//   background-position: center;
+//   background-size: cover;
+//   box-shadow: 0 20px 50px rgba(31, 42, 31, .13);
+// }
+
+// @media (max-width: 639px) {
+//   .category-card {
+//     min-height: 12rem;
+//   }
+
+//   .promotion-card {
+//     min-height: 14rem;
+//   }
+
+//   .seasonal-banner {
+//     min-height: 21rem;
+//     border-radius: 1.5rem;
+//   }
+// }

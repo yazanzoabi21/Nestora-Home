@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -11,6 +19,7 @@ import {
   Promotion,
   PromotionDisplayType,
   PromotionMutationPayload,
+  PromotionSelectableProduct,
   PromotionsService,
   PromotionStatus,
   PromotionType,
@@ -18,7 +27,11 @@ import {
 import { ToastService } from '../../../core/services';
 import { AdminFormFieldComponent, AdminFormFieldValue } from '../../../shared/ui/admin-form-field';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
-import { AdminTableColumn, AdminTableComponent, AdminTableRow } from '../../../shared/ui/admin-table';
+import {
+  AdminTableColumn,
+  AdminTableComponent,
+  AdminTableRow,
+} from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
 
@@ -41,6 +54,11 @@ interface PromotionFormModel {
   placement: string;
   displayType: PromotionDisplayType;
   icon: string | null;
+
+  badgeText: string;
+  secondaryBadgeText: string;
+  sortOrder: number;
+
   backgroundColor: string;
   textColor: string;
   isActive: boolean;
@@ -102,6 +120,11 @@ const EMPTY_PROMOTION_FORM: PromotionFormModel = {
   placement: 'top_bar',
   displayType: 'bar',
   icon: '🎁',
+
+  badgeText: '',
+  secondaryBadgeText: '',
+  sortOrder: 0,
+
   backgroundColor: '#6B7D5E',
   textColor: '#FFFFFF',
   isActive: true,
@@ -123,6 +146,7 @@ const EMPTY_PROMOTION_FORM: PromotionFormModel = {
   ],
   templateUrl: './promotions-ads.component.html',
   styleUrl: './promotions-ads.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PromotionsAdsComponent implements OnInit {
   private readonly promotionsService = inject(PromotionsService);
@@ -154,6 +178,14 @@ export class PromotionsAdsComponent implements OnInit {
   readonly imageWasCleared = signal(false);
   readonly promotionMediaFileTypes: MediaFileType[] = ['image', 'banner'];
 
+  readonly availableProducts = signal<PromotionSelectableProduct[]>([]);
+
+  readonly selectedProductIds = signal<string[]>([]);
+
+  readonly availableProductsLoading = signal(false);
+  readonly promotionProductsLoading = signal(false);
+  readonly promotionProductsError = signal<string | null>(null);
+
   readonly displayTypeOptions: DisplayTypeOption[] = [
     { labelKey: 'PROMOTIONS_ADS.DISPLAY.ANNOUNCEMENT_BAR', value: 'bar', icon: 'pi pi-minus' },
     { labelKey: 'PROMOTIONS_ADS.DISPLAY.SECTION_BANNER', value: 'banner', icon: 'pi pi-table' },
@@ -175,11 +207,6 @@ export class PromotionsAdsComponent implements OnInit {
     ],
     banner: [
       {
-        labelKey: 'PROMOTIONS_ADS.PLACEMENTS.HOMEPAGE_SECTION',
-        helperKey: 'PROMOTIONS_ADS.PLACEMENTS.HOMEPAGE_SECTION_HELPER',
-        value: 'homepage',
-      },
-      {
         labelKey: 'PROMOTIONS_ADS.PLACEMENTS.PRODUCT_PAGE',
         helperKey: 'PROMOTIONS_ADS.PLACEMENTS.PRODUCT_PAGE_HELPER',
         value: 'product_page',
@@ -188,6 +215,16 @@ export class PromotionsAdsComponent implements OnInit {
         labelKey: 'PROMOTIONS_ADS.PLACEMENTS.CATEGORY_PAGE',
         helperKey: 'PROMOTIONS_ADS.PLACEMENTS.CATEGORY_PAGE_HELPER',
         value: 'category_page',
+      },
+      {
+        labelKey: 'PROMOTIONS_ADS.PLACEMENTS.HOME_FLASH_DEALS',
+        helperKey: 'PROMOTIONS_ADS.PLACEMENTS.HOME_FLASH_DEALS_HELPER',
+        value: 'home_flash_deals',
+      },
+      {
+        labelKey: 'PROMOTIONS_ADS.PLACEMENTS.HOMEPAGE_SECTION',
+        helperKey: 'PROMOTIONS_ADS.PLACEMENTS.HOMEPAGE_SECTION_HELPER',
+        value: 'homepage',
       },
     ],
     popup: [
@@ -211,11 +248,19 @@ export class PromotionsAdsComponent implements OnInit {
 
   readonly paletteOptions: PaletteOption[] = [
     { labelKey: 'PROMOTIONS_ADS.PALETTES.OLIVE', backgroundColor: '#6B7D5E', textColor: '#FFFFFF' },
-    { labelKey: 'PROMOTIONS_ADS.PALETTES.CHARCOAL', backgroundColor: '#2F2F2F', textColor: '#FFFFFF' },
+    {
+      labelKey: 'PROMOTIONS_ADS.PALETTES.CHARCOAL',
+      backgroundColor: '#2F2F2F',
+      textColor: '#FFFFFF',
+    },
     { labelKey: 'PROMOTIONS_ADS.PALETTES.BEIGE', backgroundColor: '#EFE4D6', textColor: '#1F2A1F' },
     { labelKey: 'PROMOTIONS_ADS.PALETTES.TAUPE', backgroundColor: '#D8C8B8', textColor: '#1F2A1F' },
     { labelKey: 'PROMOTIONS_ADS.PALETTES.CREAM', backgroundColor: '#F7F4EF', textColor: '#1F2A1F' },
-    { labelKey: 'PROMOTIONS_ADS.PALETTES.FOREST', backgroundColor: '#445535', textColor: '#FFFFFF' },
+    {
+      labelKey: 'PROMOTIONS_ADS.PALETTES.FOREST',
+      backgroundColor: '#445535',
+      textColor: '#FFFFFF',
+    },
   ];
 
   readonly iconOptions = ['🎁', '📱', '🌟', '🚚', '🛍️', '🔐', '🎉', '✨', '🛒', '💰', '🏷️', '❤️'];
@@ -256,7 +301,9 @@ export class PromotionsAdsComponent implements OnInit {
     { label: 'PROMOTIONS_ADS.COLORS.WHITE', value: '#ffffff' },
   ];
 
-  readonly currentPlacementOptions = computed(() => this.placementOptionsByType[this.promotionForm().displayType]);
+  readonly currentPlacementOptions = computed(
+    () => this.placementOptionsByType[this.promotionForm().displayType],
+  );
 
   readonly promotionTableColumns: AdminTableColumn[] = [
     { key: 'promotion', label: 'PROMOTIONS_ADS.TABLE.PROMOTION', type: 'imageText' },
@@ -265,7 +312,7 @@ export class PromotionsAdsComponent implements OnInit {
     { key: 'status', label: 'PROMOTIONS_ADS.TABLE.STATUS', type: 'badge' },
     // { key: 'startDate', label: 'PROMOTIONS_ADS.TABLE.START_DATE', type: 'text' },
     // { key: 'endDate', label: 'PROMOTIONS_ADS.TABLE.END_DATE', type: 'text' },
-    { key: 'validity', label: 'PROMOTIONS_ADS.TABLE.VALIDITY', type: 'dateRange' as any },
+    { key: 'validity', label: 'PROMOTIONS_ADS.TABLE.VALIDITY', type: 'dateRange' },
     { key: 'createdAt', label: 'PRODUCTS.TABLE.CREATED_AT', type: 'text' },
     { key: 'actions', label: '', type: 'actions' },
   ];
@@ -377,11 +424,11 @@ export class PromotionsAdsComponent implements OnInit {
   });
 
   readonly tableRows = computed<PromotionTableRow[]>(() =>
-    this.filteredPromotions().map((promotion) => this.toTableRow(promotion))
+    this.filteredPromotions().map((promotion) => this.toTableRow(promotion)),
   );
 
   readonly livePromotions = computed(() =>
-    this.promotions().filter((promotion) => this.promotionStatus(promotion) === 'active')
+    this.promotions().filter((promotion) => this.promotionStatus(promotion) === 'active'),
   );
 
   readonly activePlacementsCount = computed(
@@ -389,8 +436,8 @@ export class PromotionsAdsComponent implements OnInit {
       new Set(
         this.livePromotions()
           .map((promotion) => promotion.placement?.trim())
-          .filter((placement): placement is string => !!placement)
-      ).size
+          .filter((placement): placement is string => !!placement),
+      ).size,
   );
 
   readonly typeBreakdown = computed(() => {
@@ -401,15 +448,81 @@ export class PromotionsAdsComponent implements OnInit {
     return counts;
   });
 
-  readonly upcomingPromotion = computed(() =>
-    this.promotions()
-      .filter((promotion) => this.promotionStatus(promotion) === 'scheduled' && promotion.start_date)
-      .sort((first, second) => new Date(first.start_date ?? '').getTime() - new Date(second.start_date ?? '').getTime())[0] ?? null
+  readonly upcomingPromotion = computed(
+    () =>
+      this.promotions()
+        .filter(
+          (promotion) => this.promotionStatus(promotion) === 'scheduled' && promotion.start_date,
+        )
+        .sort(
+          (first, second) =>
+            new Date(first.start_date ?? '').getTime() -
+            new Date(second.start_date ?? '').getTime(),
+        )[0] ?? null,
   );
 
   async ngOnInit(): Promise<void> {
     this.watchQuerySearch();
-    await this.loadPromotions();
+
+    await Promise.all([this.loadPromotions(), this.loadAvailableProducts()]);
+  }
+
+  private async loadAvailableProducts(): Promise<void> {
+    this.availableProductsLoading.set(true);
+    this.promotionProductsError.set(null);
+
+    try {
+      const products = await this.promotionsService.getSelectableProducts();
+
+      this.availableProducts.set(products);
+    } catch (error) {
+      console.error('Unable to load selectable promotion products.', error);
+
+      this.availableProducts.set([]);
+      this.promotionProductsError.set('PROMOTIONS_ADS.PRODUCTS.LOAD_FAILED');
+    } finally {
+      this.availableProductsLoading.set(false);
+    }
+  }
+
+  isProductSelected(productId: string): boolean {
+    return this.selectedProductIds().includes(productId);
+  }
+
+  toggleProduct(productId: string): void {
+    this.selectedProductIds.update((currentIds) =>
+      currentIds.includes(productId)
+        ? currentIds.filter((id) => id !== productId)
+        : [...currentIds, productId],
+    );
+  }
+
+  displayProductPrice(product: PromotionSelectableProduct): number {
+    const salePrice = product.sale_price;
+    return salePrice !== null && salePrice < product.price ? salePrice : product.price;
+  }
+
+  private async loadSelectedPromotionProducts(promotionId: string): Promise<void> {
+    this.promotionProductsLoading.set(true);
+    this.promotionProductsError.set(null);
+
+    try {
+      const productIds = await this.promotionsService.getPromotionProductIds(promotionId);
+
+      if (this.selectedPromotion()?.id === promotionId && this.isPromotionModalOpen()) {
+        this.selectedProductIds.set(productIds);
+      }
+    } catch (error) {
+      console.error('Unable to load products assigned to this promotion.', error);
+
+      if (this.selectedPromotion()?.id === promotionId && this.isPromotionModalOpen()) {
+        this.promotionProductsError.set('PROMOTIONS_ADS.PRODUCTS.LOAD_FAILED');
+      }
+    } finally {
+      if (this.selectedPromotion()?.id === promotionId) {
+        this.promotionProductsLoading.set(false);
+      }
+    }
   }
 
   async loadPromotions(): Promise<void> {
@@ -420,7 +533,7 @@ export class PromotionsAdsComponent implements OnInit {
     } catch (error) {
       this.toast.failed(
         this.translate.instant('PROMOTIONS_ADS.TOAST.LOAD_FAILED_TITLE'),
-        this.errorDetail(error, this.translate.instant('PROMOTIONS_ADS.TOAST.LOAD_FAILED_DETAIL'))
+        this.errorDetail(error, this.translate.instant('PROMOTIONS_ADS.TOAST.LOAD_FAILED_DETAIL')),
       );
     } finally {
       this.loading.set(false);
@@ -430,6 +543,9 @@ export class PromotionsAdsComponent implements OnInit {
   openCreatePromotionModal(): void {
     this.modalMode.set('add');
     this.selectedPromotion.set(null);
+    this.selectedProductIds.set([]);
+    this.promotionProductsLoading.set(false);
+    this.promotionProductsError.set(null);
     this.formError.set(null);
     this.resetImageState();
     this.promotionForm.set({ ...EMPTY_PROMOTION_FORM });
@@ -442,13 +558,15 @@ export class PromotionsAdsComponent implements OnInit {
     if (!promotion) {
       this.toast.failed(
         this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_TITLE'),
-        this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_DETAIL')
+        this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_DETAIL'),
       );
       return;
     }
 
     this.modalMode.set('edit');
     this.selectedPromotion.set(promotion);
+    this.selectedProductIds.set([]);
+    this.promotionProductsError.set(null);
     this.formError.set(null);
     this.selectedPromotionImageFile.set(null);
     this.selectedPromotionMedia.set(null);
@@ -465,6 +583,11 @@ export class PromotionsAdsComponent implements OnInit {
       placement: promotion.placement ?? this.firstPlacementForType(this.promotionType(promotion)),
       displayType: this.promotionType(promotion),
       icon: promotion.icon ?? null,
+
+      badgeText: promotion.badge_text ?? '',
+      secondaryBadgeText: promotion.secondary_badge_text ?? '',
+      sortOrder: promotion.sort_order ?? 0,
+
       backgroundColor: promotion.background_color ?? '#6B7D5E',
       textColor: promotion.text_color ?? '#FFFFFF',
       isActive: promotion.is_active ?? true,
@@ -472,6 +595,7 @@ export class PromotionsAdsComponent implements OnInit {
       endDate: this.toInputDate(promotion.end_date),
     });
     this.isPromotionModalOpen.set(true);
+    void this.loadSelectedPromotionProducts(promotion.id);
   }
 
   closePromotionModal(force = false): void {
@@ -481,6 +605,9 @@ export class PromotionsAdsComponent implements OnInit {
 
     this.isPromotionModalOpen.set(false);
     this.selectedPromotion.set(null);
+    this.selectedProductIds.set([]);
+    this.promotionProductsLoading.set(false);
+    this.promotionProductsError.set(null);
     this.formError.set(null);
     this.resetImageState();
     this.promotionForm.set({ ...EMPTY_PROMOTION_FORM });
@@ -492,7 +619,7 @@ export class PromotionsAdsComponent implements OnInit {
     if (!promotion) {
       this.toast.failed(
         this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_TITLE'),
-        this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_DETAIL')
+        this.translate.instant('PROMOTIONS_ADS.TOAST.INVALID_DETAIL'),
       );
       return;
     }
@@ -510,10 +637,22 @@ export class PromotionsAdsComponent implements OnInit {
     this.promotionPendingDelete.set(null);
   }
 
-  updatePromotionForm<K extends keyof PromotionFormModel>(key: K, value: AdminFormFieldValue): void {
+  updatePromotionForm<K extends keyof PromotionFormModel>(
+    key: K,
+    value: AdminFormFieldValue,
+  ): void {
     this.promotionForm.update((form) => ({
       ...form,
       [key]: value,
+    }));
+  }
+
+  updateSortOrder(value: AdminFormFieldValue): void {
+    const parsedValue = Number(value);
+
+    this.promotionForm.update((form) => ({
+      ...form,
+      sortOrder: Number.isFinite(parsedValue) && parsedValue >= 0 ? Math.floor(parsedValue) : 0,
     }));
   }
 
@@ -677,11 +816,24 @@ export class PromotionsAdsComponent implements OnInit {
     this.promotionForm.update((form) => ({
       ...form,
       isActive: true,
-      startDate: form.startDate && new Date(form.startDate).getTime() > Date.now() ? '' : form.startDate,
+      startDate:
+        form.startDate && new Date(form.startDate).getTime() > Date.now() ? '' : form.startDate,
     }));
   }
 
   async savePromotion(): Promise<void> {
+    if (this.promotionForm().placement === 'home_flash_deals') {
+      if (this.availableProductsLoading() || this.promotionProductsLoading()) {
+        this.formError.set('PROMOTIONS_ADS.PRODUCTS.LOADING');
+        return;
+      }
+
+      if (this.promotionProductsError()) {
+        this.formError.set(this.promotionProductsError());
+        return;
+      }
+    }
+
     const payload = this.buildPayload();
 
     if (!payload) {
@@ -710,15 +862,26 @@ export class PromotionsAdsComponent implements OnInit {
           return;
         }
 
-        const updatedPromotion = await this.promotionsService.updatePromotion(promotion.id, payload);
+        const updatedPromotion = await this.promotionsService.updatePromotion(
+          promotion.id,
+          payload,
+        );
+        await this.promotionsService.replacePromotionProducts(
+          updatedPromotion.id,
+          payload.placement === 'home_flash_deals' ? this.selectedProductIds() : [],
+        );
         this.promotions.update((items) =>
-          items.map((item) => (item.id === updatedPromotion.id ? updatedPromotion : item))
+          items.map((item) => (item.id === updatedPromotion.id ? updatedPromotion : item)),
         );
         await this.savePromotionMediaUsage(updatedPromotion, payload.media_id);
         await this.deleteOldPromotionImageIfNeeded(promotion.image_url, updatedPromotion.image_url);
         this.toast.updated(this.translate.instant('PROMOTIONS_ADS.PROMOTION'));
       } else {
         const createdPromotion = await this.promotionsService.createPromotion(payload);
+        await this.promotionsService.replacePromotionProducts(
+          createdPromotion.id,
+          payload.placement === 'home_flash_deals' ? this.selectedProductIds() : [],
+        );
         await this.savePromotionMediaUsage(createdPromotion, payload.media_id);
         this.promotions.update((items) => [createdPromotion, ...items]);
         this.searchTerm.set('');
@@ -731,7 +894,10 @@ export class PromotionsAdsComponent implements OnInit {
     } catch (error) {
       this.toast.failed(
         this.translate.instant('PROMOTIONS_ADS.TOAST.SAVE_FAILED_TITLE'),
-        this.errorDetail(error, this.translate.instant('PROMOTIONS_ADS.ERRORS.IMAGE_UPLOAD_FAILED'))
+        this.errorDetail(
+          error,
+          this.translate.instant('PROMOTIONS_ADS.ERRORS.IMAGE_UPLOAD_FAILED'),
+        ),
       );
     } finally {
       this.imageUploading.set(false);
@@ -756,7 +922,10 @@ export class PromotionsAdsComponent implements OnInit {
     } catch (error) {
       this.toast.failed(
         this.translate.instant('PROMOTIONS_ADS.TOAST.DELETE_FAILED_TITLE'),
-        this.errorDetail(error, this.translate.instant('PROMOTIONS_ADS.TOAST.DELETE_FAILED_DETAIL'))
+        this.errorDetail(
+          error,
+          this.translate.instant('PROMOTIONS_ADS.TOAST.DELETE_FAILED_DETAIL'),
+        ),
       );
     } finally {
       this.saving.set(false);
@@ -774,13 +943,16 @@ export class PromotionsAdsComponent implements OnInit {
         is_active: !(promotion.is_active ?? true),
       });
       this.promotions.update((items) =>
-        items.map((item) => (item.id === updatedPromotion.id ? updatedPromotion : item))
+        items.map((item) => (item.id === updatedPromotion.id ? updatedPromotion : item)),
       );
       this.toast.success(this.translate.instant('PROMOTIONS_ADS.TOAST.STATUS_UPDATED'));
     } catch (error) {
       this.toast.failed(
         this.translate.instant('PROMOTIONS_ADS.TOAST.STATUS_FAILED_TITLE'),
-        this.errorDetail(error, this.translate.instant('PROMOTIONS_ADS.TOAST.STATUS_FAILED_DETAIL'))
+        this.errorDetail(
+          error,
+          this.translate.instant('PROMOTIONS_ADS.TOAST.STATUS_FAILED_DETAIL'),
+        ),
       );
     }
   }
@@ -794,7 +966,9 @@ export class PromotionsAdsComponent implements OnInit {
   }
 
   modalTitle(): string {
-    return this.modalMode() === 'edit' ? 'PROMOTIONS_ADS.MODAL.EDIT_TITLE' : 'PROMOTIONS_ADS.MODAL.CREATE_TITLE';
+    return this.modalMode() === 'edit'
+      ? 'PROMOTIONS_ADS.MODAL.EDIT_TITLE'
+      : 'PROMOTIONS_ADS.MODAL.CREATE_TITLE';
   }
 
   modalSubtitle(): string {
@@ -863,7 +1037,9 @@ export class PromotionsAdsComponent implements OnInit {
     };
   }
 
-  private resolvePromotionFromTableEvent(event: AdminTableRow | Promotion | string | null | undefined): Promotion | null {
+  private resolvePromotionFromTableEvent(
+    event: AdminTableRow | Promotion | string | null | undefined,
+  ): Promotion | null {
     if (!event) {
       return null;
     }
@@ -895,9 +1071,7 @@ export class PromotionsAdsComponent implements OnInit {
     const type = this.translate.instant(this.typeLabelKey(this.promotionType(promotion)));
     const placement = this.placementLabel(promotion.placement);
     const meta = [type, placement].filter(Boolean).join(' · ');
-    const details = [promotion.description, meta]
-      .map((value) => value?.trim())
-      .filter(Boolean);
+    const details = [promotion.description, meta].map((value) => value?.trim()).filter(Boolean);
 
     return details.join(' · ');
   }
@@ -925,6 +1099,7 @@ export class PromotionsAdsComponent implements OnInit {
   private buildPayload(): PromotionMutationPayload | null {
     const form = this.promotionForm();
     const title = form.title.trim();
+    const slug = this.selectedPromotion()?.slug?.trim() || this.slugify(title);
     const description = form.description.trim();
     const placement = form.placement.trim();
     const buttonLink = form.buttonLink.trim();
@@ -970,6 +1145,7 @@ export class PromotionsAdsComponent implements OnInit {
 
     return {
       title,
+      slug,
       description,
       media_id: form.mediaId,
       image_url: form.imageUrl.trim() || null,
@@ -978,12 +1154,27 @@ export class PromotionsAdsComponent implements OnInit {
       placement,
       display_type: form.displayType,
       icon: form.icon,
+
+      badge_text: form.badgeText.trim() || null,
+      secondary_badge_text: form.secondaryBadgeText.trim() || null,
+      sort_order: Math.max(0, Number(form.sortOrder) || 0),
+
       background_color: form.backgroundColor.trim() || null,
       text_color: form.textColor.trim() || null,
       is_active: form.isActive,
       start_date: startDate,
       end_date: endDate,
     };
+  }
+
+  private slugify(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   private isValidLink(value: string): boolean {
@@ -1081,7 +1272,7 @@ export class PromotionsAdsComponent implements OnInit {
 
   private async deleteOldPromotionImageIfNeeded(
     previousImageUrl: string | null | undefined,
-    nextImageUrl: string | null | undefined
+    nextImageUrl: string | null | undefined,
   ): Promise<void> {
     if (!previousImageUrl || previousImageUrl === nextImageUrl) {
       return;
@@ -1094,7 +1285,10 @@ export class PromotionsAdsComponent implements OnInit {
     }
   }
 
-  private async savePromotionMediaUsage(promotion: Promotion, mediaId: string | null | undefined): Promise<void> {
+  private async savePromotionMediaUsage(
+    promotion: Promotion,
+    mediaId: string | null | undefined,
+  ): Promise<void> {
     if (!mediaId) {
       return;
     }
@@ -1109,7 +1303,7 @@ export class PromotionsAdsComponent implements OnInit {
     } catch {
       this.toast.warn(
         this.translate.instant('MEDIA_PICKER.USAGE_SAVE_FAILED_TITLE'),
-        this.translate.instant('MEDIA_PICKER.USAGE_SAVE_FAILED_DETAIL')
+        this.translate.instant('MEDIA_PICKER.USAGE_SAVE_FAILED_DETAIL'),
       );
     }
   }

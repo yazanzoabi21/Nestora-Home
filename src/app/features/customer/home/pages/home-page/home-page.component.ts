@@ -15,6 +15,7 @@ import {
   CustomerReviewsService,
   NewArrivalsService,
 } from '../../../services';
+import { CustomerFlashDeals } from '../components/customer-flash-deals/customer-flash-deals/customer-flash-deals';
 
 interface HomeBenefit {
   icon: string;
@@ -34,6 +35,7 @@ interface HomeOffer {
   selector: 'app-home-page',
   standalone: true,
   imports: [
+    CustomerFlashDeals,
     CustomerProductCardComponent,
     CustomerProductCardSkeleton,
     CustomerProductQuickViewComponent,
@@ -75,7 +77,20 @@ export class HomePageComponent {
       .filter((promotion) => this.promotionsService.getPromotionStatus(promotion) === 'active')
       .slice(0, 4),
   );
-  readonly flashDeals = computed(() => this.activePromotions().slice(0, 3));
+  // readonly flashDeals = computed(() => this.activePromotions().slice(0, 3));
+  readonly flashDeals = computed(() =>
+    this.activePromotions()
+      .filter(
+        (promotion) =>
+          promotion.placement === 'home_flash_deals' &&
+          promotion.display_type === 'banner',
+      )
+      .sort(
+        (first, second) =>
+          (first.sort_order ?? 0) - (second.sort_order ?? 0),
+      )
+      .slice(0, 3),
+  );
   readonly seasonalPromotion = computed(() =>
     this.activePromotions().find((promotion) => promotion.image_url) ?? this.activePromotions()[0] ?? null,
   );

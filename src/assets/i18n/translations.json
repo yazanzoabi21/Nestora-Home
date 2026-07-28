@@ -612,7 +612,10 @@
         "UPLOAD_IMAGE": "Upload promotion image",
         "CHANGE_IMAGE": "Change promotion image",
         "CLEAR_IMAGE": "Clear image",
-        "PASTE_IMAGE_URL": "Or paste image URL"
+        "PASTE_IMAGE_URL": "Or paste image URL",
+        "BADGE_TEXT": "Main Badge",
+        "SECONDARY_BADGE_TEXT": "Secondary Badge",
+        "SORT_ORDER": "Display Order"
       },
       "SECTIONS": {
         "CONTENT": "Content",
@@ -624,7 +627,17 @@
         "PLACEMENT": "Placement",
         "ACTION_CTA": "Action / CTA",
         "STATUS": "Status",
-        "DESIGN_OPTIONS": "Design Options"
+        "DESIGN_OPTIONS": "Design Options",
+        "FLASH_DEAL_OPTIONS": "Flash Deal Options",
+        "FLASH_DEAL_OPTIONS_HELPER": "Configure the badges and display order for this Flash Deal card."
+      },
+      "PRODUCTS": {
+        "TITLE": "Promotion Products",
+        "HELPER": "Select the products that will appear below this promotion.",
+        "SELECTED_COUNT": "{{count}} selected",
+        "LOADING": "Loading products...",
+        "EMPTY": "No active products available.",
+        "LOAD_FAILED": "Unable to load the product selection. Please try again."
       },
       "COLORS": {
         "BEIGE": "Beige",
@@ -703,7 +716,10 @@
         "MESSAGE": "e.g. Sign up today and get 10% off your first order!",
         "BUTTON_TEXT": "Shop Now / Learn More",
         "BUTTON_LINK": "/shop or https://...",
-        "IMAGE_URL": "https://..."
+        "IMAGE_URL": "https://...",
+        "BADGE_TEXT": "30% OFF",
+        "SECONDARY_BADGE_TEXT": "Best Value",
+        "SORT_ORDER": "1"
       },
       "DISPLAY": {
         "ANNOUNCEMENT_BAR": "Announcement Bar",
@@ -721,6 +737,8 @@
         "PRODUCT_PAGE_HELPER": "Banner inside product details page",
         "CATEGORY_PAGE": "Category Page",
         "CATEGORY_PAGE_HELPER": "Banner inside category listing page",
+        "HOME_FLASH_DEALS": "Home Flash Deals",
+        "HOME_FLASH_DEALS_HELPER": "Flash Deal card linked to a dedicated promotion page",
         "GLOBAL_POPUP": "Global Popup",
         "GLOBAL_POPUP_HELPER": "Popup shown across storefront",
         "LOGGED_OUT_VISITOR_POPUP": "Logged-Out Visitor Popup",
@@ -1832,36 +1850,77 @@
           "SHOP": "Shop now",
           "NEW": "New arrivals"
         },
-        "STATS": { "PRODUCTS": "Products", "CATEGORIES": "Categories", "REVIEWS": "Customer reviews" },
-        "BENEFITS": {
-          "SHIPPING": "Free Shipping", "SHIPPING_TEXT": "On orders over $75",
-          "RETURNS": "Easy Returns", "RETURNS_TEXT": "30-day hassle-free returns",
-          "QUALITY": "Premium Quality", "QUALITY_TEXT": "Curated for your home",
-          "SUPPORT": "24/7 Support", "SUPPORT_TEXT": "Always here to help"
+        "STATS": {
+          "PRODUCTS": "Products",
+          "CATEGORIES": "Categories",
+          "REVIEWS": "Customer reviews"
         },
-        "FLASH": { "EYEBROW": "Limited time", "TITLE": "Flash Deals", "EMPTY": "New offers are on the way." },
-        "NEW_CUSTOMER": { "TITLE": "New Customer Exclusive", "TEXT": "Create an account to unlock your welcome offer.", "ACTION": "Join now" },
+        "BENEFITS": {
+          "SHIPPING": "Free Shipping",
+          "SHIPPING_TEXT": "On orders over $75",
+          "RETURNS": "Easy Returns",
+          "RETURNS_TEXT": "30-day hassle-free returns",
+          "QUALITY": "Premium Quality",
+          "QUALITY_TEXT": "Curated for your home",
+          "SUPPORT": "24/7 Support",
+          "SUPPORT_TEXT": "Always here to help"
+        },
+        "FLASH": {
+          "EYEBROW": "Limited time",
+          "TITLE": "Flash Deals",
+          "EMPTY": "New offers are on the way."
+        },
+        "NEW_CUSTOMER": {
+          "TITLE": "New Customer Exclusive",
+          "TEXT": "Create an account to unlock your welcome offer.",
+          "ACTION": "Join now"
+        },
         "CATEGORIES": { "EYEBROW": "Shop by", "TITLE": "Category", "ITEMS": "products" },
         "BEST": { "EYEBROW": "Top picks", "TITLE": "Best Sellers" },
-        "SEASONAL": { "EYEBROW": "Seasonal edit", "TITLE": "Refresh Your Home", "ACTION": "Shop the collection" },
+        "SEASONAL": {
+          "EYEBROW": "Seasonal edit",
+          "TITLE": "Refresh Your Home",
+          "ACTION": "Shop the collection"
+        },
         "NEW_ARRIVALS": { "EYEBROW": "Fresh in", "TITLE": "New Arrivals" },
         "OFFERS": {
-          "EYEBROW": "Member benefits", "TITLE": "Exclusive Offers", "TEXT": "Take advantage of special deals made for Nestora customers.",
-          "FIRST": "Welcome Offer", "FIRST_TEXT": "Create your account and discover a special first-order benefit.", "CLAIM": "Claim offer",
-          "REFER": "Refer a Friend", "REFER_TEXT": "Share Nestora with someone who loves thoughtful home essentials.", "INVITE": "Invite friends",
-          "APP": "Member Exclusives", "APP_TEXT": "Stay close to new launches and offers created for members.", "GET_APP": "Explore benefits",
-          "POINTS": "Loyalty Rewards", "POINTS_TEXT": "Make every purchase count and enjoy more ways to save.", "JOIN": "Join now"
+          "EYEBROW": "Member benefits",
+          "TITLE": "Exclusive Offers",
+          "TEXT": "Take advantage of special deals made for Nestora customers.",
+          "FIRST": "Welcome Offer",
+          "FIRST_TEXT": "Create your account and discover a special first-order benefit.",
+          "CLAIM": "Claim offer",
+          "REFER": "Refer a Friend",
+          "REFER_TEXT": "Share Nestora with someone who loves thoughtful home essentials.",
+          "INVITE": "Invite friends",
+          "APP": "Member Exclusives",
+          "APP_TEXT": "Stay close to new launches and offers created for members.",
+          "GET_APP": "Explore benefits",
+          "POINTS": "Loyalty Rewards",
+          "POINTS_TEXT": "Make every purchase count and enjoy more ways to save.",
+          "JOIN": "Join now"
         },
         "DIFFERENCE": {
-          "EYEBROW": "Why us", "TITLE": "The Nestora Difference",
-          "CURATION": "Premium Curation", "CURATION_TEXT": "Every product is selected for quality, durability, and design.",
-          "ECO": "Eco-Conscious", "ECO_TEXT": "We prioritize materials and packaging that are kinder to the planet.",
-          "DESIGN": "Smart Designs", "DESIGN_TEXT": "Beautiful essentials with genuine everyday function.",
-          "DELIVERY": "Fast Delivery", "DELIVERY_TEXT": "Reliable delivery options designed around your schedule.",
-          "EXPERTS": "Expert Support", "EXPERTS_TEXT": "Helpful guidance is available whenever you need it.",
-          "SATISFACTION": "Satisfaction Guaranteed", "SATISFACTION_TEXT": "Simple returns and customer-first care."
+          "EYEBROW": "Why us",
+          "TITLE": "The Nestora Difference",
+          "CURATION": "Premium Curation",
+          "CURATION_TEXT": "Every product is selected for quality, durability, and design.",
+          "ECO": "Eco-Conscious",
+          "ECO_TEXT": "We prioritize materials and packaging that are kinder to the planet.",
+          "DESIGN": "Smart Designs",
+          "DESIGN_TEXT": "Beautiful essentials with genuine everyday function.",
+          "DELIVERY": "Fast Delivery",
+          "DELIVERY_TEXT": "Reliable delivery options designed around your schedule.",
+          "EXPERTS": "Expert Support",
+          "EXPERTS_TEXT": "Helpful guidance is available whenever you need it.",
+          "SATISFACTION": "Satisfaction Guaranteed",
+          "SATISFACTION_TEXT": "Simple returns and customer-first care."
         },
-        "REVIEWS": { "EYEBROW": "What people say", "TITLE": "Customer Reviews", "EMPTY": "Customer stories will appear here soon." }
+        "REVIEWS": {
+          "EYEBROW": "What people say",
+          "TITLE": "Customer Reviews",
+          "EMPTY": "Customer stories will appear here soon."
+        }
       },
       "WISHLIST": {
         "TITLE": "Wishlist",
@@ -2969,7 +3028,10 @@
         "UPLOAD_IMAGE": "رفع صورة العرض",
         "CHANGE_IMAGE": "تغيير صورة العرض",
         "CLEAR_IMAGE": "مسح الصورة",
-        "PASTE_IMAGE_URL": "أو الصق رابط الصورة"
+        "PASTE_IMAGE_URL": "أو الصق رابط الصورة",
+        "BADGE_TEXT": "الشارة الرئيسية",
+        "SECONDARY_BADGE_TEXT": "الشارة الثانوية",
+        "SORT_ORDER": "ترتيب العرض"
       },
       "SECTIONS": {
         "CONTENT": "المحتوى",
@@ -2981,7 +3043,17 @@
         "PLACEMENT": "الموضع",
         "ACTION_CTA": "الإجراء / الدعوة",
         "STATUS": "الحالة",
-        "DESIGN_OPTIONS": "خيارات التصميم"
+        "DESIGN_OPTIONS": "خيارات التصميم",
+        "FLASH_DEAL_OPTIONS": "خيارات العرض السريع",
+        "FLASH_DEAL_OPTIONS_HELPER": "اضبط الشارات وترتيب العرض لبطاقة العرض السريع."
+      },
+      "PRODUCTS": {
+        "TITLE": "منتجات العرض",
+        "HELPER": "اختر المنتجات التي ستظهر أسفل هذا العرض.",
+        "SELECTED_COUNT": "{{count}} محدد",
+        "LOADING": "جارٍ تحميل المنتجات...",
+        "EMPTY": "لا توجد منتجات نشطة متاحة.",
+        "LOAD_FAILED": "تعذر تحميل اختيار المنتجات. يرجى المحاولة مرة أخرى."
       },
       "COLORS": {
         "BEIGE": "بيج",
@@ -3060,7 +3132,10 @@
         "MESSAGE": "مثال: سجّل اليوم واحصل على خصم 10% على أول طلب!",
         "BUTTON_TEXT": "تسوق الآن / اعرف المزيد",
         "BUTTON_LINK": "/shop أو https://...",
-        "IMAGE_URL": "https://..."
+        "IMAGE_URL": "https://...",
+        "BADGE_TEXT": "خصم 30٪",
+        "SECONDARY_BADGE_TEXT": "أفضل قيمة",
+        "SORT_ORDER": "1"
       },
       "DISPLAY": {
         "ANNOUNCEMENT_BAR": "شريط إعلان",
@@ -3078,6 +3153,8 @@
         "PRODUCT_PAGE_HELPER": "بانر داخل صفحة تفاصيل المنتج",
         "CATEGORY_PAGE": "صفحة الفئة",
         "CATEGORY_PAGE_HELPER": "بانر داخل صفحة قائمة الفئات",
+        "HOME_FLASH_DEALS": "العروض السريعة في الرئيسية",
+        "HOME_FLASH_DEALS_HELPER": "بطاقة عرض سريع مرتبطة بصفحة عرض مخصصة",
         "GLOBAL_POPUP": "نافذة منبثقة عامة",
         "GLOBAL_POPUP_HELPER": "نافذة تظهر في واجهة المتجر بالكامل",
         "LOGGED_OUT_VISITOR_POPUP": "نافذة للزوار غير المسجلين",
@@ -3922,34 +3999,71 @@
         },
         "STATS": { "PRODUCTS": "المنتجات", "CATEGORIES": "الفئات", "REVIEWS": "آراء العملاء" },
         "BENEFITS": {
-          "SHIPPING": "شحن مجاني", "SHIPPING_TEXT": "للطلبات التي تتجاوز 75$",
-          "RETURNS": "إرجاع سهل", "RETURNS_TEXT": "إرجاع ميسر خلال 30 يوماً",
-          "QUALITY": "جودة ممتازة", "QUALITY_TEXT": "مختارة بعناية لمنزلك",
-          "SUPPORT": "دعم على مدار الساعة", "SUPPORT_TEXT": "نحن دائماً هنا للمساعدة"
+          "SHIPPING": "شحن مجاني",
+          "SHIPPING_TEXT": "للطلبات التي تتجاوز 75$",
+          "RETURNS": "إرجاع سهل",
+          "RETURNS_TEXT": "إرجاع ميسر خلال 30 يوماً",
+          "QUALITY": "جودة ممتازة",
+          "QUALITY_TEXT": "مختارة بعناية لمنزلك",
+          "SUPPORT": "دعم على مدار الساعة",
+          "SUPPORT_TEXT": "نحن دائماً هنا للمساعدة"
         },
-        "FLASH": { "EYEBROW": "لفترة محدودة", "TITLE": "عروض سريعة", "EMPTY": "عروض جديدة في الطريق." },
-        "NEW_CUSTOMER": { "TITLE": "عرض حصري للعملاء الجدد", "TEXT": "أنشئ حساباً للاستفادة من عرض الترحيب.", "ACTION": "انضم الآن" },
+        "FLASH": {
+          "EYEBROW": "لفترة محدودة",
+          "TITLE": "عروض سريعة",
+          "EMPTY": "عروض جديدة في الطريق."
+        },
+        "NEW_CUSTOMER": {
+          "TITLE": "عرض حصري للعملاء الجدد",
+          "TEXT": "أنشئ حساباً للاستفادة من عرض الترحيب.",
+          "ACTION": "انضم الآن"
+        },
         "CATEGORIES": { "EYEBROW": "تسوق حسب", "TITLE": "الفئة", "ITEMS": "منتجات" },
         "BEST": { "EYEBROW": "اختيارات مميزة", "TITLE": "الأكثر مبيعاً" },
-        "SEASONAL": { "EYEBROW": "تشكيلة الموسم", "TITLE": "جدّد منزلك", "ACTION": "تسوق التشكيلة" },
+        "SEASONAL": {
+          "EYEBROW": "تشكيلة الموسم",
+          "TITLE": "جدّد منزلك",
+          "ACTION": "تسوق التشكيلة"
+        },
         "NEW_ARRIVALS": { "EYEBROW": "وصل حديثاً", "TITLE": "منتجات جديدة" },
         "OFFERS": {
-          "EYEBROW": "مزايا الأعضاء", "TITLE": "عروض حصرية", "TEXT": "استفد من عروض خاصة صممت لعملاء نيستورا.",
-          "FIRST": "عرض الترحيب", "FIRST_TEXT": "أنشئ حسابك واكتشف ميزة خاصة لأول طلب.", "CLAIM": "احصل على العرض",
-          "REFER": "ادعُ صديقاً", "REFER_TEXT": "شارك نيستورا مع من يحب أساسيات المنزل المختارة بعناية.", "INVITE": "دعوة الأصدقاء",
-          "APP": "مزايا الأعضاء", "APP_TEXT": "تابع أحدث المنتجات والعروض المخصصة للأعضاء.", "GET_APP": "اكتشف المزايا",
-          "POINTS": "مكافآت الولاء", "POINTS_TEXT": "اجعل كل عملية شراء ذات قيمة واستمتع بطرق أكثر للتوفير.", "JOIN": "انضم الآن"
+          "EYEBROW": "مزايا الأعضاء",
+          "TITLE": "عروض حصرية",
+          "TEXT": "استفد من عروض خاصة صممت لعملاء نيستورا.",
+          "FIRST": "عرض الترحيب",
+          "FIRST_TEXT": "أنشئ حسابك واكتشف ميزة خاصة لأول طلب.",
+          "CLAIM": "احصل على العرض",
+          "REFER": "ادعُ صديقاً",
+          "REFER_TEXT": "شارك نيستورا مع من يحب أساسيات المنزل المختارة بعناية.",
+          "INVITE": "دعوة الأصدقاء",
+          "APP": "مزايا الأعضاء",
+          "APP_TEXT": "تابع أحدث المنتجات والعروض المخصصة للأعضاء.",
+          "GET_APP": "اكتشف المزايا",
+          "POINTS": "مكافآت الولاء",
+          "POINTS_TEXT": "اجعل كل عملية شراء ذات قيمة واستمتع بطرق أكثر للتوفير.",
+          "JOIN": "انضم الآن"
         },
         "DIFFERENCE": {
-          "EYEBROW": "لماذا نحن", "TITLE": "ما يميز نيستورا",
-          "CURATION": "اختيار فاخر", "CURATION_TEXT": "يتم اختيار كل منتج بعناية للجودة والمتانة والتصميم.",
-          "ECO": "وعي بيئي", "ECO_TEXT": "نعطي الأولوية للمواد والتغليف الأكثر لطفاً على البيئة.",
-          "DESIGN": "تصاميم ذكية", "DESIGN_TEXT": "أساسيات جميلة بوظائف عملية حقيقية.",
-          "DELIVERY": "توصيل سريع", "DELIVERY_TEXT": "خيارات توصيل موثوقة تناسب جدولك.",
-          "EXPERTS": "دعم متخصص", "EXPERTS_TEXT": "إرشادات مفيدة متاحة عندما تحتاج إليها.",
-          "SATISFACTION": "رضاك مضمون", "SATISFACTION_TEXT": "إرجاع بسيط وعناية تضع العميل أولاً."
+          "EYEBROW": "لماذا نحن",
+          "TITLE": "ما يميز نيستورا",
+          "CURATION": "اختيار فاخر",
+          "CURATION_TEXT": "يتم اختيار كل منتج بعناية للجودة والمتانة والتصميم.",
+          "ECO": "وعي بيئي",
+          "ECO_TEXT": "نعطي الأولوية للمواد والتغليف الأكثر لطفاً على البيئة.",
+          "DESIGN": "تصاميم ذكية",
+          "DESIGN_TEXT": "أساسيات جميلة بوظائف عملية حقيقية.",
+          "DELIVERY": "توصيل سريع",
+          "DELIVERY_TEXT": "خيارات توصيل موثوقة تناسب جدولك.",
+          "EXPERTS": "دعم متخصص",
+          "EXPERTS_TEXT": "إرشادات مفيدة متاحة عندما تحتاج إليها.",
+          "SATISFACTION": "رضاك مضمون",
+          "SATISFACTION_TEXT": "إرجاع بسيط وعناية تضع العميل أولاً."
         },
-        "REVIEWS": { "EYEBROW": "ماذا يقول العملاء", "TITLE": "آراء العملاء", "EMPTY": "ستظهر تجارب العملاء هنا قريباً." }
+        "REVIEWS": {
+          "EYEBROW": "ماذا يقول العملاء",
+          "TITLE": "آراء العملاء",
+          "EMPTY": "ستظهر تجارب العملاء هنا قريباً."
+        }
       },
       "WISHLIST": {
         "TITLE": "المفضلة",

@@ -4,6 +4,7 @@ import { SupabaseService } from '../../core/services/supabase';
 import {
   Promotion,
   PromotionMutationPayload,
+  PromotionSelectableProduct,
   PromotionStats,
   PromotionStatus,
   PromotionType,
@@ -11,6 +12,7 @@ import {
 
 const PROMOTION_SELECT = `
   id,
+  slug,
   title,
   description,
   media_id,
@@ -20,15 +22,27 @@ const PROMOTION_SELECT = `
   placement,
   display_type,
   icon,
+  badge_text,
+  secondary_badge_text,
   background_color,
   text_color,
+  sort_order,
   is_active,
   start_date,
   end_date,
   created_at
 `;
+
 const PROMOTION_IMAGES_BUCKET = 'product-images';
 const MAX_PROMOTION_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
+const SELECTABLE_PRODUCT_SELECT = `
+  id,
+  name,
+  image_url,
+  price,
+  sale_price,
+  is_active
+`;
 
 @Injectable({
   providedIn: 'root',
@@ -77,7 +91,10 @@ export class PromotionsService {
     return this.mapPromotion(data as Promotion);
   }
 
-  async updatePromotion(id: string, payload: Partial<PromotionMutationPayload>): Promise<Promotion> {
+  async updatePromotion(
+    id: string,
+    payload: Partial<PromotionMutationPayload>,
+  ): Promise<Promotion> {
     const { data, error } = await this.supabase
       .from('promotions')
       .update(this.toPromotionRecord(payload))
@@ -93,13 +110,57 @@ export class PromotionsService {
   }
 
   async deletePromotion(id: string): Promise<void> {
-    const { error } = await this.supabase
-      .from('promotions')
-      .delete()
-      .eq('id', id);
+    const { error } = await this.supabase.from('promotions').delete().eq('id', id);
 
     if (error) {
       throw new Error(error.message);
+    }
+  }
+
+  async getSelectableProducts(): Promise<PromotionSelectableProduct[]> {
+    const { data, error } = await this.supabase
+      .from('products')
+      .select(SELECTABLE_PRODUCT_SELECT)
+      .eq('is_active', true)
+      .order('name', { ascending: true });
+
+    if (error) {
+      throw new Error(`Unable to load selectable products: ${error.message}`);
+    }
+
+    return (data ?? []).map((product) => ({
+      id: String(product.id),
+      name: String(product.name ?? '').trim(),
+      image_url: typeof product.image_url === 'string' ? product.image_url : null,
+      price: this.toNumber(product.price),
+      sale_price: product.sale_price === null ? null : this.toNumber(product.sale_price),
+      is_active: product.is_active ?? null,
+    }));
+  }
+
+  async getPromotionProductIds(promotionId: string): Promise<string[]> {
+    const { data, error } = await this.supabase
+      .from('promotion_products')
+      .select('product_id')
+      .eq('promotion_id', promotionId)
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      throw new Error(`Unable to load promotion products: ${error.message}`);
+    }
+
+    return (data ?? []).map((row) => String(row.product_id));
+  }
+
+  async replacePromotionProducts(promotionId: string, productIds: string[]): Promise<void> {
+    const uniqueProductIds = [...new Set(productIds.filter(Boolean))];
+    const { error } = await this.supabase.rpc('replace_promotion_products', {
+      p_promotion_id: promotionId,
+      p_product_ids: uniqueProductIds,
+    });
+
+    if (error) {
+      throw new Error(`Unable to save promotion products: ${error.message}`);
     }
   }
 
@@ -162,7 +223,7 @@ export class PromotionsService {
         scheduled: 0,
         inactive: 0,
         expired: 0,
-      }
+      },
     );
   }
 
@@ -186,7 +247,11 @@ export class PromotionsService {
   }
 
   getPromotionType(promotion: Promotion): PromotionType {
-    if (promotion.display_type === 'bar' || promotion.display_type === 'banner' || promotion.display_type === 'popup') {
+    if (
+      promotion.display_type === 'bar' ||
+      promotion.display_type === 'banner' ||
+      promotion.display_type === 'popup'
+    ) {
       return promotion.display_type;
     }
 
@@ -196,7 +261,13 @@ export class PromotionsService {
       return 'popup';
     }
 
-    if (placement.includes('banner') || placement.includes('homepage') || placement.includes('product')) {
+    if (
+      placement.includes('banner') ||
+      placement.includes('homepage') ||
+      placement.includes('product') ||
+      placement.includes('category') ||
+      placement.includes('home_flash_deals')
+    ) {
       return 'banner';
     }
 
@@ -206,28 +277,47 @@ export class PromotionsService {
   private mapPromotion(promotion: Promotion): Promotion {
     return {
       ...promotion,
+
+      slug: promotion.slug?.trim() || null,
       title: promotion.title.trim(),
       description: promotion.description ?? null,
+
       media_id: promotion.media_id ?? null,
       image_url: promotion.image_url ?? null,
+
       button_text: promotion.button_text ?? null,
       button_link: promotion.button_link ?? null,
+
       placement: promotion.placement ?? null,
       display_type: promotion.display_type ?? 'bar',
+
       icon: promotion.icon ?? null,
+      badge_text: promotion.badge_text ?? null,
+      secondary_badge_text: promotion.secondary_badge_text ?? null,
+
       background_color: promotion.background_color ?? null,
       text_color: promotion.text_color ?? null,
+
+      sort_order: promotion.sort_order ?? 0,
+
       is_active: promotion.is_active ?? true,
       start_date: promotion.start_date ?? null,
       end_date: promotion.end_date ?? null,
+      created_at: promotion.created_at ?? null,
     };
   }
 
-  private toPromotionRecord(payload: Partial<PromotionMutationPayload>): Partial<PromotionMutationPayload> {
+  private toPromotionRecord(
+    payload: Partial<PromotionMutationPayload>,
+  ): Partial<PromotionMutationPayload> {
     const record: Partial<PromotionMutationPayload> = {};
 
     if (payload.title !== undefined) {
       record.title = payload.title.trim();
+    }
+
+    if (payload.slug !== undefined) {
+      record.slug = payload.slug?.trim() || null;
     }
 
     if (payload.description !== undefined) {
@@ -262,12 +352,24 @@ export class PromotionsService {
       record.icon = payload.icon?.trim() || null;
     }
 
+    if (payload.badge_text !== undefined) {
+      record.badge_text = payload.badge_text?.trim() || null;
+    }
+
+    if (payload.secondary_badge_text !== undefined) {
+      record.secondary_badge_text = payload.secondary_badge_text?.trim() || null;
+    }
+
     if (payload.background_color !== undefined) {
       record.background_color = payload.background_color?.trim() || null;
     }
 
     if (payload.text_color !== undefined) {
       record.text_color = payload.text_color?.trim() || null;
+    }
+
+    if (payload.sort_order !== undefined) {
+      record.sort_order = Math.max(0, Math.floor(Number(payload.sort_order) || 0));
     }
 
     if (payload.is_active !== undefined) {
@@ -292,6 +394,11 @@ export class PromotionsService {
 
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private toNumber(value: unknown): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
   private validatePromotionImage(file: File): void {
@@ -321,7 +428,11 @@ export class PromotionsService {
   }
 
   private fileExtension(fileName: string): string {
-    const extension = fileName.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const extension = fileName
+      .split('.')
+      .pop()
+      ?.toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
     return extension || 'webp';
   }
 
