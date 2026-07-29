@@ -161,6 +161,8 @@ export class CustomerCartService {
       badge: product.is_new ? 'New' : null,
       isFeatured: product.is_featured === true,
       isNew: product.is_new === true,
+      isActive: product.is_active !== false,
+      soldCount: Math.max(0, Number(product.sold_count ?? 0)),
       inStock: product.is_active !== false && stock > 0,
       stock,
       slug: product.slug,

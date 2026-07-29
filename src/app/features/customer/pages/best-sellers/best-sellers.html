@@ -1,0 +1,113 @@
+<section class="min-h-[70vh] overflow-x-clip bg-[#faf8f5] pb-16 sm:pb-20">
+  <div class="customer-page-container pt-5 sm:pt-6">
+    <nav class="flex items-center gap-2 text-xs font-semibold text-[#858a80] sm:text-sm sm:font-bold"
+      aria-label="Breadcrumb">
+      <a routerLink="/shop" class="transition hover:text-[#6b7d5e]">
+        {{ 'CUSTOMER.BEST_SELLERS.HOME' | translate }}
+      </a>
+      <i class="pi pi-chevron-right text-[0.6rem] rtl:rotate-180" aria-hidden="true"></i>
+      <span class="text-[#30362f]">
+        {{ 'CUSTOMER.BEST_SELLERS.BREADCRUMB' | translate }}
+      </span>
+    </nav>
+
+    <header
+      class="relative mt-6 overflow-hidden rounded-[1.75rem] bg-[#1f2a1f] px-6 py-10 text-white shadow-[0_20px_50px_rgba(31,42,31,.14)] sm:px-10 sm:py-12 lg:rounded-[2rem] lg:px-14 lg:py-16">
+      <div class="pointer-events-none absolute -end-16 -top-24 h-72 w-72 rounded-full bg-[#718369]/35 blur-3xl"
+        aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -bottom-28 start-1/3 h-56 w-56 rounded-full bg-[#e8dccf]/15 blur-3xl"
+        aria-hidden="true"></div>
+
+      <div class="relative max-w-3xl">
+        <p class="text-[0.7rem] font-black uppercase tracking-[0.2em] text-[#d9e2d2] sm:text-xs">
+          {{ 'CUSTOMER.BEST_SELLERS.EYEBROW' | translate }}
+        </p>
+        <h1 class="mt-3 text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
+          {{ 'CUSTOMER.BEST_SELLERS.TITLE' | translate }}
+        </h1>
+        <p class="mt-4 max-w-2xl text-sm font-medium leading-7 text-white/75 sm:text-base">
+          {{ 'CUSTOMER.BEST_SELLERS.SUBTITLE' | translate }}
+        </p>
+      </div>
+    </header>
+
+    <div class="mb-6 mt-9 flex items-center justify-between gap-4 sm:mb-8 sm:mt-11">
+      <h2 class="text-xl font-black text-[#1f2a1f] sm:text-2xl">
+        {{ 'CUSTOMER.BEST_SELLERS.BREADCRUMB' | translate }}
+      </h2>
+
+      @if (!loading() && !loadError()) {
+      <p class="shrink-0 text-sm font-bold text-[#77736d]">
+        {{ 'CUSTOMER.BEST_SELLERS.PRODUCT_COUNT' | translate: { count: products().length } }}
+      </p>
+      }
+    </div>
+
+    @if (loading()) {
+    <div role="status" aria-live="polite" aria-busy="true">
+      <span class="sr-only">{{ 'CUSTOMER.BEST_SELLERS.LOADING' | translate }}</span>
+      <div class="grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        @for (_ of loadingCards; track $index) {
+        <app-customer-product-card-skeleton />
+        }
+      </div>
+    </div>
+    } @else if (loadError()) {
+    <div class="rounded-[1.75rem] border border-red-100 bg-white px-6 py-14 text-center shadow-sm sm:py-16"
+      role="alert">
+      <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
+        <i class="pi pi-exclamation-circle text-2xl" aria-hidden="true"></i>
+      </div>
+      <h2 class="mt-5 text-xl font-black text-[#1f2a1f] sm:text-2xl">
+        {{ 'CUSTOMER.BEST_SELLERS.ERROR_TITLE' | translate }}
+      </h2>
+      <p class="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[#77736d]">
+        {{ 'CUSTOMER.BEST_SELLERS.ERROR_TEXT' | translate }}
+      </p>
+      <button type="button"
+        class="mt-6 inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white transition hover:bg-[#596b4e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
+        (click)="retry()">
+        <i class="pi pi-refresh text-xs" aria-hidden="true"></i>
+        {{ 'CUSTOMER.BEST_SELLERS.RETRY' | translate }}
+      </button>
+    </div>
+    } @else if (products().length === 0) {
+    <div class="rounded-[1.75rem] border border-[#e8dccf] bg-white px-6 py-14 text-center shadow-sm sm:py-16">
+      <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]">
+        <i class="pi pi-chart-line text-2xl" aria-hidden="true"></i>
+      </div>
+      <h2 class="mt-5 text-xl font-black text-[#1f2a1f] sm:text-2xl">
+        {{ 'CUSTOMER.BEST_SELLERS.EMPTY_TITLE' | translate }}
+      </h2>
+      <p class="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[#77736d]">
+        {{ 'CUSTOMER.BEST_SELLERS.EMPTY_TEXT' | translate }}
+      </p>
+    </div>
+    } @else {
+    <div class="grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      @for (product of products(); track product.id) {
+      <app-customer-product-card [product]="product" [wishlistActive]="shopping.isInWishlist(product.id)"
+        [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
+        [cartLoading]="shopping.pendingProductIds().has(product.id)" [canAddToCart]="shopping.canAdd(product)"
+        [selected]="selectedProduct()?.id === product.id" (quickView)="openQuickView($event)"
+        (addToCart)="addToCart($event)" (toggleWishlist)="toggleWishlist($event)" />
+      }
+    </div>
+    }
+  </div>
+</section>
+
+@if (selectedProduct(); as product) {
+<div class="fixed inset-0 z-[1100]" role="dialog" aria-modal="true">
+  <button type="button" class="absolute inset-0 cursor-pointer bg-[#1f2a1f]/45 backdrop-blur-[2px]"
+    [attr.aria-label]="'COMMON.CLOSE' | translate" (click)="closeQuickView()"></button>
+
+  <div
+    class="absolute inset-x-0 bottom-0 max-h-[90vh] overflow-y-auto px-3 pb-[max(.75rem,env(safe-area-inset-bottom))] sm:px-6 md:inset-0 md:m-auto md:h-fit md:max-h-[90vh] md:max-w-[52rem] md:px-0 md:pb-0">
+    <app-customer-product-quick-view [product]="product" [wishlistActive]="shopping.isInWishlist(product.id)"
+      [cartLoading]="shopping.pendingProductIds().has(product.id)"
+      [availableQuantity]="shopping.remainingStock(product)" (closeRequested)="closeQuickView()"
+      (addRequested)="addFromQuickView($event)" (toggleWishlist)="toggleWishlist($event)" />
+  </div>
+</div>
+}

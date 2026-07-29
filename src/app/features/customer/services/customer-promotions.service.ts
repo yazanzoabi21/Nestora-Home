@@ -20,6 +20,7 @@ interface PromotionProductData {
   price: number | string | null;
   sale_price: number | string | null;
   stock: number | string | null;
+  sold_count: number | string | null;
   is_featured: boolean | null;
   is_new: boolean | null;
   is_active: boolean | null;
@@ -32,11 +33,55 @@ type PromotionDetailsRecord = Promotion & {
   promotion_products?: PromotionProductRecord[] | null;
 };
 
+const FLASH_DEAL_PROMOTION_SELECT = `
+  id,
+  slug,
+  title,
+  description,
+  media_id,
+  image_url,
+  button_text,
+  button_link,
+  placement,
+  display_type,
+  icon,
+  badge_text,
+  secondary_badge_text,
+  background_color,
+  text_color,
+  sort_order,
+  is_active,
+  start_date,
+  end_date,
+  created_at
+`;
+
 @Injectable({
   providedIn: 'root',
 })
 export class CustomerPromotionsService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
+
+  async getFlashDealPromotions(): Promise<Promotion[]> {
+    const { data, error } = await this.supabase
+      .from('promotions')
+      .select(FLASH_DEAL_PROMOTION_SELECT)
+      .eq('placement', 'home_flash_deals')
+      .eq('display_type', 'banner')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? [])
+      .map((promotion) => ({
+        ...(promotion as Promotion),
+        sort_order: this.toNumber(promotion.sort_order),
+      }))
+      .filter((promotion) => this.isActive(promotion));
+  }
 
   async getPromotionBySlug(slug: string): Promise<PromotionDetailsData | null> {
     const { data, error } = await this.supabase
@@ -76,6 +121,7 @@ export class CustomerPromotionsService {
             price,
             sale_price,
             stock,
+            sold_count,
             is_featured,
             is_new,
             is_active,
@@ -132,6 +178,10 @@ export class CustomerPromotionsService {
     );
   }
 
+  promotionLink(promotion: Promotion): string {
+    return promotion.slug ? `/shop/promotions/${promotion.slug}` : '/shop/products';
+  }
+
   private mapPromotionProduct(item: PromotionProductRecord): PromotionProductItem | null {
     const product = Array.isArray(item.product) ? item.product[0] : item.product;
 
@@ -174,6 +224,8 @@ export class CustomerPromotionsService {
       badge: product.is_new ? 'New' : null,
       isFeatured: product.is_featured === true,
       isNew: product.is_new === true,
+      isActive: product.is_active === true,
+      soldCount: Math.max(0, this.toNumber(product.sold_count)),
       inStock: stock > 0,
       stock,
       createdAt: product.created_at,

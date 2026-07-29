@@ -60,74 +60,99 @@
 </section>
 
 <main class="overflow-hidden bg-[#faf8f5]">
-  <!-- <section class="customer-page-container py-16">
-    <div class="flex items-end justify-between gap-4">
-      <div>
-        <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">{{ 'CUSTOMER.HOME.FLASH.EYEBROW' |
-          translate }}</p>
-        <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">{{
-          'CUSTOMER.HOME.FLASH.TITLE' | translate }}</h2>
-      </div>
-      <a routerLink="/shop/products"
-        class="inline-flex items-center gap-[.45rem] whitespace-nowrap text-[.8rem] font-black text-[#526148] no-underline">{{
-        'CUSTOMER.HOME.VIEW_ALL' | translate }} <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i></a>
-    </div>
-    @if (flashDeals().length) {
-    <div class="mt-7 grid gap-5 md:grid-cols-3">
-      @for (promotion of flashDeals(); track promotion.id) {
-      <a [routerLink]="promotionLink(promotion)"
-        class="group relative flex min-h-[17rem] overflow-hidden rounded-[1.5rem] no-underline shadow-[0_16px_36px_rgba(31,42,31,.1)] max-sm:min-h-[14rem]"
-        [style.background-color]="promotion.background_color || '#6b7d5e'">
-        @if (promotion.image_url) { <img [src]="promotion.image_url" [alt]="promotion.title"
-          class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" /> }
-        <span class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></span>
-        <span class="relative mt-auto block p-6 text-white"><strong class="text-xl font-black">{{ promotion.title
-            }}</strong>@if (promotion.description) { <small class="mt-1 block text-white/80">{{ promotion.description
-            }}</small> }</span>
-      </a>
-      }
-    </div>
-    } @else {
-    <div class="mt-7 rounded-3xl border border-[#e8dccf] bg-white p-10 text-center text-sm text-[#858585]">{{
-      'CUSTOMER.HOME.FLASH.EMPTY' | translate }}</div>
-    }
-  </section> -->
-
   <app-customer-flash-deals [promotions]="flashDeals()" />
 
   <section class="customer-page-container pb-16">
     <div
-      class="flex flex-col gap-5 rounded-3xl bg-[#6b7d5e] px-6 py-5 text-white shadow-lg sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex items-center gap-4"><span class="text-2xl">🎁</span>
-        <div>
-          <h2 class="font-black">{{ 'CUSTOMER.HOME.NEW_CUSTOMER.TITLE' | translate }}</h2>
-          <p class="mt-1 text-xs text-white/75">{{ 'CUSTOMER.HOME.NEW_CUSTOMER.TEXT' | translate }}</p>
+      class="flex flex-col gap-5 rounded-2xl bg-[#6b7d5e] px-5 py-5 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-7">
+      <!-- Information -->
+      <div class="flex min-w-0 items-center gap-4">
+        <span class="flex h-11 w-11 shrink-0 items-center justify-center text-2xl" aria-hidden="true">
+          🎁
+        </span>
+
+        <div class="min-w-0">
+          <h2 class="text-sm font-black sm:text-base">
+            {{ 'CUSTOMER.HOME.NEW_CUSTOMER.TITLE' | translate }}
+          </h2>
+
+          <p class="mt-1 text-xs text-white/85">
+            {{ 'CUSTOMER.HOME.NEW_CUSTOMER.USE_CODE' | translate }}
+
+            <strong class="font-black text-white"> NESTORA10 </strong>
+
+            {{ 'CUSTOMER.HOME.NEW_CUSTOMER.AT_CHECKOUT' | translate }}
+          </p>
         </div>
       </div>
-      <a routerLink="/auth/customer-register"
-        class="rounded-full bg-white px-6 py-3 text-sm font-black text-[#526148] no-underline">{{
-        'CUSTOMER.HOME.NEW_CUSTOMER.ACTION' | translate }}</a>
+
+      <!-- Discount and action -->
+      <div class="flex flex-wrap items-center gap-3 sm:shrink-0 sm:justify-end">
+        <span
+          class="inline-flex min-h-10 items-center justify-center rounded-full bg-[#f1e3d4] px-5 text-sm font-black text-[#1f2a1f]">
+          {{ 'CUSTOMER.HOME.NEW_CUSTOMER.DISCOUNT' | translate }}
+        </span>
+
+        <button type="button" routerLink="/shop/products"
+          class="inline-flex min-h-10 cursor-pointer items-center justify-center gap-3 rounded-full border border-white/30 bg-white/10 px-5 text-sm font-bold text-white transition hover:bg-white hover:text-[#526148]">
+          {{ 'CUSTOMER.HOME.NEW_CUSTOMER.SHOP_NOW' | translate }}
+
+          <i class="pi pi-arrow-right text-xs rtl:rotate-180" aria-hidden="true"></i>
+        </button>
+      </div>
     </div>
   </section>
 
   <section class="customer-page-container pb-20">
     <header class="text-center">
-      <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">{{ 'CUSTOMER.HOME.CATEGORIES.EYEBROW'
-        | translate }}</p>
-      <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">{{
-        'CUSTOMER.HOME.CATEGORIES.TITLE' | translate }}</h2>
+      <p class="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#718369]">
+        {{ 'CUSTOMER.HOME.CATEGORIES.EYEBROW' | translate }}
+      </p>
+
+      <h2 class="mt-2 text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">
+        {{ 'CUSTOMER.HOME.CATEGORIES.TITLE' | translate }}
+      </h2>
     </header>
-    <div class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+
+    <div class="mt-10 grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
       @for (category of categories(); track category.id) {
       <a routerLink="/shop/products" [queryParams]="{ category: category.slug }"
-        class="group relative min-h-[15rem] overflow-hidden rounded-[1.5rem] bg-[#e8dccf] shadow-[0_14px_32px_rgba(31,42,31,.08)] max-sm:min-h-[12rem]">
-        @if (category.image_url) { <img [src]="category.image_url" [alt]="category.name"
-          class="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> }
-        @else { <span class="absolute inset-0 bg-gradient-to-br from-[#dce4d6] to-[#e8dccf]"></span> }
-        <span class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></span>
-        <span class="absolute inset-x-0 bottom-0 p-5 text-white"><strong class="block text-lg font-black">{{
-            category.name }}</strong><small>{{ category.products_count || 0 }} {{ 'CUSTOMER.HOME.CATEGORIES.ITEMS' |
-            translate }}</small></span>
+        class="group relative aspect-[4/5] min-w-0 overflow-hidden rounded-[1.5rem] bg-[#e8dccf] no-underline shadow-[0_14px_32px_rgba(31,42,31,0.1)]">
+        @if (category.image_url) {
+        <img [src]="category.image_url" [alt]="category.name"
+          class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        } @else {
+        <span class="absolute inset-0 bg-gradient-to-br from-[#dce4d6] to-[#e8dccf]"></span>
+        }
+
+        <!-- Soft overlay over the full image -->
+        <span class="absolute inset-0 bg-black/10 transition duration-300 group-hover:bg-black/20"></span>
+
+        <!-- Strong bottom gradient -->
+        <span class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></span>
+
+        <!-- Centered bottom content -->
+        <div class="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-5 pb-7 text-center text-white">
+          <span class="mb-3 grid h-9 w-9 place-items-center rounded-full bg-white/20 text-base backdrop-blur-sm"
+            aria-hidden="true">
+            <i [class]="categoryIcon(category.slug)"></i>
+          </span>
+
+          <strong class="block text-lg font-black">
+            {{ category.name }}
+          </strong>
+
+          @if (category.description) {
+          <p class="mt-1 line-clamp-2 min-h-9 text-xs leading-5 text-white/80">
+            {{ category.description }}
+          </p>
+          } @else {
+          <p class="mt-1 text-xs text-white/80">
+            {{ category.products_count || 0 }}
+            {{ 'CUSTOMER.HOME.CATEGORIES.ITEMS' | translate }}
+          </p>
+          }
+        </div>
       </a>
       }
     </div>
@@ -136,26 +161,36 @@
   <section class="customer-page-container pb-20">
     <div class="flex items-end justify-between gap-4">
       <div>
-        <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">{{ 'CUSTOMER.HOME.BEST.EYEBROW' |
-          translate }}</p>
-        <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">{{
-          'CUSTOMER.HOME.BEST.TITLE' | translate }}</h2>
-      </div><a routerLink="/shop/products"
-        class="inline-flex items-center gap-[.45rem] whitespace-nowrap text-[.8rem] font-black text-[#526148] no-underline">{{
-        'CUSTOMER.HOME.VIEW_ALL' | translate }} <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i></a>
+        <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
+          {{ 'CUSTOMER.HOME.BEST.EYEBROW' | translate }}
+        </p>
+        <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">
+          {{ 'CUSTOMER.HOME.BEST.TITLE' | translate }}
+        </h2>
+      </div>
+      <button type="button" routerLink="/shop/best-sellers"
+        class="inline-flex cursor-pointer items-center gap-[.45rem] whitespace-nowrap border-0 bg-transparent p-0 text-[.8rem] font-black text-[#526148]">
+        {{ 'CUSTOMER.HOME.VIEW_ALL' | translate }}
+        <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i>
+      </button>
     </div>
     <div class="mt-7 grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-4">
-      @if (loading()) { @for (_ of loadingCards; track $index) { <app-customer-product-card-skeleton /> } }
-      @else { @for (product of bestSellers(); track product.id) {
+      @if (loading()) {
+      @for (_ of loadingCards; track $index) {
+      <app-customer-product-card-skeleton />
+      }
+      } @else {
+      @for (product of bestSellers(); track product.id) {
       <app-customer-product-card [product]="product" [wishlistActive]="shopping.isInWishlist(product.id)"
         [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
         [cartLoading]="shopping.pendingProductIds().has(product.id)" [canAddToCart]="shopping.canAdd(product)"
         (quickView)="openQuickView($event)" (addToCart)="addToCart($event)" (toggleWishlist)="toggleWishlist($event)" />
-      } }
+      }
+      }
     </div>
   </section>
 
-  <section class="customer-page-container pb-20">
+  <!-- <section class="customer-page-container pb-20">
     @if (seasonalPromotion(); as promotion) {
     <div
       class="relative flex min-h-[25rem] items-center overflow-hidden rounded-[2rem] bg-[linear-gradient(90deg,rgba(31,42,31,.92),rgba(31,42,31,.25)),linear-gradient(135deg,#718369,#c39a6b)] bg-center bg-cover p-[clamp(2rem,6vw,5rem)] shadow-[0_20px_50px_rgba(31,42,31,.13)] max-sm:min-h-[21rem] max-sm:rounded-[1.5rem]"
@@ -182,18 +217,22 @@
       </div>
     </div>
     }
-  </section>
+  </section> -->
 
   <section class="customer-page-container pb-20">
     <div class="flex items-end justify-between gap-4">
       <div>
-        <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">{{
-          'CUSTOMER.HOME.NEW_ARRIVALS.EYEBROW' | translate }}</p>
-        <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">{{
-          'CUSTOMER.HOME.NEW_ARRIVALS.TITLE' | translate }}</h2>
-      </div><a routerLink="/shop/new-arrivals"
+        <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
+          {{ 'CUSTOMER.HOME.NEW_ARRIVALS.EYEBROW' | translate }}
+        </p>
+        <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">
+          {{ 'CUSTOMER.HOME.NEW_ARRIVALS.TITLE' | translate }}
+        </h2>
+      </div>
+      <a routerLink="/shop/new-arrivals"
         class="inline-flex items-center gap-[.45rem] whitespace-nowrap text-[.8rem] font-black text-[#526148] no-underline">{{
-        'CUSTOMER.HOME.VIEW_ALL' | translate }} <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i></a>
+        'CUSTOMER.HOME.VIEW_ALL' | translate }}
+        <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i></a>
     </div>
     <div class="mt-7 grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-4">
       @for (product of newArrivals(); track product.id) {
@@ -206,69 +245,162 @@
   </section>
 
   <section class="customer-page-container pb-20 text-center">
-    <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">{{ 'CUSTOMER.HOME.OFFERS.EYEBROW' |
-      translate }}</p>
-    <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">{{
-      'CUSTOMER.HOME.OFFERS.TITLE' | translate }}</h2>
-    <p class="mx-auto mt-3 max-w-xl text-sm text-[#858585]">{{ 'CUSTOMER.HOME.OFFERS.TEXT' | translate }}</p>
+    <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
+      {{ 'CUSTOMER.HOME.OFFERS.EYEBROW' | translate }}
+    </p>
+    <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">
+      {{ 'CUSTOMER.HOME.OFFERS.TITLE' | translate }}
+    </h2>
+    <p class="mx-auto mt-3 max-w-xl text-sm text-[#858585]">
+      {{ 'CUSTOMER.HOME.OFFERS.TEXT' | translate }}
+    </p>
+    @if (loading()) {
+    <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" role="status">
+      <span class="sr-only">{{ 'CUSTOMER.HOME.OFFERS.LOADING' | translate }}</span>
+      @for (_ of loadingCards; track $index) {
+      <div class="h-64 animate-pulse rounded-3xl bg-[#eeeae4]" aria-hidden="true"></div>
+      }
+    </div>
+    } @else if (visibleOffers().length) {
     <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      @for (offer of offers; track offer.titleKey) {
-      <article class="rounded-3xl border border-[#e8dccf] p-6 text-start shadow-sm"
-        [style.background-color]="offer.tone"><i class="pi {{ offer.icon }} text-xl text-[#526148]"></i>
-        <h3 class="mt-5 font-black">{{ offer.titleKey | translate }}</h3>
-        <p class="mt-2 min-h-12 text-xs leading-5 text-[#77736d]">{{ offer.textKey | translate }}</p><a
-          routerLink="/shop/products" class="mt-5 inline-flex text-sm font-black text-[#526148]">{{ offer.actionKey |
-          translate }} <i class="pi pi-arrow-right ms-2 text-xs rtl:rotate-180"></i></a>
+      @for (offer of visibleOffers(); track offer.id) {
+      <article class="flex min-h-64 flex-col rounded-3xl border border-[#e8dccf] p-6 text-start shadow-sm"
+        [style.background-color]="offer.background_color">
+        <div class="flex items-start justify-between gap-3">
+          <i [class]="offer.icon || 'pi pi-gift'" class="text-xl text-[#526148]" aria-hidden="true"></i>
+          @if (offerBadge(offer); as badge) {
+          <span class="rounded-full bg-white/70 px-2.5 py-1 text-[.65rem] font-black uppercase text-[#526148]">
+            {{ badge }}
+          </span>
+          }
+        </div>
+        <h3 class="mt-5 font-black text-[#1f2a1f]">{{ offerTitle(offer) }}</h3>
+        <p class="mt-2 min-h-12 text-xs leading-5 text-[#77736d]">
+          {{ offerDescription(offer) }}
+        </p>
+
+        @if (offer.show_discount_code && offer.discount?.code; as code) {
+        <div
+          class="mt-4 mb-4 flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-dashed border-[#8fa081] bg-white/55 px-3 py-2">
+          <code class="min-w-0 truncate text-xs font-bold tracking-[0.12em] text-[#526148]">
+                  {{ code }}
+                </code>
+          <button type="button"
+            class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold text-[#526148] transition hover:bg-white"
+            (click)="copyDiscountCode($event, code)">
+            <i class="pi pi-copy text-xs" aria-hidden="true"></i>
+            {{ 'CUSTOMER.HOME.OFFERS.COPY' | translate }}
+          </button>
+        </div>
+        }
+
+        <button type="button"
+          class="mt-auto inline-flex min-h-10 w-fit items-center gap-2 rounded-full px-4 text-sm font-black text-white transition enabled:cursor-pointer enabled:hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-55"
+          [disabled]="!hasValidOfferAction(offer)" [style.background-color]="offer.button_color"
+          (click)="openOfferAction(offer)">
+          {{
+          hasValidOfferAction(offer)
+          ? offerActionText(offer) || ('CUSTOMER.HOME.OFFERS.VIEW_OFFER' | translate)
+          : ('CUSTOMER.HOME.OFFERS.COMING_SOON' | translate)
+          }}
+          @if (hasValidOfferAction(offer)) {
+          <i class="pi pi-arrow-right text-xs rtl:rotate-180" aria-hidden="true"></i>
+          }
+        </button>
       </article>
       }
     </div>
+    } @else {
+    <p class="mt-8 rounded-3xl border border-[#e8dccf] bg-white p-10 text-sm font-semibold text-[#858585]">
+      {{ 'CUSTOMER.HOME.OFFERS.EMPTY' | translate }}
+    </p>
+    }
   </section>
 
-  <section class="bg-[#2b2d2b] py-20 text-white">
+  <section class="bg-[#2b2d2b] py-16 text-white sm:py-20">
     <div class="customer-page-container">
       <header class="text-center">
-        <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369] !text-[#91a385]">{{
-          'CUSTOMER.HOME.DIFFERENCE.EYEBROW' | translate }}</p>
-        <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f] !text-white">{{
-          'CUSTOMER.HOME.DIFFERENCE.TITLE' | translate }}</h2>
+        <p class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-[#91a385]">
+          {{ 'CUSTOMER.HOME.DIFFERENCE.EYEBROW' | translate }}
+        </p>
+
+        <h2 class="mt-3 text-[clamp(1.4rem,2.5vw,2rem)] font-black leading-tight text-white">
+          {{ 'CUSTOMER.HOME.DIFFERENCE.TITLE' | translate }}
+        </h2>
       </header>
-      <div class="mt-9 grid gap-4 md:grid-cols-2 lg:grid-cols-3">@for (item of difference; track item.titleKey) {
-        <article class="rounded-2xl bg-white/[.06] p-6"><i class="pi {{ item.icon }} text-xl text-[#a9bd9c]"></i>
-          <h3 class="mt-4 font-black">{{ item.titleKey | translate }}</h3>
-          <p class="mt-2 text-sm leading-6 text-white/60">{{ item.textKey | translate }}</p>
-        </article> }
+
+      <div class="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-8">
+        @for (item of difference; track item.titleKey) {
+        <article
+          class="group min-h-[12.5rem] rounded-2xl bg-white/[0.07] px-6 py-7 transition duration-300 hover:-translate-y-1 hover:bg-white/[0.1] hover:shadow-[0_16px_35px_rgba(0,0,0,0.18)]">
+          <span class="block text-[1.8rem] leading-none" aria-hidden="true">
+            {{ item.icon }}
+          </span>
+
+          <h3 class="mt-5 text-lg font-semibold text-white">
+            {{ item.titleKey | translate }}
+          </h3>
+
+          <p class="mt-3 max-w-sm text-sm leading-6 text-white/65">
+            {{ item.textKey | translate }}
+          </p>
+        </article>
+        }
       </div>
     </div>
   </section>
 
   <section class="customer-page-container py-20">
     <header class="text-center">
-      <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">{{ 'CUSTOMER.HOME.REVIEWS.EYEBROW' |
-        translate }}</p>
-      <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">{{
-        'CUSTOMER.HOME.REVIEWS.TITLE' | translate }}</h2>
+      <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
+        {{ 'CUSTOMER.HOME.REVIEWS.EYEBROW' | translate }}
+      </p>
+      <h2 class="mt-[.55rem] text-[clamp(1.65rem,3vw,2.25rem)] font-black leading-[1.1] text-[#1f2a1f]">
+        {{ 'CUSTOMER.HOME.REVIEWS.TITLE' | translate }}
+      </h2>
     </header>
     <div class="mt-8 grid gap-5 md:grid-cols-3">
       @for (review of featuredReviews(); track review.id) {
-      <article class="rounded-3xl border border-[#eee8e1] bg-white p-6 shadow-sm">
-        <div class="flex gap-1 text-[#e8a11d]">@for (_ of [1,2,3,4,5]; track $index) { <i
-            class="pi pi-star-fill text-xs" [class.opacity-25]="$index + 1 > (review.rating || 0)"></i> }</div>
-        <p class="mt-4 line-clamp-4 text-sm leading-6 text-[#4e514b]">“{{ review.comment }}”</p>
-        <div class="mt-5 flex items-center gap-3"><span
-            class="grid size-9 place-items-center rounded-full bg-[#718369] text-xs font-black text-white">{{
-            reviewInitials(review) }}</span><strong class="text-sm">{{ reviewName(review) }}</strong></div>
+      <article class="flex min-h-[13rem] flex-col rounded-3xl border border-[#eee8e1] bg-white p-6 shadow-sm">
+        <!-- Customer name -->
+        <div class="flex items-center gap-3">
+          <span
+            class="grid size-9 shrink-0 place-items-center rounded-full bg-[#718369] text-xs font-black uppercase text-white">
+            {{ reviewInitials(review) }}
+          </span>
+
+          <strong class="min-w-0 truncate text-sm text-[#1f2a1f]">
+            {{ reviewName(review) }}
+          </strong>
+        </div>
+
+        <!-- Rating -->
+        <div class="mt-4 flex gap-1 text-[#e8a11d]" [attr.aria-label]="review.rating + ' out of 5 stars'">
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <i class="pi pi-star-fill text-xs" [class.opacity-25]="$index + 1 > (review.rating || 0)"
+            aria-hidden="true"></i>
+          }
+        </div>
+
+        <!-- Review -->
+        <p class="mt-4 line-clamp-4 text-sm leading-6 text-[#4e514b]">
+          “{{ review.comment }}”
+        </p>
       </article>
       } @empty {
-      <p class="col-span-full rounded-3xl bg-white p-10 text-center text-sm text-[#858585]">{{
-        'CUSTOMER.HOME.REVIEWS.EMPTY' | translate }}</p>
+      <p class="col-span-full rounded-3xl bg-white p-10 text-center text-sm text-[#858585]">
+        {{ 'CUSTOMER.HOME.REVIEWS.EMPTY' | translate }}
+      </p>
       }
     </div>
   </section>
 
   @if (loadError()) {
-  <section class="customer-page-container pb-16 text-center"><button type="button"
-      class="rounded-full bg-[#6b7d5e] px-6 py-3 text-sm font-black text-white" (click)="retry()">{{
-      'CUSTOMER.HOME.RETRY' | translate }}</button></section>
+  <section class="customer-page-container pb-16 text-center">
+    <button type="button" class="rounded-full bg-[#6b7d5e] px-6 py-3 text-sm font-black text-white" (click)="retry()">
+      {{ 'CUSTOMER.HOME.RETRY' | translate }}
+    </button>
+  </section>
   }
 </main>
 

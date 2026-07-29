@@ -1,111 +1,158 @@
 @if (loading()) {
-  <section class="customer-page-container py-20 text-center">
-    <p>Loading promotion...</p>
-  </section>
+<section class="customer-page-container py-20 text-center">
+    <p>
+        {{ 'CUSTOMER.PROMOTION_DETAILS.LOADING' | translate }}
+    </p>
+</section>
 } @else if (promotion(); as promotionData) {
-  <main class="bg-[#faf8f5] py-12">
+<main class="bg-[#faf8f5] py-12">
+    <section class="customer-page-container pb-6">
+        <nav class="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#858585]" [attr.aria-label]="
+          'CUSTOMER.PRODUCT_DETAILS.BREADCRUMB_ARIA' | translate
+        ">
+            <a routerLink="/shop" class="no-underline transition hover:text-[#526148]">
+                {{ 'CUSTOMER.PRODUCTS.HOME' | translate }}
+            </a>
+
+            <i class="pi pi-angle-right text-[0.65rem] rtl:rotate-180" aria-hidden="true"></i>
+
+            <a routerLink="/shop/flash-deals" class="no-underline transition hover:text-[#526148]">
+                {{ 'CUSTOMER.HOME.FLASH.TITLE' | translate }}
+            </a>
+
+            <i class="pi pi-angle-right text-[0.65rem] rtl:rotate-180" aria-hidden="true"></i>
+
+            <span class="max-w-[18rem] truncate font-bold text-[#1f2a1f]" aria-current="page">
+                {{ promotionData.title }}
+            </span>
+        </nav>
+    </section>
     <!-- Promotion hero -->
     <section class="customer-page-container">
-      <div class="relative min-h-[28rem] overflow-hidden rounded-[2rem] bg-[#263326]">
-        @if (promotionData.image_url) {
-          <img
-            [src]="promotionData.image_url"
-            [alt]="promotionData.title"
-            class="absolute inset-0 h-full w-full object-cover"
-          />
-        }
-
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"
-        ></div>
-
-        <div
-          class="relative flex min-h-[28rem] max-w-2xl flex-col justify-center p-8 text-white sm:p-14"
-        >
-          <div class="flex flex-wrap gap-2">
-            @if (promotionData.badge_text) {
-              <span class="rounded-full bg-[#718369] px-4 py-2 text-xs font-black">
-                {{ promotionData.badge_text }}
-              </span>
+        <div class="relative min-h-[28rem] overflow-hidden rounded-[2rem] bg-[#263326]">
+            @if (promotionData.image_url) {
+            <img [src]="promotionData.image_url" [alt]="promotionData.title"
+                class="absolute inset-0 h-full w-full object-cover" />
             }
 
-            @if (promotionData.secondary_badge_text) {
-              <span
-                class="rounded-full border border-white/30 bg-white/15 px-4 py-2 text-xs font-black backdrop-blur"
-              >
-                {{ promotionData.secondary_badge_text }}
-              </span>
-            }
-          </div>
+            <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
 
-          <h1 class="mt-6 text-4xl font-black sm:text-6xl">
-            {{ promotionData.title }}
-          </h1>
+            <div class="relative flex min-h-[28rem] max-w-2xl flex-col justify-center p-8 text-white sm:p-14">
+                <div class="flex flex-wrap gap-2">
+                    @if (promotionData.badge_text) {
+                    <span class="rounded-full bg-[#718369] px-4 py-2 text-xs font-black">
+                        {{ promotionData.badge_text }}
+                    </span>
+                    }
 
-          @if (promotionData.description) {
-            <p class="mt-5 text-lg text-white/80">
-              {{ promotionData.description }}
-            </p>
-          }
+                    @if (promotionData.secondary_badge_text) {
+                    <span
+                        class="rounded-full border border-white/30 bg-white/15 px-4 py-2 text-xs font-black backdrop-blur">
+                        {{ promotionData.secondary_badge_text }}
+                    </span>
+                    }
+                </div>
 
-          <a
-            routerLink="/shop/products"
-            class="mt-8 inline-flex w-fit rounded-full bg-white px-7 py-3.5 text-sm font-black text-[#1f2a1f] no-underline"
-          >
-            {{ promotionData.button_text || 'Browse Products' }}
-          </a>
+                <h1 class="mt-6 text-4xl font-black sm:text-6xl">
+                    {{ promotionData.title }}
+                </h1>
+
+                @if (promotionData.description) {
+                <p class="mt-5 text-lg text-white/80">
+                    {{ promotionData.description }}
+                </p>
+                }
+
+                <button type="button"
+                    class="mt-8 inline-flex w-fit cursor-pointer rounded-full bg-white px-7 py-3.5 text-sm font-black text-[#1f2a1f] transition hover:bg-[#eef4e8]"
+                    (click)="scrollToPromotionProducts()">
+                    {{ 'CUSTOMER.PROMOTION_DETAILS.SHOP_NOW' | translate }}
+                </button>
+            </div>
         </div>
-      </div>
     </section>
 
     <!-- Products connected to the promotion -->
-    <section class="customer-page-container pt-16">
-      <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
-        Limited-time selection
-      </p>
+    <section id="promotion-products" class="customer-page-container scroll-mt-36 pt-16">
+        <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
+            {{
+            'CUSTOMER.PROMOTION_DETAILS.LIMITED_TIME'
+            | translate
+            }}
+        </p>
 
-      <h2 class="mt-2 text-3xl font-black text-[#1f2a1f]">Products in this promotion</h2>
+        <h2 class="mt-2 text-3xl font-black text-[#1f2a1f]">
+            {{
+            'CUSTOMER.PROMOTION_DETAILS.PRODUCTS_TITLE'
+            | translate
+            }}
+        </h2>
 
-      <p class="mt-2 text-sm text-[#858585]">
-        Explore products currently included in
-        {{ promotionData.title }}.
-      </p>
+        <p class="mt-2 text-sm text-[#858585]">
+            {{
+            'CUSTOMER.PROMOTION_DETAILS.PRODUCTS_DESCRIPTION'
+            | translate: { title: promotionData.title }
+            }}
+        </p>
 
-      @if (promotionProducts().length) {
+        @if (promotionProducts().length) {
         <div class="mt-8 grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-4">
-          @for (product of promotionProducts(); track product.id) {
+            @for (
+            product of promotionProducts();
+            track product.id
+            ) {
             <app-customer-product-card [product]="product" />
-          }
+            }
         </div>
-      } @else {
+        } @else {
         <div class="mt-8 rounded-3xl border border-[#e8dccf] bg-white p-10 text-center">
-          <h3 class="font-black text-[#1f2a1f]">No products added yet</h3>
+            <h3 class="font-black text-[#1f2a1f]">
+                {{
+                'CUSTOMER.PROMOTION_DETAILS.EMPTY_TITLE'
+                | translate
+                }}
+            </h3>
 
-          <p class="mt-2 text-sm text-[#858585]">
-            Products for this promotion will be available soon.
-          </p>
+            <p class="mt-2 text-sm text-[#858585]">
+                {{
+                'CUSTOMER.PROMOTION_DETAILS.EMPTY_TEXT'
+                | translate
+                }}
+            </p>
 
-          <a
-            routerLink="/shop/products"
-            class="mt-6 inline-flex rounded-full bg-[#718369] px-6 py-3 text-sm font-black text-white no-underline"
-          >
-            Browse All Products
-          </a>
+            <a routerLink="/shop/products"
+                class="mt-6 inline-flex rounded-full bg-[#718369] px-6 py-3 text-sm font-black text-white no-underline">
+                {{
+                'CUSTOMER.PROMOTION_DETAILS.BROWSE_ALL'
+                | translate
+                }}
+            </a>
         </div>
-      }
+        }
     </section>
-  </main>
+</main>
 } @else {
-  <section class="customer-page-container py-20 text-center">
-    <h1 class="text-3xl font-black text-[#1f2a1f]">Promotion unavailable</h1>
+<section class="customer-page-container py-20 text-center">
+    <h1 class="text-3xl font-black text-[#1f2a1f]">
+        {{
+        'CUSTOMER.PROMOTION_DETAILS.UNAVAILABLE_TITLE'
+        | translate
+        }}
+    </h1>
 
-    <p class="mt-3 text-[#858585]">This promotion has expired or is no longer active.</p>
+    <p class="mt-3 text-[#858585]">
+        {{
+        'CUSTOMER.PROMOTION_DETAILS.UNAVAILABLE_TEXT'
+        | translate
+        }}
+    </p>
 
-    <a
-      routerLink="/shop/products"
-      class="mt-7 inline-flex rounded-full bg-[#718369] px-6 py-3 text-sm font-black text-white no-underline"
-    >
-      Browse All Products
+    <a routerLink="/shop/products"
+        class="mt-7 inline-flex rounded-full bg-[#718369] px-6 py-3 text-sm font-black text-white no-underline">
+        {{
+        'CUSTOMER.PROMOTION_DETAILS.BROWSE_ALL'
+        | translate
+        }}
     </a>
-  </section>
+</section>
 }

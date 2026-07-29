@@ -4,11 +4,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CustomerPromotionsService } from '../../../../services/customer-promotions.service';
 import { PromotionDetailsData } from '../../../../models';
 import { CustomerProductCardComponent } from '../../../../../customer/components/customer-product-card';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-promotion-details',
   standalone: true,
-  imports: [RouterLink, CustomerProductCardComponent],
+  imports: [RouterLink, CustomerProductCardComponent, TranslatePipe],
   templateUrl: './promotion-details.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -71,5 +72,16 @@ export class PromotionDetails {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  scrollToPromotionProducts(): void {
+    const productsSection = document.getElementById(
+      'promotion-products',
+    );
+
+    productsSection?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
   }
 }

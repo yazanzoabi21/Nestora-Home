@@ -104,12 +104,12 @@
     </div>
 
     <div class="mt-7 text-center">
-        <a routerLink="/shop/products"
-            class="inline-flex items-center gap-2 text-sm font-medium text-[#858585] no-underline transition hover:text-[#526148]">
-            {{ 'CUSTOMER.HOME.VIEW_ALL' | translate }}
+        <button type="button" routerLink="/shop/flash-deals"
+            class="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-sm font-medium text-[#858585] transition hover:text-[#526148]">
+            {{ 'CUSTOMER.HOME.FLASH.VIEW_ALL' | translate }}
 
             <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i>
-        </a>
+        </button>
     </div>
     } @else {
     <div class="mt-7 rounded-3xl border border-[#e8dccf] bg-white p-10 text-center text-sm text-[#858585]">

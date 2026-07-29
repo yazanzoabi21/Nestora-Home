@@ -1,0 +1,139 @@
+<main class="min-w-0 bg-[#faf8f5]">
+  <section class="relative isolate overflow-hidden bg-[#263326] text-white">
+    <div
+      class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(113,131,105,.65),transparent_46%),linear-gradient(135deg,#1f2a1f,#303b2e)]">
+    </div>
+    <div class="customer-page-container relative py-12 sm:py-16 lg:py-20">
+      <nav class="flex flex-wrap items-center gap-2 text-xs font-bold text-white/65">
+        <a routerLink="/shop" class="text-white/75 no-underline transition hover:text-white">
+          {{ 'CUSTOMER.FLASH_DEALS_PAGE.HOME' | translate }}
+        </a>
+        <i class="pi pi-angle-right text-[0.65rem] rtl:rotate-180"></i>
+        <span>{{ 'CUSTOMER.FLASH_DEALS_PAGE.BREADCRUMB' | translate }}</span>
+      </nav>
+
+      <div class="mt-8 flex max-w-3xl items-start gap-4 sm:gap-5">
+        <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-xl backdrop-blur sm:size-14">
+          <i class="pi pi-bolt"></i>
+        </span>
+        <div class="min-w-0">
+          <p class="text-[0.7rem] font-black uppercase tracking-[0.2em] text-[#b8c9ad]">
+            {{ 'CUSTOMER.FLASH_DEALS_PAGE.EYEBROW' | translate }}
+          </p>
+          <h1 class="mt-2 text-3xl font-black leading-tight sm:text-5xl">
+            {{ 'CUSTOMER.FLASH_DEALS_PAGE.TITLE' | translate }}
+          </h1>
+          <p class="mt-4 max-w-2xl text-sm font-medium leading-6 text-white/75 sm:text-base">
+            {{ 'CUSTOMER.FLASH_DEALS_PAGE.SUBTITLE' | translate }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="customer-page-container py-10 sm:py-14 lg:py-16">
+    @if (loading()) {
+    <div class="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+      [attr.aria-label]="'CUSTOMER.FLASH_DEALS_PAGE.LOADING' | translate">
+      @for (_ of loadingCards; track $index) {
+      <div class="min-h-[16rem] animate-pulse overflow-hidden rounded-[1.5rem] bg-[#e8dccf] sm:min-h-[19rem]">
+        <div class="h-full bg-gradient-to-br from-white/25 to-transparent"></div>
+      </div>
+      }
+    </div>
+    } @else if (loadError()) {
+    <div class="mx-auto max-w-2xl rounded-3xl border border-[#ead8d2] bg-white px-6 py-12 text-center shadow-sm">
+      <span class="mx-auto grid size-14 place-items-center rounded-2xl bg-[#fff1f0] text-xl text-[#b42318]">
+        <i class="pi pi-exclamation-circle"></i>
+      </span>
+      <h2 class="mt-5 text-xl font-black text-[#1f2a1f]">
+        {{ 'CUSTOMER.FLASH_DEALS_PAGE.ERROR_TITLE' | translate }}
+      </h2>
+      <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-[#858585]">
+        {{ 'CUSTOMER.FLASH_DEALS_PAGE.ERROR_TEXT' | translate }}
+      </p>
+      <button type="button"
+        class="mt-6 rounded-full bg-[#718369] px-6 py-3 text-sm font-black text-white transition hover:bg-[#5f6f43]"
+        (click)="retry()">
+        {{ 'CUSTOMER.FLASH_DEALS_PAGE.RETRY' | translate }}
+      </button>
+    </div>
+    } @else if (promotions().length) {
+    <div class="mb-7 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p class="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#718369]">
+          {{ 'CUSTOMER.FLASH_DEALS_PAGE.AVAILABLE_EYEBROW' | translate }}
+        </p>
+        <h2 class="mt-2 text-2xl font-black text-[#1f2a1f] sm:text-3xl">
+          {{ 'CUSTOMER.FLASH_DEALS_PAGE.AVAILABLE_TITLE' | translate }}
+        </h2>
+      </div>
+      <span class="rounded-full bg-[#e8dccf] px-4 py-2 text-xs font-black text-[#526148]">
+        {{ 'CUSTOMER.FLASH_DEALS_PAGE.DEAL_COUNT' | translate: { count: promotions().length } }}
+      </span>
+    </div>
+
+    <div class="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      @for (promotion of promotions(); track promotion.id) {
+      <a [routerLink]="promotionLink(promotion)"
+        class="group relative flex min-h-[16rem] min-w-0 overflow-hidden rounded-[1.5rem] no-underline shadow-[0_16px_36px_rgba(31,42,31,.1)] transition hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(31,42,31,.16)] sm:min-h-[19rem]"
+        [style.background-color]="promotion.background_color || '#6b7d5e'">
+        @if (promotion.image_url) {
+        <img [src]="promotion.image_url" [alt]="promotion.title" loading="lazy"
+          class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        }
+
+        <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></span>
+
+        <span class="absolute inset-x-0 top-0 z-10 flex min-w-0 items-center justify-between gap-3 p-4 sm:p-5">
+          @if (promotion.badge_text) {
+          <span class="max-w-[65%] truncate rounded-full bg-[#718369] px-3 py-1.5 text-[0.68rem] font-black text-white">
+            {{ promotion.badge_text }}
+          </span>
+          }
+
+          @if (promotion.secondary_badge_text) {
+          <span
+            class="ms-auto max-w-[55%] truncate rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-[0.68rem] font-bold text-white backdrop-blur">
+            {{ promotion.secondary_badge_text }}
+          </span>
+          }
+        </span>
+
+        <span class="relative z-10 mt-auto block min-w-0 p-5 text-white sm:p-6">
+          <strong class="block text-xl font-black sm:text-2xl">
+            {{ promotion.title }}
+          </strong>
+          @if (promotion.description) {
+          <span class="mt-2 line-clamp-2 block text-sm leading-6 text-white/80">
+            {{ promotion.description }}
+          </span>
+          }
+          <span class="mt-5 inline-flex items-center gap-2 text-sm font-black">
+            {{ promotion.button_text || ('CUSTOMER.FLASH_DEALS_PAGE.OPEN_DEAL' | translate) }}
+            <i
+              class="pi pi-arrow-right text-xs transition group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"></i>
+          </span>
+        </span>
+      </a>
+      }
+    </div>
+    } @else {
+    <div class="mx-auto max-w-2xl rounded-3xl border border-[#e8dccf] bg-white px-6 py-12 text-center shadow-sm">
+      <span class="mx-auto grid size-14 place-items-center rounded-2xl bg-[#eef4e8] text-xl text-[#718369]">
+        <i class="pi pi-bolt"></i>
+      </span>
+      <h2 class="mt-5 text-xl font-black text-[#1f2a1f]">
+        {{ 'CUSTOMER.FLASH_DEALS_PAGE.EMPTY_TITLE' | translate }}
+      </h2>
+      <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-[#858585]">
+        {{ 'CUSTOMER.FLASH_DEALS_PAGE.EMPTY_TEXT' | translate }}
+      </p>
+      <a routerLink="/shop/products"
+        class="mt-6 inline-flex rounded-full bg-[#718369] px-6 py-3 text-sm font-black text-white no-underline transition hover:bg-[#5f6f43]">
+        {{ 'CUSTOMER.FLASH_DEALS_PAGE.BROWSE_PRODUCTS' | translate }}
+      </a>
+    </div>
+    }
+  </section>
+</main>

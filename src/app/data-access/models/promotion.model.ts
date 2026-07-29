@@ -66,6 +66,9 @@ export interface PromotionMutationPayload {
 export interface PromotionSelectableProduct {
   id: string;
   name: string;
+  sku: string | null;
+  category_id: string | null;
+  category_name: string | null;
   image_url: string | null;
   price: number;
   sale_price: number | null;

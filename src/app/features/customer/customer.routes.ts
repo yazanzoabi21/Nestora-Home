@@ -27,11 +27,13 @@ export const CUSTOMER_ROUTES: Routes = [
       },
 
       {
+        path: 'flash-deals',
+        loadComponent: () => import('./promotions/pages/flash-deals').then((m) => m.FlashDealsPage),
+      },
+      {
         path: 'promotions/:slug',
         loadComponent: () =>
-          import(
-            './promotions/pages/promotion-details'
-          ).then((m) => m.PromotionDetails),
+          import('./promotions/pages/promotion-details').then((m) => m.PromotionDetails),
       },
 
       {
@@ -42,6 +44,11 @@ export const CUSTOMER_ROUTES: Routes = [
       {
         path: 'new-arrivals',
         loadComponent: () => import('./pages/new-arrivals').then((m) => m.NewArrivalsComponent),
+      },
+      {
+        path: 'best-sellers',
+        loadComponent: () =>
+          import('./pages/best-sellers/best-sellers').then((m) => m.BestSellersPage),
       },
       {
         path: 'cart',
@@ -59,14 +66,43 @@ export const CUSTOMER_ROUTES: Routes = [
       {
         path: 'customer-account',
         canActivate: [customerAuthGuard],
-        loadComponent: () => import('./components/customer-account/customer-account.component').then(m => m.CustomerAccountComponent),
+        loadComponent: () =>
+          import('./components/customer-account/customer-account.component').then(
+            (m) => m.CustomerAccountComponent,
+          ),
         children: [
           { path: '', redirectTo: 'profile', pathMatch: 'full' },
-          { path: 'profile', loadComponent: () => import('./components/customer-account-profile/customer-account-profile.component').then(m => m.CustomerAccountProfileComponent) },
-          { path: 'orders', loadComponent: () => import('./orders').then(m => m.CustomerOrdersComponent) },
-          { path: 'wishlist', loadComponent: () => import('./wishlist').then(m => m.CustomerWishlistComponent) },
-          { path: 'addresses', loadComponent: () => import('./components/customer-account-placeholder/customer-account-placeholder.component').then(m => m.CustomerAccountPlaceholderComponent), data: { title: 'Addresses' } },
-          { path: 'settings', loadComponent: () => import('./components/customer-account-placeholder/customer-account-placeholder.component').then(m => m.CustomerAccountPlaceholderComponent), data: { title: 'Settings' } },
+          {
+            path: 'profile',
+            loadComponent: () =>
+              import('./components/customer-account-profile/customer-account-profile.component').then(
+                (m) => m.CustomerAccountProfileComponent,
+              ),
+          },
+          {
+            path: 'orders',
+            loadComponent: () => import('./orders').then((m) => m.CustomerOrdersComponent),
+          },
+          {
+            path: 'wishlist',
+            loadComponent: () => import('./wishlist').then((m) => m.CustomerWishlistComponent),
+          },
+          {
+            path: 'addresses',
+            loadComponent: () =>
+              import('./components/customer-account-placeholder/customer-account-placeholder.component').then(
+                (m) => m.CustomerAccountPlaceholderComponent,
+              ),
+            data: { title: 'Addresses' },
+          },
+          {
+            path: 'settings',
+            loadComponent: () =>
+              import('./components/customer-account-placeholder/customer-account-placeholder.component').then(
+                (m) => m.CustomerAccountPlaceholderComponent,
+              ),
+            data: { title: 'Settings' },
+          },
         ],
       },
     ],

@@ -1,6 +1,7 @@
 export * from './api-response.model';
 export * from './category.model';
 export * from './customer.model';
+export * from './customer-offer.model';
 export * from './discount.model';
 export * from './inventory.model';
 export * from './media.model';

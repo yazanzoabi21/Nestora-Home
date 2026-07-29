@@ -38,10 +38,15 @@ const MAX_PROMOTION_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 const SELECTABLE_PRODUCT_SELECT = `
   id,
   name,
+  sku,
+  category_id,
   image_url,
   price,
   sale_price,
-  is_active
+  is_active,
+  categories (
+    name
+  )
 `;
 
 @Injectable({
@@ -128,14 +133,23 @@ export class PromotionsService {
       throw new Error(`Unable to load selectable products: ${error.message}`);
     }
 
-    return (data ?? []).map((product) => ({
-      id: String(product.id),
-      name: String(product.name ?? '').trim(),
-      image_url: typeof product.image_url === 'string' ? product.image_url : null,
-      price: this.toNumber(product.price),
-      sale_price: product.sale_price === null ? null : this.toNumber(product.sale_price),
-      is_active: product.is_active ?? null,
-    }));
+    return (data ?? []).map((product) => {
+      const category = Array.isArray(product.categories)
+        ? product.categories[0]
+        : product.categories;
+
+      return {
+        id: String(product.id),
+        name: String(product.name ?? '').trim(),
+        sku: typeof product.sku === 'string' ? product.sku : null,
+        category_id: typeof product.category_id === 'string' ? product.category_id : null,
+        category_name: typeof category?.name === 'string' ? category.name : null,
+        image_url: typeof product.image_url === 'string' ? product.image_url : null,
+        price: this.toNumber(product.price),
+        sale_price: product.sale_price === null ? null : this.toNumber(product.sale_price),
+        is_active: product.is_active ?? null,
+      };
+    });
   }
 
   async getPromotionProductIds(promotionId: string): Promise<string[]> {

@@ -10,21 +10,19 @@ import {
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
-// import { Promotion } from '../../../../../../../data-access/models/promotion.model';
 import { Promotion } from '../../../../../../../data-access';
+import { CustomerPromotionsService } from '../../../../../services/customer-promotions.service';
 
 @Component({
   selector: 'app-customer-flash-deals',
   standalone: true,
-  imports: [
-    RouterLink,
-    TranslatePipe,
-  ],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './customer-flash-deals.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerFlashDeals {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly promotionsService = inject(CustomerPromotionsService);
 
   readonly promotions = input<readonly Promotion[]>([]);
 
@@ -35,15 +33,9 @@ export class CustomerFlashDeals {
       .map((promotion) => promotion.end_date)
       .filter((date): date is string => Boolean(date))
       .map((date) => new Date(date).getTime())
-      .filter(
-        (timestamp) =>
-          Number.isFinite(timestamp) &&
-          timestamp > this.currentTime(),
-      );
+      .filter((timestamp) => Number.isFinite(timestamp) && timestamp > this.currentTime());
 
-    return validDeadlines.length
-      ? Math.min(...validDeadlines)
-      : null;
+    return validDeadlines.length ? Math.min(...validDeadlines) : null;
   });
 
   readonly countdown = computed(() => {
@@ -57,10 +49,7 @@ export class CustomerFlashDeals {
       };
     }
 
-    const remainingMilliseconds = Math.max(
-      deadline - this.currentTime(),
-      0,
-    );
+    const remainingMilliseconds = Math.max(deadline - this.currentTime(), 0);
 
     const totalSeconds = Math.floor(remainingMilliseconds / 1000);
 
@@ -82,8 +71,6 @@ export class CustomerFlashDeals {
   }
 
   promotionLink(promotion: Promotion): string {
-    return promotion.slug
-      ? `/shop/promotions/${promotion.slug}`
-      : '/shop/products';
+    return this.promotionsService.promotionLink(promotion);
   }
 }

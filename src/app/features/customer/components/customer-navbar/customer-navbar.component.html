@@ -22,7 +22,7 @@
       </span>
 
       <a routerLink="/shop"
-        class="ml-0.5 text-white underline decoration-1 underline-offset-[3px] transition-colors duration-150 hover:text-[#cbd8c4]">
+        class="ml-0.5 cursor-pointer text-white underline decoration-1 underline-offset-[3px] transition-colors duration-150 hover:text-[#cbd8c4]">
         Learn More
         <span aria-hidden="true">→</span>
       </a>
@@ -33,11 +33,17 @@
   <div
     class="flex h-8 w-full items-center justify-center gap-[7px] overflow-hidden whitespace-nowrap bg-[#718369] px-4 text-center text-[11px] font-semibold uppercase leading-none tracking-[0.15em] text-white max-sm:h-[30px] max-sm:px-2.5 max-sm:text-[8px] max-sm:tracking-[0.09em]"
     aria-live="polite">
-    @for (message of promotionalMessages(); track message; let last = $last) {
+    @for (
+    message of promotionalMessages();
+    track message;
+    let last = $last
+    ) {
     <span>{{ message }}</span>
 
     @if (!last) {
-    <span class="text-[15px] leading-none" aria-hidden="true">·</span>
+    <span class="text-[15px] leading-none" aria-hidden="true">
+      ·
+    </span>
     }
     } @empty {
     <span>CHECK BACK SOON FOR NEW OFFERS</span>
@@ -46,9 +52,11 @@
 
   <!-- Main navbar -->
   <nav class="w-full border-b border-[#e8dccf] bg-white/[0.98] backdrop-blur-[8px]" aria-label="Primary navigation">
+    <!-- Desktop navbar -->
     <div class="customer-page-container hidden h-[82px] items-center gap-7 max-[1280px]:gap-[18px] min-[1181px]:flex">
       <!-- Brand -->
-      <a routerLink="/shop" class="flex shrink-0 items-center gap-3 text-[#202c22] no-underline max-sm:gap-[9px]"
+      <a routerLink="/shop"
+        class="flex shrink-0 cursor-pointer items-center gap-3 text-[#202c22] no-underline max-sm:gap-[9px]"
         aria-label="Nestora Home">
         <span
           class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#718369] text-white shadow-[0_2px_5px_rgba(31,42,31,0.18)] max-sm:h-10 max-sm:w-10 max-sm:rounded-xl"
@@ -61,21 +69,23 @@
         </span>
       </a>
 
-      <!-- Navigation centered between brand and search -->
+      <!-- Desktop navigation links -->
       <div
         class="flex min-w-0 flex-1 items-center justify-center gap-[26px] max-[1120px]:gap-[17px] max-[920px]:hidden">
         <a routerLink="/shop" routerLinkActive="!font-extrabold !text-[#202c22]"
           [routerLinkActiveOptions]="{ exact: true }"
-          class="whitespace-nowrap text-[15px] font-semibold leading-none text-[#53604f] no-underline transition-colors duration-150 hover:text-[#718369]">
+          class="cursor-pointer whitespace-nowrap text-[15px] font-semibold leading-none text-[#53604f] no-underline transition-colors duration-150 hover:text-[#718369]">
           {{ 'CUSTOMER.PRODUCTS.HOME' | translate }}
         </a>
 
+        <!-- Categories dropdown -->
         <div class="relative">
           <button type="button"
-            class="inline-flex items-center gap-1.5 whitespace-nowrap text-[15px] font-semibold leading-none text-[#53604f] transition-colors duration-150 hover:text-[#718369]"
+            class="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent p-0 text-[15px] font-semibold leading-none text-[#53604f] transition-colors duration-150 hover:text-[#718369] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#718369]/30 focus-visible:ring-offset-4"
             [class.!font-extrabold]="categoriesMenuOpen()" [class.!text-[#202c22]]="categoriesMenuOpen()"
             [attr.aria-expanded]="categoriesMenuOpen()" aria-haspopup="menu" (click)="toggleCategoriesMenu()">
             {{ 'SIDEBAR.CATEGORIES' | translate }}
+
             <i class="pi text-[10px]" [class.pi-chevron-up]="categoriesMenuOpen()"
               [class.pi-chevron-down]="!categoriesMenuOpen()" aria-hidden="true"></i>
           </button>
@@ -83,16 +93,23 @@
           @if (categoriesMenuOpen()) {
           <div role="menu"
             class="absolute start-0 top-full z-[1100] mt-4 w-[230px] overflow-hidden rounded-[18px] border border-[#e8d8c9] bg-white py-2.5 shadow-[0_14px_35px_rgba(48,54,47,0.16)]">
-            @for (category of navbarCategories(); track category.id) {
-            <a role="menuitem" routerLink="/shop/products" [queryParams]="{ category: category.slug, source: 'navbar' }"
-              class="flex min-h-14 items-center gap-3.5 px-5 py-3 text-[14px] font-semibold text-[#3f433e] no-underline transition-colors duration-150 hover:bg-[#f2f4ed] hover:text-[#53674d] focus-visible:bg-[#f2f4ed] focus-visible:outline-none"
+            @for (
+            category of navbarCategories();
+            track category.id
+            ) {
+            <a role="menuitem" routerLink="/shop/products" [queryParams]="{
+                    category: category.slug,
+                    source: 'navbar'
+                  }"
+              class="flex min-h-14 cursor-pointer items-center gap-3.5 px-5 py-3 text-[14px] font-semibold text-[#3f433e] no-underline transition-colors duration-150 hover:bg-[#f2f4ed] hover:text-[#53674d] focus-visible:bg-[#f2f4ed] focus-visible:outline-none"
               (click)="closeCategoriesMenu()">
-              @if (categoryImageUrl(category); as imageUrl) {
-              <img class="h-5 w-5 shrink-0 object-contain" [src]="imageUrl" alt="" />
-              } @else {
-              <i [class]="categoryIconClass(category) + ' w-5 shrink-0 text-center text-base text-[#6b7d5e]'"
-                aria-hidden="true"></i>
-              }
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#f2f4ed] text-[#6b7d5e]"
+                aria-hidden="true">
+                <i [class]="
+                        categoryIconClass(category) + ' text-sm'
+                      "></i>
+              </span>
+
               <span>{{ category.name }}</span>
             </a>
             }
@@ -101,15 +118,16 @@
         </div>
 
         @for (link of navLinks; track link.path) {
-        <a [routerLink]="link.path" routerLinkActive="!font-extrabold !text-[#202c22]"
-          [routerLinkActiveOptions]="{ exact: link.path === '/shop' }"
-          class="whitespace-nowrap text-[15px] font-semibold leading-none text-[#53604f] no-underline transition-colors duration-150 hover:text-[#718369]">
+        <a [routerLink]="link.path" routerLinkActive="!font-extrabold !text-[#202c22]" [routerLinkActiveOptions]="{
+              exact: link.path === '/shop'
+            }"
+          class="cursor-pointer whitespace-nowrap text-[15px] font-semibold leading-none text-[#53604f] no-underline transition-colors duration-150 hover:text-[#718369]">
           {{ link.labelKey | translate }}
         </a>
         }
       </div>
 
-      <!-- Search and actions -->
+      <!-- Desktop search and actions -->
       <div class="flex shrink-0 items-center gap-[9px] max-[920px]:ml-auto max-sm:gap-[7px] max-[390px]:gap-[5px]">
         <!-- Search -->
         <label
@@ -128,10 +146,14 @@
         <!-- Wishlist -->
         <a routerLink="/shop/customer-account/wishlist"
           class="relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] no-underline transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:hidden"
-          [attr.aria-label]="'CUSTOMER.WISHLIST.TITLE' | translate">
+          [attr.aria-label]="
+            'CUSTOMER.WISHLIST.TITLE' | translate
+          ">
           <i class="pi pi-heart text-base"></i>
+
           @if (shopping.wishlistCount() > 0) {
-          <span class="absolute -end-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-[#d83b54] px-1 text-[10px] font-black text-white">
+          <span
+            class="absolute -end-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-[#d83b54] px-1 text-[10px] font-black text-white">
             {{ shopping.wishlistCount() }}
           </span>
           }
@@ -139,31 +161,37 @@
 
         <!-- Cart -->
         <a routerLink="/shop/cart"
-          class="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] no-underline transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:h-10 max-sm:w-10"
-          [attr.aria-label]="'Cart, ' + shopping.cartQuantity() + ' items'">
+          class="relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] no-underline transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:h-10 max-sm:w-10"
+          [attr.aria-label]="
+            'Cart, ' + shopping.cartQuantity() + ' items'
+          ">
           <i class="pi pi-shopping-bag text-base" aria-hidden="true"></i>
 
           @if (shopping.cartQuantity() > 0) {
           <span
             class="pointer-events-none absolute -end-[0.3rem] -top-[0.3rem] inline-flex h-[1.15rem] min-w-[1.15rem] items-center justify-center rounded-full border-2 border-white bg-[#6b7d5e] px-1 text-[0.6rem] font-extrabold leading-none text-white"
             aria-hidden="true">
-            {{ shopping.cartQuantity() > 99 ? '99+' : shopping.cartQuantity() }}
+            {{
+            shopping.cartQuantity() > 99
+            ? '99+'
+            : shopping.cartQuantity()
+            }}
           </span>
           }
         </a>
 
         <!-- Profile -->
         <button type="button"
-          class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:h-10 max-sm:w-10"
+          class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] disabled:cursor-not-allowed disabled:opacity-60 max-sm:h-10 max-sm:w-10"
           [attr.aria-label]="accountAriaLabel()" [disabled]="customerAuth.isLoading()"
           [attr.aria-busy]="customerAuth.isLoading()" (click)="openAccount()">
-          <!-- <i class="pi text-base" [class.pi-user]="!customerAuth.isLoading()"
-            [class.pi-spinner]="customerAuth.isLoading()" [class.pi-spin]="customerAuth.isLoading()"></i> -->
-
           @if (customerAuth.isLoading()) {
           <i class="pi pi-spinner pi-spin text-base" aria-hidden="true"></i>
           } @else if (customerAuth.isAuthenticated()) {
-          @if (customerAuth.customerProfile()?.avatar_url; as avatarUrl) {
+          @if (
+          customerAuth.customerProfile()?.avatar_url;
+          as avatarUrl
+          ) {
           <img class="h-9 w-9 rounded-full object-cover" [src]="avatarUrl" [alt]="customerAuth.displayName()" />
           } @else {
           <span
@@ -179,48 +207,68 @@
       </div>
     </div>
 
+    <!-- Mobile navbar -->
     <div class="customer-page-container flex flex-col gap-3 py-4 min-[1181px]:hidden">
       <div class="flex min-w-0 items-center justify-between gap-3">
         <a routerLink="/shop"
-          class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#718369] text-sm font-black text-white no-underline"
+          class="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#718369] text-sm font-black text-white no-underline"
           aria-label="Nestora Home" (click)="closeMobileMenu()">
           {{ customerInitials() }}
         </a>
 
         <div class="ml-auto flex shrink-0 items-center gap-3 text-[#1f2a1f]">
-          <a routerLink="/shop/customer-account/wishlist" class="mobile-nav-icon relative" [attr.aria-label]="'CUSTOMER.WISHLIST.TITLE' | translate"
-            (click)="closeMobileMenu()">
+          <!-- Mobile wishlist -->
+          <a routerLink="/shop/customer-account/wishlist"
+            class="relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#1f2a1f] no-underline transition-[background-color,color,box-shadow] duration-[160ms] hover:bg-[#f3f0ea] hover:text-[#6b7d5e] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            [attr.aria-label]="
+              'CUSTOMER.WISHLIST.TITLE' | translate
+            " (click)="closeMobileMenu()">
             <i class="pi pi-heart text-[1.15rem]" aria-hidden="true"></i>
+
             @if (shopping.wishlistCount() > 0) {
-            <span class="absolute -end-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#d83b54] px-1 text-[9px] font-black text-white">
+            <span
+              class="absolute -end-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#d83b54] px-1 text-[9px] font-black text-white">
               {{ shopping.wishlistCount() }}
             </span>
             }
           </a>
 
-          <a routerLink="/shop/cart" class="mobile-nav-icon relative"
-            [attr.aria-label]="'Cart, ' + shopping.cartQuantity() + ' items'" (click)="closeMobileMenu()">
+          <!-- Mobile cart -->
+          <a routerLink="/shop/cart"
+            class="relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#1f2a1f] no-underline transition-[background-color,color,box-shadow] duration-[160ms] hover:bg-[#f3f0ea] hover:text-[#6b7d5e] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            [attr.aria-label]="
+              'Cart, ' + shopping.cartQuantity() + ' items'
+            " (click)="closeMobileMenu()">
             <i class="pi pi-shopping-cart text-[1.2rem]" aria-hidden="true"></i>
 
             @if (shopping.cartQuantity() > 0) {
             <span
               class="pointer-events-none absolute -end-1 -top-1 inline-flex h-[1.05rem] min-w-[1.05rem] items-center justify-center rounded-full border-2 border-white bg-[#6b7d5e] px-1 text-[0.56rem] font-extrabold leading-none text-white"
               aria-hidden="true">
-              {{ shopping.cartQuantity() > 99 ? '99+' : shopping.cartQuantity() }}
+              {{
+              shopping.cartQuantity() > 99
+              ? '99+'
+              : shopping.cartQuantity()
+              }}
             </span>
             }
           </a>
 
-          <button type="button" class="mobile-nav-icon" aria-controls="customer-mobile-menu"
-            [attr.aria-expanded]="mobileMenuOpen()"
-            [attr.aria-label]="mobileMenuOpen() ? 'Close navigation menu' : 'Open navigation menu'"
-            (click)="toggleMobileMenu()">
+          <!-- Mobile menu trigger -->
+          <button type="button"
+            class="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[#1f2a1f] transition-[background-color,color,box-shadow] duration-[160ms] hover:bg-[#f3f0ea] hover:text-[#6b7d5e] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            aria-controls="customer-mobile-menu" [attr.aria-expanded]="mobileMenuOpen()" [attr.aria-label]="
+              mobileMenuOpen()
+                ? 'Close navigation menu'
+                : 'Open navigation menu'
+            " (click)="toggleMobileMenu()">
             <i class="pi text-[1.15rem]" [class.pi-bars]="!mobileMenuOpen()" [class.pi-times]="mobileMenuOpen()"
               aria-hidden="true"></i>
           </button>
         </div>
       </div>
 
+      <!-- Mobile search -->
       <label class="relative block w-full">
         <span class="sr-only">Search products</span>
 
@@ -232,55 +280,74 @@
       </label>
     </div>
 
-    <div
-  id="customer-mobile-menu"
-  class="customer-mobile-menu bg-white min-[1181px]:!hidden"
-  [class.customer-mobile-menu--open]="mobileMenuOpen()"
-  [class.border-t]="mobileMenuOpen()"
-  [class.border-[#e8dccf]]="mobileMenuOpen()"
-  [attr.inert]="mobileMenuOpen() ? null : ''"
->
-  <div class="customer-mobile-menu__content">
-    <div class="customer-page-container grid gap-1 py-4">
-        <div class="mobile-language-row">
-          <span>{{ 'COMMON.LANGUAGE' | translate }}</span>
-          <app-customer-language-switch />
-        </div>
+    <!-- Mobile navigation menu -->
+    @if (mobileMenuOpen()) {
+    <div id="customer-mobile-menu" class="overflow-hidden border-t border-[#e8dccf] bg-white min-[1181px]:!hidden">
+      <div class="min-h-0 overflow-hidden">
+        <div class="customer-page-container grid gap-1 py-4">
+          <!-- Language -->
+          <div
+            class="mb-[0.4rem] flex min-h-[3.75rem] items-center justify-between gap-4 border-b border-[#eee7df] pb-3 text-[0.82rem] font-[750] text-[#53604f]">
+            <span>{{ 'COMMON.LANGUAGE' | translate }}</span>
 
-        <a routerLink="/shop" routerLinkActive="mobile-menu-link--active" [routerLinkActiveOptions]="{ exact: true }"
-          class="mobile-menu-link" (click)="closeMobileMenu()">
-          {{ 'CUSTOMER.PRODUCTS.HOME' | translate }}
-        </a>
+            <app-customer-language-switch />
+          </div>
 
-        @for (link of navLinks; track link.path) {
-        <a [routerLink]="link.path" routerLinkActive="mobile-menu-link--active" class="mobile-menu-link"
-          (click)="closeMobileMenu()">
-          {{ link.labelKey | translate }}
-        </a>
-        }
+          <!-- Home -->
+          <a routerLink="/shop" routerLinkActive="!bg-[#f7f4ef] !px-2 !text-[#5f704f]"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] px-0 py-[0.55rem] text-[0.92rem] font-[650] text-[#1f2a1f] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:px-2 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            (click)="closeMobileMenu()">
+            {{ 'CUSTOMER.PRODUCTS.HOME' | translate }}
+          </a>
 
-        @for (category of navbarCategories(); track category.id) {
-        <a routerLink="/shop/products" [queryParams]="{ category: category.slug, source: 'navbar' }"
-          class="mobile-menu-link mobile-menu-link--category" (click)="closeMobileMenu()">
-          @if (categoryImageUrl(category); as imageUrl) {
-          <img class="h-5 w-5 shrink-0 object-contain" [src]="imageUrl" alt="" />
-          } @else {
-          <i [class]="categoryIconClass(category) + ' w-5 shrink-0 text-center text-sm text-[#6b7d5e]'"
-            aria-hidden="true"></i>
+          <!-- Main navigation links -->
+          @for (link of navLinks; track link.path) {
+          <a [routerLink]="link.path" routerLinkActive="!bg-[#f7f4ef] !px-2 !text-[#5f704f]"
+            class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] px-0 py-[0.55rem] text-[0.92rem] font-[650] text-[#1f2a1f] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:px-2 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            (click)="closeMobileMenu()">
+            {{ link.labelKey | translate }}
+          </a>
           }
-          <span>{{ category.name }}</span>
-        </a>
-        }
 
-        <a [routerLink]="accountDestination()" class="mobile-menu-link" (click)="closeMobileMenu()">
-          My Account
-        </a>
+          <!-- Mobile categories -->
+          @for (
+          category of navbarCategories();
+          track category.id
+          ) {
+          <a routerLink="/shop/products" [queryParams]="{
+                  category: category.slug,
+                  source: 'navbar'
+                }"
+            class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] py-[0.55rem] ps-4 text-[0.92rem] font-[650] text-[#536b50] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:ps-6 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            (click)="closeMobileMenu()">
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#f2f4ed] text-[#6b7d5e]"
+              aria-hidden="true">
+              <i [class]="
+                      categoryIconClass(category) + ' text-sm'
+                    "></i>
+            </span>
 
-        <a routerLink="/shop/customer-account/wishlist" class="mobile-menu-link" (click)="closeMobileMenu()">
-          Wishlist
-        </a>
+            <span>{{ category.name }}</span>
+          </a>
+          }
+
+          <!-- Account -->
+          <a [routerLink]="accountDestination()"
+            class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] px-0 py-[0.55rem] text-[0.92rem] font-[650] text-[#1f2a1f] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:px-2 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            (click)="closeMobileMenu()">
+            My Account
+          </a>
+
+          <!-- Wishlist -->
+          <a routerLink="/shop/customer-account/wishlist"
+            class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] px-0 py-[0.55rem] text-[0.92rem] font-[650] text-[#1f2a1f] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:px-2 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            (click)="closeMobileMenu()">
+            Wishlist
+          </a>
+        </div>
       </div>
     </div>
-    </div>
+    }
   </nav>
 </header>

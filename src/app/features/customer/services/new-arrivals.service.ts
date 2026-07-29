@@ -45,22 +45,31 @@ export class NewArrivalsService {
 
     if (error) throw new Error(error.message);
 
-    const products = (data ?? []).map((product) => this.mapProduct(product as Product));
-    return Promise.all(
-      products
-        .filter((product) => product.is_active !== false)
-        .map(async (product) =>
-          this.withPublishedReviewStats(
-            this.toCustomerProduct(product),
-            await this.reviewsService.getPublishedReviewsByProduct(product.id),
-          ),
-        ),
+    return this.mapCustomerProducts(
+      (data ?? [])
+        .map((product) => this.mapProduct(product as Product))
+        .filter((product) => product.is_active !== false),
     );
   }
 
   async getNewArrivals(): Promise<CustomerProduct[]> {
     const products = await this.getProducts();
     return products.filter((product) => product.isNew);
+  }
+
+  async getBestSellers(): Promise<CustomerProduct[]> {
+    const { data, error } = await this.supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .eq('is_active', true)
+      .order('sold_count', { ascending: false })
+      .order('rating', { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    return this.mapCustomerProducts(
+      (data ?? []).map((product) => this.mapProduct(product as Product)),
+    );
   }
 
   async getProductDetails(identifier: string): Promise<CustomerProductDetails | null> {
@@ -122,11 +131,24 @@ export class NewArrivalsService {
       badge: product.is_new ? 'New' : null,
       isFeatured: product.is_featured === true,
       isNew: product.is_new === true,
+      isActive: product.is_active !== false,
+      soldCount: Math.max(0, Number(product.sold_count ?? 0)),
       inStock: product.is_active !== false && stock > 0,
       stock,
       createdAt: product.created_at,
       slug: product.slug,
     };
+  }
+
+  private mapCustomerProducts(products: Product[]): Promise<CustomerProduct[]> {
+    return Promise.all(
+      products.map(async (product) =>
+        this.withPublishedReviewStats(
+          this.toCustomerProduct(product),
+          await this.reviewsService.getPublishedReviewsByProduct(product.id),
+        ),
+      ),
+    );
   }
 
   private galleryUrls(product: Product): string[] {

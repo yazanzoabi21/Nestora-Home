@@ -1,6 +1,7 @@
 export * from './analytics.service';
 export * from './categories.service';
 export * from './customers.service';
+export * from './customer-offers.service';
 export * from './discounts.service';
 export * from './inventory.service';
 export * from './media-library.service';

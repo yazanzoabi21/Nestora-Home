@@ -13,6 +13,8 @@ export interface CustomerProduct {
   badge?: 'Best Seller' | 'New' | null;
   isFeatured: boolean;
   isNew: boolean;
+  isActive: boolean;
+  soldCount: number;
   inStock: boolean;
   stock: number;
   createdAt?: string | null;

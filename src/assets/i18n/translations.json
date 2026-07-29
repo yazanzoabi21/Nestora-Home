@@ -554,6 +554,129 @@
       "LIVE_NOW": "{{count}} promotions currently live",
       "NOT_SET": "Not set",
       "IMAGE_OPTIONAL": "Optional",
+      "TABS": {
+        "LABEL": "Promotions and customer offers",
+        "PROMOTIONS": "Promotions",
+        "CUSTOMER_OFFERS": "Customer Offers"
+      },
+      "CUSTOMER_OFFERS": {
+        "TITLE": "Customer Offers",
+        "SUBTITLE": "Manage dynamic offers shown in the Exclusive Offers section.",
+        "CREATE": "Create Customer Offer",
+        "PREVIEW": "Live card preview",
+        "PREVIEW_TITLE": "Offer title",
+        "PREVIEW_TEXT": "Your offer description will appear here.",
+        "PREVIEW_CODE": "DISCOUNT CODE",
+        "PREVIEW_ACTION": "View Offer",
+        "KPI": {
+          "TOTAL": "Total Offers",
+          "ACTIVE": "Active",
+          "SCHEDULED": "Scheduled",
+          "INACTIVE": "Inactive"
+        },
+        "FILTERS": {
+          "SEARCH": "Search customer offers...",
+          "ALL_TYPES": "All Offer Types",
+          "ALL_AUDIENCES": "All Audiences",
+          "ALL_STATUSES": "All Statuses"
+        },
+        "TABLE": {
+          "OFFER": "Offer",
+          "TYPE": "Type",
+          "AUDIENCE": "Audience",
+          "STATUS": "Status",
+          "ORDER": "Display Order"
+        },
+        "TYPES": {
+          "DISCOUNT": "Discount",
+          "REFERRAL": "Referral",
+          "APP": "App",
+          "LOYALTY": "Loyalty",
+          "MARKETING": "Marketing"
+        },
+        "AUDIENCES": {
+          "ALL": "Everyone",
+          "GUEST": "Guests",
+          "CUSTOMER": "Customers",
+          "NEW_CUSTOMER": "New Customers"
+        },
+        "STATUSES": {
+          "ACTIVE": "Active",
+          "SCHEDULED": "Scheduled",
+          "EXPIRED": "Expired",
+          "INACTIVE": "Inactive"
+        },
+        "ACTIONS": {
+          "ACTIVATE": "Activate offer",
+          "DEACTIVATE": "Deactivate offer",
+          "EDIT": "Edit offer",
+          "DELETE": "Delete offer"
+        },
+        "EMPTY": {
+          "TITLE": "No customer offers found",
+          "TEXT": "Create an offer or adjust the current filters."
+        },
+        "FORM": {
+          "CREATE_TITLE": "Create Customer Offer",
+          "EDIT_TITLE": "Edit Customer Offer",
+          "SUBTITLE": "Configure localized content, targeting, scheduling, and design.",
+          "CREATE": "Create Offer",
+          "UPDATE": "Save Changes"
+        },
+        "FIELDS": {
+          "SLUG": "Slug",
+          "ORDER": "Display Order",
+          "TITLE_EN": "English Title",
+          "TITLE_AR": "Arabic Title",
+          "DESCRIPTION_EN": "English Description",
+          "DESCRIPTION_AR": "Arabic Description",
+          "BADGE_EN": "English Badge",
+          "BADGE_AR": "Arabic Badge",
+          "ACTION_EN": "English Button Text",
+          "ACTION_AR": "Arabic Button Text",
+          "ACTION_LINK": "Action Link",
+          "TYPE": "Offer Type",
+          "AUDIENCE": "Audience",
+          "DISCOUNT": "Linked Discount",
+          "SHOW_CODE": "Show discount code on the customer card",
+          "BACKGROUND_COLOR": "Background Color",
+          "BUTTON_COLOR": "Button Color",
+          "START_DATE": "Start Date",
+          "END_DATE": "End Date",
+          "ACTIVE": "Offer is active",
+          "ICON": "PrimeIcon"
+        },
+        "PLACEHOLDERS": {
+          "SLUG": "first-order-offer",
+          "ACTION_LINK": "/shop/products or https://example.com",
+          "DISCOUNT": "Select a discount"
+        },
+        "VALIDATION": {
+          "TITLE_EN_REQUIRED": "English title is required.",
+          "TITLE_AR_REQUIRED": "Arabic title is required.",
+          "SLUG_REQUIRED": "Slug is required.",
+          "INVALID_SLUG": "Use lowercase letters, numbers, and single hyphens only.",
+          "NEGATIVE_ORDER": "Display order cannot be negative.",
+          "END_BEFORE_START": "End date cannot be before start date.",
+          "INVALID_COLOR": "Background and button colors must be valid six-digit hex colors.",
+          "INVALID_LINK": "Use a valid internal path or an http/https URL."
+        },
+        "DELETE": {
+          "TITLE": "Delete Customer Offer",
+          "SUBTITLE": "This action cannot be undone.",
+          "MESSAGE": "Delete “{{name}}”?"
+        },
+        "TOAST": {
+          "LOAD_FAILED": "Unable to load customer offers",
+          "CREATED": "Customer offer created",
+          "UPDATED": "Customer offer updated",
+          "DELETED": "Customer offer deleted",
+          "SAVE_FAILED": "Unable to save customer offer",
+          "DELETE_FAILED": "Unable to delete customer offer",
+          "STATUS_UPDATED": "Customer offer status updated",
+          "STATUS_FAILED": "Unable to update customer offer status"
+        }
+      },
       "KPI": {
         "TOTAL": "Total Promotions",
         "TOTAL_PROMOTIONS": "Total Promotions",
@@ -637,7 +760,27 @@
         "SELECTED_COUNT": "{{count}} selected",
         "LOADING": "Loading products...",
         "EMPTY": "No active products available.",
-        "LOAD_FAILED": "Unable to load the product selection. Please try again."
+        "LOAD_FAILED": "Unable to load the product selection. Please try again.",
+        "NONE_SELECTED": "No products selected yet.",
+        "MORE_SELECTED": "+{{count}} more selected",
+        "REMOVE_PRODUCT": "Remove {{name}}",
+        "MANAGE": "Manage Products",
+        "PICKER_TITLE": "Manage Promotion Products",
+        "PICKER_HELPER": "Choose the products to include, then apply your selection.",
+        "SEARCH_LABEL": "Search products",
+        "SEARCH_PLACEHOLDER": "Search by product name or SKU...",
+        "CATEGORY_FILTER": "Filter by category",
+        "ALL_CATEGORIES": "All Categories",
+        "ALL_PRODUCTS": "All Products",
+        "SELECTED_ONLY": "Selected Only",
+        "CLEAR_SELECTION": "Clear Selection",
+        "RESULT_RANGE": "{{start}}–{{end}} of {{total}} products",
+        "NO_RESULTS": "No products found",
+        "NO_RESULTS_HELPER": "Try changing the search, category, or selection filter.",
+        "PAGE_COUNT": "Page {{page}} of {{pages}}",
+        "PREVIOUS": "Previous",
+        "NEXT": "Next",
+        "APPLY": "Apply Products"
       },
       "COLORS": {
         "BEIGE": "Beige",
@@ -1640,6 +1783,38 @@
       }
     },
     "CUSTOMER": {
+      "FLASH_DEALS_PAGE": {
+        "HOME": "Home",
+        "BREADCRUMB": "Flash Deals",
+        "EYEBROW": "Limited-time offers",
+        "TITLE": "Flash Deals",
+        "SUBTITLE": "Explore our active promotions and discover special savings selected for your home.",
+        "LOADING": "Loading Flash Deals...",
+        "ERROR_TITLE": "Unable to load Flash Deals",
+        "ERROR_TEXT": "Something went wrong while loading the latest offers. Please try again.",
+        "RETRY": "Try Again",
+        "AVAILABLE_EYEBROW": "Available now",
+        "AVAILABLE_TITLE": "Current Flash Deals",
+        "DEAL_COUNT": "{{count}} deals",
+        "OPEN_DEAL": "View Deal",
+        "EMPTY_TITLE": "No Flash Deals right now",
+        "EMPTY_TEXT": "New limited-time promotions will appear here as soon as they become available.",
+        "BROWSE_PRODUCTS": "Browse Products"
+      },
+      "BEST_SELLERS": {
+        "HOME": "Home",
+        "BREADCRUMB": "Best Sellers",
+        "EYEBROW": "Customer favorites",
+        "TITLE": "Our Best Sellers",
+        "SUBTITLE": "Discover the home essentials our customers choose most, ranked by real purchases and trusted reviews.",
+        "PRODUCT_COUNT": "{{count}} products",
+        "LOADING": "Loading best sellers...",
+        "ERROR_TITLE": "Unable to load best sellers",
+        "ERROR_TEXT": "Something went wrong while loading our most popular products. Please try again.",
+        "RETRY": "Try Again",
+        "EMPTY_TITLE": "No best sellers yet",
+        "EMPTY_TEXT": "Popular products will appear here as customers complete their purchases."
+      },
       "CART": {
         "TITLE": "Shopping Cart",
         "ITEMS": "items",
@@ -1868,37 +2043,46 @@
         "FLASH": {
           "EYEBROW": "Limited time",
           "TITLE": "Flash Deals",
+          "ENDS_TONIGHT": "Ends tonight",
+          "VIEW_ALL": "View all flash deals",
           "EMPTY": "New offers are on the way."
         },
         "NEW_CUSTOMER": {
           "TITLE": "New Customer Exclusive",
-          "TEXT": "Create an account to unlock your welcome offer.",
-          "ACTION": "Join now"
+          "USE_CODE": "Use code",
+          "AT_CHECKOUT": "at checkout",
+          "DISCOUNT": "10% Off First Order",
+          "SHOP_NOW": "Shop Now"
         },
-        "CATEGORIES": { "EYEBROW": "Shop by", "TITLE": "Category", "ITEMS": "products" },
-        "BEST": { "EYEBROW": "Top picks", "TITLE": "Best Sellers" },
+        "CATEGORIES": {
+          "EYEBROW": "Shop by",
+          "TITLE": "Category",
+          "ITEMS": "products"
+        },
+        "BEST": {
+          "EYEBROW": "Top picks",
+          "TITLE": "Best Sellers"
+        },
         "SEASONAL": {
           "EYEBROW": "Seasonal edit",
           "TITLE": "Refresh Your Home",
           "ACTION": "Shop the collection"
         },
-        "NEW_ARRIVALS": { "EYEBROW": "Fresh in", "TITLE": "New Arrivals" },
+        "NEW_ARRIVALS": {
+          "EYEBROW": "Fresh in",
+          "TITLE": "New Arrivals"
+        },
         "OFFERS": {
           "EYEBROW": "Member benefits",
           "TITLE": "Exclusive Offers",
           "TEXT": "Take advantage of special deals made for Nestora customers.",
-          "FIRST": "Welcome Offer",
-          "FIRST_TEXT": "Create your account and discover a special first-order benefit.",
-          "CLAIM": "Claim offer",
-          "REFER": "Refer a Friend",
-          "REFER_TEXT": "Share Nestora with someone who loves thoughtful home essentials.",
-          "INVITE": "Invite friends",
-          "APP": "Member Exclusives",
-          "APP_TEXT": "Stay close to new launches and offers created for members.",
-          "GET_APP": "Explore benefits",
-          "POINTS": "Loyalty Rewards",
-          "POINTS_TEXT": "Make every purchase count and enjoy more ways to save.",
-          "JOIN": "Join now"
+          "LOADING": "Loading exclusive offers...",
+          "EMPTY": "There are no exclusive offers available for you right now.",
+          "COPY": "Copy",
+          "COPY_SUCCESS": "Code copied successfully",
+          "COPY_FAILED": "Unable to copy code",
+          "COMING_SOON": "Coming Soon",
+          "VIEW_OFFER": "View Offer"
         },
         "DIFFERENCE": {
           "EYEBROW": "Why us",
@@ -1914,7 +2098,33 @@
           "EXPERTS": "Expert Support",
           "EXPERTS_TEXT": "Helpful guidance is available whenever you need it.",
           "SATISFACTION": "Satisfaction Guaranteed",
-          "SATISFACTION_TEXT": "Simple returns and customer-first care."
+          "SATISFACTION_TEXT": "Simple returns and customer-first care.",
+          "ITEMS": {
+            "PREMIUM": {
+              "TITLE": "Premium Curation",
+              "TEXT": "Every product is selected for quality, durability, and design."
+            },
+            "ECO": {
+              "TITLE": "Eco-Conscious",
+              "TEXT": "We prioritize materials and packaging that are kinder to the planet."
+            },
+            "SMART": {
+              "TITLE": "Smart Designs",
+              "TEXT": "Beautiful essentials with genuine everyday function."
+            },
+            "DELIVERY": {
+              "TITLE": "Fast Delivery",
+              "TEXT": "Reliable delivery options designed around your schedule."
+            },
+            "SUPPORT": {
+              "TITLE": "Expert Support",
+              "TEXT": "Helpful guidance is available whenever you need it."
+            },
+            "SATISFACTION": {
+              "TITLE": "Satisfaction Guaranteed",
+              "TEXT": "Simple returns and customer-first care."
+            }
+          }
         },
         "REVIEWS": {
           "EYEBROW": "What people say",
@@ -2005,6 +2215,18 @@
         "TOTAL": "Total",
         "ADD_TO_CART": "Add to Cart",
         "TOGGLE_WISHLIST": "Toggle wishlist"
+      },
+      "PROMOTION_DETAILS": {
+        "LOADING": "Loading promotion...",
+        "SHOP_NOW": "Shop Now",
+        "LIMITED_TIME": "Limited-time selection",
+        "PRODUCTS_TITLE": "Products in this promotion",
+        "PRODUCTS_DESCRIPTION": "Explore products currently included in {{title}}.",
+        "EMPTY_TITLE": "No products added yet",
+        "EMPTY_TEXT": "Products for this promotion will be available soon.",
+        "BROWSE_ALL": "Browse All Products",
+        "UNAVAILABLE_TITLE": "Promotion unavailable",
+        "UNAVAILABLE_TEXT": "This promotion has expired or is no longer active."
       }
     },
     "ANALYTICS": {
@@ -2970,6 +3192,129 @@
       "LIVE_NOW": "{{count}} عروض نشطة حالياً",
       "NOT_SET": "غير محدد",
       "IMAGE_OPTIONAL": "اختياري",
+      "TABS": {
+        "LABEL": "العروض والإعلانات وعروض العملاء",
+        "PROMOTIONS": "العروض الترويجية",
+        "CUSTOMER_OFFERS": "عروض العملاء"
+      },
+      "CUSTOMER_OFFERS": {
+        "TITLE": "عروض العملاء",
+        "SUBTITLE": "إدارة العروض الديناميكية الظاهرة في قسم العروض الحصرية.",
+        "CREATE": "إنشاء عرض للعملاء",
+        "PREVIEW": "معاينة مباشرة للبطاقة",
+        "PREVIEW_TITLE": "عنوان العرض",
+        "PREVIEW_TEXT": "سيظهر وصف العرض هنا.",
+        "PREVIEW_CODE": "رمز الخصم",
+        "PREVIEW_ACTION": "عرض التفاصيل",
+        "KPI": {
+          "TOTAL": "إجمالي العروض",
+          "ACTIVE": "نشطة",
+          "SCHEDULED": "مجدولة",
+          "INACTIVE": "غير نشطة"
+        },
+        "FILTERS": {
+          "SEARCH": "البحث في عروض العملاء...",
+          "ALL_TYPES": "كل أنواع العروض",
+          "ALL_AUDIENCES": "كل الجماهير",
+          "ALL_STATUSES": "كل الحالات"
+        },
+        "TABLE": {
+          "OFFER": "العرض",
+          "TYPE": "النوع",
+          "AUDIENCE": "الجمهور",
+          "STATUS": "الحالة",
+          "ORDER": "ترتيب العرض"
+        },
+        "TYPES": {
+          "DISCOUNT": "خصم",
+          "REFERRAL": "إحالة",
+          "APP": "تطبيق",
+          "LOYALTY": "ولاء",
+          "MARKETING": "تسويق"
+        },
+        "AUDIENCES": {
+          "ALL": "الجميع",
+          "GUEST": "الزوار",
+          "CUSTOMER": "العملاء",
+          "NEW_CUSTOMER": "العملاء الجدد"
+        },
+        "STATUSES": {
+          "ACTIVE": "نشط",
+          "SCHEDULED": "مجدول",
+          "EXPIRED": "منتهي",
+          "INACTIVE": "غير نشط"
+        },
+        "ACTIONS": {
+          "ACTIVATE": "تفعيل العرض",
+          "DEACTIVATE": "إيقاف العرض",
+          "EDIT": "تعديل العرض",
+          "DELETE": "حذف العرض"
+        },
+        "EMPTY": {
+          "TITLE": "لم يتم العثور على عروض للعملاء",
+          "TEXT": "أنشئ عرضاً أو عدّل عوامل التصفية الحالية."
+        },
+        "FORM": {
+          "CREATE_TITLE": "إنشاء عرض للعملاء",
+          "EDIT_TITLE": "تعديل عرض العملاء",
+          "SUBTITLE": "اضبط المحتوى المترجم والاستهداف والجدولة والتصميم.",
+          "CREATE": "إنشاء العرض",
+          "UPDATE": "حفظ التغييرات"
+        },
+        "FIELDS": {
+          "SLUG": "المعرّف",
+          "ORDER": "ترتيب العرض",
+          "TITLE_EN": "العنوان بالإنجليزية",
+          "TITLE_AR": "العنوان بالعربية",
+          "DESCRIPTION_EN": "الوصف بالإنجليزية",
+          "DESCRIPTION_AR": "الوصف بالعربية",
+          "BADGE_EN": "الشارة بالإنجليزية",
+          "BADGE_AR": "الشارة بالعربية",
+          "ACTION_EN": "نص الزر بالإنجليزية",
+          "ACTION_AR": "نص الزر بالعربية",
+          "ACTION_LINK": "رابط الإجراء",
+          "TYPE": "نوع العرض",
+          "AUDIENCE": "الجمهور",
+          "DISCOUNT": "الخصم المرتبط",
+          "SHOW_CODE": "إظهار رمز الخصم في بطاقة العميل",
+          "BACKGROUND_COLOR": "لون الخلفية",
+          "BUTTON_COLOR": "لون الزر",
+          "START_DATE": "تاريخ البدء",
+          "END_DATE": "تاريخ الانتهاء",
+          "ACTIVE": "العرض نشط",
+          "ICON": "أيقونة PrimeIcon"
+        },
+        "PLACEHOLDERS": {
+          "SLUG": "first-order-offer",
+          "ACTION_LINK": "/shop/products أو https://example.com",
+          "DISCOUNT": "اختر خصماً"
+        },
+        "VALIDATION": {
+          "TITLE_EN_REQUIRED": "العنوان بالإنجليزية مطلوب.",
+          "TITLE_AR_REQUIRED": "العنوان بالعربية مطلوب.",
+          "SLUG_REQUIRED": "المعرّف مطلوب.",
+          "INVALID_SLUG": "استخدم أحرفاً إنجليزية صغيرة وأرقاماً وشرطات مفردة فقط.",
+          "NEGATIVE_ORDER": "لا يمكن أن يكون ترتيب العرض سالباً.",
+          "END_BEFORE_START": "لا يمكن أن يسبق تاريخ الانتهاء تاريخ البدء.",
+          "INVALID_COLOR": "يجب أن تكون ألوان الخلفية والزر بصيغة hex صحيحة من ست خانات.",
+          "INVALID_LINK": "استخدم مساراً داخلياً صحيحاً أو رابط http/https."
+        },
+        "DELETE": {
+          "TITLE": "حذف عرض العملاء",
+          "SUBTITLE": "لا يمكن التراجع عن هذا الإجراء.",
+          "MESSAGE": "هل تريد حذف «{{name}}»؟"
+        },
+        "TOAST": {
+          "LOAD_FAILED": "تعذر تحميل عروض العملاء",
+          "CREATED": "تم إنشاء عرض العملاء",
+          "UPDATED": "تم تحديث عرض العملاء",
+          "DELETED": "تم حذف عرض العملاء",
+          "SAVE_FAILED": "تعذر حفظ عرض العملاء",
+          "DELETE_FAILED": "تعذر حذف عرض العملاء",
+          "STATUS_UPDATED": "تم تحديث حالة عرض العملاء",
+          "STATUS_FAILED": "تعذر تحديث حالة عرض العملاء"
+        }
+      },
       "KPI": {
         "TOTAL": "إجمالي العروض",
         "TOTAL_PROMOTIONS": "إجمالي العروض",
@@ -3053,7 +3398,27 @@
         "SELECTED_COUNT": "{{count}} محدد",
         "LOADING": "جارٍ تحميل المنتجات...",
         "EMPTY": "لا توجد منتجات نشطة متاحة.",
-        "LOAD_FAILED": "تعذر تحميل اختيار المنتجات. يرجى المحاولة مرة أخرى."
+        "LOAD_FAILED": "تعذر تحميل اختيار المنتجات. يرجى المحاولة مرة أخرى.",
+        "NONE_SELECTED": "لم يتم تحديد أي منتجات بعد.",
+        "MORE_SELECTED": "+{{count}} منتجات محددة إضافية",
+        "REMOVE_PRODUCT": "إزالة {{name}}",
+        "MANAGE": "إدارة المنتجات",
+        "PICKER_TITLE": "إدارة منتجات العرض",
+        "PICKER_HELPER": "اختر المنتجات التي تريد تضمينها، ثم طبّق اختيارك.",
+        "SEARCH_LABEL": "البحث في المنتجات",
+        "SEARCH_PLACEHOLDER": "البحث باسم المنتج أو رمز SKU...",
+        "CATEGORY_FILTER": "التصفية حسب الفئة",
+        "ALL_CATEGORIES": "كل الفئات",
+        "ALL_PRODUCTS": "كل المنتجات",
+        "SELECTED_ONLY": "المحددة فقط",
+        "CLEAR_SELECTION": "مسح الاختيار",
+        "RESULT_RANGE": "{{start}}–{{end}} من أصل {{total}} منتج",
+        "NO_RESULTS": "لم يتم العثور على منتجات",
+        "NO_RESULTS_HELPER": "جرّب تغيير البحث أو الفئة أو عامل تصفية الاختيار.",
+        "PAGE_COUNT": "الصفحة {{page}} من {{pages}}",
+        "PREVIOUS": "السابق",
+        "NEXT": "التالي",
+        "APPLY": "تطبيق المنتجات"
       },
       "COLORS": {
         "BEIGE": "بيج",
@@ -3787,6 +4152,38 @@
       }
     },
     "CUSTOMER": {
+      "FLASH_DEALS_PAGE": {
+        "HOME": "الرئيسية",
+        "BREADCRUMB": "العروض السريعة",
+        "EYEBROW": "عروض لفترة محدودة",
+        "TITLE": "العروض السريعة",
+        "SUBTITLE": "استكشف عروضنا النشطة واكتشف توفيراً مميزاً مختاراً لمنزلك.",
+        "LOADING": "جارٍ تحميل العروض السريعة...",
+        "ERROR_TITLE": "تعذر تحميل العروض السريعة",
+        "ERROR_TEXT": "حدث خطأ أثناء تحميل أحدث العروض. يرجى المحاولة مرة أخرى.",
+        "RETRY": "المحاولة مجدداً",
+        "AVAILABLE_EYEBROW": "متاحة الآن",
+        "AVAILABLE_TITLE": "العروض السريعة الحالية",
+        "DEAL_COUNT": "{{count}} عروض",
+        "OPEN_DEAL": "عرض التفاصيل",
+        "EMPTY_TITLE": "لا توجد عروض سريعة حالياً",
+        "EMPTY_TEXT": "ستظهر العروض الجديدة محدودة الوقت هنا فور توفرها.",
+        "BROWSE_PRODUCTS": "تصفح المنتجات"
+      },
+      "BEST_SELLERS": {
+        "HOME": "الرئيسية",
+        "BREADCRUMB": "الأكثر مبيعاً",
+        "EYEBROW": "المفضلة لدى عملائنا",
+        "TITLE": "منتجاتنا الأكثر مبيعاً",
+        "SUBTITLE": "اكتشف أساسيات المنزل الأكثر اختياراً من عملائنا، مرتبة حسب المبيعات الفعلية والتقييمات الموثوقة.",
+        "PRODUCT_COUNT": "{{count}} منتج",
+        "LOADING": "جارٍ تحميل المنتجات الأكثر مبيعاً...",
+        "ERROR_TITLE": "تعذر تحميل المنتجات الأكثر مبيعاً",
+        "ERROR_TEXT": "حدث خطأ أثناء تحميل منتجاتنا الأكثر رواجاً. يرجى المحاولة مرة أخرى.",
+        "RETRY": "المحاولة مجدداً",
+        "EMPTY_TITLE": "لا توجد منتجات أكثر مبيعاً بعد",
+        "EMPTY_TEXT": "ستظهر المنتجات الرائجة هنا بعد إتمام العملاء لعمليات الشراء."
+      },
       "CART": {
         "TITLE": "سلة التسوق",
         "ITEMS": "عناصر",
@@ -3997,7 +4394,11 @@
           "SHOP": "تسوق الآن",
           "NEW": "وصل حديثاً"
         },
-        "STATS": { "PRODUCTS": "المنتجات", "CATEGORIES": "الفئات", "REVIEWS": "آراء العملاء" },
+        "STATS": {
+          "PRODUCTS": "المنتجات",
+          "CATEGORIES": "الفئات",
+          "REVIEWS": "آراء العملاء"
+        },
         "BENEFITS": {
           "SHIPPING": "شحن مجاني",
           "SHIPPING_TEXT": "للطلبات التي تتجاوز 75$",
@@ -4011,37 +4412,46 @@
         "FLASH": {
           "EYEBROW": "لفترة محدودة",
           "TITLE": "عروض سريعة",
+          "ENDS_TONIGHT": "ينتهي الليلة",
+          "VIEW_ALL": "عرض جميع العروض السريعة",
           "EMPTY": "عروض جديدة في الطريق."
         },
         "NEW_CUSTOMER": {
           "TITLE": "عرض حصري للعملاء الجدد",
-          "TEXT": "أنشئ حساباً للاستفادة من عرض الترحيب.",
-          "ACTION": "انضم الآن"
+          "USE_CODE": "استخدم الرمز",
+          "AT_CHECKOUT": "عند إتمام الطلب",
+          "DISCOUNT": "خصم 10٪ على أول طلب",
+          "SHOP_NOW": "تسوق الآن"
         },
-        "CATEGORIES": { "EYEBROW": "تسوق حسب", "TITLE": "الفئة", "ITEMS": "منتجات" },
-        "BEST": { "EYEBROW": "اختيارات مميزة", "TITLE": "الأكثر مبيعاً" },
+        "CATEGORIES": {
+          "EYEBROW": "تسوق حسب",
+          "TITLE": "الفئة",
+          "ITEMS": "منتجات"
+        },
+        "BEST": {
+          "EYEBROW": "اختيارات مميزة",
+          "TITLE": "الأكثر مبيعاً"
+        },
         "SEASONAL": {
           "EYEBROW": "تشكيلة الموسم",
           "TITLE": "جدّد منزلك",
           "ACTION": "تسوق التشكيلة"
         },
-        "NEW_ARRIVALS": { "EYEBROW": "وصل حديثاً", "TITLE": "منتجات جديدة" },
+        "NEW_ARRIVALS": {
+          "EYEBROW": "وصل حديثاً",
+          "TITLE": "منتجات جديدة"
+        },
         "OFFERS": {
           "EYEBROW": "مزايا الأعضاء",
           "TITLE": "عروض حصرية",
           "TEXT": "استفد من عروض خاصة صممت لعملاء نيستورا.",
-          "FIRST": "عرض الترحيب",
-          "FIRST_TEXT": "أنشئ حسابك واكتشف ميزة خاصة لأول طلب.",
-          "CLAIM": "احصل على العرض",
-          "REFER": "ادعُ صديقاً",
-          "REFER_TEXT": "شارك نيستورا مع من يحب أساسيات المنزل المختارة بعناية.",
-          "INVITE": "دعوة الأصدقاء",
-          "APP": "مزايا الأعضاء",
-          "APP_TEXT": "تابع أحدث المنتجات والعروض المخصصة للأعضاء.",
-          "GET_APP": "اكتشف المزايا",
-          "POINTS": "مكافآت الولاء",
-          "POINTS_TEXT": "اجعل كل عملية شراء ذات قيمة واستمتع بطرق أكثر للتوفير.",
-          "JOIN": "انضم الآن"
+          "LOADING": "جارٍ تحميل العروض الحصرية...",
+          "EMPTY": "لا توجد عروض حصرية متاحة لك حالياً.",
+          "COPY": "نسخ",
+          "COPY_SUCCESS": "تم نسخ الرمز بنجاح",
+          "COPY_FAILED": "تعذر نسخ الرمز",
+          "COMING_SOON": "قريباً",
+          "VIEW_OFFER": "عرض التفاصيل"
         },
         "DIFFERENCE": {
           "EYEBROW": "لماذا نحن",
@@ -4057,7 +4467,33 @@
           "EXPERTS": "دعم متخصص",
           "EXPERTS_TEXT": "إرشادات مفيدة متاحة عندما تحتاج إليها.",
           "SATISFACTION": "رضاك مضمون",
-          "SATISFACTION_TEXT": "إرجاع بسيط وعناية تضع العميل أولاً."
+          "SATISFACTION_TEXT": "إرجاع بسيط وعناية تضع العميل أولاً.",
+          "ITEMS": {
+            "PREMIUM": {
+              "TITLE": "اختيار فاخر",
+              "TEXT": "يتم اختيار كل منتج بعناية للجودة والمتانة والتصميم."
+            },
+            "ECO": {
+              "TITLE": "وعي بيئي",
+              "TEXT": "نعطي الأولوية للمواد والتغليف الأكثر لطفاً على البيئة."
+            },
+            "SMART": {
+              "TITLE": "تصاميم ذكية",
+              "TEXT": "أساسيات جميلة بوظائف عملية حقيقية."
+            },
+            "DELIVERY": {
+              "TITLE": "توصيل سريع",
+              "TEXT": "خيارات توصيل موثوقة تناسب جدولك."
+            },
+            "SUPPORT": {
+              "TITLE": "دعم متخصص",
+              "TEXT": "إرشادات مفيدة متاحة عندما تحتاج إليها."
+            },
+            "SATISFACTION": {
+              "TITLE": "رضاك مضمون",
+              "TEXT": "إرجاع بسيط وعناية تضع العميل أولاً."
+            }
+          }
         },
         "REVIEWS": {
           "EYEBROW": "ماذا يقول العملاء",
@@ -4148,6 +4584,18 @@
         "TOTAL": "الإجمالي",
         "ADD_TO_CART": "أضف إلى السلة",
         "TOGGLE_WISHLIST": "إضافة أو إزالة من المفضلة"
+      },
+      "PROMOTION_DETAILS": {
+        "LOADING": "جارٍ تحميل العرض...",
+        "SHOP_NOW": "تسوق الآن",
+        "LIMITED_TIME": "تشكيلة لفترة محدودة",
+        "PRODUCTS_TITLE": "المنتجات المشمولة في هذا العرض",
+        "PRODUCTS_DESCRIPTION": "استكشف المنتجات المشمولة حالياً في عرض {{title}}.",
+        "EMPTY_TITLE": "لم تتم إضافة منتجات بعد",
+        "EMPTY_TEXT": "ستتوفر منتجات هذا العرض قريباً.",
+        "BROWSE_ALL": "تصفح جميع المنتجات",
+        "UNAVAILABLE_TITLE": "العرض غير متاح",
+        "UNAVAILABLE_TEXT": "انتهت صلاحية هذا العرض أو لم يعد نشطاً."
       }
     },
     "ANALYTICS": {

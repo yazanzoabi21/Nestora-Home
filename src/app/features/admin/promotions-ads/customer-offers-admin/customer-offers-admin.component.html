@@ -1,0 +1,418 @@
+<section class="mt-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="text-2xl font-black text-[#1f2a1f]">
+        {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.TITLE' | translate }}
+      </h2>
+      <p class="mt-1 text-sm font-semibold text-[#8d877e]">
+        {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.SUBTITLE' | translate }}
+      </p>
+    </div>
+    <button
+      type="button"
+      class="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#5f6f43] px-5 text-sm font-extrabold text-white shadow-[0_12px_26px_rgba(95,111,67,.22)] transition hover:bg-[#526139]"
+      (click)="openCreate()"
+    >
+      <i class="pi pi-plus" aria-hidden="true"></i>
+      {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.CREATE' | translate }}
+    </button>
+  </div>
+
+  <div class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <article class="rounded-2xl border border-[#e5ded2] bg-white p-5 shadow-sm">
+      <span class="text-xs font-black uppercase tracking-[.08em] text-[#8d877e]">
+        {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.KPI.TOTAL' | translate }}
+      </span>
+      <strong class="mt-2 block text-3xl font-black text-[#1f2a1f]">{{ offers().length }}</strong>
+    </article>
+    <article class="rounded-2xl border border-[#cfe7d8] bg-[#f0faf3] p-5">
+      <span class="text-xs font-black uppercase tracking-[.08em] text-[#117047]">
+        {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.KPI.ACTIVE' | translate }}
+      </span>
+      <strong class="mt-2 block text-3xl font-black text-[#117047]">{{
+        statusCounts().active
+      }}</strong>
+    </article>
+    <article class="rounded-2xl border border-[#d7e4f8] bg-[#f2f7ff] p-5">
+      <span class="text-xs font-black uppercase tracking-[.08em] text-[#2f6fd0]">
+        {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.KPI.SCHEDULED' | translate }}
+      </span>
+      <strong class="mt-2 block text-3xl font-black text-[#2f6fd0]">{{
+        statusCounts().scheduled
+      }}</strong>
+    </article>
+    <article class="rounded-2xl border border-[#e5ded2] bg-[#f7f4ef] p-5">
+      <span class="text-xs font-black uppercase tracking-[.08em] text-[#675f55]">
+        {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.KPI.INACTIVE' | translate }}
+      </span>
+      <strong class="mt-2 block text-3xl font-black text-[#675f55]">{{
+        statusCounts().inactive
+      }}</strong>
+    </article>
+  </div>
+
+  <div class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
+    <div class="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_170px_180px_170px]">
+      <app-admin-form-field
+        type="search"
+        name="offerSearch"
+        placeholder="PROMOTIONS_ADS.CUSTOMER_OFFERS.FILTERS.SEARCH"
+        [value]="searchTerm()"
+        (valueChange)="searchTerm.set($any($event))"
+      />
+      <app-admin-form-field
+        type="select"
+        name="offerType"
+        [value]="selectedType()"
+        [options]="typeFilterOptions"
+        optionLabel="label"
+        optionValue="value"
+        (valueChange)="selectedType.set($any($event))"
+      />
+      <app-admin-form-field
+        type="select"
+        name="offerAudience"
+        [value]="selectedAudience()"
+        [options]="audienceFilterOptions"
+        optionLabel="label"
+        optionValue="value"
+        (valueChange)="selectedAudience.set($any($event))"
+      />
+      <app-admin-form-field
+        type="select"
+        name="offerStatus"
+        [value]="selectedStatus()"
+        [options]="statusFilterOptions"
+        optionLabel="label"
+        optionValue="value"
+        (valueChange)="selectedStatus.set($any($event))"
+      />
+    </div>
+  </div>
+
+  <app-admin-table
+    class="mt-6 block"
+    [columns]="columns"
+    [rows]="tableRows()"
+    [loading]="loading()"
+    emptyTitle="PROMOTIONS_ADS.CUSTOMER_OFFERS.EMPTY.TITLE"
+    emptyText="PROMOTIONS_ADS.CUSTOMER_OFFERS.EMPTY.TEXT"
+    [showActions]="true"
+    [pageSize]="10"
+    [showPageSize]="false"
+  >
+    <ng-template adminTableCell="actions" let-row>
+      <div class="flex items-center justify-end gap-2">
+        <button
+          type="button"
+          class="admin-offer-action text-[#2f6fd0]"
+          [attr.aria-label]="
+            (isOfferActive(row)
+              ? 'PROMOTIONS_ADS.CUSTOMER_OFFERS.ACTIONS.DEACTIVATE'
+              : 'PROMOTIONS_ADS.CUSTOMER_OFFERS.ACTIONS.ACTIVATE'
+            ) | translate
+          "
+          (click)="toggleStatus(row)"
+        >
+          <i
+            class="pi"
+            [class.pi-pause]="isOfferActive(row)"
+            [class.pi-play]="!isOfferActive(row)"
+            aria-hidden="true"
+          ></i>
+        </button>
+        <button
+          type="button"
+          class="admin-offer-action text-[#5f6f43]"
+          [attr.aria-label]="'PROMOTIONS_ADS.CUSTOMER_OFFERS.ACTIONS.EDIT' | translate"
+          (click)="openEdit(row)"
+        >
+          <i class="pi pi-pencil" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          class="admin-offer-action text-[#dc3f35]"
+          [attr.aria-label]="'PROMOTIONS_ADS.CUSTOMER_OFFERS.ACTIONS.DELETE' | translate"
+          (click)="openDelete(row)"
+        >
+          <i class="pi pi-trash" aria-hidden="true"></i>
+        </button>
+      </div>
+    </ng-template>
+  </app-admin-table>
+</section>
+
+<app-admin-form-modal
+  [isOpen]="isFormOpen()"
+  [title]="formTitle()"
+  subtitle="PROMOTIONS_ADS.CUSTOMER_OFFERS.FORM.SUBTITLE"
+  size="xl"
+  [submitLabel]="
+    modalMode() === 'edit'
+      ? 'PROMOTIONS_ADS.CUSTOMER_OFFERS.FORM.UPDATE'
+      : 'PROMOTIONS_ADS.CUSTOMER_OFFERS.FORM.CREATE'
+  "
+  cancelLabel="COMMON.CANCEL"
+  [loading]="saving()"
+  (close)="closeForm()"
+  (submit)="save()"
+>
+  @if (formError()) {
+    <p
+      class="mb-5 rounded-xl border border-[#f1b9b4] bg-[#fff1f0] px-4 py-3 text-sm font-bold text-[#b42318]"
+    >
+      {{ formError()! | translate }}
+    </p>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
+    <form class="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+      <app-admin-form-field
+        type="text"
+        name="offerSlug"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.SLUG"
+        placeholder="PROMOTIONS_ADS.CUSTOMER_OFFERS.PLACEHOLDERS.SLUG"
+        [required]="true"
+        [value]="form().slug"
+        (valueChange)="updateForm('slug', $event)"
+      />
+      <app-admin-form-field
+        type="number"
+        name="offerSortOrder"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ORDER"
+        [min]="0"
+        [value]="form().sortOrder"
+        (valueChange)="updateForm('sortOrder', $event)"
+      />
+
+      <app-admin-form-field
+        type="text"
+        name="offerTitleEn"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.TITLE_EN"
+        [required]="true"
+        [value]="form().titleEn"
+        (valueChange)="updateForm('titleEn', $event)"
+      />
+      <app-admin-form-field
+        type="text"
+        name="offerTitleAr"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.TITLE_AR"
+        [required]="true"
+        [value]="form().titleAr"
+        (valueChange)="updateForm('titleAr', $event)"
+      />
+
+      <app-admin-form-field
+        type="textarea"
+        name="offerDescriptionEn"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.DESCRIPTION_EN"
+        [value]="form().descriptionEn"
+        (valueChange)="updateForm('descriptionEn', $event)"
+      />
+      <app-admin-form-field
+        type="textarea"
+        name="offerDescriptionAr"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.DESCRIPTION_AR"
+        [value]="form().descriptionAr"
+        (valueChange)="updateForm('descriptionAr', $event)"
+      />
+
+      <app-admin-form-field
+        type="text"
+        name="offerBadgeEn"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.BADGE_EN"
+        [value]="form().badgeEn"
+        (valueChange)="updateForm('badgeEn', $event)"
+      />
+      <app-admin-form-field
+        type="text"
+        name="offerBadgeAr"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.BADGE_AR"
+        [value]="form().badgeAr"
+        (valueChange)="updateForm('badgeAr', $event)"
+      />
+
+      <app-admin-form-field
+        type="text"
+        name="offerActionEn"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ACTION_EN"
+        [value]="form().actionTextEn"
+        (valueChange)="updateForm('actionTextEn', $event)"
+      />
+      <app-admin-form-field
+        type="text"
+        name="offerActionAr"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ACTION_AR"
+        [value]="form().actionTextAr"
+        (valueChange)="updateForm('actionTextAr', $event)"
+      />
+
+      <app-admin-form-field
+        class="md:col-span-2"
+        type="text"
+        name="offerActionLink"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ACTION_LINK"
+        placeholder="PROMOTIONS_ADS.CUSTOMER_OFFERS.PLACEHOLDERS.ACTION_LINK"
+        [value]="form().actionLink"
+        (valueChange)="updateForm('actionLink', $event)"
+      />
+
+      <app-admin-form-field
+        type="select"
+        name="offerTypeInput"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.TYPE"
+        [value]="form().offerType"
+        [options]="offerTypeOptions"
+        optionLabel="label"
+        optionValue="value"
+        (valueChange)="selectOfferType($any($event))"
+      />
+      <app-admin-form-field
+        type="select"
+        name="offerAudienceInput"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.AUDIENCE"
+        [value]="form().audience"
+        [options]="audienceOptions"
+        optionLabel="label"
+        optionValue="value"
+        (valueChange)="updateForm('audience', $event)"
+      />
+
+      @if (form().offerType === 'discount') {
+        <app-admin-form-field
+          type="select"
+          name="offerDiscount"
+          label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.DISCOUNT"
+          placeholder="PROMOTIONS_ADS.CUSTOMER_OFFERS.PLACEHOLDERS.DISCOUNT"
+          [value]="form().discountId"
+          [options]="discountOptions()"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          [showClear]="true"
+          (valueChange)="updateForm('discountId', $event)"
+        />
+        <app-admin-form-field
+          type="checkbox"
+          name="offerShowCode"
+          label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.SHOW_CODE"
+          [value]="form().showDiscountCode"
+          (valueChange)="updateForm('showDiscountCode', $event)"
+        />
+      }
+
+      <app-admin-form-field
+        type="text"
+        name="offerBackgroundColor"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.BACKGROUND_COLOR"
+        [value]="form().backgroundColor"
+        (valueChange)="updateForm('backgroundColor', $event)"
+      />
+      <app-admin-form-field
+        type="text"
+        name="offerButtonColor"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.BUTTON_COLOR"
+        [value]="form().buttonColor"
+        (valueChange)="updateForm('buttonColor', $event)"
+      />
+
+      <app-admin-form-field
+        type="date"
+        name="offerStartDate"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.START_DATE"
+        [value]="form().startDate"
+        (valueChange)="updateForm('startDate', $event)"
+      />
+      <app-admin-form-field
+        type="date"
+        name="offerEndDate"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.END_DATE"
+        [value]="form().endDate"
+        (valueChange)="updateForm('endDate', $event)"
+      />
+
+      <app-admin-form-field
+        class="md:col-span-2"
+        type="checkbox"
+        name="offerActive"
+        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ACTIVE"
+        [value]="form().isActive"
+        (valueChange)="updateForm('isActive', $event)"
+      />
+
+      <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4 md:col-span-2">
+        <h3 class="text-sm font-black text-[#342f29]">
+          {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ICON' | translate }}
+        </h3>
+        <div class="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8 md:grid-cols-12">
+          @for (icon of iconOptions; track icon) {
+            <button
+              type="button"
+              class="aspect-square cursor-pointer rounded-xl border text-lg text-[#5f6f43] transition hover:bg-[#eef4e8]"
+              [class.border-[#5f6f43]]="form().icon === icon"
+              [class.bg-[#eef4e8]]="form().icon === icon"
+              [class.border-[#e5ded2]]="form().icon !== icon"
+              [class.bg-white]="form().icon !== icon"
+              (click)="selectIcon(icon)"
+            >
+              <i [class]="icon" aria-hidden="true"></i>
+            </button>
+          }
+        </div>
+      </section>
+    </form>
+
+    <aside class="lg:sticky lg:top-0 lg:self-start">
+      <p class="mb-3 text-xs font-black uppercase tracking-[.1em] text-[#8d877e]">
+        {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.PREVIEW' | translate }}
+      </p>
+      <article
+        class="rounded-3xl border border-black/5 p-6 text-start shadow-sm"
+        [style.background-color]="form().backgroundColor"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <i [class]="form().icon" class="text-xl text-[#526148]" aria-hidden="true"></i>
+          @if (form().badgeEn) {
+            <span
+              class="rounded-full bg-white/70 px-2.5 py-1 text-[.65rem] font-black uppercase text-[#526148]"
+            >
+              {{ form().badgeEn }}
+            </span>
+          }
+        </div>
+        <h3 class="mt-5 font-black text-[#1f2a1f]">
+          {{ form().titleEn || ('PROMOTIONS_ADS.CUSTOMER_OFFERS.PREVIEW_TITLE' | translate) }}
+        </h3>
+        <p class="mt-2 min-h-12 text-xs leading-5 text-[#77736d]">
+          {{ form().descriptionEn || ('PROMOTIONS_ADS.CUSTOMER_OFFERS.PREVIEW_TEXT' | translate) }}
+        </p>
+        @if (form().offerType === 'discount' && form().showDiscountCode) {
+          <span
+            class="mt-4 inline-flex rounded-lg border border-dashed border-[#526148]/40 bg-white/60 px-3 py-2 font-mono text-xs font-black text-[#526148]"
+          >
+            {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.PREVIEW_CODE' | translate }}
+          </span>
+        }
+        <span
+          class="mt-5 inline-flex rounded-full px-4 py-2 text-xs font-black text-white"
+          [style.background-color]="form().buttonColor"
+        >
+          {{ form().actionTextEn || ('PROMOTIONS_ADS.CUSTOMER_OFFERS.PREVIEW_ACTION' | translate) }}
+        </span>
+      </article>
+    </aside>
+  </div>
+</app-admin-form-modal>
+
+<app-admin-form-modal
+  [isOpen]="isDeleteOpen()"
+  variant="delete"
+  title="PROMOTIONS_ADS.CUSTOMER_OFFERS.DELETE.TITLE"
+  subtitle="PROMOTIONS_ADS.CUSTOMER_OFFERS.DELETE.SUBTITLE"
+  [message]="deleteMessage()"
+  submitLabel="COMMON.DELETE"
+  cancelLabel="COMMON.CANCEL"
+  [loading]="saving()"
+  (close)="closeDelete()"
+  (submit)="confirmDelete()"
+/>

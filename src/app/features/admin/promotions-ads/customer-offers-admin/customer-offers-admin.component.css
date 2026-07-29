@@ -1,0 +1,19 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.admin-offer-action {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  transition: background-color 160ms ease;
+}
+
+.admin-offer-action:hover {
+  background: #f7f4ef;
+}

@@ -26,9 +26,16 @@ interface CustomerNavLink {
 @Component({
   selector: 'app-customer-navbar',
   standalone: true,
-  imports: [CustomerLanguageSwitchComponent, RouterLink, RouterLinkActive, TranslatePipe],
+  host: {
+    class: 'contents',
+  },
+  imports: [
+    CustomerLanguageSwitchComponent,
+    RouterLink,
+    RouterLinkActive,
+    TranslatePipe,
+  ],
   templateUrl: './customer-navbar.component.html',
-  styleUrl: './customer-navbar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerNavbarComponent {
@@ -89,11 +96,13 @@ export class CustomerNavbarComponent {
   }
 
   categoryIconClass(category: Category): string {
-    return this.isIconValue(category.image_url) ? category.image_url ?? 'pi pi-tag' : 'pi pi-tag';
-  }
+    const icon = category.icon?.trim();
 
-  categoryImageUrl(category: Category): string | null {
-    return category.image_url && !this.isIconValue(category.image_url) ? category.image_url : null;
+    if (!icon || !this.isIconValue(icon)) {
+      return 'pi pi-tag';
+    }
+
+    return icon;
   }
 
   @HostListener('document:click', ['$event'])
@@ -164,7 +173,14 @@ export class CustomerNavbarComponent {
     return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(value ?? 0);
   }
 
-  private isIconValue(value: string | null | undefined): boolean {
-    return !!value && (value.startsWith('pi ') || value.startsWith('fa ') || value.startsWith('fa-'));
+  private isIconValue(
+    value: string | null | undefined,
+  ): value is string {
+    return !!value &&
+      (
+        value.startsWith('pi ') ||
+        value.startsWith('fa ') ||
+        value.startsWith('fa-')
+      );
   }
 }

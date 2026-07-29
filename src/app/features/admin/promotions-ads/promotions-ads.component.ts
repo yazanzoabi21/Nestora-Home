@@ -34,8 +34,11 @@ import {
 } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
+import { CustomerOffersAdminComponent } from './customer-offers-admin';
+import { PromotionProductPickerComponent } from './promotion-product-picker';
 
 type PromotionModalMode = 'add' | 'edit';
+type PromotionsAdsTab = 'promotions' | 'customer_offers';
 type PromotionStatusFilter = 'all' | PromotionStatus;
 type PromotionTypeFilter = 'all' | PromotionType;
 
@@ -140,8 +143,10 @@ const EMPTY_PROMOTION_FORM: PromotionFormModel = {
     AdminFormModalComponent,
     AdminTableComponent,
     CommonModule,
+    CustomerOffersAdminComponent,
     KpiCardComponent,
     MediaPickerModalComponent,
+    PromotionProductPickerComponent,
     TranslatePipe,
   ],
   templateUrl: './promotions-ads.component.html',
@@ -157,6 +162,7 @@ export class PromotionsAdsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly promotions = signal<Promotion[]>([]);
+  readonly activeTab = signal<PromotionsAdsTab>('promotions');
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly searchTerm = signal('');
@@ -185,6 +191,21 @@ export class PromotionsAdsComponent implements OnInit {
   readonly availableProductsLoading = signal(false);
   readonly promotionProductsLoading = signal(false);
   readonly promotionProductsError = signal<string | null>(null);
+  readonly isProductPickerOpen = signal(false);
+
+  readonly selectedProducts = computed(() => {
+    const productsById = new Map(this.availableProducts().map((product) => [product.id, product]));
+    return this.selectedProductIds().flatMap((id) => {
+      const product = productsById.get(id);
+      return product ? [product] : [];
+    });
+  });
+
+  readonly selectedProductPreviews = computed(() => this.selectedProducts().slice(0, 4));
+
+  readonly moreSelectedProductsCount = computed(() =>
+    Math.max(0, this.selectedProductIds().length - this.selectedProductPreviews().length),
+  );
 
   readonly displayTypeOptions: DisplayTypeOption[] = [
     { labelKey: 'PROMOTIONS_ADS.DISPLAY.ANNOUNCEMENT_BAR', value: 'bar', icon: 'pi pi-minus' },
@@ -485,18 +506,6 @@ export class PromotionsAdsComponent implements OnInit {
     }
   }
 
-  isProductSelected(productId: string): boolean {
-    return this.selectedProductIds().includes(productId);
-  }
-
-  toggleProduct(productId: string): void {
-    this.selectedProductIds.update((currentIds) =>
-      currentIds.includes(productId)
-        ? currentIds.filter((id) => id !== productId)
-        : [...currentIds, productId],
-    );
-  }
-
   displayProductPrice(product: PromotionSelectableProduct): number {
     const salePrice = product.sale_price;
     return salePrice !== null && salePrice < product.price ? salePrice : product.price;
@@ -546,6 +555,7 @@ export class PromotionsAdsComponent implements OnInit {
     this.selectedProductIds.set([]);
     this.promotionProductsLoading.set(false);
     this.promotionProductsError.set(null);
+    this.isProductPickerOpen.set(false);
     this.formError.set(null);
     this.resetImageState();
     this.promotionForm.set({ ...EMPTY_PROMOTION_FORM });
@@ -567,6 +577,7 @@ export class PromotionsAdsComponent implements OnInit {
     this.selectedPromotion.set(promotion);
     this.selectedProductIds.set([]);
     this.promotionProductsError.set(null);
+    this.isProductPickerOpen.set(false);
     this.formError.set(null);
     this.selectedPromotionImageFile.set(null);
     this.selectedPromotionMedia.set(null);
@@ -599,6 +610,11 @@ export class PromotionsAdsComponent implements OnInit {
   }
 
   closePromotionModal(force = false): void {
+    if (this.isProductPickerOpen() && !force) {
+      this.closeProductPicker();
+      return;
+    }
+
     if (this.saving() && !force) {
       return;
     }
@@ -608,6 +624,7 @@ export class PromotionsAdsComponent implements OnInit {
     this.selectedProductIds.set([]);
     this.promotionProductsLoading.set(false);
     this.promotionProductsError.set(null);
+    this.isProductPickerOpen.set(false);
     this.formError.set(null);
     this.resetImageState();
     this.promotionForm.set({ ...EMPTY_PROMOTION_FORM });
@@ -671,6 +688,35 @@ export class PromotionsAdsComponent implements OnInit {
 
   selectPlacement(placement: string): void {
     this.updatePromotionForm('placement', placement);
+
+    if (placement !== 'home_flash_deals') {
+      this.isProductPickerOpen.set(false);
+    }
+  }
+
+  openProductPicker(): void {
+    if (
+      this.availableProductsLoading() ||
+      this.promotionProductsLoading() ||
+      this.promotionProductsError()
+    ) {
+      return;
+    }
+
+    this.isProductPickerOpen.set(true);
+  }
+
+  closeProductPicker(): void {
+    this.isProductPickerOpen.set(false);
+  }
+
+  applyProductSelection(productIds: string[]): void {
+    this.selectedProductIds.set([...productIds]);
+    this.isProductPickerOpen.set(false);
+  }
+
+  removeSelectedProduct(productId: string): void {
+    this.selectedProductIds.update((currentIds) => currentIds.filter((id) => id !== productId));
   }
 
   applyPalette(palette: PaletteOption): void {

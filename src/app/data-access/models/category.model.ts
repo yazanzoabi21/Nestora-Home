@@ -10,6 +10,7 @@ export interface Category {
   created_at?: string | null;
   products_count?: number;
   children_count?: number;
+  icon?: string | null;
 }
 
 export interface CategoryMutationPayload {
@@ -18,5 +19,6 @@ export interface CategoryMutationPayload {
   slug: string;
   media_id?: string | null;
   image_url?: string | null;
+  icon?: string | null;
   description?: string | null;
 }
