@@ -72,6 +72,29 @@ export class NewArrivalsService {
     );
   }
 
+  async getProductsByIds(ids: readonly string[]): Promise<CustomerProduct[]> {
+    const uniqueIds = [...new Set(ids.filter((id) => Boolean(id.trim())))];
+    if (uniqueIds.length === 0) return [];
+
+    const { data, error } = await this.supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .in('id', uniqueIds)
+      .eq('is_active', true);
+
+    if (error) throw new Error(error.message);
+
+    const products = (data ?? []).map((product) =>
+      this.toCustomerProduct(this.mapProduct(product as Product)),
+    );
+    const productsById = new Map(products.map((product) => [product.id, product]));
+
+    return uniqueIds.flatMap((id) => {
+      const product = productsById.get(id);
+      return product ? [product] : [];
+    });
+  }
+
   async getProductDetails(identifier: string): Promise<CustomerProductDetails | null> {
     const product =
       (await this.getProductBySlug(identifier)) ?? (await this.getProductById(identifier));

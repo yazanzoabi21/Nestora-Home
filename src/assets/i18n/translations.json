@@ -2045,7 +2045,11 @@
           "TITLE": "Flash Deals",
           "ENDS_TONIGHT": "Ends tonight",
           "VIEW_ALL": "View all flash deals",
-          "EMPTY": "New offers are on the way."
+          "EMPTY": "New offers are on the way.",
+          "EMPTY_TITLE": "Fresh deals are coming soon",
+          "EMPTY_DESCRIPTION": "New limited-time offers are being prepared. Explore our collection while you wait.",
+          "EXPLORE_PRODUCTS": "Explore products",
+          "EMPTY_ARIA_LABEL": "No active flash deals"
         },
         "NEW_CUSTOMER": {
           "TITLE": "New Customer Exclusive",
@@ -2125,6 +2129,19 @@
               "TEXT": "Simple returns and customer-first care."
             }
           }
+        },
+        "RECENTLY_VIEWED": {
+          "EYEBROW": "JUST FOR YOU",
+          "TITLE": "Recently Viewed",
+          "DESCRIPTION": "Pick up where you left off with products you recently explored.",
+          "CLEAR": "Clear history",
+          "CLEAR_ARIA": "Clear recently viewed product history",
+          "CLEAR_FAILED": "Could not clear recently viewed history",
+          "PREVIOUS": "Previous recently viewed products",
+          "NEXT": "Next recently viewed products",
+          "CAROUSEL_ARIA": "Recently viewed product carousel",
+          "VIEW_PRODUCT": "View details for {{name}}",
+          "RANGE": "{{start}}–{{end}} of {{total}}"
         },
         "REVIEWS": {
           "EYEBROW": "What people say",
@@ -4414,7 +4431,11 @@
           "TITLE": "عروض سريعة",
           "ENDS_TONIGHT": "ينتهي الليلة",
           "VIEW_ALL": "عرض جميع العروض السريعة",
-          "EMPTY": "عروض جديدة في الطريق."
+          "EMPTY": "عروض جديدة في الطريق.",
+          "EMPTY_TITLE": "عروض جديدة ومميزة قريباً",
+          "EMPTY_DESCRIPTION": "نحضّر لك عروضاً جديدة لفترة محدودة. استكشف مجموعتنا أثناء انتظارك.",
+          "EXPLORE_PRODUCTS": "استكشف المنتجات",
+          "EMPTY_ARIA_LABEL": "لا توجد عروض سريعة نشطة"
         },
         "NEW_CUSTOMER": {
           "TITLE": "عرض حصري للعملاء الجدد",
@@ -4494,6 +4515,19 @@
               "TEXT": "إرجاع بسيط وعناية تضع العميل أولاً."
             }
           }
+        },
+        "RECENTLY_VIEWED": {
+          "EYEBROW": "مختارة لك",
+          "TITLE": "شوهدت مؤخراً",
+          "DESCRIPTION": "تابع من حيث توقفت مع المنتجات التي استكشفتها مؤخراً.",
+          "CLEAR": "مسح السجل",
+          "CLEAR_ARIA": "مسح سجل المنتجات التي شوهدت مؤخراً",
+          "CLEAR_FAILED": "تعذر مسح سجل المنتجات التي شوهدت مؤخراً",
+          "PREVIOUS": "المنتجات السابقة التي شوهدت مؤخراً",
+          "NEXT": "المنتجات التالية التي شوهدت مؤخراً",
+          "CAROUSEL_ARIA": "شريط المنتجات التي شوهدت مؤخراً",
+          "VIEW_PRODUCT": "عرض تفاصيل {{name}}",
+          "RANGE": "{{start}}–{{end}} من {{total}}"
         },
         "REVIEWS": {
           "EYEBROW": "ماذا يقول العملاء",

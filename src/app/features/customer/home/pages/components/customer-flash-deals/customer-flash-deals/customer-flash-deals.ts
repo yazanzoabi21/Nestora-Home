@@ -11,12 +11,13 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { Promotion } from '../../../../../../../data-access';
+import { CustomerEmptyStateComponent } from '../../../../../components';
 import { CustomerPromotionsService } from '../../../../../services/customer-promotions.service';
 
 @Component({
   selector: 'app-customer-flash-deals',
   standalone: true,
-  imports: [RouterLink, TranslatePipe],
+  imports: [CustomerEmptyStateComponent, RouterLink, TranslatePipe],
   templateUrl: './customer-flash-deals.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

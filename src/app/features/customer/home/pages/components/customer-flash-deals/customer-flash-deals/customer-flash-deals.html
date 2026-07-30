@@ -112,8 +112,14 @@
         </button>
     </div>
     } @else {
-    <div class="mt-7 rounded-3xl border border-[#e8dccf] bg-white p-10 text-center text-sm text-[#858585]">
-        {{ 'CUSTOMER.HOME.FLASH.EMPTY' | translate }}
-    </div>
+    <app-customer-empty-state
+        class="mt-10 block"
+        variant="deals"
+        titleKey="CUSTOMER.HOME.FLASH.EMPTY_TITLE"
+        descriptionKey="CUSTOMER.HOME.FLASH.EMPTY_DESCRIPTION"
+        actionLabelKey="CUSTOMER.HOME.FLASH.EXPLORE_PRODUCTS"
+        actionRouterLink="/shop/products"
+        accessibleLabelKey="CUSTOMER.HOME.FLASH.EMPTY_ARIA_LABEL"
+    />
     }
 </section>

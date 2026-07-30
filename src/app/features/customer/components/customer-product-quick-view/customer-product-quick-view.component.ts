@@ -1,8 +1,18 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CustomerProduct } from '../../models';
+import { CustomerRecentlyViewedService } from '../../services';
 
 export interface CustomerProductAddRequest {
   product: CustomerProduct;
@@ -15,8 +25,11 @@ export interface CustomerProductAddRequest {
   imports: [CurrencyPipe, TranslatePipe, RouterLink],
   templateUrl: './customer-product-quick-view.component.html',
   styleUrl: './customer-product-quick-view.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerProductQuickViewComponent {
+  private readonly recentlyViewed = inject(CustomerRecentlyViewedService);
+
   readonly product = input.required<CustomerProduct>();
   readonly wishlistActive = input(false);
   readonly cartLoading = input(false);
@@ -29,6 +42,12 @@ export class CustomerProductQuickViewComponent {
   readonly starItems = [1, 2, 3, 4, 5];
   readonly quantity = signal(1);
   readonly subtotal = computed(() => this.product().price * this.quantity());
+
+  constructor() {
+    effect(() => {
+      void this.recentlyViewed.recordView(this.product().id);
+    });
+  }
 
   isFilledStar(star: number): boolean {
     return star <= Math.round(this.product().rating);

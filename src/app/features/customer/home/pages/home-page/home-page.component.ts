@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -23,10 +24,12 @@ import {
   CustomerProductAddRequest,
   CustomerProductQuickViewComponent,
 } from '../../../components/customer-product-quick-view';
+import { CustomerRecentlyViewedComponent } from '../../../components/customer-recently-viewed';
 import { CustomerProduct } from '../../../models';
 import { CustomerOrdersService } from '../../../orders';
 import {
   CustomerShoppingStateService,
+  CustomerRecentlyViewedService,
   CustomerReviewsService,
   NewArrivalsService,
 } from '../../../services';
@@ -38,6 +41,8 @@ interface HomeBenefit {
   textKey: string;
 }
 
+type RecentlyViewedStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
+
 @Component({
   selector: 'app-home-page',
   standalone: true,
@@ -46,6 +51,7 @@ interface HomeBenefit {
     CustomerProductCardComponent,
     CustomerProductCardSkeleton,
     CustomerProductQuickViewComponent,
+    CustomerRecentlyViewedComponent,
     RouterLink,
     TranslatePipe,
   ],
@@ -60,6 +66,7 @@ export class HomePageComponent {
   private readonly categoriesService = inject(CategoriesService);
   private readonly promotionsService = inject(PromotionsService);
   private readonly reviewsService = inject(CustomerReviewsService);
+  private readonly recentlyViewedService = inject(CustomerRecentlyViewedService);
   private readonly offersService = inject(CustomerOffersService);
   private readonly auth = inject(CustomerAuthService);
   private readonly customerOrders = inject(CustomerOrdersService);
@@ -77,6 +84,9 @@ export class HomePageComponent {
   readonly loading = signal(true);
   readonly loadError = signal(false);
   readonly selectedProduct = signal<CustomerProduct | null>(null);
+  readonly recentlyViewedProducts = signal<readonly CustomerProduct[]>([]);
+  readonly recentlyViewedStatus = signal<RecentlyViewedStatus>('idle');
+  readonly recentlyViewedClearing = signal(false);
   readonly currentLanguage = this.appTranslation.currentLang;
 
   readonly bestSellers = computed(() =>
@@ -116,12 +126,13 @@ export class HomePageComponent {
       this.activePromotions()[0] ??
       null,
   );
-  readonly featuredReviews = computed(() =>
-    this.reviews()
-      .filter((review) => review.status === 'published' && !!review.comment)
-      .sort((a, b) => Number(b.is_featured) - Number(a.is_featured))
-      .slice(0, 3),
-  );
+  // Preserved for possible restoration with the hidden Customer Reviews homepage section.
+  // readonly featuredReviews = computed(() =>
+  //   this.reviews()
+  //     .filter((review) => review.status === 'published' && !!review.comment)
+  //     .sort((a, b) => Number(b.is_featured) - Number(a.is_featured))
+  //     .slice(0, 3),
+  // );
   readonly visibleOffers = computed(() => {
     const isAuthenticated = this.auth.isAuthenticated();
     const completedOrderCount = this.completedOrderCount();
@@ -198,11 +209,39 @@ export class HomePageComponent {
       textKey: 'CUSTOMER.HOME.DIFFERENCE.ITEMS.SATISFACTION.TEXT',
     },
   ] as const;
+
+  private recentlyViewedRequestId = 0;
+  private recentlyViewedLoadKey: string | null = null;
+  private recentlyViewedPendingLoadKey: string | null = null;
+
   constructor() {
     effect(() => {
       const authLoading = this.auth.isLoading();
       const isAuthenticated = this.auth.isAuthenticated();
       if (!authLoading) void this.loadCompletedOrderCount(isAuthenticated);
+    });
+    effect(() => {
+      const authLoading = this.auth.isLoading();
+      const sessionUserId = this.auth.session()?.user.id ?? null;
+      const revision = this.recentlyViewedService.revision();
+
+      if (authLoading) {
+        this.recentlyViewedStatus.set('idle');
+        return;
+      }
+
+      const loadKey = `${sessionUserId ?? 'guest'}:${revision}`;
+      if (
+        loadKey === this.recentlyViewedLoadKey ||
+        loadKey === this.recentlyViewedPendingLoadKey
+      ) {
+        return;
+      }
+
+      // Keep loader UI reads/writes out of this effect's auth/revision dependencies.
+      untracked(() => {
+        void this.loadRecentlyViewed(loadKey, revision);
+      });
     });
     void this.loadHome();
   }
@@ -231,17 +270,35 @@ export class HomePageComponent {
     await this.addToCart(request.product, request.quantity);
   }
 
-  reviewName(review: Review): string {
-    return review.customer?.full_name?.trim() || 'Nestora customer';
-  }
+  // Preserved for possible restoration with the hidden Customer Reviews homepage section.
+  // reviewName(review: Review): string {
+  //   return review.customer?.full_name?.trim() || 'Nestora customer';
+  // }
+  //
+  // reviewInitials(review: Review): string {
+  //   return this.reviewName(review)
+  //     .split(/\s+/)
+  //     .slice(0, 2)
+  //     .map((part) => part[0])
+  //     .join('')
+  //     .toUpperCase();
+  // }
 
-  reviewInitials(review: Review): string {
-    return this.reviewName(review)
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase();
+  async clearRecentlyViewed(): Promise<void> {
+    if (this.recentlyViewedClearing()) return;
+
+    this.recentlyViewedClearing.set(true);
+    try {
+      await this.recentlyViewedService.clearHistory();
+      this.recentlyViewedRequestId += 1;
+      this.recentlyViewedProducts.set([]);
+      this.recentlyViewedStatus.set('empty');
+    } catch (error) {
+      console.warn('Unable to clear recently viewed history.', error);
+      this.toast.error(this.translate.instant('CUSTOMER.HOME.RECENTLY_VIEWED.CLEAR_FAILED'));
+    } finally {
+      this.recentlyViewedClearing.set(false);
+    }
   }
 
   promotionLink(promotion: Promotion): string {
@@ -346,6 +403,76 @@ export class HomePageComponent {
       console.warn('Unable to determine completed customer orders for offer targeting.', error);
       this.completedOrderCount.set(null);
     }
+  }
+
+  private async loadRecentlyViewed(
+    pendingLoadKey: string,
+    revision: number,
+  ): Promise<void> {
+    const requestId = ++this.recentlyViewedRequestId;
+    this.recentlyViewedPendingLoadKey = pendingLoadKey;
+    const hasResolvedProducts =
+      this.recentlyViewedStatus() === 'ready' && this.recentlyViewedProducts().length > 0;
+    if (!hasResolvedProducts) {
+      this.recentlyViewedStatus.set('loading');
+    }
+
+    try {
+      const snapshot = await this.recentlyViewedService.getRecentlyViewedSnapshot();
+      if (requestId === this.recentlyViewedRequestId) {
+        const resolvedLoadKey = `${snapshot.userId ?? 'guest'}:${revision}`;
+
+        this.recentlyViewedLoadKey = resolvedLoadKey;
+        if (!this.sameProducts(this.recentlyViewedProducts(), snapshot.products)) {
+          this.recentlyViewedProducts.set(snapshot.products);
+        }
+        this.recentlyViewedStatus.set(snapshot.products.length > 0 ? 'ready' : 'empty');
+      }
+    } catch (error) {
+      console.warn('Unable to load recently viewed products.', error);
+      if (requestId === this.recentlyViewedRequestId) {
+        this.recentlyViewedProducts.set([]);
+        this.recentlyViewedStatus.set('error');
+      }
+    } finally {
+      if (this.recentlyViewedPendingLoadKey === pendingLoadKey) {
+        this.recentlyViewedPendingLoadKey = null;
+      }
+    }
+  }
+
+  private sameProducts(
+    current: readonly CustomerProduct[],
+    incoming: readonly CustomerProduct[],
+  ): boolean {
+    if (current.length !== incoming.length) return false;
+
+    return current.every((product, index) => {
+      const next = incoming[index];
+      return (
+        next !== undefined &&
+        product.id === next.id &&
+        product.name === next.name &&
+        product.brand === next.brand &&
+        product.category === next.category &&
+        product.imageUrl === next.imageUrl &&
+        product.description === next.description &&
+        product.price === next.price &&
+        product.originalPrice === next.originalPrice &&
+        product.rating === next.rating &&
+        product.reviewCount === next.reviewCount &&
+        product.discountPercentage === next.discountPercentage &&
+        product.badge === next.badge &&
+        product.isFeatured === next.isFeatured &&
+        product.isNew === next.isNew &&
+        product.isActive === next.isActive &&
+        product.soldCount === next.soldCount &&
+        product.inStock === next.inStock &&
+        product.stock === next.stock &&
+        product.createdAt === next.createdAt &&
+        product.slug === next.slug
+      );
+    });
   }
 
   private isArabic(): boolean {

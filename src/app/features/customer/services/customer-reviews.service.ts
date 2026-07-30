@@ -43,6 +43,7 @@ interface ReviewRecord {
 @Injectable({ providedIn: 'root' })
 export class CustomerReviewsService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
+  private readonly publishedReviewsByProduct = new Map<string, Promise<Review[]>>();
 
   async getPublishedReviews(limit = 3): Promise<Review[]> {
     const { data, error } = await this.supabase
@@ -59,6 +60,24 @@ export class CustomerReviewsService {
   }
 
   async getPublishedReviewsByProduct(productId: string): Promise<Review[]> {
+    const normalizedProductId = productId.trim();
+    const existingRequest = this.publishedReviewsByProduct.get(normalizedProductId);
+    if (existingRequest) return existingRequest;
+
+    const request = this.loadPublishedReviewsByProduct(normalizedProductId);
+    this.publishedReviewsByProduct.set(normalizedProductId, request);
+
+    try {
+      return await request;
+    } catch (error) {
+      if (this.publishedReviewsByProduct.get(normalizedProductId) === request) {
+        this.publishedReviewsByProduct.delete(normalizedProductId);
+      }
+      throw error;
+    }
+  }
+
+  private async loadPublishedReviewsByProduct(productId: string): Promise<Review[]> {
     const { data, error } = await this.supabase
       .from('reviews')
       .select(PUBLIC_REVIEW_SELECT)
@@ -98,6 +117,8 @@ export class CustomerReviewsService {
     if (error) {
       throw new Error(error.code === '23505' ? 'REVIEW_ALREADY_EXISTS' : 'REVIEW_SUBMIT_FAILED');
     }
+
+    this.publishedReviewsByProduct.delete(payload.productId);
   }
 
   async updateOwnReview(payload: CustomerReviewEditPayload): Promise<void> {
@@ -114,6 +135,7 @@ export class CustomerReviewsService {
     });
 
     if (error) throw new Error('REVIEW_UPDATE_FAILED');
+    this.publishedReviewsByProduct.clear();
   }
 
   private mapReview(review: ReviewRecord): Review {

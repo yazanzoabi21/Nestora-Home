@@ -12,6 +12,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { ProductReviewsComponent } from '../components/product-reviews';
 import { CustomerProductDetails } from '../models';
 import {
+  CustomerRecentlyViewedService,
   CustomerShoppingStateService,
   NewArrivalsService,
 } from '../services';
@@ -38,6 +39,7 @@ export class ProductDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly catalog = inject(NewArrivalsService);
+  private readonly recentlyViewed = inject(CustomerRecentlyViewedService);
 
   readonly shopping = inject(CustomerShoppingStateService);
 
@@ -344,6 +346,10 @@ export class ProductDetailsComponent {
       this.product.set(item);
       this.quantity.set(1);
       this.currentImageIndex.set(0);
+
+      if (item) {
+        void this.recentlyViewed.recordView(item.id);
+      }
 
       // Load all gallery images in the background without
       // delaying the initial product display.

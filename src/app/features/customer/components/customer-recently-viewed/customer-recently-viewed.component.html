@@ -1,0 +1,76 @@
+<section class="customer-page-container overflow-hidden py-8 sm:py-10" [attr.aria-label]="title() | translate">
+  <header class="flex items-end justify-between gap-5 px-1">
+    <div class="min-w-0">
+      <p class="text-[0.64rem] font-black uppercase tracking-[0.24em] text-[#718369]">
+        {{ eyebrow() | translate }}
+      </p>
+      <h2 class="mt-1.5 font-serif text-[clamp(1.65rem,3vw,2.15rem)] font-medium leading-tight text-[#242923]">
+        {{ title() | translate }}
+      </h2>
+    </div>
+
+    @if (showClearAction() && items().length > 0) {
+    <button type="button"
+      class="mb-1 shrink-0 cursor-pointer border-0 border-b border-[#718369]/55 bg-transparent px-0 py-1 text-xs font-semibold text-[#596b4e] transition hover:border-[#596b4e] hover:text-[#35422f] focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#718369]/35 disabled:cursor-wait disabled:opacity-50 sm:text-sm"
+      [disabled]="clearing()" [attr.aria-label]="'CUSTOMER.HOME.RECENTLY_VIEWED.CLEAR_ARIA' | translate"
+      (click)="clearHistory.emit()">
+      {{ 'CUSTOMER.HOME.RECENTLY_VIEWED.CLEAR' | translate }}
+    </button>
+    }
+  </header>
+
+  <div class="relative mt-5 px-7 sm:px-9">
+    <button type="button"
+      class="absolute start-0 top-1/2 z-10 grid size-10 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-[#d8d2c9] bg-[#faf8f5]/95 text-[#68775d] shadow-sm transition hover:border-[#718369] hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#718369]/25 disabled:cursor-default disabled:text-[#b9b5ae] disabled:opacity-55 sm:-start-1 sm:size-11"
+      [disabled]="!canScrollPrevious()" [attr.aria-label]="'CUSTOMER.HOME.RECENTLY_VIEWED.PREVIOUS' | translate"
+      (click)="scrollPrevious(track)">
+      <i class="pi pi-arrow-left text-sm rtl:rotate-180" aria-hidden="true"></i>
+    </button>
+
+    <div #track class="flex gap-3 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      tabindex="0" [attr.aria-label]="'CUSTOMER.HOME.RECENTLY_VIEWED.CAROUSEL_ARIA' | translate" (scroll)="onScroll()">
+      @for (product of items(); track product.id) {
+      <a data-carousel-card [routerLink]="['/shop/products', product.slug || product.id]"
+        class="group flex h-[6.25rem] w-[68vw] min-w-[13.75rem] max-w-[17.5rem] shrink-0 snap-start items-center gap-3 rounded-lg border border-[#ded8d0] bg-white/75 p-2 no-underline shadow-[0_2px_8px_rgba(31,42,31,0.025)] transition hover:border-[#aeb9a5] hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#718369]/25 sm:w-[calc((100%_-_1.5rem)/3)] sm:min-w-[calc((100%_-_1.5rem)/3)] sm:max-w-none lg:w-[calc((100%_-_3rem)/5)] lg:min-w-[calc((100%_-_3rem)/5)]"
+        [attr.aria-label]="'CUSTOMER.HOME.RECENTLY_VIEWED.VIEW_PRODUCT' | translate: { name: product.name }">
+        <img [src]="product.imageUrl" [alt]="product.name"
+          class="size-20 shrink-0 rounded-md bg-[#f0ece6] object-cover" />
+
+        <span class="flex min-w-0 flex-1 flex-col self-stretch py-1">
+          <strong class="line-clamp-2 min-h-10 text-xs font-semibold leading-5 text-[#2d322c]">
+            {{ product.name }}
+          </strong>
+          <span class="mt-auto flex min-w-0 items-baseline gap-2">
+            <span class="text-sm font-black text-[#273027]">
+              {{ product.price | currency: 'USD' : 'symbol' : '1.2-2' }}
+            </span>
+            @if (product.originalPrice) {
+            <span class="truncate text-[0.65rem] font-medium text-[#8d8a84] line-through">
+              {{ product.originalPrice | currency: 'USD' : 'symbol' : '1.2-2' }}
+            </span>
+            }
+          </span>
+        </span>
+
+        <i class="pi pi-arrow-right me-1 shrink-0 text-xs text-[#5d6954] transition group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
+          aria-hidden="true"></i>
+      </a>
+      }
+      <span class="w-10 shrink-0 snap-none sm:hidden" aria-hidden="true"></span>
+    </div>
+
+    <button type="button"
+      class="absolute end-0 top-1/2 z-10 grid size-10 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-[#718369] bg-[#718369] text-white shadow-sm transition hover:bg-[#5f714f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#718369]/25 disabled:cursor-default disabled:border-[#d8d2c9] disabled:bg-[#faf8f5] disabled:text-[#b9b5ae] disabled:opacity-70 sm:-end-1 sm:size-11"
+      [disabled]="!canScrollNext()" [attr.aria-label]="'CUSTOMER.HOME.RECENTLY_VIEWED.NEXT' | translate"
+      (click)="scrollNext(track)">
+      <i class="pi pi-arrow-right text-sm rtl:rotate-180" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <p class="mt-4 text-center text-[0.68rem] font-semibold tracking-wide text-[#666b64]" aria-live="polite">
+    {{
+    'CUSTOMER.HOME.RECENTLY_VIEWED.RANGE'
+    | translate: { start: rangeStart() + 1, end: rangeEnd(), total: items().length }
+    }}
+  </p>
+</section>

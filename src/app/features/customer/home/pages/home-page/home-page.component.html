@@ -350,6 +350,23 @@
     </div>
   </section>
 
+  @if (recentlyViewedStatus() === 'ready' && recentlyViewedProducts().length > 0) {
+  <div class="bg-[#faf8f5]">
+    <app-customer-recently-viewed
+      [products]="recentlyViewedProducts()"
+      [maxItems]="10"
+      [clearing]="recentlyViewedClearing()"
+      (clearHistory)="clearRecentlyViewed()"
+    />
+  </div>
+  } @else {
+  <div class="h-8 bg-[#faf8f5] sm:h-10" aria-hidden="true"></div>
+  }
+
+  <!--
+    Temporarily hidden: Customer Reviews homepage section.
+    Keep this implementation for possible future restoration.
+
   <section class="customer-page-container py-20">
     <header class="text-center">
       <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
@@ -362,7 +379,7 @@
     <div class="mt-8 grid gap-5 md:grid-cols-3">
       @for (review of featuredReviews(); track review.id) {
       <article class="flex min-h-[13rem] flex-col rounded-3xl border border-[#eee8e1] bg-white p-6 shadow-sm">
-        <!-- Customer name -->
+        Customer name
         <div class="flex items-center gap-3">
           <span
             class="grid size-9 shrink-0 place-items-center rounded-full bg-[#718369] text-xs font-black uppercase text-white">
@@ -374,7 +391,7 @@
           </strong>
         </div>
 
-        <!-- Rating -->
+        Rating
         <div class="mt-4 flex gap-1 text-[#e8a11d]" [attr.aria-label]="review.rating + ' out of 5 stars'">
           @for (_ of [1, 2, 3, 4, 5]; track $index) {
           <i class="pi pi-star-fill text-xs" [class.opacity-25]="$index + 1 > (review.rating || 0)"
@@ -382,7 +399,7 @@
           }
         </div>
 
-        <!-- Review -->
+        Review
         <p class="mt-4 line-clamp-4 text-sm leading-6 text-[#4e514b]">
           “{{ review.comment }}”
         </p>
@@ -394,6 +411,7 @@
       }
     </div>
   </section>
+  -->
 
   @if (loadError()) {
   <section class="customer-page-container pb-16 text-center">
