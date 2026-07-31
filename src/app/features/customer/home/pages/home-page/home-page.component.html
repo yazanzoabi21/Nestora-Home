@@ -114,10 +114,10 @@
       </h2>
     </header>
 
-    <div class="mt-10 grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
+    <div class="mt-10 flex flex-wrap justify-center gap-4">
       @for (category of categories(); track category.id) {
       <a routerLink="/shop/products" [queryParams]="{ category: category.slug }"
-        class="group relative aspect-[4/5] min-w-0 overflow-hidden rounded-[1.5rem] bg-[#e8dccf] no-underline shadow-[0_14px_32px_rgba(31,42,31,0.1)]">
+        class="group relative aspect-[4/5] w-full min-w-0 overflow-hidden rounded-[1.5rem] bg-[#e8dccf] no-underline shadow-[0_14px_32px_rgba(31,42,31,0.1)] min-[420px]:w-[calc((100%_-_1rem)_/_2)] lg:w-[calc((100%_-_3rem)_/_4)]">
         @if (category.image_url) {
         <img [src]="category.image_url" [alt]="category.name"
           class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
@@ -352,12 +352,8 @@
 
   @if (recentlyViewedStatus() === 'ready' && recentlyViewedProducts().length > 0) {
   <div class="bg-[#faf8f5]">
-    <app-customer-recently-viewed
-      [products]="recentlyViewedProducts()"
-      [maxItems]="10"
-      [clearing]="recentlyViewedClearing()"
-      (clearHistory)="clearRecentlyViewed()"
-    />
+    <app-customer-recently-viewed [products]="recentlyViewedProducts()" [maxItems]="10"
+      [clearing]="recentlyViewedClearing()" (clearHistory)="clearRecentlyViewed()" />
   </div>
   } @else {
   <div class="h-8 bg-[#faf8f5] sm:h-10" aria-hidden="true"></div>

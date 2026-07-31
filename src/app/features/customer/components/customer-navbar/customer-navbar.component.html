@@ -1,53 +1,69 @@
 <header class="sticky top-0 z-[1000] block w-full">
-  <!-- Benefits bar -->
-  <div class="h-10 w-full bg-[#30362f] text-white">
-    <div
-      class="customer-page-container flex h-full items-center justify-center gap-2 whitespace-nowrap text-[11px] font-semibold max-sm:gap-1.5 max-sm:text-[10px]">
-      <span
-        class="inline-flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-full bg-[#718369] text-white"
-        aria-hidden="true">
-        <i class="pi pi-check text-[8px] font-extrabold"></i>
-      </span>
-
-      <span class="max-[390px]:max-w-[118px] max-[390px]:overflow-hidden max-[390px]:text-ellipsis">
-        Worry-free shopping
-      </span>
-
-      <span class="text-white/50 max-sm:hidden" aria-hidden="true">
-        —
-      </span>
-
-      <span class="rounded-full border border-[#aec1a299] px-[9px] py-[3px] leading-none text-[#e8eee4] max-sm:hidden">
-        30-Day Returns
-      </span>
-
-      <a routerLink="/shop"
-        class="ml-0.5 cursor-pointer text-white underline decoration-1 underline-offset-[3px] transition-colors duration-150 hover:text-[#cbd8c4]">
-        Learn More
-        <span aria-hidden="true">→</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- Shipping bar -->
-  <div
-    class="flex h-8 w-full items-center justify-center gap-[7px] overflow-hidden whitespace-nowrap bg-[#718369] px-4 text-center text-[11px] font-semibold uppercase leading-none tracking-[0.15em] text-white max-sm:h-[30px] max-sm:px-2.5 max-sm:text-[8px] max-sm:tracking-[0.09em]"
-    aria-live="polite">
-    @for (
-    message of promotionalMessages();
-    track message;
-    let last = $last
-    ) {
-    <span>{{ message }}</span>
-
-    @if (!last) {
-    <span class="text-[15px] leading-none" aria-hidden="true">
-      ·
+  <!-- Promotions and discounts carousel -->
+  <div class="relative flex h-10 w-full items-center justify-center overflow-hidden whitespace-nowrap bg-[#30362f] px-4 text-center text-[11px] font-semibold text-white max-sm:px-2.5 max-sm:text-[10px]"
+    aria-live="polite" aria-roledescription="carousel"
+    (mouseenter)="pauseAnnouncementCarousel()" (mouseleave)="resumeAnnouncementCarousel()"
+    (focusin)="pauseAnnouncementCarousel()" (focusout)="resumeAnnouncementCarousel()">
+    @if (announcementsLoading()) {
+    <span class="inline-flex items-center gap-2 animate-pulse">
+      <i class="pi pi-spinner pi-spin" aria-hidden="true"></i>
+      <span>LOADING OFFERS</span>
     </span>
-    }
-    } @empty {
+    } @else if (activeAnnouncement(); as announcement) {
+    <div class="flex min-w-0 max-w-[calc(100%-7rem)] items-center justify-center gap-2 transition-opacity duration-150 max-[390px]:max-w-[calc(100%-4.5rem)]"
+      [class.opacity-0]="!announcementVisible()" [class.opacity-100]="announcementVisible()">
+      @if (announcement.icon) {
+      <i [class]="announcement.icon + ' shrink-0'" aria-hidden="true"></i>
+      }
+
+      @if (announcement.badgeText) {
+      <span class="shrink-0 rounded-full border border-white/40 px-2 py-0.5 leading-none">
+        {{ announcement.badgeText }}
+      </span>
+      }
+
+      <span class="min-w-0 truncate">{{ announcement.title }}</span>
+
+      @if (announcement.message) {
+      <span class="min-w-0 truncate max-sm:hidden">— {{ announcement.message }}</span>
+      }
+
+      @if (announcement.link && announcement.linkText) {
+      <a [href]="announcement.link"
+        class="shrink-0 cursor-pointer text-white underline decoration-1 underline-offset-[3px] hover:text-white/80">
+        {{ announcement.linkText }}
+      </a>
+      }
+    </div>
+    } @else {
     <span>CHECK BACK SOON FOR NEW OFFERS</span>
     }
+
+    @if (promotionalAnnouncements().length > 1) {
+    <div class="absolute end-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 max-[390px]:end-1"
+      aria-label="Announcement pagination">
+      @for (announcement of promotionalAnnouncements(); track announcement.source + ':' + announcement.id; let index = $index) {
+      <button type="button"
+        class="grid h-4 w-4 cursor-pointer place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 max-[390px]:h-3 max-[390px]:w-3"
+        [attr.aria-label]="'Show announcement ' + (index + 1)"
+        [attr.aria-current]="index === activeAnnouncementIndex() ? 'true' : null"
+        (click)="selectAnnouncement(index)">
+        <span class="h-1.5 rounded-full transition-all duration-200"
+          [class.w-3]="index === activeAnnouncementIndex()"
+          [class.bg-white]="index === activeAnnouncementIndex()"
+          [class.w-1.5]="index !== activeAnnouncementIndex()"
+          [class.bg-white/40]="index !== activeAnnouncementIndex()"></span>
+      </button>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Discount shipping bar -->
+  <div
+    class="flex h-8 w-full items-center justify-center overflow-hidden whitespace-nowrap bg-[#718369] px-4 text-center text-[11px] font-semibold uppercase leading-none tracking-[0.15em] text-white max-sm:h-[30px] max-sm:px-2.5 max-sm:text-[8px] max-sm:tracking-[0.09em]"
+    aria-live="polite">
+    <span class="max-w-full truncate">{{ shippingDiscountAnnouncement() }}</span>
   </div>
 
   <!-- Main navbar -->
@@ -169,7 +185,7 @@
 
           @if (shopping.cartQuantity() > 0) {
           <span
-            class="pointer-events-none absolute -end-[0.3rem] -top-[0.3rem] inline-flex h-[1.15rem] min-w-[1.15rem] items-center justify-center rounded-full border-2 border-white bg-[#6b7d5e] px-1 text-[0.6rem] font-extrabold leading-none text-white"
+            class="absolute -end-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-[#718369] px-1 text-[10px] font-black text-white"
             aria-hidden="true">
             {{
             shopping.cartQuantity() > 99
@@ -243,7 +259,7 @@
 
             @if (shopping.cartQuantity() > 0) {
             <span
-              class="pointer-events-none absolute -end-1 -top-1 inline-flex h-[1.05rem] min-w-[1.05rem] items-center justify-center rounded-full border-2 border-white bg-[#6b7d5e] px-1 text-[0.56rem] font-extrabold leading-none text-white"
+              class="absolute -end-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#718369] px-1 text-[9px] font-black text-white"
               aria-hidden="true">
               {{
               shopping.cartQuantity() > 99

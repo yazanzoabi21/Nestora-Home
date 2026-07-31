@@ -21,4 +21,5 @@ export interface CategoryMutationPayload {
   image_url?: string | null;
   icon?: string | null;
   description?: string | null;
+  is_active?: boolean;
 }

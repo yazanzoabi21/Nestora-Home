@@ -31,6 +31,8 @@ interface CategoryFormModel {
   description: string;
   mediaId: string | null;
   imageUrl: string;
+  icon: string;
+  isActive: boolean;
 }
 
 const EMPTY_CATEGORY_FORM: CategoryFormModel = {
@@ -39,6 +41,8 @@ const EMPTY_CATEGORY_FORM: CategoryFormModel = {
   description: '',
   mediaId: null,
   imageUrl: '',
+  icon: '',
+  isActive: true,
 };
 
 const DEFAULT_CATEGORY_ICON = 'pi pi-box';
@@ -145,6 +149,8 @@ export class CategoriesComponent implements OnInit {
   readonly imagePreviewUrl = signal<string | null>(null);
   readonly selectedIcon = signal(DEFAULT_CATEGORY_ICON);
   readonly expandedCategoryIds = signal<Set<string>>(new Set());
+
+  readonly selectedParentId = signal<string | null>(null);
 
   // readonly categoryIconOptions = CATEGORY_ICON_OPTIONS;
   readonly showMoreIcons = signal(false);
@@ -347,12 +353,15 @@ export class CategoriesComponent implements OnInit {
     this.selectedParentCategory.set(this.parentCategory(category));
     this.selectedCategory.set(category);
     this.slugEdited.set(true);
+    this.selectedParentId.set(category.parent_id ?? null);
     this.categoryForm.set({
       name: category.name,
       slug: category.slug,
       description: category.description ?? '',
       mediaId: category.media_id ?? null,
       imageUrl: category.image_url ?? '',
+      icon: category.icon ?? '',
+      isActive: category.is_active ?? true,
     });
     this.loadAssetState(category.image_url);
     this.isCategoryModalOpen.set(true);
@@ -655,11 +664,48 @@ export class CategoriesComponent implements OnInit {
     return category.is_active === false;
   }
 
-  toggleCategoryVisibility(category: Category): void {
-    this.toast.info(
-      this.translate.instant(this.isHiddenCategory(category) ? 'CATEGORIES.SHOW_CATEGORY' : 'CATEGORIES.HIDE_CATEGORY'),
-      this.translate.instant('CATEGORIES.VISIBILITY_NOT_AVAILABLE')
-    );
+  async toggleCategoryVisibility(category: Category): Promise<void> {
+    if (this.saving()) return;
+
+    this.saving.set(true);
+
+    try {
+      const updatedCategory = await this.categoriesService.updateCategory(category.id, {
+        parent_id: category.parent_id ?? null,
+        name: category.name,
+        slug: category.slug,
+        media_id: category.media_id ?? null,
+        image_url: category.image_url ?? null,
+        icon: category.icon ?? null,
+        description: category.description ?? null,
+        is_active: category.is_active === false,
+      });
+
+      this.categories.update((categories) =>
+        categories.map((item) =>
+          item.id === updatedCategory.id ? updatedCategory : item,
+        ),
+      );
+
+      this.selectedCategory.update((selected) =>
+        selected?.id === updatedCategory.id ? updatedCategory : selected,
+      );
+
+      this.toast.success(
+        this.translate.instant(
+          updatedCategory.is_active
+            ? 'CATEGORIES.SHOW_CATEGORY'
+            : 'CATEGORIES.HIDE_CATEGORY',
+        ),
+      );
+    } catch (error) {
+      this.toast.failed(
+        this.translate.instant('CATEGORIES.SAVING_CATEGORY'),
+        this.errorDetail(error, this.translate.instant('CATEGORIES.SAVING_CATEGORY_FAILED')),
+      );
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   categoryModalTitle(): string {
@@ -710,12 +756,13 @@ export class CategoriesComponent implements OnInit {
     const form = this.categoryForm();
 
     return {
-      name: form.name.trim(),
-      parent_id: this.resolveParentIdForPayload(),
-      slug: form.slug.trim() || this.categoriesService.createSlug(form.name),
+      parent_id: this.selectedParentId(),
+      name: form.name,
+      slug: form.slug,
+      image_url: form.imageUrl.trim() || null,
+      icon: form.icon.trim() || null,
       description: form.description.trim() || null,
-      media_id: form.mediaId,
-      image_url: this.resolveCategoryImageValue(null),
+      is_active: form.isActive,
     };
   }
 

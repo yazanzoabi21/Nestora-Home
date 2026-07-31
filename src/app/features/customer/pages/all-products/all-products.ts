@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, effect, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -24,7 +24,7 @@ export class AllProducts extends ProductBrowserPage {
     return this.navigationSource() === 'navbar' &&
       requestedCategorySlug &&
       selected.length === 1 &&
-      this.slugify(selected[0]) === requestedCategorySlug
+      this.slugify(selected[0]) === this.slugify(requestedCategorySlug)
       ? selected[0]
       : this.titleKey;
   });
@@ -35,6 +35,14 @@ export class AllProducts extends ProductBrowserPage {
 
   constructor() {
     super();
+    effect(() => {
+      const requestedCategorySlug = this.requestedCategorySlug();
+      const availableCategories = this.categoryOptions();
+
+      if (requestedCategorySlug && availableCategories.length) {
+        this.applyRouteCategory();
+      }
+    });
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       this.requestedCategorySlug.set(params.get('category'));
       this.navigationSource.set(params.get('source'));
@@ -64,8 +72,10 @@ export class AllProducts extends ProductBrowserPage {
       return;
     }
 
+    const normalizedRequestedCategorySlug = this.slugify(requestedCategorySlug);
+
     const category = this.categoryOptions().find(
-      (option) => this.slugify(option.value) === requestedCategorySlug,
+      (option) => this.slugify(option.value) === normalizedRequestedCategorySlug,
     );
     this.selectedCategories.set(category ? [category.value] : []);
   }

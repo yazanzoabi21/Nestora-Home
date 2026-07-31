@@ -20,6 +20,8 @@ const CATEGORY_SELECT_WITH_PARENT = `
   slug,
   image_url,
   description,
+  icon,
+  is_active,
   created_at
 `;
 
@@ -30,6 +32,8 @@ const CATEGORY_SELECT = `
   slug,
   image_url,
   description,
+  icon,
+  is_active,
   created_at
 `;
 
@@ -242,6 +246,8 @@ export class CategoriesService {
       media_id: payload.media_id ?? null,
       image_url: payload.image_url?.trim() || null,
       description: payload.description?.trim() || null,
+      is_active: payload.is_active ?? true,
+      icon: payload.icon?.trim() || null,
     };
 
     if (includeParentId) {

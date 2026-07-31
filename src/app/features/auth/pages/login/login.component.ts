@@ -194,7 +194,7 @@ export class LoginComponent {
       if (returnUrl?.startsWith('/shop') && !returnUrl.startsWith('//')) {
         await this.router.navigateByUrl(returnUrl);
       } else {
-        await this.router.navigate(['/shop/customer-account']);
+        await this.router.navigate(['/shop']);
       }
     } catch (error) {
       this.errorMessage.set(getCustomerSignupErrorMessage(error));

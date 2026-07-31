@@ -4,3 +4,4 @@ export * from './customer-cart.service';
 export * from './customer-reviews.service';
 export * from './customer-wishlist.service';
 export * from './customer-recently-viewed.service';
+export * from './customer-promotional-bar.service';

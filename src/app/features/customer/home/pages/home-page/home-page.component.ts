@@ -374,7 +374,14 @@ export class HomePageComponent {
       ]);
       this.products.set(products);
       this.categories.set(
-        categories.filter((category) => category.is_active !== false).slice(0, 4),
+        categories
+          .filter(
+            (category) =>
+              category.is_active !== false &&
+              category.parent_id !== null &&
+              category.parent_id !== undefined,
+          )
+          .slice(0, 4),
       );
       this.promotions.set(promotions);
       this.reviews.set(reviews);

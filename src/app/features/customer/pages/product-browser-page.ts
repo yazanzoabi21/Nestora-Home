@@ -14,6 +14,8 @@ import {
   CustomerProductView,
 } from '../models';
 import { CustomerShoppingStateService } from '../services';
+import { Category } from '../../../data-access/models';
+import { CategoriesService } from '../../../data-access/services';
 
 type ActiveFilterChip =
   | { kind: 'category'; label: string; value: string }
@@ -45,6 +47,10 @@ export abstract class ProductBrowserPage {
   readonly cartCount = signal(0);
   readonly loadingCards = Array.from({ length: 6 });
 
+  private readonly categoriesService = inject(CategoriesService);
+
+  readonly filterCategories = signal<Category[]>([]);
+
   readonly priceRanges: CustomerPriceRange[] = [
     { label: 'Under $30', value: 'under-30', min: 0, max: 30 },
     { label: '$30 - $60', value: '30-60', min: 30, max: 60 },
@@ -64,9 +70,11 @@ export abstract class ProductBrowserPage {
     { label: 'Highest Rated', value: 'rating' },
   ];
   readonly categoryOptions = computed<CustomerFilterOption[]>(() =>
-    [...new Set(this.products().map((product) => product.category))]
-      .sort()
-      .map((label) => ({ label, value: label })),
+    this.filterCategories().map((category) => ({
+      label: category.name,
+      value: category.name,
+      icon: category.icon?.trim() || '',
+    })),
   );
   readonly activePriceRange = computed(
     () => this.priceRanges.find((range) => range.value === this.selectedPriceRange()) ?? null,
@@ -121,6 +129,7 @@ export abstract class ProductBrowserPage {
   private filterTrigger: HTMLElement | null = null;
 
   constructor() {
+    void this.loadFilterCategories();
     effect((onCleanup) => {
       if (!this.mobileFiltersOpen()) {
         return;
@@ -211,6 +220,32 @@ export abstract class ProductBrowserPage {
   }
   addProductToCart(product: CustomerProduct, quantity = 1): void {
     void this.shopping.addToCart(product, quantity);
+  }
+
+  private async loadFilterCategories(): Promise<void> {
+    try {
+      const categories = await this.categoriesService.getCategories();
+
+      const activeCategoryIds = new Set(
+        categories
+          .filter((category) => category.is_active !== false)
+          .map((category) => category.id),
+      );
+
+      this.filterCategories.set(
+        categories
+          .filter(
+            (category) =>
+              category.is_active !== false &&
+              category.parent_id !== null &&
+              category.parent_id !== undefined &&
+              activeCategoryIds.has(category.parent_id),
+          )
+          .sort((first, second) => first.name.localeCompare(second.name)),
+      );
+    } catch {
+      this.filterCategories.set([]);
+    }
   }
 
   private lockPageScroll(): void {

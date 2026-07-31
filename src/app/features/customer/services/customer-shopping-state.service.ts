@@ -474,26 +474,36 @@ export class CustomerShoppingStateService {
 
   private async loadWishlistForUser(userId: string | null): Promise<void> {
     const sequence = ++this.wishlistLoadSequence;
-    this.wishlistProducts.set([]);
-    this.wishlistIds.set(new Set());
-    this.wishlistPendingProductIds.set(new Set());
+
+    this.wishlistLoading.set(true); // Set this FIRST
     this.wishlistError.set(null);
+    this.wishlistPendingProductIds.set(new Set());
+
     if (!userId) {
+      this.wishlistProducts.set([]);
+      this.wishlistIds.set(new Set());
       this.wishlistLoading.set(false);
       return;
     }
-    this.wishlistLoading.set(true);
+
     try {
       const products = await this.wishlistRepository.load(userId);
+
       if (sequence !== this.wishlistLoadSequence) return;
+
       this.wishlistProducts.set(products);
       this.wishlistIds.set(new Set(products.map((product) => product.id)));
     } catch (error) {
       if (sequence !== this.wishlistLoadSequence) return;
-      this.wishlistError.set(error instanceof Error ? error.message : 'Unable to load your wishlist.');
+
+      this.wishlistError.set(
+        error instanceof Error ? error.message : 'Unable to load your wishlist.',
+      );
       this.showWishlistError(error);
     } finally {
-      if (sequence === this.wishlistLoadSequence) this.wishlistLoading.set(false);
+      if (sequence === this.wishlistLoadSequence) {
+        this.wishlistLoading.set(false);
+      }
     }
   }
 
