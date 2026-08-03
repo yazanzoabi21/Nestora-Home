@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CustomerAuthService } from '../../../../core/services/auth';
 import { CUSTOMER_SUPABASE } from '../../../../core/tokens';
 import { CustomerShoppingStateService } from '../../services';
+import { LoyaltyPointsCalculatorService } from '../../services';
 import { CheckoutOrderItem, PlaceCustomerOrderRpcArgs, PlacedOrderResult } from '../models';
 import { CustomerCheckoutStateService } from './customer-checkout-state.service';
 
@@ -19,6 +20,8 @@ interface PlaceCustomerOrderRpcResultRow {
   discount_code?: unknown;
   discount_amount?: unknown;
   total?: unknown;
+  loyalty_points_redeemed?: unknown;
+  loyalty_points_earned?: unknown;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,6 +30,7 @@ export class CustomerCheckoutOrderService {
   private readonly auth = inject(CustomerAuthService);
   private readonly state = inject(CustomerCheckoutStateService);
   private readonly shopping = inject(CustomerShoppingStateService);
+  private readonly loyalty = inject(LoyaltyPointsCalculatorService);
   private checkoutToken = uuidv4();
 
   async placeOrder(
@@ -97,6 +101,9 @@ export class CustomerCheckoutOrderService {
         quantity: item.quantity,
       })),
       p_customer_notes: customerNotes?.trim() || null,
+      p_redeem_product_ids: items
+        .filter((item) => item.redeemWithPoints)
+        .map((item) => item.productId),
     };
 
     this.state.setPlacingOrder(true);
@@ -111,6 +118,8 @@ export class CustomerCheckoutOrderService {
       this.state.setPlacedOrder(result);
       this.state.goToConfirmation();
       this.shopping.clearCompletedCart();
+      this.loyalty.clearRedemptions();
+      await this.loyalty.refreshBalance();
       this.checkoutToken = uuidv4();
       return result;
     } catch (error) {
@@ -160,9 +169,20 @@ export class CustomerCheckoutOrderService {
       discountCode: this.toNullableString(row.discount_code),
       discountId: this.toNullableString(row.discount_id),
       total: this.toMoney(row.total, 'total'),
+      loyaltyPointsRedeemed: this.toNonNegativeInteger(
+        row.loyalty_points_redeemed,
+        'loyalty points redeemed',
+      ),
+      loyaltyPointsEarned: this.toNonNegativeInteger(
+        row.loyalty_points_earned,
+        'loyalty points earned',
+      ),
     };
 
-    const itemSubtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+    const itemSubtotal = items.reduce(
+      (sum, item) => sum + (item.redeemWithPoints ? 0 : item.lineTotal),
+      0,
+    );
     if (!Number.isFinite(itemSubtotal) || itemSubtotal < 0) {
       throw new Error('The checkout items contain an invalid price.');
     }
@@ -198,6 +218,14 @@ export class CustomerCheckoutOrderService {
     const result = typeof value === 'number' ? value : Number(value);
     if (!Number.isFinite(result) || result < 0) {
       throw new Error(`The order service returned an invalid ${field}.`);
+    }
+    return result;
+  }
+
+  private toNonNegativeInteger(value: unknown, field: string): number {
+    const result = Number(value ?? 0);
+    if (!Number.isInteger(result) || result < 0) {
+      throw new Error(`The order service returned invalid ${field}.`);
     }
     return result;
   }

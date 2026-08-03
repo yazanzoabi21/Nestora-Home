@@ -1,19 +1,22 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CustomerProduct } from '../../models';
+import { LoyaltyPointsCalculatorService } from '../../services';
+import { CustomerLoyaltyPointsBadgeComponent } from '../../../../shared/components/customer-loyalty-points-badge';
 
 export type CustomerProductCardView = 'grid' | 'list';
 
 @Component({
   selector: 'app-customer-product-card',
   standalone: true,
-  imports: [CurrencyPipe, RouterLink, TranslatePipe],
+  imports: [CurrencyPipe, CustomerLoyaltyPointsBadgeComponent, RouterLink, TranslatePipe],
   templateUrl: './customer-product-card.component.html',
   styleUrl: './customer-product-card.component.css',
 })
 export class CustomerProductCardComponent {
+  readonly loyalty = inject(LoyaltyPointsCalculatorService);
   readonly product = input.required<CustomerProduct>();
   readonly view = input<CustomerProductCardView>('grid');
   readonly wishlistActive = input(false);
@@ -30,6 +33,51 @@ export class CustomerProductCardComponent {
 
   readonly detailUrl = computed(() => ['/shop/products', this.product().slug || this.product().id]);
   readonly soldOut = computed(() => this.product().stock <= 0 || !this.product().inStock);
+  readonly loyaltyPreview = computed(() => this.loyalty.preview(this.product().price));
+
+  readonly cartQuantity = input(0);
+  readonly cartQuantityChange = output<{
+    product: CustomerProduct;
+    quantity: number;
+  }>();
+
+  readonly canIncreaseCartQuantity = computed(
+    () =>
+      this.cartQuantity() > 0 &&
+      !this.soldOut() &&
+      !this.cartLoading() &&
+      this.canAddToCart(),
+  );
+
+  decreaseCartQuantity(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const currentQuantity = this.cartQuantity();
+
+    if (this.cartLoading() || currentQuantity < 1) {
+      return;
+    }
+
+    this.cartQuantityChange.emit({
+      product: this.product(),
+      quantity: currentQuantity - 1,
+    });
+  }
+
+  increaseCartQuantity(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.canIncreaseCartQuantity()) {
+      return;
+    }
+
+    this.cartQuantityChange.emit({
+      product: this.product(),
+      quantity: this.cartQuantity() + 1,
+    });
+  }
 
   requestAddToCart(event: Event): void {
     event.stopPropagation();

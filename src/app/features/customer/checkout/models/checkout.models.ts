@@ -76,6 +76,8 @@ export interface CheckoutOrderItem {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  redeemWithPoints: boolean;
+  loyaltyPointsCost: number;
 }
 
 export interface CheckoutTotals {
@@ -99,6 +101,8 @@ export interface PlacedOrderResult {
   discountCode: string | null;
   discountId: string | null;
   total: number;
+  loyaltyPointsRedeemed: number;
+  loyaltyPointsEarned: number;
 }
 
 export interface CheckoutConfirmation {

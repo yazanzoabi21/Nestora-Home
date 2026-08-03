@@ -1,6 +1,5 @@
 <section
-  class="bg-[#f8f7f5] [&_a:focus-visible]:outline [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-[#6b7d5e] [&_a:focus-visible]:outline-offset-[3px] [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-[#6b7d5e] [&_button:focus-visible]:outline-offset-[3px]"
->
+  class="bg-[#f8f7f5] [&_a:focus-visible]:outline [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-[#6b7d5e] [&_a:focus-visible]:outline-offset-[3px] [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-[#6b7d5e] [&_button:focus-visible]:outline-offset-[3px]">
   <div class="customer-page-container py-6 lg:py-7">
     @if (loading()) {
     <div class="py-32 text-center" role="status">
@@ -39,27 +38,21 @@
 
     <div class="grid gap-10 lg:grid-cols-2 lg:gap-12">
       <section class="min-w-0" [attr.aria-label]="'CUSTOMER.PRODUCT_DETAILS.GALLERY.ARIA' | translate">
-        <div class="relative aspect-square touch-pan-y select-none overflow-hidden rounded-[2rem] bg-[#eeeae4] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b7d5e] focus-visible:outline-offset-[3px]" role="region"
-          tabindex="0" [attr.aria-label]="'CUSTOMER.PRODUCT_DETAILS.GALLERY.ARIA' | translate"
+        <div
+          class="relative aspect-square touch-pan-y select-none overflow-hidden rounded-[2rem] bg-[#eeeae4] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b7d5e] focus-visible:outline-offset-[3px]"
+          role="region" tabindex="0" [attr.aria-label]="'CUSTOMER.PRODUCT_DETAILS.GALLERY.ARIA' | translate"
           (touchstart)="onGalleryTouchStart($event)" (touchend)="onGalleryTouchEnd($event)"
           (keydown.arrowleft)="showPreviousImage(); $event.preventDefault()"
           (keydown.arrowright)="showNextImage(); $event.preventDefault()">
-          <img
-            [src]="selectedImage()"
-            [alt]="
+          <img [src]="selectedImage()" [alt]="
               'CUSTOMER.PRODUCT_DETAILS.GALLERY.IMAGE_ALT'
                 | translate
                   : {
                       product: item.name,
                       number: currentImageNumber(),
                     }
-            "
-            class="pointer-events-none h-full w-full object-cover [-webkit-user-drag:none]"
-            loading="eager"
-            decoding="async"
-            fetchpriority="high"
-            draggable="false"
-          />
+            " class="pointer-events-none h-full w-full object-cover [-webkit-user-drag:none]" loading="eager"
+            decoding="async" fetchpriority="high" draggable="false" />
 
           @if (item.discountPercentage) {
           <span class="absolute start-5 top-5 z-20 rounded-full bg-[#6b7d5e] px-4 py-2 text-sm font-black text-white">
@@ -71,19 +64,25 @@
           }
 
           @if (hasMultipleImages()) {
-          <button type="button" class="absolute top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf]/80 bg-white/[0.10] text-[#1f2a1f] shadow-[0_10px_28px_rgb(31_42_31_/_16%)] backdrop-blur-[8px] transition-[background-color,color,transform,box-shadow] duration-[160ms] ease-out hover:scale-[1.04] hover:bg-[#6b7d5e] hover:text-white hover:shadow-[0_12px_32px_rgb(31_42_31_/_22%)] active:scale-[0.96] motion-reduce:transition-none sm:h-12 sm:w-12 left-3 sm:left-4" [attr.aria-label]="
+          <button type="button"
+            class="absolute top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf]/80 bg-white/[0.10] text-[#1f2a1f] shadow-[0_10px_28px_rgb(31_42_31_/_16%)] backdrop-blur-[8px] transition-[background-color,color,transform,box-shadow] duration-[160ms] ease-out hover:scale-[1.04] hover:bg-[#6b7d5e] hover:text-white hover:shadow-[0_12px_32px_rgb(31_42_31_/_22%)] active:scale-[0.96] motion-reduce:transition-none sm:h-12 sm:w-12 left-3 sm:left-4"
+            [attr.aria-label]="
                 'CUSTOMER.PRODUCT_DETAILS.GALLERY.PREVIOUS_IMAGE' | translate
               " (click)="showPreviousImage()">
             <i class="pi pi-chevron-left" aria-hidden="true"></i>
           </button>
 
-          <button type="button" class="absolute top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf]/80 bg-white/[0.10] text-[#1f2a1f] shadow-[0_10px_28px_rgb(31_42_31_/_16%)] backdrop-blur-[8px] transition-[background-color,color,transform,box-shadow] duration-[160ms] ease-out hover:scale-[1.04] hover:bg-[#6b7d5e] hover:text-white hover:shadow-[0_12px_32px_rgb(31_42_31_/_22%)] active:scale-[0.96] motion-reduce:transition-none sm:h-12 sm:w-12 right-3 sm:right-4" [attr.aria-label]="
+          <button type="button"
+            class="absolute top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf]/80 bg-white/[0.10] text-[#1f2a1f] shadow-[0_10px_28px_rgb(31_42_31_/_16%)] backdrop-blur-[8px] transition-[background-color,color,transform,box-shadow] duration-[160ms] ease-out hover:scale-[1.04] hover:bg-[#6b7d5e] hover:text-white hover:shadow-[0_12px_32px_rgb(31_42_31_/_22%)] active:scale-[0.96] motion-reduce:transition-none sm:h-12 sm:w-12 right-3 sm:right-4"
+            [attr.aria-label]="
                 'CUSTOMER.PRODUCT_DETAILS.GALLERY.NEXT_IMAGE' | translate
               " (click)="showNextImage()">
             <i class="pi pi-chevron-right" aria-hidden="true"></i>
           </button>
 
-          <div class="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-[0.4rem] rounded-full bg-white/[0.82] px-[0.55rem] py-[0.4rem] shadow-[0_6px_18px_rgb(31_42_31_/_12%)] backdrop-blur-[8px] sm:bottom-4" [attr.aria-label]="
+          <div
+            class="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-[0.4rem] rounded-full bg-white/[0.82] px-[0.55rem] py-[0.4rem] shadow-[0_6px_18px_rgb(31_42_31_/_12%)] backdrop-blur-[8px] sm:bottom-4"
+            [attr.aria-label]="
                 'CUSTOMER.PRODUCT_DETAILS.GALLERY.INDICATORS' | translate
               ">
             @for (image of galleryImages(); track image; let index = $index) {
@@ -111,12 +110,15 @@
         </div>
 
         @if (hasMultipleImages()) {
-        <div class="mt-4 flex snap-x snap-proximity gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" [attr.aria-label]="
+        <div
+          class="mt-4 flex snap-x snap-proximity gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          [attr.aria-label]="
               'CUSTOMER.PRODUCT_DETAILS.GALLERY.THUMBNAILS' | translate
             ">
           @for (image of galleryImages(); track image; let index = $index) {
           <button type="button"
-            class="h-20 w-20 shrink-0 snap-start cursor-pointer overflow-hidden rounded-2xl border-2 border-transparent bg-white p-1 opacity-[0.72] transition-[border-color,opacity,transform,box-shadow] duration-[160ms] hover:-translate-y-0.5 hover:opacity-100 motion-reduce:transition-none aria-[pressed=true]:border-[#6b7d5e] aria-[pressed=true]:opacity-100 aria-[pressed=true]:shadow-[0_6px_18px_rgb(31_42_31_/_12%)]" [attr.aria-label]="
+            class="h-20 w-20 shrink-0 snap-start cursor-pointer overflow-hidden rounded-2xl border-2 border-transparent bg-white p-1 opacity-[0.72] transition-[border-color,opacity,transform,box-shadow] duration-[160ms] hover:-translate-y-0.5 hover:opacity-100 motion-reduce:transition-none aria-[pressed=true]:border-[#6b7d5e] aria-[pressed=true]:opacity-100 aria-[pressed=true]:shadow-[0_6px_18px_rgb(31_42_31_/_12%)]"
+            [attr.aria-label]="
                   'CUSTOMER.PRODUCT_DETAILS.GALLERY.VIEW_IMAGE'
                     | translate: { number: index + 1 }
                 " [attr.aria-pressed]="currentImageIndex() === index" (click)="selectImage(index)">
@@ -127,7 +129,8 @@
             product: item.name,
             number: index + 1,
           }
-  " class="pointer-events-none h-full w-full rounded-xl object-cover [-webkit-user-drag:none]" loading="eager" decoding="async" draggable="false" />
+  " class="pointer-events-none h-full w-full rounded-xl object-cover [-webkit-user-drag:none]" loading="eager"
+              decoding="async" draggable="false" />
           </button>
           }
         </div>
@@ -194,6 +197,37 @@
           }
         </div>
 
+        @if (item.isLoyaltyEligible && loyalty.enabled()) {
+        <section class="mt-6 rounded-2xl border border-[#dfd5c7] bg-[#f5f1ea] p-4"
+          [attr.aria-label]="'CUSTOMER.LOYALTY.TITLE' | translate">
+          <app-customer-loyalty-points-badge mode="detail"
+            [pointsEarned]="loyaltyPreview().pointsEarned" [rewardCost]="loyaltyPreview().rewardCost"
+            [loading]="loyalty.loading()" />
+
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm font-bold text-[#53604f]">
+            @if (customerAuth.isAuthenticated()) {
+            <span>{{ 'CUSTOMER.LOYALTY.AVAILABLE_BALANCE' | translate: { points: loyalty.balance() } }}</span>
+            } @else {
+            <span>{{ 'CUSTOMER.LOYALTY.LOGIN_TO_REDEEM' | translate }}</span>
+            }
+
+            @if (customerAuth.isAuthenticated() && !canRedeemWithPoints()) {
+            <span class="text-[#8b5e3c]">
+              {{ 'CUSTOMER.LOYALTY.NEED_MORE' | translate: { points: loyaltyPointsNeeded() } }}
+            </span>
+            }
+          </div>
+
+          <button type="button"
+            class="mt-4 inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#6b7d5e] bg-white px-4 text-sm font-black text-[#53674d] transition hover:bg-[#6b7d5e] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="customerAuth.isAuthenticated() && !canRedeemWithPoints()"
+            (click)="redeemWithPoints()">
+            <i class="pi pi-star-fill" aria-hidden="true"></i>
+            {{ 'CUSTOMER.LOYALTY.REDEEM_WITH_POINTS' | translate: { points: loyaltyRedemptionCost() } }}
+          </button>
+        </section>
+        }
+
         <p class="mt-10 text-base font-medium leading-7 text-[#67645f]">
           {{
           item.description ||
@@ -225,18 +259,40 @@
           </div>
         </div>
 
-        <div class="mt-8 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <div class="mt-8 flex items-stretch gap-3">
+          @if (cartQuantity() > 0) {
+          <div class="inline-flex h-14 flex-1 items-center overflow-hidden rounded-2xl bg-[#6b7d5e] text-white"
+            aria-label="Cart quantity">
+
+            <button type="button"
+              class="grid h-full w-14 shrink-0 cursor-pointer place-items-center transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="cartLoading()" aria-label="Decrease cart quantity" (click)="decreaseCartQuantity()">
+              <i class="pi pi-minus"></i>
+            </button>
+
+            <span class="flex flex-1 items-center justify-center gap-2 px-3 text-sm font-black">
+              <i class="pi pi-shopping-cart"></i>
+              {{ cartQuantity() }} in cart
+            </span>
+
+            <button type="button"
+              class="grid h-full w-14 shrink-0 cursor-pointer place-items-center transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="!canIncreaseCartQuantity()" aria-label="Increase cart quantity"
+              (click)="increaseCartQuantity()">
+              <i class="pi pi-plus"></i>
+            </button>
+          </div>
+          } @else {
           <button type="button"
-            class="h-14 cursor-pointer rounded-2xl bg-[#6b7d5e] font-black text-white disabled:opacity-50" [disabled]="
-                availableQuantity() < quantity() || shopping.pendingProductIds().has(item.id)
-              " (click)="addToCart()">
+            class="h-14 flex-1 cursor-pointer rounded-2xl bg-[#6b7d5e] font-black text-white disabled:opacity-50"
+            [disabled]="availableQuantity() < quantity() || cartLoading()" (click)="addToCart()">
             <i class="pi pi-shopping-cart me-2"></i>
             {{ 'CUSTOMER.PRODUCT_DETAILS.ADD_TO_CART' | translate }}
           </button>
+          }
 
-          <button type="button" class="h-14 w-14 cursor-pointer rounded-2xl border border-[#e8dccf] bg-white"
-            [disabled]="shopping.wishlistPendingProductIds().has(item.id)"
-            [attr.aria-pressed]="wishlisted()"
+          <button type="button" class="h-14 w-14 shrink-0 cursor-pointer rounded-2xl border border-[#e8dccf] bg-white"
+            [disabled]="shopping.wishlistPendingProductIds().has(item.id)" [attr.aria-pressed]="wishlisted()"
             [attr.aria-label]="(wishlisted() ? 'CUSTOMER.WISHLIST.REMOVE' : 'CUSTOMER.WISHLIST.ADD') | translate"
             (click)="toggleWishlist()" [class.text-[#d83b54]]="wishlisted()">
             <i class="pi" [class.pi-heart]="!wishlisted()" [class.pi-heart-fill]="wishlisted()"></i>

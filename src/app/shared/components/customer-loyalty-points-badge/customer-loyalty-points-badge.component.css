@@ -1,0 +1,32 @@
+.loyalty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  border: 1px solid #ded6ca;
+  border-radius: 9999px;
+  background: #f5f1ea;
+  padding: 0.28rem 0.55rem;
+  color: #5b6d50;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.loyalty-badge--detail {
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.loyalty-badge--disabled {
+  opacity: 0.55;
+}
+
+.loyalty-badge__divider {
+  width: 1px;
+  height: 1rem;
+  background: #d2c8ba;
+}

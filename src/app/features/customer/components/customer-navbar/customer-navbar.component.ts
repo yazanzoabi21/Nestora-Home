@@ -29,6 +29,7 @@ interface CustomerNavLink {
 
 const DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT =
   'FREE SHIPPING ON ORDERS OVER $75 · USE CODE: NESTORA10 FOR 10% OFF';
+const ANNOUNCEMENT_DURATION_MS = 3000;
 
 @Component({
   selector: 'app-customer-navbar',
@@ -43,6 +44,7 @@ const DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT =
     TranslatePipe,
   ],
   templateUrl: './customer-navbar.component.html',
+  styleUrl: './customer-navbar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerNavbarComponent {
@@ -63,6 +65,8 @@ export class CustomerNavbarComponent {
   readonly announcementsLoading = signal(true);
   readonly activeAnnouncementIndex = signal(0);
   readonly announcementVisible = signal(true);
+  readonly announcementProgressKey = signal(0);
+  readonly announcementProgressKeys = computed(() => [this.announcementProgressKey()]);
   readonly activeAnnouncement = computed(() => {
     const announcements = this.promotionalAnnouncements();
     return announcements.length > 0
@@ -88,8 +92,11 @@ export class CustomerNavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly router = inject(Router);
-  private announcementRotationId: ReturnType<typeof setInterval> | null = null;
+  private announcementRotationId: ReturnType<typeof setTimeout> | null = null;
   private announcementFadeTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private announcementRotationStartedAt: number | null = null;
+  private announcementRotationRemainingMs = ANNOUNCEMENT_DURATION_MS;
+  readonly announcementCarouselPaused = signal(false);
 
   constructor() {
     void this.loadCategories();
@@ -129,21 +136,26 @@ export class CustomerNavbarComponent {
   }
 
   pauseAnnouncementCarousel(): void {
-    this.stopAnnouncementRotation();
+    if (this.announcementCarouselPaused()) return;
+
+    this.announcementCarouselPaused.set(true);
+    this.pauseAnnouncementRotation();
   }
 
   resumeAnnouncementCarousel(): void {
-    this.startAnnouncementRotation();
+    if (!this.announcementCarouselPaused()) return;
+
+    this.announcementCarouselPaused.set(false);
+    this.startAnnouncementRotation(false);
   }
 
   selectAnnouncement(index: number): void {
     if (index === this.activeAnnouncementIndex()) {
-      this.startAnnouncementRotation();
+      this.restartAnnouncementCycle();
       return;
     }
 
     this.showAnnouncement(index);
-    this.startAnnouncementRotation();
   }
 
   categoryIconClass(category: Category): string {
@@ -196,7 +208,7 @@ export class CustomerNavbarComponent {
       this.promotionalAnnouncements.set([...promotions, ...discounts]);
       this.discountAnnouncements.set(discounts);
       this.activeAnnouncementIndex.set(0);
-      this.startAnnouncementRotation();
+      this.restartAnnouncementCycle();
     } catch {
       this.promotionalAnnouncements.set([]);
       this.discountAnnouncements.set([]);
@@ -205,14 +217,39 @@ export class CustomerNavbarComponent {
     }
   }
 
-  private startAnnouncementRotation(): void {
+  private startAnnouncementRotation(restart = true): void {
     this.clearAnnouncementInterval();
-    if (this.promotionalAnnouncements().length < 2) return;
+    if (restart) {
+      this.announcementRotationRemainingMs = ANNOUNCEMENT_DURATION_MS;
+    }
 
-    this.announcementRotationId = setInterval(() => {
+    if (
+      this.promotionalAnnouncements().length < 2 ||
+      this.announcementCarouselPaused()
+    ) {
+      return;
+    }
+
+    this.announcementRotationStartedAt = Date.now();
+    this.announcementRotationId = setTimeout(() => {
+      this.announcementRotationId = null;
+      this.announcementRotationStartedAt = null;
+      this.announcementRotationRemainingMs = 0;
       const nextIndex = (this.activeAnnouncementIndex() + 1) % this.promotionalAnnouncements().length;
       this.showAnnouncement(nextIndex);
-    }, 3000);
+    }, this.announcementRotationRemainingMs);
+  }
+
+  private pauseAnnouncementRotation(): void {
+    if (this.announcementRotationStartedAt !== null) {
+      const elapsed = Date.now() - this.announcementRotationStartedAt;
+      this.announcementRotationRemainingMs = Math.max(
+        0,
+        this.announcementRotationRemainingMs - elapsed,
+      );
+    }
+
+    this.clearAnnouncementInterval();
   }
 
   private stopAnnouncementRotation(): void {
@@ -228,8 +265,9 @@ export class CustomerNavbarComponent {
   private clearAnnouncementInterval(): void {
     if (this.announcementRotationId === null) return;
 
-    clearInterval(this.announcementRotationId);
+    clearTimeout(this.announcementRotationId);
     this.announcementRotationId = null;
+    this.announcementRotationStartedAt = null;
   }
 
   private showAnnouncement(index: number): void {
@@ -243,7 +281,13 @@ export class CustomerNavbarComponent {
       this.activeAnnouncementIndex.set(index);
       this.announcementVisible.set(true);
       this.announcementFadeTimeoutId = null;
+      this.restartAnnouncementCycle();
     }, 150);
+  }
+
+  private restartAnnouncementCycle(): void {
+    this.announcementProgressKey.update((key) => key + 1);
+    this.startAnnouncementRotation();
   }
 
   private isIconValue(

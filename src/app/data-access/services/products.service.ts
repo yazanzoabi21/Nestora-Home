@@ -30,6 +30,7 @@ const PRODUCT_SELECT = `
   is_featured,
   is_new,
   is_active,
+  is_loyalty_eligible,
   rating,
   created_at,
   categories (
@@ -229,6 +230,7 @@ export class ProductsService {
       is_featured: payload.is_featured ?? null,
       is_new: payload.is_new ?? null,
       is_active: payload.is_active ?? null,
+      is_loyalty_eligible: payload.is_loyalty_eligible ?? true,
       rating:
         payload.rating === null || payload.rating === undefined ? null : Number(payload.rating),
     };

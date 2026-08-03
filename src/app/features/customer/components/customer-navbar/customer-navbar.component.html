@@ -57,6 +57,13 @@
       }
     </div>
     }
+
+    @for (progressKey of announcementProgressKeys(); track progressKey) {
+    <span
+      class="announcement-progress pointer-events-none absolute inset-x-0 bottom-0 h-0.5 origin-left bg-[#9aac91]"
+      [class.announcement-progress--paused]="announcementCarouselPaused()"
+      aria-hidden="true"></span>
+    }
   </div>
 
   <!-- Discount shipping bar -->

@@ -84,6 +84,11 @@ export const ADMIN_ROUTES: Routes = [
           import('./payments').then((m) => m.PaymentsComponent),
       },
       {
+        path: 'loyalty-settings',
+        loadComponent: () =>
+          import('./settings').then((m) => m.LoyaltyProgramSettingsComponent),
+      },
+      {
         path: 'orders',
         loadComponent: () =>
           import('./orders').then((m) => m.OrdersComponent),

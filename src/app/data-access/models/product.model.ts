@@ -34,6 +34,7 @@ export interface Product {
   is_featured: boolean | null;
   is_new: boolean | null;
   is_active: boolean | null;
+  is_loyalty_eligible: boolean;
   rating: number | null;
   created_at: string | null;
 
@@ -69,6 +70,7 @@ export interface ProductMutationPayload {
   is_featured?: boolean | null;
   is_new?: boolean | null;
   is_active?: boolean | null;
+  is_loyalty_eligible?: boolean;
   rating?: number | null;
 }
 
@@ -91,6 +93,7 @@ export interface ProductFormModel {
   isFeatured: boolean;
   isNew: boolean;
   isActive: boolean;
+  isLoyaltyEligible: boolean;
 }
 
 export interface ProductTableBadgeData {

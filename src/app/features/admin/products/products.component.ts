@@ -23,6 +23,7 @@ import {
   UploadService,
 } from '../../../data-access';
 import { ToastService } from '../../../core/services';
+import { LoyaltyPointsCalculatorService } from '../../customer/services';
 import { AdminFormFieldComponent } from '../../../shared/ui/admin-form-field';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import {
@@ -69,6 +70,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   isFeatured: false,
   isNew: false,
   isActive: true,
+  isLoyaltyEligible: true,
 };
 
 @Component({
@@ -90,6 +92,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   styleUrl: './products.component.css',
 })
 export class ProductsComponent implements OnInit {
+  readonly loyalty = inject(LoyaltyPointsCalculatorService);
   private readonly productsService = inject(ProductsService);
   private readonly categoriesService = inject(CategoriesService);
   private readonly mediaLibraryService = inject(MediaLibraryService);
@@ -127,6 +130,10 @@ export class ProductsComponent implements OnInit {
   readonly productModalMode = signal<ProductModalMode>('add');
   readonly selectedProduct = signal<Product | null>(null);
   readonly productForm = signal<ProductFormModel>({ ...EMPTY_PRODUCT_FORM });
+  readonly loyaltyPreview = computed(() => this.loyalty.preview(
+    this.productForm().price,
+    this.productForm().salePrice,
+  ));
   readonly productImages = signal<ProductImageItem[]>([]);
   readonly coverImageId = signal<string | null>(null);
   readonly isProductMediaPickerOpen = signal(false);
@@ -465,6 +472,7 @@ export class ProductsComponent implements OnInit {
       isFeatured: !!product.is_featured,
       isNew: !!product.is_new,
       isActive: product.is_active !== false,
+      isLoyaltyEligible: product.is_loyalty_eligible !== false,
     });
 
     const images = this.productImageUrls(product).map((url, index) => ({
@@ -982,6 +990,7 @@ export class ProductsComponent implements OnInit {
       is_featured: form.isFeatured,
       is_new: form.isNew,
       is_active: form.isActive,
+      is_loyalty_eligible: form.isLoyaltyEligible,
     };
   }
 

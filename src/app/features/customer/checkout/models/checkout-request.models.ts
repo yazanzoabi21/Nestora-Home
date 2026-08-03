@@ -39,4 +39,5 @@ export interface PlaceCustomerOrderRpcArgs {
   p_shipping_address: PlaceCustomerOrderShippingRequest;
   p_items: readonly PlaceCustomerOrderItemRequest[];
   p_customer_notes: string | null;
+  p_redeem_product_ids: readonly string[];
 }

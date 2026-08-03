@@ -63,6 +63,7 @@
       "PROMOTIONS_ADS": "Promotions & Ads",
       "PAYMENTS": "Payments",
       "SHIPPING": "Shipping",
+      "LOYALTY_PROGRAM": "Loyalty Program",
       "ADMIN_USERS": "Admin Users",
       "ACTIVITY_LOGS": "Activity Logs",
       "NOTIFICATIONS": "Notifications",
@@ -382,7 +383,14 @@
         "IMAGE_URL": "Image URL",
         "IS_FEATURED": "Is Featured",
         "IS_NEW": "Is New",
-        "IS_ACTIVE": "Is Active"
+        "IS_ACTIVE": "Is Active",
+        "IS_LOYALTY_ELIGIBLE": "Eligible for Loyalty Points"
+      },
+      "LOYALTY_PREVIEW": {
+        "TITLE": "Loyalty Preview",
+        "EARNS": "Customer earns: {{points}} points",
+        "FREE_WITH": "Free with: {{points}} points",
+        "HELPER": "Calculated automatically from the active global loyalty settings."
       }
     },
     "ACTIONS": {
@@ -1782,7 +1790,31 @@
         "INVALID_ETA_RANGE": "ETA max days must be greater than or equal to ETA min days."
       }
     },
+    "LOYALTY_ADMIN": {
+      "EYEBROW": "Customer rewards",
+      "TITLE": "Loyalty Program Settings",
+      "SUBTITLE": "Control the global earning and redemption rules. Product points are calculated automatically.",
+      "ENABLED": "Enable loyalty program",
+      "ENABLED_HELP": "When disabled, customers cannot earn or redeem points.",
+      "POINT_VALUE": "Value of one point (USD)",
+      "EARNING_RATE": "Points earned per USD",
+      "MINIMUM_REDEMPTION": "Minimum redemption points",
+      "EXAMPLE_TITLE": "$8 product example",
+      "EXAMPLE": "Earns {{earned}} points and is free with {{cost}} points.",
+      "VALIDATION_ERROR": "Enter valid non-negative loyalty settings and a point value above zero."
+    },
     "CUSTOMER": {
+      "LOYALTY": {
+        "TITLE": "Nestora Loyalty Points",
+        "LOADING": "Loading points",
+        "EARN_POINTS": "Earn {{points}} points",
+        "FREE_WITH": "Free with {{points}} points",
+        "AVAILABLE_BALANCE": "Available balance: {{points}} points",
+        "REDEEM_WITH_POINTS": "Redeem with {{points}} points",
+        "NEED_MORE": "You need {{points}} more points",
+        "LOGIN_TO_REDEEM": "Sign in to redeem your Nestora Points.",
+        "CANCEL_REDEMPTION": "Pay normally instead"
+      },
       "FLASH_DEALS_PAGE": {
         "HOME": "Home",
         "BREADCRUMB": "Flash Deals",
@@ -2448,6 +2480,7 @@
       "PROMOTIONS_ADS": "العروض والإعلانات",
       "PAYMENTS": "المدفوعات",
       "SHIPPING": "الشحن",
+      "LOYALTY_PROGRAM": "برنامج الولاء",
       "ADMIN_USERS": "مستخدمو الإدارة",
       "ACTIVITY_LOGS": "سجلات النشاط",
       "NOTIFICATIONS": "الإشعارات",
@@ -2768,7 +2801,14 @@
         "IMAGE_URL": "رابط الصورة",
         "IS_FEATURED": "منتج مميز",
         "IS_NEW": "منتج جديد",
-        "IS_ACTIVE": "نشط"
+        "IS_ACTIVE": "نشط",
+        "IS_LOYALTY_ELIGIBLE": "مؤهل لنقاط الولاء"
+      },
+      "LOYALTY_PREVIEW": {
+        "TITLE": "معاينة نقاط الولاء",
+        "EARNS": "يكسب العميل: {{points}} نقطة",
+        "FREE_WITH": "مجاناً مقابل: {{points}} نقطة",
+        "HELPER": "يتم الاحتساب تلقائياً وفق إعدادات الولاء العامة النشطة."
       }
     },
     "ACTIONS": {
@@ -4168,7 +4208,31 @@
         "CONFIG_INVALID": "يجب أن تكون إعدادات JSON صالحة."
       }
     },
+    "LOYALTY_ADMIN": {
+      "EYEBROW": "مكافآت العملاء",
+      "TITLE": "إعدادات برنامج الولاء",
+      "SUBTITLE": "تحكم بقواعد الكسب والاستبدال العامة. يتم احتساب نقاط المنتجات تلقائياً.",
+      "ENABLED": "تفعيل برنامج الولاء",
+      "ENABLED_HELP": "عند التعطيل، لا يمكن للعملاء كسب النقاط أو استبدالها.",
+      "POINT_VALUE": "قيمة النقطة الواحدة (دولار)",
+      "EARNING_RATE": "النقاط المكتسبة لكل دولار",
+      "MINIMUM_REDEMPTION": "الحد الأدنى لنقاط الاستبدال",
+      "EXAMPLE_TITLE": "مثال لمنتج بسعر 8 دولارات",
+      "EXAMPLE": "يكسب {{earned}} نقطة ويصبح مجانياً مقابل {{cost}} نقطة.",
+      "VALIDATION_ERROR": "أدخل إعدادات ولاء صحيحة غير سالبة وقيمة نقطة أكبر من صفر."
+    },
     "CUSTOMER": {
+      "LOYALTY": {
+        "TITLE": "نقاط ولاء نيستورا",
+        "LOADING": "جارٍ تحميل النقاط",
+        "EARN_POINTS": "اكسب {{points}} نقطة",
+        "FREE_WITH": "مجاناً مقابل {{points}} نقطة",
+        "AVAILABLE_BALANCE": "الرصيد المتاح: {{points}} نقطة",
+        "REDEEM_WITH_POINTS": "استبدل مقابل {{points}} نقطة",
+        "NEED_MORE": "تحتاج إلى {{points}} نقطة إضافية",
+        "LOGIN_TO_REDEEM": "سجّل الدخول لاستبدال نقاط نيستورا.",
+        "CANCEL_REDEMPTION": "الدفع بالطريقة العادية"
+      },
       "FLASH_DEALS_PAGE": {
         "HOME": "الرئيسية",
         "BREADCRUMB": "العروض السريعة",

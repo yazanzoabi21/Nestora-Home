@@ -19,7 +19,11 @@
       </p>
 
       <strong class="order-summary__price">
+        @if (item.redeemWithPoints) {
+        {{ 'CUSTOMER.LOYALTY.FREE_WITH' | translate: { points: item.loyaltyPointsCost } }}
+        } @else {
         {{ item.lineTotal | currency: 'USD' }}
+        }
       </strong>
     </div>
     }

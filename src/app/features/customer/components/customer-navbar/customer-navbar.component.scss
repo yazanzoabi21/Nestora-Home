@@ -2,6 +2,24 @@
 //   display: contents;
 // }
 
+@keyframes announcement-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.announcement-progress {
+  animation: announcement-progress 3s linear forwards;
+}
+
+.announcement-progress--paused {
+  animation-play-state: paused;
+}
+
 // .mobile-nav-icon {
 //   display: inline-flex;
 //   height: 2.5rem;

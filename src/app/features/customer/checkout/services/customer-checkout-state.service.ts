@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { CustomerAuthService } from '../../../../core/services/auth';
-import { CustomerShoppingStateService } from '../../services';
+import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../../services';
 import {
   CheckoutConfirmation,
   CheckoutOrderItem,
@@ -26,6 +26,7 @@ export class CustomerCheckoutStateService {
   private readonly auth = inject(CustomerAuthService);
   private readonly router = inject(Router);
   private readonly data = inject(CustomerCheckoutDataService);
+  private readonly loyalty = inject(LoyaltyPointsCalculatorService);
 
   private readonly _currentStep = signal<CheckoutStep>('shipping');
   private readonly _shippingInformation = signal<CheckoutShippingInformation | null>(null);
@@ -74,7 +75,15 @@ export class CustomerCheckoutStateService {
       this.shopping.cart().length > 0 &&
       !this._isPlacingOrder(),
   );
-  readonly subtotal = computed(() => this.shopping.subtotal());
+  readonly subtotal = computed(() => {
+    const redeemedIds = new Set(this.loyalty.requestedRedemptionProductIds());
+    return this.shopping.cart().reduce(
+      (total, line) => redeemedIds.has(line.product.id)
+        ? total
+        : total + line.product.price * line.quantity,
+      0,
+    );
+  });
   readonly shippingCost = computed(
     () => this._selectedShippingMethod()?.calculatedCost ?? 0,
   );
@@ -84,16 +93,21 @@ export class CustomerCheckoutStateService {
     shippingMethod: this._selectedShippingMethod(),
     paymentMethod: this._selectedPaymentMethod(),
   }));
-  readonly checkoutItems = computed<readonly CheckoutOrderItem[]>(() =>
-    this.shopping.cart().map((line) => ({
+  readonly checkoutItems = computed<readonly CheckoutOrderItem[]>(() => {
+    const redeemedIds = new Set(this.loyalty.requestedRedemptionProductIds());
+    return this.shopping.cart().map((line) => ({
       productId: line.product.id,
       productName: line.product.name,
       productImageUrl: line.product.imageUrl || null,
       quantity: line.quantity,
       unitPrice: line.product.price,
       lineTotal: line.product.price * line.quantity,
-    })),
-  );
+      redeemWithPoints: redeemedIds.has(line.product.id),
+      loyaltyPointsCost: redeemedIds.has(line.product.id)
+        ? this.loyalty.preview(line.product.price).rewardCost * line.quantity
+        : 0,
+    }));
+  });
 
   readonly totals = computed<CheckoutTotals>(() => {
     const subtotal = this.subtotal();

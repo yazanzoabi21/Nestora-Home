@@ -24,6 +24,7 @@ interface PromotionProductData {
   is_featured: boolean | null;
   is_new: boolean | null;
   is_active: boolean | null;
+  is_loyalty_eligible: boolean | null;
   rating: number | string | null;
   created_at: string | null;
   categories: { name: string | null } | { name: string | null }[] | null;
@@ -125,6 +126,7 @@ export class CustomerPromotionsService {
             is_featured,
             is_new,
             is_active,
+            is_loyalty_eligible,
             rating,
             created_at,
             categories (
@@ -225,6 +227,7 @@ export class CustomerPromotionsService {
       isFeatured: product.is_featured === true,
       isNew: product.is_new === true,
       isActive: product.is_active === true,
+      isLoyaltyEligible: product.is_loyalty_eligible !== false,
       soldCount: Math.max(0, this.toNumber(product.sold_count)),
       inStock: stock > 0,
       stock,

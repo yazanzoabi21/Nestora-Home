@@ -221,6 +221,14 @@ export abstract class ProductBrowserPage {
   addProductToCart(product: CustomerProduct, quantity = 1): void {
     void this.shopping.addToCart(product, quantity);
   }
+  updateProductCartQuantity(product: CustomerProduct, quantity: number): void {
+    if (quantity <= 0) {
+      void this.shopping.removeFromCart(product.id);
+      return;
+    }
+
+    void this.shopping.setQuantity(product.id, quantity);
+  }
 
   private async loadFilterCategories(): Promise<void> {
     try {

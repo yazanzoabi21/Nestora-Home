@@ -14,6 +14,7 @@ export interface CustomerProduct {
   isFeatured: boolean;
   isNew: boolean;
   isActive: boolean;
+  isLoyaltyEligible: boolean;
   soldCount: number;
   inStock: boolean;
   stock: number;

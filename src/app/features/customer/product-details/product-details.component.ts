@@ -9,11 +9,14 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import { CustomerAuthService } from '../../../core/services/auth';
+import { CustomerLoyaltyPointsBadgeComponent } from '../../../shared/components/customer-loyalty-points-badge';
 import { ProductReviewsComponent } from '../components/product-reviews';
 import { CustomerProductDetails } from '../models';
 import {
   CustomerRecentlyViewedService,
   CustomerShoppingStateService,
+  LoyaltyPointsCalculatorService,
   NewArrivalsService,
 } from '../services';
 
@@ -25,6 +28,7 @@ type DetailsTab = 'description' | 'features' | 'reviews';
   imports: [
     CurrencyPipe,
     DecimalPipe,
+    CustomerLoyaltyPointsBadgeComponent,
     RouterLink,
     ProductReviewsComponent,
     TranslatePipe,
@@ -42,6 +46,8 @@ export class ProductDetailsComponent {
   private readonly recentlyViewed = inject(CustomerRecentlyViewedService);
 
   readonly shopping = inject(CustomerShoppingStateService);
+  readonly customerAuth = inject(CustomerAuthService);
+  readonly loyalty = inject(LoyaltyPointsCalculatorService);
 
   private readonly swipeThresholdPx = 48;
   private readonly imagePreloadCache = new Map<string, Promise<void>>();
@@ -99,6 +105,31 @@ export class ProductDetailsComponent {
       : false;
   });
 
+  readonly cartQuantity = computed(() => {
+    const item = this.product();
+
+    return item ? this.shopping.quantityFor(item.id) : 0;
+  });
+
+  readonly cartLoading = computed(() => {
+    const item = this.product();
+
+    return item
+      ? this.shopping.pendingProductIds().has(item.id)
+      : false;
+  });
+
+  readonly canIncreaseCartQuantity = computed(() => {
+    const item = this.product();
+
+    return Boolean(
+      item &&
+      this.cartQuantity() > 0 &&
+      !this.cartLoading() &&
+      this.shopping.canAdd(item),
+    );
+  });
+
   readonly savings = computed(() => {
     const item = this.product();
 
@@ -111,6 +142,24 @@ export class ProductDetailsComponent {
 
     return item.originalPrice - item.price;
   });
+
+  readonly loyaltyPreview = computed(() => this.loyalty.preview(this.product()?.price ?? 0));
+  readonly loyaltyRedemptionQuantity = computed(() => this.cartQuantity() || this.quantity());
+  readonly loyaltyRedemptionCost = computed(
+    () => this.loyaltyPreview().rewardCost * this.loyaltyRedemptionQuantity(),
+  );
+  readonly canRedeemWithPoints = computed(() =>
+    this.loyalty.canRedeem(
+      this.loyaltyPreview().rewardCost,
+      this.loyaltyRedemptionQuantity(),
+    ),
+  );
+  readonly loyaltyPointsNeeded = computed(() =>
+    this.loyalty.pointsNeeded(
+      this.loyaltyPreview().rewardCost,
+      this.loyaltyRedemptionQuantity(),
+    ),
+  );
 
   readonly availableQuantity = computed(() => {
     const item = this.product();
@@ -226,6 +275,62 @@ export class ProductDetailsComponent {
     void this.shopping.addToCart(
       item,
       this.quantity(),
+    );
+  }
+
+  async redeemWithPoints(): Promise<void> {
+    const item = this.product();
+    if (!item) return;
+
+    if (!this.customerAuth.isAuthenticated()) {
+      await this.router.navigate(['/auth/customer-login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      return;
+    }
+
+    if (!this.canRedeemWithPoints()) return;
+
+    if (this.cartQuantity() === 0) {
+      await this.shopping.addToCart(item, this.quantity());
+    }
+    this.shopping.clearAppliedDiscount();
+    this.loyalty.requestProductRedemption(item.id);
+    await this.router.navigate(['/shop/cart']);
+  }
+
+  async decreaseCartQuantity(): Promise<void> {
+    const item = this.product();
+    const currentQuantity = this.cartQuantity();
+
+    if (!item || currentQuantity <= 0 || this.cartLoading()) {
+      return;
+    }
+
+    if (currentQuantity === 1) {
+      await this.shopping.removeFromCart(item.id);
+      return;
+    }
+
+    await this.shopping.setQuantity(
+      item.id,
+      currentQuantity - 1,
+    );
+  }
+
+  async increaseCartQuantity(): Promise<void> {
+    const item = this.product();
+
+    if (
+      !item ||
+      !this.canIncreaseCartQuantity()
+    ) {
+      return;
+    }
+
+    await this.shopping.setQuantity(
+      item.id,
+      this.cartQuantity() + 1,
     );
   }
 

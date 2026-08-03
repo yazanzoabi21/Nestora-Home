@@ -20,23 +20,28 @@
     @if (product().description) {
     <p class="mt-2 truncate text-sm font-medium text-[#8a847c]">{{ product().description }}</p>
     }
-    <div class="mt-3 flex flex-wrap items-center gap-3">
-      <span class="text-lg font-black text-[#30362f]">{{
-        product().price | currency: 'USD' : 'symbol' : '1.2-2'
-        }}</span>
-      @if (hasValidDiscount()) {
-      <span class="text-sm font-bold text-[#b8b0a7] line-through">{{
-        product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2'
-        }}</span>
-      <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white">−{{ safeDiscountPercentage()
-        }}%</span>
+    <div class="mt-3 flex items-center gap-2">
+      <div class="flex min-w-0 flex-wrap items-center gap-3">
+        <span class="text-lg font-black text-[#30362f]">{{
+          product().price | currency: 'USD' : 'symbol' : '1.2-2'
+          }}</span>
+        @if (hasValidDiscount()) {
+        <span class="text-sm font-bold text-[#b8b0a7] line-through">{{
+          product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2'
+          }}</span>
+        <span class="rounded-full bg-[#6b7d5e] px-3 py-1 text-xs font-black text-white">−{{ safeDiscountPercentage()
+          }}%</span>
+        }
+      </div>
+      @if (product().isLoyaltyEligible && loyalty.enabled()) {
+      <app-customer-loyalty-points-badge class="ms-auto shrink-0" [pointsEarned]="loyaltyPreview().pointsEarned"
+        [loading]="loyalty.loading()" />
       }
     </div>
   </div>
   <div class="relative z-10 col-span-2 flex items-center justify-end gap-3 sm:col-span-1 sm:self-center">
     <button type="button" class="customer-product-card__icon-button"
-      [class.customer-product-card__icon-button--active]="wishlistActive()"
-      [disabled]="wishlistLoading()"
+      [class.customer-product-card__icon-button--active]="wishlistActive()" [disabled]="wishlistLoading()"
       [attr.aria-label]="(wishlistActive() ? 'CUSTOMER.WISHLIST.REMOVE' : 'CUSTOMER.WISHLIST.ADD') | translate"
       [attr.aria-pressed]="wishlistActive()"
       [attr.title]="(wishlistActive() ? 'CUSTOMER.WISHLIST.REMOVE' : 'CUSTOMER.WISHLIST.ADD') | translate"
@@ -91,8 +96,41 @@
         [class.pi-heart-fill]="wishlistActive() && !wishlistLoading()" [class.pi-spinner]="wishlistLoading()"
         [class.pi-spin]="wishlistLoading()"></i>
     </button>
+
+    <!-- Mobile: small cart control at the lower-right of the image, opposite the heart. -->
+    <div class="pointer-events-auto absolute bottom-3 end-3 z-10 flex sm:hidden">
+      @if (cartQuantity() > 0) {
+      <div class="inline-flex h-8 items-center overflow-hidden rounded-full bg-[#6b7d5e] text-white shadow-lg"
+        role="group" aria-label="Cart quantity">
+        <button type="button" class="grid h-8 w-7 cursor-pointer place-items-center" [disabled]="cartLoading()"
+          aria-label="Decrease quantity" (click)="decreaseCartQuantity($event)">
+          <i class="pi pi-minus" style="font-size: 10px !important"></i>
+        </button>
+
+        <span class="flex h-8 min-w-7 items-center justify-center px-1 text-sm font-black">
+          <i class="pi pi-shopping-cart me-1 text-[10px]"></i>
+          {{ cartQuantity() }}
+        </span>
+
+        <button type="button" class="grid h-8 w-7 cursor-pointer place-items-center"
+          [disabled]="!canIncreaseCartQuantity()" aria-label="Increase quantity" (click)="increaseCartQuantity($event)">
+          <i class="pi pi-plus" style="font-size: 10px !important"></i>
+        </button>
+      </div>
+      } @else {
+      <button type="button"
+        class="grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-[#6b7d5e] text-white shadow-lg transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="soldOut() || !canAddToCart() || cartLoading()"
+        [attr.aria-label]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
+        (click)="requestAddToCart($event)">
+        <i class="pi" [class.pi-shopping-cart]="!cartLoading() && !soldOut()" [class.pi-ban]="soldOut()"
+          [class.pi-spinner]="cartLoading() && !soldOut()" [class.pi-spin]="cartLoading() && !soldOut()"></i>
+      </button>
+      }
+    </div>
+
     <div
-      class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 hidden translate-y-2 items-center gap-3 opacity-0 transition group-hover:flex group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:flex group-focus-within:opacity-100">
+      class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 hidden translate-y-2 items-center gap-3 opacity-0 transition sm:group-hover:flex sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:flex sm:group-focus-within:opacity-100">
       <button type="button"
         class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-black shadow-sm cursor-pointer"
         [attr.aria-label]="'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate"
@@ -100,6 +138,29 @@
         (click)="quickView.emit(product()); $event.stopPropagation()">
         <i class="pi pi-eye text-xs"></i>{{ 'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate }}
       </button>
+      @if (cartQuantity() > 0) {
+      <div
+        class="customer-product-card__cart-button inline-flex h-11 flex-1 items-center overflow-hidden rounded-full bg-[#6b7d5e] text-white"
+        role="group" aria-label="Cart quantity">
+
+        <button type="button"
+          class="grid h-full w-10 shrink-0 cursor-pointer place-items-center transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="cartLoading()" aria-label="Decrease quantity" (click)="decreaseCartQuantity($event)">
+          <i class="pi pi-minus"></i>
+        </button>
+
+        <span class="flex min-w-0 flex-1 items-center justify-center gap-2 px-2 text-sm font-black">
+          <i class="pi pi-shopping-cart text-xs"></i>
+          {{ cartQuantity() }}
+        </span>
+
+        <button type="button"
+          class="grid h-full w-10 shrink-0 cursor-pointer place-items-center transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="!canIncreaseCartQuantity()" aria-label="Increase quantity" (click)="increaseCartQuantity($event)">
+          <i class="pi pi-plus"></i>
+        </button>
+      </div>
+      } @else {
       <button type="button"
         class="customer-product-card__cart-button inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white cursor-pointer"
         [class.customer-product-card__cart-button--sold-out]="soldOut()"
@@ -108,9 +169,10 @@
         [attr.title]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
         (click)="requestAddToCart($event)">
         <i class="pi" [class.pi-shopping-cart]="!cartLoading() && !soldOut()" [class.pi-ban]="soldOut()"
-          [class.pi-spinner]="cartLoading() && !soldOut()" [class.pi-spin]="cartLoading() && !soldOut()"></i>{{
-        soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate) }}
+          [class.pi-spinner]="cartLoading() && !soldOut()" [class.pi-spin]="cartLoading() && !soldOut()"></i>
+        {{ soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate) }}
       </button>
+      }
     </div>
   </div>
   <div class="pointer-events-none relative z-[1] flex flex-1 flex-col gap-1.5 p-3.5 sm:gap-2 sm:p-5">
@@ -125,16 +187,24 @@
       }
       <span class="ms-1 text-[0.72rem] text-[#8a847c] sm:text-sm">({{ product().reviewCount }})</span>
     </div>
-    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-      <span class="text-base font-black sm:text-xl">{{
-        product().price | currency: 'USD' : 'symbol' : '1.2-2'
-        }}</span>
-      @if (hasValidDiscount()) {
-      <span class="text-[0.72rem] font-bold text-[#b8b0a7] line-through sm:text-sm">{{
-        product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2'
-        }}</span>
+    <div class="mt-auto flex items-center gap-2 pt-1">
+      <div class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span class="text-base font-black sm:text-xl">{{
+          product().price | currency: 'USD' : 'symbol' : '1.2-2'
+          }}</span>
+        @if (hasValidDiscount()) {
+        <span class="text-[0.72rem] font-bold text-[#b8b0a7] line-through sm:text-sm">{{
+          product().originalPrice | currency: 'USD' : 'symbol' : '1.2-2'
+          }}</span>
+        }
+      </div>
+
+      @if (product().isLoyaltyEligible && loyalty.enabled()) {
+      <app-customer-loyalty-points-badge class="ms-auto shrink-0" [pointsEarned]="loyaltyPreview().pointsEarned"
+        [loading]="loyalty.loading()" />
       }
     </div>
+
   </div>
 </article>
 }

@@ -23,6 +23,7 @@ const PRODUCT_SELECT = `
   is_featured,
   is_new,
   is_active,
+  is_loyalty_eligible,
   rating,
   created_at,
   categories (
@@ -155,6 +156,7 @@ export class NewArrivalsService {
       isFeatured: product.is_featured === true,
       isNew: product.is_new === true,
       isActive: product.is_active !== false,
+      isLoyaltyEligible: product.is_loyalty_eligible !== false,
       soldCount: Math.max(0, Number(product.sold_count ?? 0)),
       inStock: product.is_active !== false && stock > 0,
       stock,

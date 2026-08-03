@@ -143,6 +143,12 @@ export const ADMIN_NAVIGATION_SECTIONS: AdminNavigationSection[] = [
         icon: 'pi pi-truck',
         badgeKey: 'shipping.activeMethods',
       },
+      {
+        label: 'Loyalty Program',
+        labelKey: 'SIDEBAR.LOYALTY_PROGRAM',
+        route: '/admin/loyalty-settings',
+        icon: 'pi pi-star',
+      },
     ],
   },
   // {

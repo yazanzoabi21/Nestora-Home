@@ -1,26 +1,28 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ToastService } from '../../../core/services';
 import { Discount, DiscountsService } from '../../../data-access';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
+import { CustomerLoyaltyPointsBadgeComponent } from '../../../shared/components/customer-loyalty-points-badge';
 import { CustomerCartLine } from '../models';
-import { CustomerShoppingStateService } from '../services';
+import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../services';
 
 // const STANDARD_SHIPPING = 7.99;
 
 @Component({
   selector: 'app-customer-cart',
   standalone: true,
-  imports: [AdminFormModalComponent, CurrencyPipe, FormsModule, RouterLink, TranslatePipe],
+  imports: [AdminFormModalComponent, CurrencyPipe, CustomerLoyaltyPointsBadgeComponent, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './customer-cart.component.html',
   styleUrl: './customer-cart.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CustomerCartComponent {
+export class CustomerCartComponent implements OnInit {
   readonly shopping = inject(CustomerShoppingStateService);
+  readonly loyalty = inject(LoyaltyPointsCalculatorService);
   private readonly discounts = inject(DiscountsService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
@@ -36,6 +38,18 @@ export class CustomerCartComponent {
   readonly selectedLineForRemoval = signal<CustomerCartLine | null>(null);
   readonly removeModalVisible = signal(false);
   readonly removingItem = signal(false);
+
+  isLoyaltyRedemption(productId: string): boolean {
+    return this.loyalty.requestedRedemptionProductIds().includes(productId);
+  }
+
+  loyaltyPreview(line: CustomerCartLine) {
+    return this.loyalty.preview(line.product.price);
+  }
+
+  cancelLoyaltyRedemption(productId: string): void {
+    this.loyalty.clearProductRedemption(productId);
+  }
   readonly removeItemError = signal<string | null>(null);
   readonly shippingThreshold = computed(
     () => this.freeShippingDiscount()?.minimum_order_amount ?? 0,
@@ -198,6 +212,7 @@ export class CustomerCartComponent {
     this.removeItemError.set(null);
     try {
       await this.shopping.removeFromCart(line.product.id);
+      this.loyalty.clearProductRedemption(line.product.id);
       this.toast.productRemoved(
         line.product.name,
         line.product.imageUrl,
