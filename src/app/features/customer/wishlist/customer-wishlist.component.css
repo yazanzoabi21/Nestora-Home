@@ -2,3 +2,7 @@
   display: block;
   min-width: 0;
 }
+
+[tabindex='-1']:focus {
+  outline: none;
+}

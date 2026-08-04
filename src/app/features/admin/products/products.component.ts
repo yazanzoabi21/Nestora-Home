@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -34,6 +34,7 @@ import {
 import { ExportReportComponent, ExportReportConfig } from '../../../shared/ui/export-report';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
+import { AdminPaginationComponent, PaginationPageSize } from '../../../shared/ui/admin-pagination';
 import {
   ProductImageGalleryComponent,
   ProductImageItem,
@@ -79,6 +80,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   imports: [
     AdminFormModalComponent,
     AdminFormFieldComponent,
+    AdminPaginationComponent,
     AdminTableComponent,
     CommonModule,
     ExportReportComponent,
@@ -90,6 +92,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   ],
   templateUrl: './products.component.html',
   styleUrl: './products.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsComponent implements OnInit {
   readonly loyalty = inject(LoyaltyPointsCalculatorService);
@@ -112,6 +115,8 @@ export class ProductsComponent implements OnInit {
   readonly selectedStatus = signal<ProductStatusFilter>('all');
   readonly selectedPriceRange = signal<ProductPriceRange>('all');
   readonly viewMode = signal<ViewMode>('list');
+  readonly gridCurrentPage = signal(1);
+  readonly gridPageSize = signal<PaginationPageSize>(10);
   readonly selectedProductIds = signal<Set<string>>(new Set());
   readonly selectedProductsCount = computed(() => this.selectedProductIds().size);
   readonly selectedProductsLabel = computed(() => {
@@ -277,6 +282,17 @@ export class ProductsComponent implements OnInit {
   readonly tableRows = computed<ProductTableRow[]>(() =>
     this.filteredProducts().map((product) => this.toTableRow(product)),
   );
+  readonly paginatedGridProducts = computed(() => {
+    const products = this.filteredProducts();
+    const pageSize = this.gridPageSize();
+    if (pageSize === 'all') return products;
+    const start = (this.gridCurrentPage() - 1) * pageSize;
+    return products.slice(start, start + pageSize);
+  });
+  readonly showGridPagination = computed(() => {
+    const pageSize = this.gridPageSize();
+    return pageSize === 'all' || this.filteredProducts().length > pageSize;
+  });
 
   readonly productsExportConfig = computed<ExportReportConfig>(() => {
     const products = this.filteredProducts();
@@ -410,6 +426,31 @@ export class ProductsComponent implements OnInit {
 
   setViewMode(mode: ViewMode): void {
     this.viewMode.set(mode);
+    this.gridCurrentPage.set(1);
+  }
+
+  updateSearchTerm(value: unknown): void {
+    this.searchTerm.set(String(value ?? ''));
+    this.gridCurrentPage.set(1);
+  }
+
+  updateCategoryFilter(value: CategoryFilterValue): void {
+    this.selectedCategory.set(value);
+    this.gridCurrentPage.set(1);
+  }
+
+  updateStatusFilter(value: ProductStatusFilter): void {
+    this.selectedStatus.set(value);
+    this.gridCurrentPage.set(1);
+  }
+
+  setGridPage(page: number): void {
+    this.gridCurrentPage.set(page);
+  }
+
+  setGridPageSize(pageSize: PaginationPageSize): void {
+    this.gridPageSize.set(pageSize);
+    this.gridCurrentPage.set(1);
   }
 
   clearFilters(): void {
@@ -417,6 +458,7 @@ export class ProductsComponent implements OnInit {
     this.selectedCategory.set('all');
     this.selectedStatus.set('all');
     this.selectedPriceRange.set('all');
+    this.gridCurrentPage.set(1);
   }
 
   updateSelection(rows: AdminTableRow[]): void {
@@ -696,6 +738,7 @@ export class ProductsComponent implements OnInit {
     const ranges: ProductPriceRange[] = ['all', 'under_25', '25_50', '50_75', 'over_75'];
     const nextIndex = (ranges.indexOf(this.selectedPriceRange()) + 1) % ranges.length;
     this.selectedPriceRange.set(ranges[nextIndex]);
+    this.gridCurrentPage.set(1);
   }
 
   categoryLabel(product: Product): string {
@@ -1160,6 +1203,9 @@ export class ProductsComponent implements OnInit {
   private watchQuerySearch(): void {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
+      .subscribe((params) => {
+        this.searchTerm.set(params.get('q') ?? '');
+        this.gridCurrentPage.set(1);
+      });
   }
 }

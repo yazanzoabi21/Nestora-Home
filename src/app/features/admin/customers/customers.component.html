@@ -33,7 +33,7 @@
 
   <app-admin-table class="mt-6 block" [columns]="customerTableColumns()" [rows]="tableRows()" [loading]="loading()"
     [emptyTitle]="'CUSTOMERS.EMPTY.TITLE' | translate" [emptyText]="'CUSTOMERS.EMPTY.TEXT' | translate" [selectable]="false"
-    [showActions]="true" actionsMode="crud" [pageSize]="8" [pageSizeOptions]="[8, 16, 32]" [showPageSize]="false"
+    [showActions]="true" actionsMode="crud"
     [showPaginationSummary]="true" (rowView)="openCustomerDetails($event)">
     <ng-template adminTableCell="actions" let-row="row">
       <div class="flex items-center justify-end gap-2">

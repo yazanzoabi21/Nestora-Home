@@ -12,3 +12,33 @@ export interface LoyaltyProductPreview {
   pointsEarned: number;
   rewardCost: number;
 }
+
+export type LoyaltyTransactionType =
+  | 'earn'
+  | 'redeem'
+  | 'earn_reversal'
+  | 'redemption_refund'
+  | 'adjustment';
+
+export interface CustomerLoyaltyTransaction {
+  id: string;
+  transactionType: LoyaltyTransactionType;
+  pointsDelta: number;
+  note: string | null;
+  createdAt: string;
+  orderId: string | null;
+  orderItemId: string | null;
+  orderNumber: string | null;
+  orderStatus: string | null;
+}
+
+export interface LoyaltyRedeemableProduct {
+  productId: string;
+  name: string;
+  slug: string | null;
+  imageUrl: string | null;
+  effectivePrice: number;
+  pointsCost: number;
+  stock: number;
+  categoryName: string | null;
+}

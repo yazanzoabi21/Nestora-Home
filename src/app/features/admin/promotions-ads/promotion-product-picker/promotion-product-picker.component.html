@@ -216,32 +216,12 @@
               </div>
             }
 
-            <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
-              <span class="text-sm font-bold text-[#8d877e]">
-                {{
-                  'PROMOTIONS_ADS.PRODUCTS.PAGE_COUNT'
-                    | translate: { page: currentPage(), pages: totalPages() }
-                }}
-              </span>
-              <div class="flex gap-2">
-                <button
-                  type="button"
-                  class="rounded-xl border border-[#d8d0c3] bg-white px-4 py-2.5 text-sm font-black text-[#675f55] transition hover:border-[#718369] disabled:cursor-not-allowed disabled:opacity-45"
-                  [disabled]="currentPage() <= 1"
-                  (click)="previousPage()"
-                >
-                  {{ 'PROMOTIONS_ADS.PRODUCTS.PREVIOUS' | translate }}
-                </button>
-                <button
-                  type="button"
-                  class="rounded-xl border border-[#d8d0c3] bg-white px-4 py-2.5 text-sm font-black text-[#675f55] transition hover:border-[#718369] disabled:cursor-not-allowed disabled:opacity-45"
-                  [disabled]="currentPage() >= totalPages()"
-                  (click)="nextPage()"
-                >
-                  {{ 'PROMOTIONS_ADS.PRODUCTS.NEXT' | translate }}
-                </button>
-              </div>
-            </div>
+            @if (showPagination()) {
+              <app-admin-pagination class="mt-6 block" [currentPage]="currentPage()"
+                [totalItems]="filteredProducts().length" [pageSize]="pageSize()"
+                [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setPage($event)"
+                (pageSizeChange)="setPageSize($event)" />
+            }
           </div>
         </div>
 

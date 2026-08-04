@@ -77,7 +77,7 @@
 
     <app-admin-table [columns]="transactionColumns" [rows]="transactionRows()" [loading]="loading()"
       emptyTitle="PAYMENTS.EMPTY.TRANSACTIONS_TITLE" emptyText="PAYMENTS.EMPTY.TRANSACTIONS_TEXT" [selectable]="false"
-      [showActions]="true" [pageSize]="10" [showPageSize]="false">
+      [showActions]="true">
       <ng-template adminTableCell="transaction" let-row>
         @let transaction = transactionFromRow(row);
         <div class="min-w-[160px]">
@@ -201,7 +201,7 @@
 
     <app-admin-table [columns]="paymentMethodColumns" [rows]="paymentMethodRows()" [loading]="loading()"
       emptyTitle="PAYMENTS.EMPTY.METHODS_TITLE" emptyText="PAYMENTS.EMPTY.METHODS_TEXT" [selectable]="false"
-      [showActions]="true" [pageSize]="10" [showPageSize]="false">
+      [showActions]="true">
       <ng-template adminTableCell="method" let-row>
         @let method = paymentMethodFromRow(row);
         <div class="flex min-w-[300px] items-center gap-4">

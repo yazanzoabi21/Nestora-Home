@@ -38,10 +38,47 @@
 }
 
 .confirmation__details,
-.confirmation__summary {
+.confirmation__summary,
+.confirmation__loyalty {
   max-width: 25rem;
   margin: 1.5rem auto 0;
   text-align: left;
+}
+
+.confirmation__loyalty {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border: 1px solid #d9e2d2;
+  border-radius: 1rem;
+  background: #f5f2ec;
+  padding: 0.9rem 1rem;
+}
+
+.confirmation__loyalty-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  background: #718369;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.confirmation__loyalty strong {
+  color: #1f2a1f;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.confirmation__loyalty p {
+  margin: 0.2rem 0 0;
+  color: #6f7569;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.45;
 }
 
 .confirmation__details {

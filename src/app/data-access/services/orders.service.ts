@@ -173,6 +173,20 @@ export class OrdersService {
   }
 }
 
+  async updateOrderStatuses(
+    orderId: string,
+    deliveryStatus: AdminOrder['delivery'],
+    paymentStatus: AdminOrder['payment'],
+  ): Promise<void> {
+    await this.ensureAdminSession();
+    const { error } = await this.supabase.rpc('update_admin_order_status', {
+      p_order_id: orderId,
+      p_status: deliveryStatus,
+      p_payment_status: paymentStatus,
+    });
+    if (error) throw new Error(error.message);
+  }
+
   private async ensureAdminSession(): Promise<void> {
   const {
     data: { user },
@@ -203,12 +217,13 @@ export class OrdersService {
     ).length;
 
     const delivered = orders.filter(
-      (order) => order.delivery === 'Delivered',
+      (order) => order.delivery === 'Delivered' || order.delivery === 'Completed',
     ).length;
 
     const refunded = orders.filter(
       (order) =>
         order.delivery === 'Returned' ||
+        order.delivery === 'Cancelled' ||
         order.payment === 'Refunded',
     ).length;
 
@@ -482,8 +497,12 @@ export class OrdersService {
       processing: 'Processing',
       shipped: 'Shipped',
       delivered: 'Delivered',
+      completed: 'Completed',
+      cancelled: 'Cancelled',
+      canceled: 'Cancelled',
       returned: 'Returned',
       refunded: 'Refunded',
+      failed: 'Failed',
       unpaid: 'Unpaid',
       paid: 'Paid',
     };

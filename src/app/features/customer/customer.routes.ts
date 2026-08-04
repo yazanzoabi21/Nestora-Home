@@ -84,6 +84,11 @@ export const CUSTOMER_ROUTES: Routes = [
             loadComponent: () => import('./orders').then((m) => m.CustomerOrdersComponent),
           },
           {
+            path: 'points',
+            loadComponent: () =>
+              import('./loyalty-points').then((m) => m.CustomerLoyaltyPointsPageComponent),
+          },
+          {
             path: 'wishlist',
             loadComponent: () => import('./wishlist').then((m) => m.CustomerWishlistComponent),
           },

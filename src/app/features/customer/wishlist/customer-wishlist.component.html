@@ -16,16 +16,17 @@
   </div>
 
   @if (shopping.wishlistLoading()) {
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
       @for (_ of [1, 2, 3]; track $index) {
-        <div class="h-[26rem] animate-pulse rounded-3xl bg-[#f4f1ec]"></div>
+        <div class="h-[20rem] animate-pulse rounded-3xl bg-[#f4f1ec]"></div>
       }
     </div>
   } @else if (shopping.wishlistProducts().length) {
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      @for (product of shopping.wishlistProducts(); track product.id) {
+    <div #wishlistGrid class="grid scroll-mt-28 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" tabindex="-1">
+      @for (product of paginatedProducts(); track product.id) {
         <app-customer-product-card
           [product]="product"
+          [compact]="true"
           [wishlistActive]="true"
           [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
           [cartLoading]="shopping.pendingProductIds().has(product.id)"
@@ -35,6 +36,18 @@
         />
       }
     </div>
+    @if (shopping.wishlistProducts().length > pageSize) {
+    <app-admin-pagination
+      class="customer-pagination mt-4"
+      [currentPage]="safeCurrentPage()"
+      [totalItems]="shopping.wishlistProducts().length"
+      [pageSize]="pageSize"
+      [showPageSize]="false"
+      [showSummary]="true"
+      summaryKey="CUSTOMER.WISHLIST.PAGINATION_SUMMARY"
+      (pageChange)="changePage($event)"
+    />
+    }
   } @else {
     <div class="grid min-h-80 place-content-center justify-items-center px-4 text-center">
       <span class="grid size-16 place-items-center rounded-full bg-[#fde8ec] text-2xl text-[#d83b54]">

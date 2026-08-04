@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  ChangeDetectionStrategy,
   ContentChildren,
   Directive,
   EventEmitter,
@@ -13,7 +14,7 @@ import {
   TemplateRef,
 } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { AdminPaginationComponent } from '../admin-pagination';
+import { AdminPaginationComponent, PaginationPageSize } from '../admin-pagination';
 
 export type AdminTableColumnType =
   | 'text'
@@ -131,6 +132,7 @@ export class AdminTableCellTemplateDirective {
   imports: [AdminPaginationComponent, CommonModule, TranslatePipe],
   templateUrl: './admin-table.component.html',
   styleUrl: './admin-table.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminTableComponent implements OnChanges {
   @ContentChildren(AdminTableCellTemplateDirective)
@@ -144,8 +146,8 @@ export class AdminTableComponent implements OnChanges {
   @Input() selectable = false;
   @Input() showActions = true;
   @Input() actionsMode: 'crud' | 'editOnly' = 'crud';
-  @Input() pageSize = 10;
-  @Input() pageSizeOptions: number[] = [10, 25, 50];
+  @Input() pageSize: PaginationPageSize = 10;
+  @Input() pageSizeOptions: PaginationPageSize[] = [5, 10, 20, 'all'];
   @Input() showPageSize = true;
   @Input() showPaginationSummary = true;
   @Input() selectionResetKey = 0;
@@ -155,7 +157,7 @@ export class AdminTableComponent implements OnChanges {
   @Output() rowDelete = new EventEmitter<AdminTableRow>();
   @Output() selectionChange = new EventEmitter<AdminTableRow[]>();
   @Output() pageChange = new EventEmitter<number>();
-  @Output() pageSizeChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<PaginationPageSize>();
 
   readonly currentPage = signal(1);
   readonly selectedIds = signal<Set<string>>(new Set());
@@ -168,6 +170,7 @@ export class AdminTableComponent implements OnChanges {
 
     if (changes['rows']) {
       this.failedImageKeys.set(new Set());
+      this.currentPage.set(1);
     }
   }
 
@@ -177,13 +180,21 @@ export class AdminTableComponent implements OnChanges {
   }
 
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.rows.length / this.pageSize));
+    return Math.max(1, Math.ceil(this.rows.length / this.safePageSize));
+  }
+
+  get showPagination(): boolean {
+    return this.rows.length > 0 && (this.pageSize === 'all' || this.rows.length > this.safePageSize);
   }
 
   get visibleRows(): AdminTableRow[] {
+    if (this.pageSize === 'all') {
+      return this.rows;
+    }
+
     const page = Math.min(this.currentPage(), this.totalPages);
-    const start = (page - 1) * this.pageSize;
-    return this.rows.slice(start, start + this.pageSize);
+    const start = (page - 1) * this.safePageSize;
+    return this.rows.slice(start, start + this.safePageSize);
   }
 
   readonly skeletonRows = Array.from({ length: 5 });
@@ -202,10 +213,16 @@ export class AdminTableComponent implements OnChanges {
     this.pageChange.emit(nextPage);
   }
 
-  setPageSize(size: number): void {
+  setPageSize(size: PaginationPageSize): void {
     this.pageSize = size;
     this.currentPage.set(1);
     this.pageSizeChange.emit(size);
+  }
+
+  private get safePageSize(): number {
+    return this.pageSize === 'all'
+      ? Math.max(this.rows.length, 1)
+      : Math.max(this.pageSize, 1);
   }
 
   isSelected(row: AdminTableRow): boolean {

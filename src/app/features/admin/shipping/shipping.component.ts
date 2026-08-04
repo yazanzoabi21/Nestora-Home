@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -25,6 +25,7 @@ import {
   AdminTableRow,
 } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
+import { AdminPaginationComponent, PaginationPageSize } from '../../../shared/ui/admin-pagination';
 
 type ShippingTab = 'methods' | 'zones' | 'methodZones';
 type DeleteTarget = 'method' | 'zone' | 'methodZone';
@@ -130,6 +131,7 @@ const DEFAULT_METHOD_ZONE_FORM: MethodZoneForm = {
   imports: [
     AdminFormFieldComponent,
     AdminFormModalComponent,
+    AdminPaginationComponent,
     AdminTableCellTemplateDirective,
     AdminTableComponent,
     CommonModule,
@@ -139,6 +141,7 @@ const DEFAULT_METHOD_ZONE_FORM: MethodZoneForm = {
   ],
   templateUrl: './shipping.component.html',
   styleUrl: './shipping.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShippingComponent implements OnInit {
   private readonly shippingService = inject(ShippingService);
@@ -164,6 +167,8 @@ export class ShippingComponent implements OnInit {
   readonly zoneForm = signal<ZoneForm>({ ...DEFAULT_ZONE_FORM });
   readonly methodZoneForm = signal<MethodZoneForm>({ ...DEFAULT_METHOD_ZONE_FORM });
   readonly pendingDelete = signal<PendingDelete | null>(null);
+  readonly methodsCurrentPage = signal(1);
+  readonly methodsPageSize = signal<PaginationPageSize>(10);
 
   readonly tabs: SelectOption<ShippingTab>[] = [
     { label: 'SHIPPING.TABS.METHODS', value: 'methods' },
@@ -218,6 +223,17 @@ export class ShippingComponent implements OnInit {
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(query))
     );
+  });
+  readonly paginatedMethods = computed(() => {
+    const methods = this.filteredMethods();
+    const pageSize = this.methodsPageSize();
+    if (pageSize === 'all') return methods;
+    const start = (this.methodsCurrentPage() - 1) * pageSize;
+    return methods.slice(start, start + pageSize);
+  });
+  readonly showMethodsPagination = computed(() => {
+    const pageSize = this.methodsPageSize();
+    return pageSize === 'all' || this.filteredMethods().length > pageSize;
   });
 
   readonly filteredZones = computed(() => {
@@ -768,6 +784,21 @@ export class ShippingComponent implements OnInit {
 
   updateSearch(value: unknown): void {
     this.searchTerm.set(String(value ?? ''));
+    this.methodsCurrentPage.set(1);
+  }
+
+  setActiveTab(tab: ShippingTab): void {
+    this.activeTab.set(tab);
+    this.methodsCurrentPage.set(1);
+  }
+
+  setMethodsPage(page: number): void {
+    this.methodsCurrentPage.set(page);
+  }
+
+  setMethodsPageSize(pageSize: PaginationPageSize): void {
+    this.methodsPageSize.set(pageSize);
+    this.methodsCurrentPage.set(1);
   }
 
   private async runMutation(

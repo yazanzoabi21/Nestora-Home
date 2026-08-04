@@ -1,27 +1,39 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SelectModule } from 'primeng/select';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type PageItem = number | 'ellipsis';
+export type PaginationPageSize = number | 'all';
 
 @Component({
   selector: 'app-admin-pagination',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './admin-pagination.component.html',
-  styleUrl: './admin-pagination.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminPaginationComponent {
   @Input() currentPage = 1;
   @Input() totalItems = 0;
-  @Input() pageSize = 10;
-  @Input() pageSizeOptions: number[] = [10, 25, 50];
+  @Input() pageSize: PaginationPageSize = 10;
+  @Input() pageSizeOptions: PaginationPageSize[] = [5, 10, 20, 'all'];
   @Input() showPageSize = true;
   @Input() showSummary = true;
+  @Input() variant: 'admin' | 'customer' = 'admin';
+  @Input() summaryKey: string | null = null;
+  @Input() ariaLabelKey = 'COMMON.PAGINATION.ARIA_LABEL';
+  @Input() previousPageLabelKey = 'COMMON.PAGINATION.PREVIOUS_PAGE';
+  @Input() nextPageLabelKey = 'COMMON.PAGINATION.NEXT_PAGE';
 
   @Output() pageChange = new EventEmitter<number>();
-  @Output() pageSizeChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<PaginationPageSize>();
 
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.totalItems / this.safePageSize));
@@ -32,11 +44,9 @@ export class AdminPaginationComponent {
   }
 
   get startItem(): number {
-    if (this.totalItems === 0) {
-      return 0;
-    }
-
-    return (this.safeCurrentPage - 1) * this.safePageSize + 1;
+    return this.totalItems === 0
+      ? 0
+      : (this.safeCurrentPage - 1) * this.safePageSize + 1;
   }
 
   get endItem(): number {
@@ -53,13 +63,8 @@ export class AdminPaginationComponent {
 
     const pages = new Set<number>([1, totalPages, currentPage]);
 
-    if (currentPage > 2) {
-      pages.add(currentPage - 1);
-    }
-
-    if (currentPage < totalPages - 1) {
-      pages.add(currentPage + 1);
-    }
+    if (currentPage > 2) pages.add(currentPage - 1);
+    if (currentPage < totalPages - 1) pages.add(currentPage + 1);
 
     if (currentPage <= 4) {
       pages.add(2);
@@ -96,8 +101,8 @@ export class AdminPaginationComponent {
     }
   }
 
-  setPageSize(size: number): void {
-    if (!Number.isFinite(size) || size <= 0 || size === this.pageSize) {
+  setPageSize(size: PaginationPageSize): void {
+    if (size === this.pageSize || (typeof size === 'number' && size <= 0)) {
       return;
     }
 
@@ -105,7 +110,15 @@ export class AdminPaginationComponent {
     this.pageChange.emit(1);
   }
 
+  pageSizeLabel(size: PaginationPageSize): string {
+    return size === 'all' ? 'COMMON.PAGINATION.ALL' : String(size);
+  }
+
   private get safePageSize(): number {
-    return Math.max(1, this.pageSize);
+    if (this.pageSize === 'all') {
+      return Math.max(this.totalItems, 1);
+    }
+
+    return Math.max(this.pageSize, 1);
   }
 }

@@ -11,7 +11,7 @@ const DEFAULT_FORM: AdminLoyaltyProgramSettings = {
   isEnabled: true,
   pointValueUsd: 0.02,
   pointsEarnedPerUsd: 1,
-  minimumRedemptionPoints: 200,
+  minimumRedemptionPoints: 400,
   updatedAt: '',
 };
 

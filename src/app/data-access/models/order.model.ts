@@ -1,5 +1,5 @@
-export type OrderPaymentStatus = 'Paid' | 'Pending' | 'Refunded' | 'Unpaid';
-export type OrderDeliveryStatus = 'Processing' | 'Delivered' | 'Shipped' | 'Returned' | 'Pending';
+export type OrderPaymentStatus = 'Paid' | 'Pending' | 'Refunded' | 'Unpaid' | 'Failed';
+export type OrderDeliveryStatus = 'Processing' | 'Delivered' | 'Completed' | 'Shipped' | 'Returned' | 'Cancelled' | 'Pending';
 export type OrderDateFilter = 'all' | 'today' | 'this_week' | 'this_month';
 
 export interface AdminOrder {

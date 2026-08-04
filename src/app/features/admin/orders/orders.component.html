@@ -40,7 +40,7 @@
 
   <app-admin-table class="mt-6 block" [columns]="orderTableColumns()" [rows]="tableRows()" [loading]="loading()"
     [emptyTitle]="'ORDERS.EMPTY.TITLE' | translate" [emptyText]="'ORDERS.EMPTY.TEXT' | translate" [selectable]="false"
-    [showActions]="true" actionsMode="crud" [pageSize]="8" [pageSizeOptions]="[8, 16, 32]" [showPageSize]="false"
+    [showActions]="true" actionsMode="crud"
     [showPaginationSummary]="true" (rowView)="openOrderDetails($event)">
     <ng-template adminTableCell="orderId" let-row="row">
       <span class="text-sm font-black text-[#5f6f43]">{{ row.orderId }}</span>
@@ -66,7 +66,8 @@
   </app-admin-table>
 
   <app-admin-form-modal [isOpen]="!!selectedOrder()" [title]="'ORDERS.MODAL.DETAILS_TITLE' | translate" [subtitle]="'ORDERS.MODAL.DETAILS_SUBTITLE' | translate"
-    size="md" [submitLabel]="'COMMON.CLOSE' | translate" [cancelLabel]="'COMMON.CANCEL' | translate" (close)="closeOrderDetails()" (submit)="closeOrderDetails()">
+    size="md" [submitLabel]="'COMMON.SAVE_CHANGES' | translate" [cancelLabel]="'COMMON.CANCEL' | translate"
+    [loading]="savingOrderStatus()" (close)="closeOrderDetails()" (submit)="saveOrderStatus()">
     @if (selectedOrder(); as order) {
       <section class="grid gap-3 text-sm font-semibold text-[#342f29]">
         <div class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
@@ -141,6 +142,18 @@
             <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.DELIVERY_STATUS' | translate }}</p>
             <p class="mt-1 font-black text-[#182116]">{{ statusLabel(order.delivery) }}</p>
           </div>
+        </div>
+
+        <div class="grid gap-3 rounded-2xl border border-[#dfe7d5] bg-[#f7faf3] p-4 sm:grid-cols-2">
+          <app-admin-form-field type="select" name="orderDeliveryStatus"
+            [label]="'ORDERS.FIELDS.DELIVERY_STATUS'" [value]="selectedOrderDelivery()"
+            [options]="deliveryOptions().slice(1)" optionLabel="label" optionValue="value"
+            (valueChange)="selectedOrderDelivery.set($any($event))" />
+
+          <app-admin-form-field type="select" name="orderPaymentStatus"
+            [label]="'ORDERS.FIELDS.PAYMENT_STATUS'" [value]="selectedOrderPayment()"
+            [options]="paymentOptions().slice(1)" optionLabel="label" optionValue="value"
+            (valueChange)="selectedOrderPayment.set($any($event))" />
         </div>
 
         @if (order.notes) {

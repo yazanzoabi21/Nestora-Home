@@ -24,6 +24,7 @@ export class CustomerProductCardComponent {
   readonly cartLoading = input(false);
   readonly canAddToCart = input(true);
   readonly selected = input(false);
+  readonly compact = input(false);
 
   readonly quickView = output<CustomerProduct>();
   readonly addToCart = output<CustomerProduct>();

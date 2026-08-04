@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -12,6 +12,7 @@ import { Review, ReviewFilters, ReviewStatus, ReviewsService } from '../../../da
 import { AdminFormFieldComponent } from '../../../shared/ui/admin-form-field';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
+import { AdminPaginationComponent, PaginationPageSize } from '../../../shared/ui/admin-pagination';
 
 interface AdminSelectOption<T extends string | number | null = string> {
   label: string;
@@ -24,6 +25,7 @@ interface AdminSelectOption<T extends string | number | null = string> {
   imports: [
     AdminFormFieldComponent,
     AdminFormModalComponent,
+    AdminPaginationComponent,
     CommonModule,
     FormsModule,
     KpiCardComponent,
@@ -31,6 +33,7 @@ interface AdminSelectOption<T extends string | number | null = string> {
   ],
   templateUrl: './reviews.component.html',
   styleUrl: './reviews.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReviewsComponent implements OnInit {
   private readonly authService = inject(AdminAuthService);
@@ -50,6 +53,8 @@ export class ReviewsComponent implements OnInit {
   readonly detailsOpen = signal(false);
   readonly replyOpen = signal(false);
   readonly deleteOpen = signal(false);
+  readonly currentPage = signal(1);
+  readonly pageSize = signal<PaginationPageSize>(10);
 
   readonly filters = signal<ReviewFilters>({
     search: '',
@@ -115,6 +120,23 @@ export class ReviewsComponent implements OnInit {
     });
   });
 
+  readonly paginatedReviews = computed(() => {
+    const reviews = this.filteredReviews();
+    const pageSize = this.pageSize();
+
+    if (pageSize === 'all') {
+      return reviews;
+    }
+
+    const start = (this.currentPage() - 1) * pageSize;
+    return reviews.slice(start, start + pageSize);
+  });
+
+  readonly showPagination = computed(() => {
+    const pageSize = this.pageSize();
+    return pageSize === 'all' || this.filteredReviews().length > pageSize;
+  });
+
   readonly stats = computed(() => this.reviewsService.calculateStats(this.reviews()));
 
   readonly kpiCards = computed<KpiCardData[]>(() => {
@@ -170,6 +192,7 @@ export class ReviewsComponent implements OnInit {
 
     try {
       this.reviews.set(await this.reviewsService.getReviews());
+      this.currentPage.set(1);
     } catch (error) {
       this.toast.failed(
         this.translate.instant('REVIEWS.TOAST.LOAD_FAILED_TITLE'),
@@ -190,6 +213,7 @@ export class ReviewsComponent implements OnInit {
       ...filters,
       [key]: value,
     }));
+    this.currentPage.set(1);
   }
 
   clearFilters(): void {
@@ -199,6 +223,16 @@ export class ReviewsComponent implements OnInit {
       rating: null,
       status: 'all',
     });
+    this.currentPage.set(1);
+  }
+
+  setPage(page: number): void {
+    this.currentPage.set(page);
+  }
+
+  setPageSize(pageSize: PaginationPageSize): void {
+    this.pageSize.set(pageSize);
+    this.currentPage.set(1);
   }
 
   textValue(value: unknown): string {
@@ -461,6 +495,7 @@ export class ReviewsComponent implements OnInit {
           ...filters,
           search: params.get('q') ?? '',
         }));
+        this.currentPage.set(1);
       });
   }
 }

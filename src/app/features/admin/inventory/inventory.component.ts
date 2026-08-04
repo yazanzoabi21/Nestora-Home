@@ -63,8 +63,6 @@ export class InventoryComponent implements OnInit {
   readonly selectedCategory = signal('all');
   readonly selectedStatus = signal<InventoryStatusFilter>('all');
   readonly showAll = signal(true);
-  readonly currentPage = signal(1);
-  readonly pageSize = signal(8);
   readonly selectedProduct = signal<InventoryProduct | null>(null);
   readonly isStockModalOpen = signal(false);
   readonly stockForm = signal<StockUpdateFormModel>({ ...DEFAULT_STOCK_FORM });
@@ -182,11 +180,6 @@ export class InventoryComponent implements OnInit {
     });
   });
 
-  readonly visibleProducts = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredProducts().slice(start, start + this.pageSize());
-  });
-
   readonly tableRows = computed<InventoryTableRow[]>(() =>
     this.filteredProducts().map((product) => this.toTableRow(product))
   );
@@ -201,7 +194,6 @@ export class InventoryComponent implements OnInit {
 
     try {
       this.products.set(await this.inventoryService.getInventoryProducts());
-      this.currentPage.set(1);
     } catch (error) {
       this.toast.failed(
         this.translate.instant('INVENTORY.TOAST.LOAD_FAILED_TITLE'),
@@ -288,21 +280,10 @@ export class InventoryComponent implements OnInit {
     this.selectedCategory.set('all');
     this.selectedStatus.set('all');
     this.showAll.set(true);
-    this.currentPage.set(1);
   }
 
   toggleShowAll(): void {
     this.showAll.update((value) => !value);
-    this.currentPage.set(1);
-  }
-
-  setPage(page: number): void {
-    this.currentPage.set(page);
-  }
-
-  setPageSize(size: number): void {
-    this.pageSize.set(size);
-    this.currentPage.set(1);
   }
 
   openStockModalFromRow(value: InventoryProduct | AdminTableRow): void {
@@ -470,7 +451,6 @@ export class InventoryComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
         this.searchTerm.set(params.get('q') ?? '');
-        this.currentPage.set(1);
       });
   }
 }

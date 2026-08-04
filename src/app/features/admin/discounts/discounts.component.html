@@ -45,7 +45,7 @@
   <app-admin-table class="mt-6 block" [columns]="discountTableColumns" [rows]="tableRows()" [loading]="loading()"
     [emptyTitle]="discounts().length === 0 ? 'PROMOTIONS.EMPTY_TITLE' : 'PROMOTIONS.NO_MATCHING_TITLE'"
     [emptyText]="discounts().length === 0 ? 'PROMOTIONS.EMPTY_TEXT' : 'PROMOTIONS.NO_MATCHING_TEXT'"
-    [selectable]="false" [showActions]="true" [pageSize]="7" [showPageSize]="false"
+    [selectable]="false" [showActions]="true"
     (rowView)="toggleDiscountActive($event)" (rowEdit)="openEditDiscountModal($event)"
     (rowDelete)="openDeleteDiscountModal($event)">
   </app-admin-table>

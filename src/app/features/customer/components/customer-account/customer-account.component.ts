@@ -6,19 +6,14 @@ import { CustomerAuthService } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
 import { CUSTOMER_SUPABASE } from '../../../../core/tokens';
 import { CustomerOrdersService } from '../../orders/customer-orders.service';
-import { CustomerShoppingStateService } from '../../services';
+import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../../services';
 import { CountBadgeComponent } from '../../../../shared/ui/count-badge';
-
-interface AccountNavItem {
-  labelKey: string;
-  icon: string;
-  path: string;
-}
 
 interface AccountCounts {
   orders: number;
   wishlist: number;
   reviews: number;
+  points: number;
 }
 
 type AccountCountKey = keyof AccountCounts;
@@ -45,21 +40,21 @@ export class CustomerAccountComponent {
   private readonly shopping = inject(CustomerShoppingStateService);
   private readonly customerOrders = inject(CustomerOrdersService);
   private readonly toast = inject(ToastService);
+  readonly loyalty = inject(LoyaltyPointsCalculatorService);
+  readonly showLoyalty = computed(
+    () => !this.loyalty.loading() && this.loyalty.enabled(),
+  );
 
   readonly isLoggingOut = signal(false);
   private readonly loadedCounts = signal({ orders: 0, reviews: 0 });
   readonly counts = computed<AccountCounts>(() => ({
     ...this.loadedCounts(),
     wishlist: this.shopping.wishlistCount(),
+    points: this.loyalty.balance(),
   }));
-  // readonly navigation: readonly AccountNavItem[] = [
-  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.PROFILE', icon: 'pi-user', path: 'profile' },
-  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.ORDERS', icon: 'pi-shopping-bag', path: 'orders' },
-  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.WISHLIST', icon: 'pi-heart', path: 'wishlist' },
-  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.ADDRESSES', icon: 'pi-map-marker', path: 'addresses' },
-  //   { labelKey: 'CUSTOMER.ACCOUNT.NAV.SETTINGS', icon: 'pi-cog', path: 'settings' },
-  // ];
-
+  readonly compactPoints = computed(() =>
+    this.counts().points >= 100 ? '99+' : String(this.counts().points),
+  );
   readonly navigation: readonly AccountNavItem[] = [
     {
       labelKey: 'CUSTOMER.ACCOUNT.NAV.PROFILE',
@@ -71,6 +66,12 @@ export class CustomerAccountComponent {
       icon: 'pi-shopping-bag',
       path: 'orders',
       badgeKey: 'orders',
+    },
+    {
+      labelKey: 'CUSTOMER.ACCOUNT.NAV.POINTS',
+      icon: 'pi-star',
+      path: 'points',
+      badgeKey: 'points',
     },
     {
       labelKey: 'CUSTOMER.ACCOUNT.NAV.WISHLIST',

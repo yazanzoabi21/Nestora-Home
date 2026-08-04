@@ -33,7 +33,15 @@
       "CHOOSE_FROM_MEDIA_LIBRARY": "Choose from Media Library",
       "CLEAR": "Clear",
       "SELECT": "Select",
-      "SELECTED": "Selected"
+      "SELECTED": "Selected",
+      "PAGINATION": {
+        "ARIA_LABEL": "Pagination",
+        "PREVIOUS_PAGE": "Previous page",
+        "NEXT_PAGE": "Next page",
+        "ROWS": "Rows",
+        "ALL": "All",
+        "SUMMARY": "Showing {{start}}–{{end}} of {{total}}"
+      }
     },
     "TOPBAR": {
       "DATE": "Wednesday, 22 April 2026",
@@ -1579,10 +1587,13 @@
         "UNPAID": "Unpaid",
         "PENDING": "Pending",
         "REFUNDED": "Refunded",
+        "FAILED": "Failed",
         "PROCESSING": "Processing",
         "DELIVERED": "Delivered",
+        "COMPLETED": "Completed",
         "SHIPPED": "Shipped",
-        "RETURNED": "Returned"
+        "RETURNED": "Returned",
+        "CANCELLED": "Cancelled"
       },
       "ACTIONS": {
         "VIEW": "View"
@@ -1813,7 +1824,42 @@
         "REDEEM_WITH_POINTS": "Redeem with {{points}} points",
         "NEED_MORE": "You need {{points}} more points",
         "LOGIN_TO_REDEEM": "Sign in to redeem your Nestora Points.",
-        "CANCEL_REDEMPTION": "Pay normally instead"
+        "CANCEL_REDEMPTION": "Pay normally instead",
+        "AVAILABLE_SHORT": "{{points}} points",
+        "PAGE": {
+          "TITLE": "My Nestora Points",
+          "AVAILABLE": "Available balance",
+          "POINTS": "Nestora Points",
+          "POINTS_VALUE": "{{value}} points",
+          "ORDER_REFERENCE": "Order {{orderNumber}}",
+          "WORTH": "Worth {{amount}} toward eligible products",
+          "HOW_TITLE": "How it works",
+          "EARN_RULE": "Earn 1 point for every $1 paid",
+          "EARN_RULE_DETAIL": "Points are added after your order is delivered or completed.",
+          "REDEEM_RULE": "Redeem products free using points",
+          "REDEEM_RULE_DETAIL": "Every Nestora Point is worth $0.02 toward eligible products.",
+          "HISTORY_TITLE": "Points history",
+          "HISTORY_SUBTITLE": "A permanent record of points earned, redeemed, restored, and adjusted.",
+          "HISTORY_EMPTY": "Your points activity will appear here.",
+          "LOAD_MORE": "Load more activity",
+          "LOAD_MORE_PRODUCTS": "Load more products",
+          "REDEEM_TITLE": "Redeem with your points",
+          "REDEEM_SUBTITLE": "Active, in-stock products currently within your available balance.",
+          "REDEEM_EMPTY": "No products are within your points balance yet.",
+          "REDEEM_EMPTY_DETAIL": "Keep earning points and eligible products will appear here automatically.",
+          "VIEW_PRODUCT": "View product",
+          "ERROR_TITLE": "Unable to load your points",
+          "RETRY": "Try again"
+        },
+        "HISTORY": {
+          "TYPES": {
+            "EARN": "Points earned",
+            "REDEEM": "Product redeemed",
+            "EARN_REVERSAL": "Earned points reversed",
+            "REDEMPTION_REFUND": "Redeemed points restored",
+            "ADJUSTMENT": "Points adjustment"
+          }
+        }
       },
       "FLASH_DEALS_PAGE": {
         "HOME": "Home",
@@ -1950,6 +1996,8 @@
           "PAYMENT_METHOD": "Payment method",
           "ORDER_TOTAL": "Order Total",
           "TOTAL_PAID": "Total Paid",
+          "LOYALTY_PENDING_TITLE": "You’ll earn {{points}} Nestora Points",
+          "LOYALTY_PENDING_DETAIL": "Points are added after your order is delivered.",
           "VIEW_ORDERS": "View Orders",
           "BACK_HOME": "Back to Home"
         }
@@ -1987,12 +2035,14 @@
         "LOGOUT_ARIA": "Logout from customer account",
         "COUNTS": {
           "ORDERS": "Orders",
+          "POINTS": "Points",
           "WISHLIST": "Wishlist",
           "REVIEWS": "Reviews"
         },
         "NAV": {
           "PROFILE": "My Profile",
           "ORDERS": "Orders",
+          "POINTS": "Points",
           "WISHLIST": "Wishlist",
           "ADDRESSES": "Addresses",
           "SETTINGS": "Settings"
@@ -2001,6 +2051,7 @@
           "EYEBROW": "Your account",
           "TITLE": "Order History",
           "ORDER_COUNT": "{{count}} orders",
+          "PAGINATION_SUMMARY": "Showing {{start}}–{{end}} of {{total}} orders",
           "LOADING": "Loading orders",
           "ERROR_TITLE": "We could not load your orders",
           "ERROR_TEXT": "Something went wrong while loading your order history. Please try again.",
@@ -2030,6 +2081,7 @@
             "CONFIRMED": "Confirmed",
             "SHIPPED": "Shipped",
             "DELIVERED": "Delivered",
+            "COMPLETED": "Completed",
             "CANCELLED": "Cancelled",
             "CANCELED": "Cancelled",
             "REFUNDED": "Refunded",
@@ -2183,6 +2235,7 @@
       },
       "WISHLIST": {
         "TITLE": "Wishlist",
+        "PAGINATION_SUMMARY": "Showing {{start}}–{{end}} of {{total}} wishlist items",
         "SAVED": "Saved to wishlist",
         "REMOVED": "Removed from wishlist",
         "UPDATE_FAILED": "Could not update wishlist",
@@ -2451,7 +2504,15 @@
       "CHOOSE_FROM_MEDIA_LIBRARY": "اختر من مكتبة الوسائط",
       "CLEAR": "مسح",
       "SELECT": "اختيار",
-      "SELECTED": "تم الاختيار"
+      "SELECTED": "تم الاختيار",
+      "PAGINATION": {
+        "ARIA_LABEL": "ترقيم الصفحات",
+        "PREVIOUS_PAGE": "الصفحة السابقة",
+        "NEXT_PAGE": "الصفحة التالية",
+        "ROWS": "الصفوف",
+        "ALL": "الكل",
+        "SUMMARY": "عرض {{start}}–{{end}} من أصل {{total}}"
+      }
     },
     "TOPBAR": {
       "DATE": "الأربعاء، 22 أبريل 2026",
@@ -4034,10 +4095,13 @@
         "UNPAID": "غير مدفوع",
         "PENDING": "قيد الانتظار",
         "REFUNDED": "مسترد",
+        "FAILED": "فشل",
         "PROCESSING": "قيد المعالجة",
         "DELIVERED": "تم التسليم",
+        "COMPLETED": "مكتمل",
         "SHIPPED": "تم الشحن",
-        "RETURNED": "مرتجع"
+        "RETURNED": "مرتجع",
+        "CANCELLED": "ملغى"
       },
       "ACTIONS": {
         "VIEW": "عرض"
@@ -4231,7 +4295,42 @@
         "REDEEM_WITH_POINTS": "استبدل مقابل {{points}} نقطة",
         "NEED_MORE": "تحتاج إلى {{points}} نقطة إضافية",
         "LOGIN_TO_REDEEM": "سجّل الدخول لاستبدال نقاط نيستورا.",
-        "CANCEL_REDEMPTION": "الدفع بالطريقة العادية"
+        "CANCEL_REDEMPTION": "الدفع بالطريقة العادية",
+        "AVAILABLE_SHORT": "{{points}} نقطة",
+        "PAGE": {
+          "TITLE": "نقاط نيستورا الخاصة بي",
+          "AVAILABLE": "الرصيد المتاح",
+          "POINTS": "نقاط نيستورا",
+          "POINTS_VALUE": "{{value}} نقطة",
+          "ORDER_REFERENCE": "الطلب {{orderNumber}}",
+          "WORTH": "بقيمة {{amount}} للمنتجات المؤهلة",
+          "HOW_TITLE": "كيف يعمل البرنامج",
+          "EARN_RULE": "اكسب نقطة واحدة مقابل كل دولار مدفوع",
+          "EARN_RULE_DETAIL": "تُضاف النقاط بعد تسليم الطلب أو اكتماله.",
+          "REDEEM_RULE": "استبدل المنتجات مجاناً باستخدام النقاط",
+          "REDEEM_RULE_DETAIL": "تساوي كل نقطة نيستورا 0.02 دولار للمنتجات المؤهلة.",
+          "HISTORY_TITLE": "سجل النقاط",
+          "HISTORY_SUBTITLE": "سجل دائم للنقاط المكتسبة والمستبدلة والمستعادة والمعدلة.",
+          "HISTORY_EMPTY": "سيظهر نشاط نقاطك هنا.",
+          "LOAD_MORE": "تحميل المزيد من النشاط",
+          "LOAD_MORE_PRODUCTS": "تحميل المزيد من المنتجات",
+          "REDEEM_TITLE": "استبدل باستخدام نقاطك",
+          "REDEEM_SUBTITLE": "منتجات نشطة ومتوفرة يمكنك الحصول عليها برصيدك الحالي.",
+          "REDEEM_EMPTY": "لا توجد منتجات ضمن رصيد نقاطك حالياً.",
+          "REDEEM_EMPTY_DETAIL": "استمر في كسب النقاط وستظهر المنتجات المؤهلة هنا تلقائياً.",
+          "VIEW_PRODUCT": "عرض المنتج",
+          "ERROR_TITLE": "تعذر تحميل نقاطك",
+          "RETRY": "المحاولة مجدداً"
+        },
+        "HISTORY": {
+          "TYPES": {
+            "EARN": "نقاط مكتسبة",
+            "REDEEM": "منتج مستبدل",
+            "EARN_REVERSAL": "عكس النقاط المكتسبة",
+            "REDEMPTION_REFUND": "استعادة النقاط المستبدلة",
+            "ADJUSTMENT": "تعديل النقاط"
+          }
+        }
       },
       "FLASH_DEALS_PAGE": {
         "HOME": "الرئيسية",
@@ -4391,6 +4490,8 @@
           "PAYMENT_METHOD": "طريقة الدفع",
           "ORDER_TOTAL": "إجمالي الطلب",
           "TOTAL_PAID": "المبلغ المدفوع",
+          "LOYALTY_PENDING_TITLE": "ستكسب {{points}} من نقاط نيستورا",
+          "LOYALTY_PENDING_DETAIL": "تُضاف النقاط بعد تسليم طلبك.",
           "VIEW_ORDERS": "عرض الطلبات",
           "BACK_HOME": "العودة إلى الرئيسية"
         }
@@ -4405,12 +4506,14 @@
         "LOGOUT_ARIA": "تسجيل الخروج من حساب العميل",
         "COUNTS": {
           "ORDERS": "الطلبات",
+          "POINTS": "النقاط",
           "WISHLIST": "المفضلة",
           "REVIEWS": "التقييمات"
         },
         "NAV": {
           "PROFILE": "ملفي الشخصي",
           "ORDERS": "الطلبات",
+          "POINTS": "النقاط",
           "WISHLIST": "المفضلة",
           "ADDRESSES": "العناوين",
           "SETTINGS": "الإعدادات"
@@ -4419,6 +4522,7 @@
           "EYEBROW": "حسابك",
           "TITLE": "سجل الطلبات",
           "ORDER_COUNT": "{{count}} طلبات",
+          "PAGINATION_SUMMARY": "عرض {{start}}–{{end}} من أصل {{total}} طلبات",
           "LOADING": "جارٍ تحميل الطلبات",
           "ERROR_TITLE": "تعذر تحميل طلباتك",
           "ERROR_TEXT": "حدث خطأ أثناء تحميل سجل الطلبات. يرجى المحاولة مرة أخرى.",
@@ -4448,6 +4552,7 @@
             "CONFIRMED": "تم التأكيد",
             "SHIPPED": "تم الشحن",
             "DELIVERED": "تم التسليم",
+            "COMPLETED": "مكتمل",
             "CANCELLED": "ملغي",
             "CANCELED": "ملغي",
             "REFUNDED": "مسترد",
@@ -4601,6 +4706,7 @@
       },
       "WISHLIST": {
         "TITLE": "المفضلة",
+        "PAGINATION_SUMMARY": "عرض {{start}}–{{end}} من أصل {{total}} عناصر في المفضلة",
         "SAVED": "تم الحفظ في المفضلة",
         "REMOVED": "تمت الإزالة من المفضلة",
         "UPDATE_FAILED": "تعذر تحديث المفضلة",

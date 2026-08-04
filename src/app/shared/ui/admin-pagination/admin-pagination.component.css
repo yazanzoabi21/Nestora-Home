@@ -1,4 +1,4 @@
-:host {
+/* :host {
   display: block;
   min-width: 0;
 }
@@ -84,9 +84,46 @@
   color: #675f55;
 }
 
+:host(.customer-pagination) .admin-pagination {
+  overflow: visible;
+  border: 1px solid #e8dccf;
+  border-radius: 1rem;
+  background: #faf8f5;
+  padding: 0.75rem;
+}
+
+:host(.customer-pagination) .admin-pagination-button,
+:host(.customer-pagination) .admin-pagination-ellipsis {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.8rem;
+}
+
+:host(.customer-pagination) .admin-pagination-button {
+  border-color: #e8dccf;
+  background: #ffffff;
+  color: #1f2a1f;
+}
+
+:host(.customer-pagination) .admin-pagination-active,
+:host(.customer-pagination) .admin-pagination-active:hover {
+  border-color: #6b7d5e;
+  background: #6b7d5e;
+  color: #ffffff;
+}
+
 @media (max-width: 640px) {
   .admin-pagination-pages,
   .admin-pagination-size {
     width: 100%;
   }
-}
+
+  :host(.customer-pagination) .admin-pagination {
+    padding: 0.7rem;
+  }
+
+  :host(.customer-pagination) .admin-pagination-pages {
+    justify-content: flex-start;
+  }
+} */

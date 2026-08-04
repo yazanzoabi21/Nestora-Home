@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -20,6 +20,7 @@ import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { AdminTableRow } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 import { MediaPickerModalComponent } from '../../../shared/ui/media-picker-modal';
+import { AdminPaginationComponent, PaginationPageSize } from '../../../shared/ui/admin-pagination';
 
 type CategoryModalMode = 'add-parent' | 'add-child' | 'edit';
 type ViewMode = 'tree' | 'grid';
@@ -111,6 +112,7 @@ const MORE_CATEGORY_ICON_OPTIONS = [
   imports: [
     AdminFormFieldComponent,
     AdminFormModalComponent,
+    AdminPaginationComponent,
     CommonModule,
     FormsModule,
     KpiCardComponent,
@@ -119,6 +121,7 @@ const MORE_CATEGORY_ICON_OPTIONS = [
   ],
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriesComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
@@ -149,6 +152,8 @@ export class CategoriesComponent implements OnInit {
   readonly imagePreviewUrl = signal<string | null>(null);
   readonly selectedIcon = signal(DEFAULT_CATEGORY_ICON);
   readonly expandedCategoryIds = signal<Set<string>>(new Set());
+  readonly currentPage = signal(1);
+  readonly pageSize = signal<PaginationPageSize>(10);
 
   readonly selectedParentId = signal<string | null>(null);
 
@@ -243,6 +248,24 @@ export class CategoriesComponent implements OnInit {
   });
 
   readonly rootCategories = computed(() => this.filteredCategories().filter((category) => !category.parent_id));
+  readonly paginationItems = computed(() =>
+    this.viewMode() === 'tree' ? this.rootCategories() : this.filteredCategories(),
+  );
+  readonly paginatedCategories = computed(() => {
+    const categories = this.paginationItems();
+    const pageSize = this.pageSize();
+
+    if (pageSize === 'all') {
+      return categories;
+    }
+
+    const start = (this.currentPage() - 1) * pageSize;
+    return categories.slice(start, start + pageSize);
+  });
+  readonly showPagination = computed(() => {
+    const pageSize = this.pageSize();
+    return pageSize === 'all' || this.paginationItems().length > pageSize;
+  });
 
   readonly selectedCategoryDetails = computed(() => {
     const selectedCategory = this.selectedCategory();
@@ -290,6 +313,21 @@ export class CategoriesComponent implements OnInit {
 
   setViewMode(mode: ViewMode): void {
     this.viewMode.set(mode);
+    this.currentPage.set(1);
+  }
+
+  updateSearchTerm(value: unknown): void {
+    this.searchTerm.set(String(value ?? ''));
+    this.currentPage.set(1);
+  }
+
+  setPage(page: number): void {
+    this.currentPage.set(page);
+  }
+
+  setPageSize(pageSize: PaginationPageSize): void {
+    this.pageSize.set(pageSize);
+    this.currentPage.set(1);
   }
 
   toggleExpanded(category: Category, event?: Event): void {
@@ -853,6 +891,9 @@ export class CategoriesComponent implements OnInit {
   private watchQuerySearch(): void {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
+      .subscribe((params) => {
+        this.searchTerm.set(params.get('q') ?? '');
+        this.currentPage.set(1);
+      });
   }
 }

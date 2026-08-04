@@ -89,7 +89,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (review of filteredReviews(); track review.id) {
+          @for (review of paginatedReviews(); track review.id) {
           <tr class="border-b border-[#f0ebe4] align-top transition hover:bg-[#fffdfa]">
             <td class="px-4 py-4">
               <div class="flex min-w-0 items-center gap-3">
@@ -220,6 +220,11 @@
         </tbody>
       </table>
     </div>
+    @if (showPagination()) {
+    <app-admin-pagination [currentPage]="currentPage()" [totalItems]="filteredReviews().length"
+      [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setPage($event)"
+      (pageSizeChange)="setPageSize($event)" />
+    }
     }
   </section>
 

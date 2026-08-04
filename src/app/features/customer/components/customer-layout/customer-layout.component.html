@@ -1,24 +1,24 @@
-<div class="min-h-screen bg-[#f8f7f5] text-[#1f2a1f]">
+<div class="min-h-screen w-full max-w-full overflow-x-hidden bg-[#f8f7f5] text-[#1f2a1f]">
   <app-customer-navbar></app-customer-navbar>
 
-  <main>
+  <main class="w-full min-w-0 max-w-full">
     <router-outlet></router-outlet>
   </main>
 
   <footer class="bg-[#2b2d2b] text-[#d8d1c8]">
     <section class="border-b border-white/10 py-9">
-      <div class="customer-page-container flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h2 class="text-xl font-black text-white">
+      <div class="customer-page-container flex min-w-0 max-w-full flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div class="min-w-0">
+          <h2 class="break-words text-lg font-black text-white min-[361px]:text-xl">
             {{ 'CUSTOMERS.FOOTER.NEWSLETTER.TITLE' | translate }}
           </h2>
 
-          <p class="mt-2 text-sm font-semibold text-[#a9aca5]">
+          <p class="mt-2 break-words text-xs font-semibold leading-5 text-[#a9aca5] min-[361px]:text-sm">
             {{ 'CUSTOMERS.FOOTER.NEWSLETTER.DESCRIPTION' | translate }}
           </p>
         </div>
 
-        <form class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
+        <form class="flex w-full min-w-0 max-w-md flex-col gap-3 sm:flex-row">
           <label class="relative min-w-0 flex-1">
             <span class="sr-only">
               {{ 'CUSTOMERS.FOOTER.NEWSLETTER.EMAIL_LABEL' | translate }}
@@ -27,11 +27,11 @@
             <i class="pi pi-envelope absolute start-4 top-1/2 -translate-y-1/2 text-sm text-[#a9aca5]"></i>
 
             <input type="email" placeholder="{{ 'CUSTOMERS.FOOTER.NEWSLETTER.EMAIL_PLACEHOLDER' | translate }}"
-              class="h-12 w-full rounded-2xl border border-white/15 bg-white/5 ps-11 pe-4 text-sm font-semibold text-white outline-none placeholder:text-[#8f928d] focus:border-[#7d8f70]" />
+              class="h-12 w-full min-w-0 max-w-full rounded-2xl border border-white/15 bg-white/5 ps-11 pe-4 text-sm font-semibold text-white outline-none placeholder:text-[#8f928d] focus:border-[#7d8f70]" />
           </label>
 
           <button type="button"
-            class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#7d8f70] px-6 text-sm font-black text-white transition hover:bg-[#6b7d5e]">
+            class="inline-flex h-12 w-full max-w-full items-center justify-center gap-2 rounded-2xl bg-[#7d8f70] px-5 text-sm font-black text-white transition hover:bg-[#6b7d5e] sm:w-auto sm:px-6">
             {{ 'CUSTOMERS.FOOTER.NEWSLETTER.SUBSCRIBE' | translate }}
             <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i>
           </button>
@@ -39,8 +39,8 @@
       </div>
     </section>
 
-    <div class="customer-page-container grid grid-cols-1 gap-10 py-12 md:grid-cols-2 lg:grid-cols-4">
-      <div>
+    <div class="customer-page-container grid min-w-0 max-w-full grid-cols-1 gap-8 py-10 [&>div]:min-w-0 min-[361px]:gap-10 min-[361px]:py-12 md:grid-cols-2 lg:grid-cols-4">
+      <div class="min-w-0">
         <a routerLink="/shop" class="inline-flex items-center gap-3 text-white">
           <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#7d8f70] text-sm font-black">
             N

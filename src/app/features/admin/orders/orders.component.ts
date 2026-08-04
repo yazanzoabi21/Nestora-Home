@@ -61,6 +61,9 @@ export class OrdersComponent implements OnInit {
   readonly selectedPayment = signal<PaymentStatusFilter>('all');
   readonly selectedDate = signal<OrderDateFilter>('all');
   readonly selectedOrder = signal<AdminOrder | null>(null);
+  readonly selectedOrderDelivery = signal<OrderDeliveryStatus>('Pending');
+  readonly selectedOrderPayment = signal<OrderPaymentStatus>('Pending');
+  readonly savingOrderStatus = signal(false);
   readonly langVersion = signal(0);
 
   readonly orderTableColumns = computed<AdminTableColumn[]>(() => {
@@ -85,8 +88,10 @@ export class OrdersComponent implements OnInit {
       { label: this.t('ORDERS.FILTERS.ALL_DELIVERIES'), value: 'all' },
       { label: this.statusLabel('Processing'), value: 'Processing' },
       { label: this.statusLabel('Delivered'), value: 'Delivered' },
+      { label: this.statusLabel('Completed'), value: 'Completed' },
       { label: this.statusLabel('Shipped'), value: 'Shipped' },
       { label: this.statusLabel('Returned'), value: 'Returned' },
+      { label: this.statusLabel('Cancelled'), value: 'Cancelled' },
       { label: this.statusLabel('Pending'), value: 'Pending' },
     ];
   });
@@ -100,6 +105,7 @@ export class OrdersComponent implements OnInit {
       { label: this.statusLabel('Pending'), value: 'Pending' },
       { label: this.statusLabel('Refunded'), value: 'Refunded' },
       { label: this.statusLabel('Unpaid'), value: 'Unpaid' },
+      { label: this.statusLabel('Failed'), value: 'Failed' },
     ];
   });
 
@@ -336,16 +342,44 @@ export class OrdersComponent implements OnInit {
     }
 
     this.selectedOrder.set(order);
+    this.selectedOrderDelivery.set(order.delivery);
+    this.selectedOrderPayment.set(order.payment);
   }
 
   closeOrderDetails(): void {
+    if (this.savingOrderStatus()) return;
     this.selectedOrder.set(null);
+  }
+
+  async saveOrderStatus(): Promise<void> {
+    const order = this.selectedOrder();
+    if (!order?.supabaseOrderId || this.savingOrderStatus()) return;
+
+    this.savingOrderStatus.set(true);
+    try {
+      await this.ordersService.updateOrderStatuses(
+        order.supabaseOrderId,
+        this.selectedOrderDelivery(),
+        this.selectedOrderPayment(),
+      );
+      this.toast.updated('Order status');
+      this.selectedOrder.set(null);
+      await this.loadOrders();
+    } catch (error) {
+      this.toast.failed(
+        'Order status update',
+        error instanceof Error ? error.message : 'Unable to update the order status.',
+      );
+    } finally {
+      this.savingOrderStatus.set(false);
+    }
   }
 
   paymentBadgeClass(status: OrderPaymentStatus): string {
     switch (status) {
       case 'Pending':
       case 'Unpaid':
+      case 'Failed':
         return 'bg-[#fff6e7] text-[#a66309]';
       case 'Refunded':
         return 'bg-[#edf4ff] text-[#2f66b3]';
@@ -363,7 +397,9 @@ export class OrdersComponent implements OnInit {
       case 'Pending':
         return 'bg-[#fff6e7] text-[#a66309]';
       case 'Returned':
+      case 'Cancelled':
         return 'bg-[#f5edff] text-[#7546a6]';
+      case 'Completed':
       case 'Delivered':
       default:
         return 'bg-[#e9f8ef] text-[#117047]';

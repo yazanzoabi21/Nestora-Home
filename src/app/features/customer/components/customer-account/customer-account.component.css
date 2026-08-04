@@ -1,0 +1,7 @@
+.account-tabs {
+  scrollbar-width: none;
+}
+
+.account-tabs::-webkit-scrollbar {
+  display: none;
+}

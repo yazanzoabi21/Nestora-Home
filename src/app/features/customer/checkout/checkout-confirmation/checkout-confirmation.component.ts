@@ -2,6 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
 } from '@angular/core';
@@ -31,4 +32,8 @@ export class CheckoutConfirmationComponent {
 
   readonly confirmation =
     input.required<CheckoutConfirmation | null>();
+
+  readonly pendingLoyaltyPoints = computed(
+    () => this.confirmation()?.order.loyaltyPointsEarned ?? 0,
+  );
 }

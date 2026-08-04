@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -16,6 +16,7 @@ import { AdminFormFieldComponent, AdminFormFieldValue } from '../../../shared/ui
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { AdminTableColumn, AdminTableComponent, AdminTableRow } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
+import { AdminPaginationComponent, PaginationPageSize } from '../../../shared/ui/admin-pagination';
 
 type MediaFilter = 'all' | 'product' | 'promotion' | 'brand';
 type MediaViewMode = 'grid' | 'list';
@@ -68,6 +69,7 @@ const EMPTY_MEDIA_FORM: MediaEditForm = {
   imports: [
     AdminFormFieldComponent,
     AdminFormModalComponent,
+    AdminPaginationComponent,
     AdminTableComponent,
     CommonModule,
     KpiCardComponent,
@@ -75,6 +77,7 @@ const EMPTY_MEDIA_FORM: MediaEditForm = {
   ],
   templateUrl: './media-library.component.html',
   styleUrl: './media-library.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MediaLibraryComponent implements OnInit {
   private readonly mediaLibraryService = inject(MediaLibraryService);
@@ -96,8 +99,10 @@ export class MediaLibraryComponent implements OnInit {
   readonly deletingAsset = signal<MediaAsset | null>(null);
   readonly failedImages = signal<Set<string>>(new Set());
   readonly mediaForm = signal<MediaEditForm>({ ...EMPTY_MEDIA_FORM });
+  readonly gridCurrentPage = signal(1);
+  readonly gridPageSize = signal<PaginationPageSize>(10);
 
-  readonly filterOptions: Array<{ labelKey: string; value: MediaFilter }> = [
+  readonly filterOptions: { labelKey: string; value: MediaFilter }[] = [
     { labelKey: 'MEDIA_LIBRARY.FILTERS.ALL', value: 'all' },
     { labelKey: 'MEDIA_LIBRARY.FILTERS.PRODUCTS', value: 'product' },
     { labelKey: 'MEDIA_LIBRARY.FILTERS.MARKETING', value: 'promotion' },
@@ -206,6 +211,17 @@ export class MediaLibraryComponent implements OnInit {
   });
 
   readonly tableRows = computed<MediaTableRow[]>(() => this.filteredAssets().map((asset) => this.toTableRow(asset)));
+  readonly paginatedGridAssets = computed(() => {
+    const assets = this.filteredAssets();
+    const pageSize = this.gridPageSize();
+    if (pageSize === 'all') return assets;
+    const start = (this.gridCurrentPage() - 1) * pageSize;
+    return assets.slice(start, start + pageSize);
+  });
+  readonly showGridPagination = computed(() => {
+    const pageSize = this.gridPageSize();
+    return pageSize === 'all' || this.filteredAssets().length > pageSize;
+  });
 
   async ngOnInit(): Promise<void> {
     this.watchQuerySearch();
@@ -294,10 +310,26 @@ export class MediaLibraryComponent implements OnInit {
 
   setFilter(filter: MediaFilter): void {
     this.selectedFilter.set(filter);
+    this.gridCurrentPage.set(1);
   }
 
   setViewMode(viewMode: MediaViewMode): void {
     this.viewMode.set(viewMode);
+    this.gridCurrentPage.set(1);
+  }
+
+  updateSearchTerm(value: unknown): void {
+    this.searchTerm.set(String(value ?? ''));
+    this.gridCurrentPage.set(1);
+  }
+
+  setGridPage(page: number): void {
+    this.gridCurrentPage.set(page);
+  }
+
+  setGridPageSize(pageSize: PaginationPageSize): void {
+    this.gridPageSize.set(pageSize);
+    this.gridCurrentPage.set(1);
   }
 
   openPreviewAsset(asset: MediaAsset | AdminTableRow): void {
@@ -554,6 +586,9 @@ export class MediaLibraryComponent implements OnInit {
   private watchQuerySearch(): void {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => this.searchTerm.set(params.get('q') ?? ''));
+      .subscribe((params) => {
+        this.searchTerm.set(params.get('q') ?? '');
+        this.gridCurrentPage.set(1);
+      });
   }
 }

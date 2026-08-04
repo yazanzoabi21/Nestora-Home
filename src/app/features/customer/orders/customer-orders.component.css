@@ -48,6 +48,14 @@
   gap: 0.9rem;
 }
 
+.orders-page__list:focus {
+  outline: none;
+}
+
+.orders-page__pagination {
+  margin-top: 1rem;
+}
+
 .order-skeleton {
   display: grid;
   min-height: 4.75rem;

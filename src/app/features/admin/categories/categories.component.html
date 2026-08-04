@@ -27,7 +27,7 @@
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
       <app-admin-form-field class="min-w-0 flex-1" type="search" name="categorySearch"
         placeholder="CATEGORIES.SEARCH_PLACEHOLDER" [value]="searchTerm()"
-        (valueChange)="searchTerm.set($any($event))" />
+        (valueChange)="updateSearchTerm($event)" />
 
       <div class="flex h-11 shrink-0 items-center gap-1 rounded-xl border border-[#e5ded2] bg-[#fbfaf8] p-1">
         <button type="button"
@@ -70,7 +70,7 @@
         <div class="category-tree-skeleton"></div>
         }
         } @else {
-        @for (category of rootCategories(); track category.id) {
+        @for (category of paginatedCategories(); track category.id) {
         @let children = childCategories(category.id);
         <div class="category-tree-group">
           <div class="category-tree-row" [class.category-tree-row-active]="isSelectedCategory(category)" role="button"
@@ -258,9 +258,14 @@
     </section>
     }
   </section>
+  @if (showPagination()) {
+  <app-admin-pagination class="mt-4 block" [currentPage]="currentPage()" [totalItems]="paginationItems().length"
+    [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setPage($event)"
+    (pageSizeChange)="setPageSize($event)" />
+  }
   } @else {
   <section class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-    @for (category of filteredCategories(); track category.id) {
+    @for (category of paginatedCategories(); track category.id) {
     <article class="category-grid-card" [class.category-grid-card-active]="isSelectedCategory(category)">
       <button type="button" class="category-grid-card-media" (click)="selectCategory(category)">
         @if (categoryImageUrl(category)) {
@@ -309,6 +314,11 @@
     </article>
     }
   </section>
+  @if (showPagination()) {
+  <app-admin-pagination class="mt-4 block" [currentPage]="currentPage()" [totalItems]="paginationItems().length"
+    [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setPage($event)"
+    (pageSizeChange)="setPageSize($event)" />
+  }
   }
 
   <app-admin-form-modal [isOpen]="isCategoryModalOpen()" [title]="categoryModalTitle()"

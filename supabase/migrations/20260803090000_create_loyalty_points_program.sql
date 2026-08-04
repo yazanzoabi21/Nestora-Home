@@ -3,16 +3,13 @@ create table if not exists public.loyalty_program_settings (
   is_enabled boolean not null default true,
   point_value_usd numeric(10,4) not null default 0.0200 check (point_value_usd > 0),
   points_earned_per_usd numeric(10,2) not null default 1.00 check (points_earned_per_usd >= 0),
-  minimum_redemption_points integer not null default 200 check (minimum_redemption_points >= 0),
+  minimum_redemption_points integer not null default 400 check (minimum_redemption_points >= 0),
   updated_at timestamptz not null default now()
 );
 
 insert into public.loyalty_program_settings (id)
 values (true)
 on conflict (id) do nothing;
-
-alter table public.products
-  add column if not exists is_loyalty_eligible boolean not null default true;
 
 alter table public.orders
   add column if not exists loyalty_points_redeemed integer not null default 0,
@@ -31,7 +28,10 @@ create table if not exists public.customer_loyalty_points_ledger (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete restrict,
   order_id uuid references public.orders(id) on delete restrict,
-  type text not null check (type in ('earn', 'redeem', 'refund', 'adjustment', 'reversal')),
+  order_item_id uuid references public.order_items(id) on delete restrict,
+  transaction_type text not null check (
+    transaction_type in ('earn', 'redeem', 'earn_reversal', 'redemption_refund', 'adjustment')
+  ),
   points_delta integer not null check (points_delta <> 0),
   balance_after integer not null,
   note text,
@@ -51,9 +51,16 @@ create index if not exists customer_loyalty_ledger_order_idx
   on public.customer_loyalty_points_ledger (order_id)
   where order_id is not null;
 
-create unique index if not exists customer_loyalty_ledger_order_type_key
-  on public.customer_loyalty_points_ledger (user_id, order_id, type)
-  where order_id is not null and type <> 'adjustment';
+create index if not exists customer_loyalty_ledger_created_idx
+  on public.customer_loyalty_points_ledger (created_at desc);
+
+create unique index if not exists customer_loyalty_ledger_order_transaction_key
+  on public.customer_loyalty_points_ledger (user_id, order_id, transaction_type)
+  where order_id is not null and order_item_id is null and transaction_type <> 'adjustment';
+
+create unique index if not exists customer_loyalty_ledger_item_transaction_key
+  on public.customer_loyalty_points_ledger (user_id, order_item_id, transaction_type)
+  where order_item_id is not null and transaction_type <> 'adjustment';
 
 create function public.prevent_loyalty_ledger_mutation()
 returns trigger
@@ -73,7 +80,8 @@ for each row execute function public.prevent_loyalty_ledger_mutation();
 create function public.append_customer_loyalty_ledger_entry(
   p_user_id uuid,
   p_order_id uuid,
-  p_type text,
+  p_order_item_id uuid,
+  p_transaction_type text,
   p_points_delta integer,
   p_note text
 )
@@ -86,7 +94,7 @@ declare
   v_balance integer;
   v_new_balance integer;
 begin
-  if p_type not in ('earn', 'redeem', 'refund', 'adjustment', 'reversal') then
+  if p_transaction_type not in ('earn', 'redeem', 'earn_reversal', 'redemption_refund', 'adjustment') then
     raise exception 'Invalid loyalty ledger entry type.';
   end if;
 
@@ -95,7 +103,11 @@ begin
   end if;
 
   insert into public.customer_loyalty_points_balances (user_id, balance)
-  values (p_user_id, 0)
+  values (
+    p_user_id,
+    coalesce((select sum(points_delta)::integer
+      from public.customer_loyalty_points_ledger where user_id = p_user_id), 0)
+  )
   on conflict (user_id) do nothing;
 
   select balance
@@ -109,14 +121,15 @@ begin
   end if;
 
   v_new_balance := v_balance + p_points_delta;
-  if p_type = 'redeem' and v_new_balance < 0 then
+  if p_transaction_type = 'redeem' and v_new_balance < 0 then
     raise exception 'Insufficient loyalty points.';
   end if;
 
   insert into public.customer_loyalty_points_ledger (
-    user_id, order_id, type, points_delta, balance_after, note
+    user_id, order_id, order_item_id, transaction_type, points_delta, balance_after, note
   ) values (
-    p_user_id, p_order_id, p_type, p_points_delta, v_new_balance, nullif(btrim(p_note), '')
+    p_user_id, p_order_id, p_order_item_id, p_transaction_type,
+    p_points_delta, v_new_balance, nullif(btrim(p_note), '')
   );
 
   update public.customer_loyalty_points_balances
@@ -128,7 +141,7 @@ begin
 end;
 $$;
 
-revoke all on function public.append_customer_loyalty_ledger_entry(uuid, uuid, text, integer, text)
+revoke all on function public.append_customer_loyalty_ledger_entry(uuid, uuid, uuid, text, integer, text)
   from public, anon, authenticated;
 
 create function public.process_order_loyalty_status_change()
@@ -152,11 +165,11 @@ begin
   if v_is_completed and not v_was_completed and new.loyalty_points_earned > 0
     and not exists (
       select 1 from public.customer_loyalty_points_ledger
-      where user_id = new.user_id and order_id = new.id and type = 'earn'
+      where user_id = new.user_id and order_id = new.id and transaction_type = 'earn'
     )
   then
     perform public.append_customer_loyalty_ledger_entry(
-      new.user_id, new.id, 'earn', new.loyalty_points_earned,
+      new.user_id, new.id, null, 'earn', new.loyalty_points_earned,
       'Points earned for completed order ' || coalesce(new.order_number, new.id::text)
     );
   end if;
@@ -164,23 +177,23 @@ begin
   if v_is_refunded and not v_was_refunded then
     if new.loyalty_points_redeemed > 0 and not exists (
       select 1 from public.customer_loyalty_points_ledger
-      where user_id = new.user_id and order_id = new.id and type = 'refund'
+      where user_id = new.user_id and order_id = new.id and transaction_type = 'redemption_refund'
     ) then
       perform public.append_customer_loyalty_ledger_entry(
-        new.user_id, new.id, 'refund', new.loyalty_points_redeemed,
+        new.user_id, new.id, null, 'redemption_refund', new.loyalty_points_redeemed,
         'Redeemed points restored for cancelled or refunded order ' || coalesce(new.order_number, new.id::text)
       );
     end if;
 
     if exists (
       select 1 from public.customer_loyalty_points_ledger
-      where user_id = new.user_id and order_id = new.id and type = 'earn'
+      where user_id = new.user_id and order_id = new.id and transaction_type = 'earn'
     ) and not exists (
       select 1 from public.customer_loyalty_points_ledger
-      where user_id = new.user_id and order_id = new.id and type = 'reversal'
+      where user_id = new.user_id and order_id = new.id and transaction_type = 'earn_reversal'
     ) then
       perform public.append_customer_loyalty_ledger_entry(
-        new.user_id, new.id, 'reversal', -new.loyalty_points_earned,
+        new.user_id, new.id, null, 'earn_reversal', -new.loyalty_points_earned,
         'Earned points reversed for cancelled or refunded order ' || coalesce(new.order_number, new.id::text)
       );
     end if;
@@ -234,13 +247,132 @@ stable
 set search_path = public, pg_temp
 as $$
   select coalesce(
-    (select balance from public.customer_loyalty_points_balances where user_id = auth.uid()),
+    (select sum(points_delta)::integer
+      from public.customer_loyalty_points_ledger
+      where user_id = auth.uid()),
     0
   );
 $$;
 
 revoke all on function public.get_my_loyalty_balance() from public;
 grant execute on function public.get_my_loyalty_balance() to authenticated;
+
+create function public.get_my_loyalty_points_history(
+  p_limit integer default 20,
+  p_offset integer default 0
+)
+returns table (
+  id uuid,
+  transaction_type text,
+  points_delta integer,
+  note text,
+  created_at timestamptz,
+  order_id uuid,
+  order_item_id uuid,
+  order_number text,
+  order_status text
+)
+language sql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+  select
+    ledger.id,
+    ledger.transaction_type,
+    ledger.points_delta,
+    ledger.note,
+    ledger.created_at,
+    ledger.order_id,
+    ledger.order_item_id,
+    orders.order_number,
+    orders.status
+  from public.customer_loyalty_points_ledger ledger
+  left join public.orders on orders.id = ledger.order_id
+  where auth.uid() is not null
+    and ledger.user_id = auth.uid()
+  order by ledger.created_at desc, ledger.id desc
+  limit least(greatest(coalesce(p_limit, 20), 1), 100)
+  offset greatest(coalesce(p_offset, 0), 0);
+$$;
+
+revoke all on function public.get_my_loyalty_points_history(integer, integer) from public;
+grant execute on function public.get_my_loyalty_points_history(integer, integer) to authenticated;
+
+create function public.get_my_redeemable_loyalty_products(
+  p_limit integer default 24,
+  p_offset integer default 0
+)
+returns table (
+  product_id uuid,
+  name text,
+  slug text,
+  image_url text,
+  effective_price numeric,
+  points_cost integer,
+  stock integer,
+  category_name text
+)
+language sql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+  with loyalty_context as (
+    select
+      settings.point_value_usd,
+      settings.minimum_redemption_points,
+      settings.is_enabled,
+      public.get_my_loyalty_balance() as balance
+    from public.loyalty_program_settings settings
+    where settings.id = true
+  ), priced_products as (
+    select
+      product.id,
+      product.name,
+      product.slug,
+      product.image_url,
+      case
+        when product.sale_price is not null
+          and product.sale_price > 0
+          and product.sale_price < product.price
+        then product.sale_price
+        else product.price
+      end as effective_price,
+      product.stock,
+      category.name as category_name,
+      context.point_value_usd,
+      context.minimum_redemption_points,
+      context.balance,
+      context.is_enabled
+    from public.products product
+    left join public.categories category on category.id = product.category_id
+    cross join loyalty_context context
+    where auth.uid() is not null
+      and product.is_active = true
+      and product.is_loyalty_eligible = true
+      and coalesce(product.stock, 0) > 0
+  )
+  select
+    priced.id,
+    priced.name,
+    priced.slug,
+    priced.image_url,
+    priced.effective_price,
+    ceil(priced.effective_price / priced.point_value_usd)::integer,
+    priced.stock,
+    priced.category_name
+  from priced_products priced
+  where priced.is_enabled
+    and ceil(priced.effective_price / priced.point_value_usd) >= priced.minimum_redemption_points
+    and ceil(priced.effective_price / priced.point_value_usd) <= priced.balance
+  order by ceil(priced.effective_price / priced.point_value_usd), priced.name
+  limit least(greatest(coalesce(p_limit, 24), 1), 100)
+  offset greatest(coalesce(p_offset, 0), 0);
+$$;
+
+revoke all on function public.get_my_redeemable_loyalty_products(integer, integer) from public;
+grant execute on function public.get_my_redeemable_loyalty_products(integer, integer) to authenticated;
 
 create function public.place_customer_order(
   p_cart_id uuid,
@@ -313,13 +445,42 @@ begin
     end if;
 
     insert into public.customer_loyalty_points_balances (user_id, balance)
-    values (v_user_id, 0)
+    values (
+      v_user_id,
+      coalesce((select sum(points_delta)::integer
+        from public.customer_loyalty_points_ledger where user_id = v_user_id), 0)
+    )
     on conflict (user_id) do nothing;
 
     select balance into v_customer_balance
     from public.customer_loyalty_points_balances
     where user_id = v_user_id
     for update;
+
+    select jsonb_build_object(
+      'order_id', orders.id,
+      'order_number', orders.order_number,
+      'status', orders.status,
+      'payment_status', orders.payment_status,
+      'subtotal', orders.subtotal,
+      'shipping_cost', orders.shipping,
+      'payment_fee', orders.payment_fee,
+      'discount_id', orders.discount_id,
+      'discount_code', orders.discount_code,
+      'discount_amount', orders.discount_amount,
+      'total', orders.total,
+      'loyalty_points_redeemed', orders.loyalty_points_redeemed,
+      'loyalty_points_earned', orders.loyalty_points_earned
+    )
+    into v_result
+    from public.orders
+    where orders.checkout_token = p_checkout_token
+      and orders.user_id = v_user_id
+      and orders.loyalty_checkout_processed = true;
+
+    if v_result is not null then
+      return v_result;
+    end if;
 
     foreach v_product_id in array p_redeem_product_ids loop
       select * into v_product from public.products where id = v_product_id for update;
@@ -435,7 +596,7 @@ begin
 
   if v_total_points_cost > 0 then
     perform public.append_customer_loyalty_ledger_entry(
-      v_user_id, v_order_id, 'redeem', -v_total_points_cost,
+      v_user_id, v_order_id, null, 'redeem', -v_total_points_cost,
       'Points redeemed for order ' || coalesce(v_result ->> 'order_number', v_order_id::text)
     );
   end if;
@@ -458,5 +619,86 @@ revoke all on function public.place_customer_order(
 grant execute on function public.place_customer_order(
   uuid, uuid, uuid, jsonb, jsonb, text, uuid, text, numeric, uuid, uuid[]
 ) to anon, authenticated;
+
+create function public.adjust_customer_loyalty_points(
+  p_user_id uuid,
+  p_points_delta integer,
+  p_note text
+)
+returns integer
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if not exists (
+    select 1
+    from public.profiles profile
+    join public.roles role on role.id = profile.role_id
+    where profile.id = auth.uid()
+      and role.name in ('admin', 'super_admin')
+      and profile.is_active = true
+  ) then
+    raise exception 'Admin access is required.';
+  end if;
+
+  if nullif(btrim(p_note), '') is null then
+    raise exception 'A note is required for a loyalty points adjustment.';
+  end if;
+
+  return public.append_customer_loyalty_ledger_entry(
+    p_user_id, null, null, 'adjustment', p_points_delta, p_note
+  );
+end;
+$$;
+
+revoke all on function public.adjust_customer_loyalty_points(uuid, integer, text) from public, anon;
+grant execute on function public.adjust_customer_loyalty_points(uuid, integer, text) to authenticated;
+
+create function public.update_admin_order_status(
+  p_order_id uuid,
+  p_status text,
+  p_payment_status text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if not exists (
+    select 1
+    from public.profiles profile
+    join public.roles role on role.id = profile.role_id
+    where profile.id = auth.uid()
+      and role.name in ('admin', 'super_admin')
+      and profile.is_active = true
+  ) then
+    raise exception 'Admin access is required.';
+  end if;
+
+  if lower(p_status) not in (
+    'pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'canceled', 'returned'
+  ) then
+    raise exception 'Unsupported order status.';
+  end if;
+
+  if lower(p_payment_status) not in ('pending', 'unpaid', 'paid', 'failed', 'refunded') then
+    raise exception 'Unsupported payment status.';
+  end if;
+
+  update public.orders
+  set status = lower(p_status),
+      payment_status = lower(p_payment_status)
+  where id = p_order_id;
+
+  if not found then
+    raise exception 'Order not found.';
+  end if;
+end;
+$$;
+
+revoke all on function public.update_admin_order_status(uuid, text, text) from public, anon;
+grant execute on function public.update_admin_order_status(uuid, text, text) to authenticated;
 
 notify pgrst, 'reload schema';

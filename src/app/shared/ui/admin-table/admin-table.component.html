@@ -4,315 +4,305 @@
       <thead class="bg-[#fbfaf8]">
         <tr class="border-b border-[#e5ded2] text-left text-xs font-bold uppercase tracking-[0.08em] text-[#9a9389]">
           @if (selectable) {
-            <th class="w-14 px-6 py-4">
-              <input
-                type="checkbox"
-                class="h-4 w-4 rounded border-[#d8d0c3] accent-[#5f6f43]"
-                [checked]="areVisibleRowsSelected()"
-                (change)="toggleVisibleRows()"
-                aria-label="Select visible rows"
-              />
-            </th>
+          <th class="w-14 px-6 py-4">
+            <input type="checkbox" class="h-4 w-4 rounded border-[#d8d0c3] accent-[#5f6f43]"
+              [checked]="areVisibleRowsSelected()" (change)="toggleVisibleRows()" aria-label="Select visible rows" />
+          </th>
           }
 
           @for (column of visibleColumns; track column.key) {
-            <th class="px-4 py-4">
-              <span class="inline-flex items-center gap-2">
-                {{ column.label | translate }}
-                @if (column.sortable) {
-                  <i class="pi pi-sort-alt text-[10px] text-[#b8afa3]"></i>
-                }
-              </span>
-            </th>
+          <th class="px-4 py-4">
+            <span class="inline-flex items-center gap-2">
+              {{ column.label | translate }}
+              @if (column.sortable) {
+              <i class="pi pi-sort-alt text-[10px] text-[#b8afa3]"></i>
+              }
+            </span>
+          </th>
           }
         </tr>
       </thead>
 
       <tbody>
         @if (loading) {
-          @for (_ of skeletonRows; track $index) {
-            <tr class="border-b border-[#eee8df] last:border-b-0">
-              @if (selectable) {
-                <td class="px-6 py-5">
-                  <span class="block h-4 w-4 animate-pulse rounded bg-[#eee8df]"></span>
-                </td>
-              }
-              @for (column of visibleColumns; track column.key) {
-                <td class="px-4 py-5">
-                  <span class="block h-4 w-full max-w-[160px] animate-pulse rounded bg-[#eee8df]"></span>
-                </td>
-              }
-            </tr>
+        @for (_ of skeletonRows; track $index) {
+        <tr class="border-b border-[#eee8df] last:border-b-0">
+          @if (selectable) {
+          <td class="px-6 py-5">
+            <span class="block h-4 w-4 animate-pulse rounded bg-[#eee8df]"></span>
+          </td>
           }
+          @for (column of visibleColumns; track column.key) {
+          <td class="px-4 py-5">
+            <span class="block h-4 w-full max-w-[160px] animate-pulse rounded bg-[#eee8df]"></span>
+          </td>
+          }
+        </tr>
+        }
         } @else if (rows.length === 0) {
-          <tr>
-            <td [attr.colspan]="colspan" class="px-6 py-12 text-center">
-              <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eef4e8] text-2xl text-[#5f6f43]">
-                <i class="pi pi-box"></i>
-              </div>
-              <h2 class="mt-4 text-xl font-extrabold text-[#1f2a1f]">{{ emptyTitle | translate }}</h2>
-              <p class="mx-auto mt-2 max-w-md text-sm font-medium text-[#8d877e]">{{ emptyText | translate }}</p>
-            </td>
-          </tr>
+        <tr>
+          <td [attr.colspan]="colspan" class="px-6 py-12 text-center">
+            <div
+              class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eef4e8] text-2xl text-[#5f6f43]">
+              <i class="pi pi-box"></i>
+            </div>
+            <h2 class="mt-4 text-xl font-extrabold text-[#1f2a1f]">{{ emptyTitle | translate }}</h2>
+            <p class="mx-auto mt-2 max-w-md text-sm font-medium text-[#8d877e]">{{ emptyText | translate }}</p>
+          </td>
+        </tr>
         } @else {
-          @for (row of visibleRows; track row.id) {
-            <tr class="border-b border-[#eee8df] transition hover:bg-[#f7f4ef] last:border-b-0">
-              @if (selectable) {
-                <td class="px-6 py-4">
-                  <input
-                    type="checkbox"
-                    class="h-4 w-4 rounded border-[#d8d0c3] accent-[#5f6f43]"
-                    [checked]="isSelected(row)"
-                    (change)="toggleRow(row)"
-                    [attr.aria-label]="'Select row ' + row.id"
-                  />
-                </td>
-              }
-
-              @for (column of visibleColumns; track column.key) {
-                <td class="px-4 py-4">
-                  @if (customCellTemplate(column.key); as template) {
-                    <ng-container
-                      [ngTemplateOutlet]="template"
-                      [ngTemplateOutletContext]="customCellContext(row, column)"
-                    ></ng-container>
-                  } @else {
-                  @switch (column.type) {
-                    @case ('codeName') {
-                      @let cell = codeNameCell(row, column.key);
-                      <div class="min-w-[240px]">
-                        <h2 class="text-base font-black text-[#182116]">{{ cell.title }}</h2>
-                        <span class="mt-2 inline-flex items-center gap-2 rounded-full border border-[#e5ded2] bg-[#f7f4ef] px-3 py-2 text-sm font-black uppercase text-[#182116]">
-                          <i class="pi pi-copy text-xs text-[#675f55]"></i>
-                          {{ cell.code }}
-                        </span>
-                      </div>
-                    }
-
-                    @case ('discountValue') {
-                      @let cell = discountValueCell(row, column.key);
-                      <div class="flex min-w-[160px] items-center gap-3">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" [ngClass]="cell.iconClass">
-                          <i [class]="cell.icon"></i>
-                        </span>
-                        <div class="min-w-0">
-                          <strong class="block text-base font-black text-[#182116]">{{ cell.value }}</strong>
-                          @if (cell.helper) {
-                            <small class="mt-1 block text-sm font-semibold text-[#8d877e]">{{ cell.helper }}</small>
-                          }
-                        </div>
-                      </div>
-                    }
-
-                    @case ('appliesTo') {
-                      @let cell = appliesToCell(row, column.key);
-                      <div class="min-w-[170px]">
-                        <strong class="block text-sm font-black text-[#182116]">{{ cell.main }}</strong>
-                        @if (cell.sub) {
-                          <small class="mt-1 block max-w-[180px] truncate text-sm font-semibold text-[#8d877e]">
-                            <span class="text-[#9a9389]">↳</span>
-                            {{ cell.sub }}
-                          </small>
-                        }
-                      </div>
-                    }
-
-                    @case ('usageProgress') {
-                      @let cell = usageProgressCell(row, column.key);
-                      <div class="min-w-[170px]">
-                        <div class="flex items-center justify-between gap-4 text-sm font-bold">
-                          <span class="text-[#8d877e]">{{ cell.current }}/{{ cell.limit || 'Unlimited' }}</span>
-                          @if (cell.limit) {
-                            <span class="text-[#5f6f43]">{{ cell.percent }}%</span>
-                          }
-                        </div>
-                        @if (cell.limit) {
-                          <div class="mt-2 h-2 overflow-hidden rounded-full bg-[#eeeae4]">
-                            <span class="block h-full rounded-full bg-[#6f805b]" [style.width.%]="cell.percent"></span>
-                          </div>
-                        }
-                        @if (cell.helper) {
-                          <small class="mt-1 block text-xs font-semibold text-[#8d877e]">{{ cell.helper }}</small>
-                        }
-                      </div>
-                    }
-
-                    @case ('dateRange') {
-                      @let cell = dateRangeCell(row, column.key);
-                      <div class="min-w-[150px] text-sm font-semibold text-[#182116]">
-                        <span class="flex items-center gap-2">
-                          <i class="pi pi-calendar text-xs text-[#9a9389]"></i>
-                          {{ cell.start }}
-                        </span>
-                        <span class="mt-2 block text-[#8d877e]">→ {{ cell.end }}</span>
-                      </div>
-                    }
-
-                    @case ('imageText') {
-                      @let cell = imageTextCell(row, column.key);
-                      <div class="admin-table-product-cell flex min-w-[260px] items-center gap-4">
-                        <div
-                          class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#e5ded2] bg-[#f7f4ef] text-sm font-extrabold text-[#5f6f43]"
-                          [style.background-color]="cell.avatarBackground || null"
-                          [style.color]="cell.avatarTextColor || null"
-                          [style.border-radius]="cell.avatarShape === 'circle' ? '9999px' : null"
-                        >
-                          @if (isIconValue(cell.imageUrl)) {
-                            <i [class]="cell.imageUrl"></i>
-                          } @else if (hasImageTextCellImage(row, cell)) {
-                            <img class="h-full w-full object-cover" [src]="cell.imageUrl" [alt]="cell.title" (error)="handleImageTextCellError(row, cell)" />
-                          } @else if (cell.imageFallbackLabel) {
-                            <span class="flex h-full w-full flex-col items-center justify-center gap-0.5 bg-[#fbfaf8] text-center">
-                              <i class="pi pi-image text-base"></i>
-                              <span class="text-[10px] font-extrabold leading-none text-[#8d877e]">{{ cell.imageFallbackLabel | translate }}</span>
-                            </span>
-                          } @else if (cell.initials) {
-                            <span class="text-sm font-black leading-none tracking-normal">{{ cell.initials }}</span>
-                          } @else {
-                            <i class="pi pi-box"></i>
-                          }
-                        </div>
-                        <div class="admin-table-product-info min-w-0">
-                          <div class="admin-table-product-title-row flex items-center gap-2">
-                            <p class="admin-table-product-name truncate text-base font-extrabold text-[#182116]">{{ cell.title }}</p>
-                            @if (cell.featured) {
-                              <i class="pi pi-star-fill text-xs text-[#d98916]"></i>
-                            }
-                          </div>
-                          @if (cell.subtitle) {
-                            <p class="admin-table-product-sku mt-1 text-sm font-medium text-[#9a9389]">{{ cell.subtitle }}</p>
-                          }
-                        </div>
-                      </div>
-                    }
-
-                    @case ('badge') {
-                      @let badge = badgeCell(row, column.key);
-                      @if (badge.label || badge.labelKey || badge.className) {
-                        <span class="admin-table-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold" [ngClass]="badge.className || 'bg-[#f0ebe4] text-[#675f55]'">
-                          <span class="h-2 w-2 rounded-full bg-current"></span>
-                          {{ (badge.labelKey ?? badge.label ?? '') | translate }}
-                        </span>
-                      } @else {
-                        <span class="admin-table-badge inline-flex items-center gap-2 rounded-full bg-[#f0ebe4] px-3 py-1.5 text-sm font-bold text-[#675f55]">
-                          <span class="h-2 w-2 rounded-full bg-current"></span>
-                          {{ textCell(row, column.key) }}
-                        </span>
-                      }
-                    }
-
-                    @case ('price') {
-                      @let cell = priceCell(row, column.key);
-                      @if (isPriceCellObject(cell)) {
-                        <span class="admin-table-price inline-flex flex-col gap-0.5">
-                          <span class="text-base font-extrabold text-[#182116]">{{ cell.value }}</span>
-                          @if (cell.originalValue) {
-                            <span class="text-xs font-semibold text-[#9a9389] line-through">{{ cell.originalValue }}</span>
-                          }
-                        </span>
-                      } @else {
-                        <span class="admin-table-price text-base font-extrabold text-[#182116]">{{ cell }}</span>
-                      }
-                    }
-
-                    @case ('stock') {
-                      @let cell = numberCell(row, column.key);
-                      @if (isNumberCellObject(cell)) {
-                        <span class="admin-table-stock flex items-center gap-3">
-                          <span class="h-6 w-1.5 rounded-full" [ngClass]="cell.barClass ?? stockBarClass(cell.status)"></span>
-                          <span class="text-base font-extrabold" [ngClass]="cell.textClass ?? stockTextClass(cell.status)">{{ cell.value }}</span>
-                        </span>
-                      } @else {
-                        <span class="admin-table-stock text-base font-semibold text-[#342f29]">{{ cell }}</span>
-                      }
-                    }
-
-                    @case ('number') {
-                      @let cell = numberCell(row, column.key);
-                      @if (isNumberCellObject(cell)) {
-                        <span class="admin-table-stock flex items-center gap-3">
-                          @if (cell.barClass) {
-                            <span class="h-6 w-1.5 rounded-full" [ngClass]="cell.barClass"></span>
-                          }
-                          <span class="text-base font-extrabold" [ngClass]="cell.textClass">{{ cell.value }}</span>
-                        </span>
-                      } @else {
-                        <span class="admin-table-stock text-base font-semibold text-[#342f29]">{{ cell }}</span>
-                      }
-                    }
-
-                    @case ('progress') {
-                      @let cell = progressCell(row, column.key);
-                      <div class="min-w-32">
-                        <span class="mb-1.5 block text-xs font-extrabold text-[#9a9389]">{{ cell.label ?? (cell.value + '%') }}</span>
-                        <div class="h-[0.45rem] overflow-hidden rounded-full bg-[#eeeae4]">
-                          <span
-                            class="block h-full min-w-1 rounded-full"
-                            [ngClass]="cell.barClass || 'bg-[#43b374]'"
-                            [style.width.%]="cell.value"
-                          ></span>
-                        </div>
-                      </div>
-                    }
-
-                    @case ('status') {
-                      @let badge = badgeCell(row, column.key);
-                      @let status = cellValue(row, column.key);
-                      @if (badge.label || badge.labelKey || badge.className) {
-                        <span class="admin-table-status inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold" [ngClass]="badge.className">
-                          <span class="h-2 w-2 rounded-full bg-current"></span>
-                          {{ (badge.labelKey ?? badge.label ?? '') | translate }}
-                        </span>
-                      } @else {
-                        <span class="admin-table-status inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold" [ngClass]="statusBadgeClass(status)">
-                          <span class="h-2 w-2 rounded-full bg-current"></span>
-                          {{ statusLabelKey(status) | translate }}
-                        </span>
-                      }
-                    }
-
-                    @case ('actions') {
-                      <div class="admin-table-actions flex items-center justify-end gap-2">
-                        @if (actionsMode === 'crud') {
-                        <button type="button" class="admin-table-icon-button text-[#3b78d8]" (click)="$event.stopPropagation(); rowView.emit(row)" aria-label="View row">
-                          <i class="pi pi-eye"></i>
-                        </button>
-                        }
-                        <button type="button" class="admin-table-icon-button text-[#5f6f43]" (click)="$event.stopPropagation(); rowEdit.emit(row)" aria-label="Edit row">
-                          <i class="pi pi-pencil"></i>
-                        </button>
-                        @if (actionsMode === 'crud') {
-                        <button type="button" class="admin-table-icon-button text-[#dc3f35]" (click)="$event.stopPropagation(); rowDelete.emit(row)" aria-label="Delete row">
-                          <i class="pi pi-trash"></i>
-                        </button>
-                        }
-                      </div>
-                    }
-
-                    @default {
-                      <span class="admin-table-text text-sm font-semibold text-[#342f29]">{{ textCell(row, column.key) }}</span>
-                    }
-                  }
-                  }
-                </td>
-              }
-            </tr>
+        @for (row of visibleRows; track row.id) {
+        <tr class="border-b border-[#eee8df] transition hover:bg-[#f7f4ef] last:border-b-0">
+          @if (selectable) {
+          <td class="px-6 py-4">
+            <input type="checkbox" class="h-4 w-4 rounded border-[#d8d0c3] accent-[#5f6f43]" [checked]="isSelected(row)"
+              (change)="toggleRow(row)" [attr.aria-label]="'Select row ' + row.id" />
+          </td>
           }
+
+          @for (column of visibleColumns; track column.key) {
+          <td class="px-4 py-4">
+            @if (customCellTemplate(column.key); as template) {
+            <ng-container [ngTemplateOutlet]="template"
+              [ngTemplateOutletContext]="customCellContext(row, column)"></ng-container>
+            } @else {
+            @switch (column.type) {
+            @case ('codeName') {
+            @let cell = codeNameCell(row, column.key);
+            <div class="min-w-[240px]">
+              <h2 class="text-base font-black text-[#182116]">{{ cell.title }}</h2>
+              <span
+                class="mt-2 inline-flex items-center gap-2 rounded-full border border-[#e5ded2] bg-[#f7f4ef] px-3 py-2 text-sm font-black uppercase text-[#182116]">
+                <i class="pi pi-copy text-xs text-[#675f55]"></i>
+                {{ cell.code }}
+              </span>
+            </div>
+            }
+
+            @case ('discountValue') {
+            @let cell = discountValueCell(row, column.key);
+            <div class="flex min-w-[160px] items-center gap-3">
+              <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" [ngClass]="cell.iconClass">
+                <i [class]="cell.icon"></i>
+              </span>
+              <div class="min-w-0">
+                <strong class="block text-base font-black text-[#182116]">{{ cell.value }}</strong>
+                @if (cell.helper) {
+                <small class="mt-1 block text-sm font-semibold text-[#8d877e]">{{ cell.helper }}</small>
+                }
+              </div>
+            </div>
+            }
+
+            @case ('appliesTo') {
+            @let cell = appliesToCell(row, column.key);
+            <div class="min-w-[170px]">
+              <strong class="block text-sm font-black text-[#182116]">{{ cell.main }}</strong>
+              @if (cell.sub) {
+              <small class="mt-1 block max-w-[180px] truncate text-sm font-semibold text-[#8d877e]">
+                <span class="text-[#9a9389]">↳</span>
+                {{ cell.sub }}
+              </small>
+              }
+            </div>
+            }
+
+            @case ('usageProgress') {
+            @let cell = usageProgressCell(row, column.key);
+            <div class="min-w-[170px]">
+              <div class="flex items-center justify-between gap-4 text-sm font-bold">
+                <span class="text-[#8d877e]">{{ cell.current }}/{{ cell.limit || 'Unlimited' }}</span>
+                @if (cell.limit) {
+                <span class="text-[#5f6f43]">{{ cell.percent }}%</span>
+                }
+              </div>
+              @if (cell.limit) {
+              <div class="mt-2 h-2 overflow-hidden rounded-full bg-[#eeeae4]">
+                <span class="block h-full rounded-full bg-[#6f805b]" [style.width.%]="cell.percent"></span>
+              </div>
+              }
+              @if (cell.helper) {
+              <small class="mt-1 block text-xs font-semibold text-[#8d877e]">{{ cell.helper }}</small>
+              }
+            </div>
+            }
+
+            @case ('dateRange') {
+            @let cell = dateRangeCell(row, column.key);
+            <div class="min-w-[150px] text-sm font-semibold text-[#182116]">
+              <span class="flex items-center gap-2">
+                <i class="pi pi-calendar text-xs text-[#9a9389]"></i>
+                {{ cell.start }}
+              </span>
+              <span class="mt-2 block text-[#8d877e]">→ {{ cell.end }}</span>
+            </div>
+            }
+
+            @case ('imageText') {
+            @let cell = imageTextCell(row, column.key);
+            <div class="admin-table-product-cell flex min-w-[260px] items-center gap-4">
+              <div
+                class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#e5ded2] bg-[#f7f4ef] text-sm font-extrabold text-[#5f6f43]"
+                [style.background-color]="cell.avatarBackground || null" [style.color]="cell.avatarTextColor || null"
+                [style.border-radius]="cell.avatarShape === 'circle' ? '9999px' : null">
+                @if (isIconValue(cell.imageUrl)) {
+                <i [class]="cell.imageUrl"></i>
+                } @else if (hasImageTextCellImage(row, cell)) {
+                <img class="h-full w-full object-cover" [src]="cell.imageUrl" [alt]="cell.title"
+                  (error)="handleImageTextCellError(row, cell)" />
+                } @else if (cell.imageFallbackLabel) {
+                <span class="flex h-full w-full flex-col items-center justify-center gap-0.5 bg-[#fbfaf8] text-center">
+                  <i class="pi pi-image text-base"></i>
+                  <span class="text-[10px] font-extrabold leading-none text-[#8d877e]">{{ cell.imageFallbackLabel |
+                    translate }}</span>
+                </span>
+                } @else if (cell.initials) {
+                <span class="text-sm font-black leading-none tracking-normal">{{ cell.initials }}</span>
+                } @else {
+                <i class="pi pi-box"></i>
+                }
+              </div>
+              <div class="admin-table-product-info min-w-0">
+                <div class="admin-table-product-title-row flex items-center gap-2">
+                  <p class="admin-table-product-name truncate text-base font-extrabold text-[#182116]">{{ cell.title }}
+                  </p>
+                  @if (cell.featured) {
+                  <i class="pi pi-star-fill text-xs text-[#d98916]"></i>
+                  }
+                </div>
+                @if (cell.subtitle) {
+                <p class="admin-table-product-sku mt-1 text-sm font-medium text-[#9a9389]">{{ cell.subtitle }}</p>
+                }
+              </div>
+            </div>
+            }
+
+            @case ('badge') {
+            @let badge = badgeCell(row, column.key);
+            @if (badge.label || badge.labelKey || badge.className) {
+            <span class="admin-table-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold"
+              [ngClass]="badge.className || 'bg-[#f0ebe4] text-[#675f55]'">
+              <span class="h-2 w-2 rounded-full bg-current"></span>
+              {{ (badge.labelKey ?? badge.label ?? '') | translate }}
+            </span>
+            } @else {
+            <span
+              class="admin-table-badge inline-flex items-center gap-2 rounded-full bg-[#f0ebe4] px-3 py-1.5 text-sm font-bold text-[#675f55]">
+              <span class="h-2 w-2 rounded-full bg-current"></span>
+              {{ textCell(row, column.key) }}
+            </span>
+            }
+            }
+
+            @case ('price') {
+            @let cell = priceCell(row, column.key);
+            @if (isPriceCellObject(cell)) {
+            <span class="admin-table-price inline-flex flex-col gap-0.5">
+              <span class="text-base font-extrabold text-[#182116]">{{ cell.value }}</span>
+              @if (cell.originalValue) {
+              <span class="text-xs font-semibold text-[#9a9389] line-through">{{ cell.originalValue }}</span>
+              }
+            </span>
+            } @else {
+            <span class="admin-table-price text-base font-extrabold text-[#182116]">{{ cell }}</span>
+            }
+            }
+
+            @case ('stock') {
+            @let cell = numberCell(row, column.key);
+            @if (isNumberCellObject(cell)) {
+            <span class="admin-table-stock flex items-center gap-3">
+              <span class="h-6 w-1.5 rounded-full" [ngClass]="cell.barClass ?? stockBarClass(cell.status)"></span>
+              <span class="text-base font-extrabold" [ngClass]="cell.textClass ?? stockTextClass(cell.status)">{{
+                cell.value }}</span>
+            </span>
+            } @else {
+            <span class="admin-table-stock text-base font-semibold text-[#342f29]">{{ cell }}</span>
+            }
+            }
+
+            @case ('number') {
+            @let cell = numberCell(row, column.key);
+            @if (isNumberCellObject(cell)) {
+            <span class="admin-table-stock flex items-center gap-3">
+              @if (cell.barClass) {
+              <span class="h-6 w-1.5 rounded-full" [ngClass]="cell.barClass"></span>
+              }
+              <span class="text-base font-extrabold" [ngClass]="cell.textClass">{{ cell.value }}</span>
+            </span>
+            } @else {
+            <span class="admin-table-stock text-base font-semibold text-[#342f29]">{{ cell }}</span>
+            }
+            }
+
+            @case ('progress') {
+            @let cell = progressCell(row, column.key);
+            <div class="min-w-32">
+              <span class="mb-1.5 block text-xs font-extrabold text-[#9a9389]">{{ cell.label ?? (cell.value + '%')
+                }}</span>
+              <div class="h-[0.45rem] overflow-hidden rounded-full bg-[#eeeae4]">
+                <span class="block h-full min-w-1 rounded-full" [ngClass]="cell.barClass || 'bg-[#43b374]'"
+                  [style.width.%]="cell.value"></span>
+              </div>
+            </div>
+            }
+
+            @case ('status') {
+            @let badge = badgeCell(row, column.key);
+            @let status = cellValue(row, column.key);
+            @if (badge.label || badge.labelKey || badge.className) {
+            <span class="admin-table-status inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold"
+              [ngClass]="badge.className">
+              <span class="h-2 w-2 rounded-full bg-current"></span>
+              {{ (badge.labelKey ?? badge.label ?? '') | translate }}
+            </span>
+            } @else {
+            <span class="admin-table-status inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold"
+              [ngClass]="statusBadgeClass(status)">
+              <span class="h-2 w-2 rounded-full bg-current"></span>
+              {{ statusLabelKey(status) | translate }}
+            </span>
+            }
+            }
+
+            @case ('actions') {
+            <div class="admin-table-actions flex items-center justify-end gap-2">
+              @if (actionsMode === 'crud') {
+              <button type="button" class="admin-table-icon-button text-[#3b78d8]"
+                (click)="$event.stopPropagation(); rowView.emit(row)" aria-label="View row">
+                <i class="pi pi-eye"></i>
+              </button>
+              }
+              <button type="button" class="admin-table-icon-button text-[#5f6f43]"
+                (click)="$event.stopPropagation(); rowEdit.emit(row)" aria-label="Edit row">
+                <i class="pi pi-pencil"></i>
+              </button>
+              @if (actionsMode === 'crud') {
+              <button type="button" class="admin-table-icon-button text-[#dc3f35]"
+                (click)="$event.stopPropagation(); rowDelete.emit(row)" aria-label="Delete row">
+                <i class="pi pi-trash"></i>
+              </button>
+              }
+            </div>
+            }
+
+            @default {
+            <span class="admin-table-text text-sm font-semibold text-[#342f29]">{{ textCell(row, column.key) }}</span>
+            }
+            }
+            }
+          </td>
+          }
+        </tr>
+        }
         }
       </tbody>
     </table>
   </div>
 
-  @if (!loading && rows.length > 0) {
-    <app-admin-pagination
-      [currentPage]="currentPage()"
-      [totalItems]="rows.length"
-      [pageSize]="pageSize"
-      [pageSizeOptions]="pageSizeOptions"
-      [showPageSize]="showPageSize"
-      [showSummary]="showPaginationSummary"
-      (pageChange)="setPage($event)"
-      (pageSizeChange)="setPageSize($event)"
-    />
+  @if (!loading && showPagination) {
+  <app-admin-pagination [currentPage]="currentPage()" [totalItems]="rows.length" [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions" [showPageSize]="showPageSize" [showSummary]="showPaginationSummary"
+    (pageChange)="setPage($event)" (pageSizeChange)="setPageSize($event)" />
   }
 </section>

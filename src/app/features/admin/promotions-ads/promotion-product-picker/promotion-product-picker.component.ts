@@ -11,6 +11,7 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { PromotionSelectableProduct } from '../../../../data-access';
+import { AdminPaginationComponent, PaginationPageSize } from '../../../../shared/ui/admin-pagination';
 
 type ProductPickerView = 'all' | 'selected';
 
@@ -19,12 +20,10 @@ interface ProductPickerCategory {
   value: string;
 }
 
-const PRODUCTS_PER_PAGE = 12;
-
 @Component({
   selector: 'app-promotion-product-picker',
   standalone: true,
-  imports: [CurrencyPipe, TranslatePipe],
+  imports: [AdminPaginationComponent, CurrencyPipe, TranslatePipe],
   templateUrl: './promotion-product-picker.component.html',
   styleUrl: './promotion-product-picker.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +40,7 @@ export class PromotionProductPickerComponent {
   readonly selectedCategory = signal('all');
   readonly view = signal<ProductPickerView>('all');
   readonly page = signal(1);
+  readonly pageSize = signal<PaginationPageSize>(10);
   readonly temporarySelectedProductIds = signal<string[]>([]);
 
   private wasOpen = false;
@@ -81,23 +81,28 @@ export class PromotionProductPickerComponent {
   });
 
   readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredProducts().length / PRODUCTS_PER_PAGE)),
+    Math.max(1, Math.ceil(this.filteredProducts().length / this.safePageSize())),
   );
 
   readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
 
   readonly paginatedProducts = computed(() => {
-    const start = (this.currentPage() - 1) * PRODUCTS_PER_PAGE;
-    return this.filteredProducts().slice(start, start + PRODUCTS_PER_PAGE);
+    if (this.pageSize() === 'all') return this.filteredProducts();
+    const start = (this.currentPage() - 1) * this.safePageSize();
+    return this.filteredProducts().slice(start, start + this.safePageSize());
   });
 
   readonly visibleRangeStart = computed(() =>
-    this.filteredProducts().length === 0 ? 0 : (this.currentPage() - 1) * PRODUCTS_PER_PAGE + 1,
+    this.filteredProducts().length === 0 ? 0 : (this.currentPage() - 1) * this.safePageSize() + 1,
   );
 
   readonly visibleRangeEnd = computed(() =>
-    Math.min(this.currentPage() * PRODUCTS_PER_PAGE, this.filteredProducts().length),
+    Math.min(this.currentPage() * this.safePageSize(), this.filteredProducts().length),
   );
+  readonly showPagination = computed(() => {
+    const pageSize = this.pageSize();
+    return pageSize === 'all' || this.filteredProducts().length > pageSize;
+  });
 
   constructor() {
     effect(() => {
@@ -145,12 +150,13 @@ export class PromotionProductPickerComponent {
     this.page.set(1);
   }
 
-  previousPage(): void {
-    this.page.update((page) => Math.max(1, page - 1));
+  setPage(page: number): void {
+    this.page.set(page);
   }
 
-  nextPage(): void {
-    this.page.set(Math.min(this.totalPages(), this.currentPage() + 1));
+  setPageSize(pageSize: PaginationPageSize): void {
+    this.pageSize.set(pageSize);
+    this.page.set(1);
   }
 
   displayPrice(product: PromotionSelectableProduct): number {
@@ -178,6 +184,11 @@ export class PromotionProductPickerComponent {
     this.selectedCategory.set('all');
     this.view.set('all');
     this.page.set(1);
+  }
+
+  private safePageSize(): number {
+    const pageSize = this.pageSize();
+    return pageSize === 'all' ? Math.max(this.filteredProducts().length, 1) : pageSize;
   }
 
   private categoryValue(product: PromotionSelectableProduct): string | null {

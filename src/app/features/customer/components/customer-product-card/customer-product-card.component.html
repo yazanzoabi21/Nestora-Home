@@ -64,11 +64,12 @@
 } @else {
 <article
   class="customer-product-card group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[1.15rem] border bg-white sm:rounded-3xl"
-  [class.customer-product-card--selected]="selected()">
+  [class.customer-product-card--selected]="selected()"
+  [class.customer-product-card--compact]="compact()">
   <a [routerLink]="detailUrl()"
     class="absolute inset-0 z-0 rounded-[1.15rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:rounded-3xl"
     [attr.aria-label]="'View details for ' + product().name"></a>
-  <div class="pointer-events-none relative h-[164px] overflow-hidden bg-[#f5f2ee] min-[390px]:h-[184px] sm:h-72">
+  <div class="customer-product-card__image pointer-events-none relative h-[164px] overflow-hidden bg-[#f5f2ee] min-[390px]:h-[184px] sm:h-72">
     <img [src]="product().imageUrl" [alt]="product().name" loading="lazy"
       class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
     <div class="absolute start-3 top-3 flex flex-col items-start gap-1.5 sm:start-4 sm:top-4 sm:gap-2">
@@ -175,10 +176,9 @@
       }
     </div>
   </div>
-  <div class="pointer-events-none relative z-[1] flex flex-1 flex-col gap-1.5 p-3.5 sm:gap-2 sm:p-5">
+  <div class="customer-product-card__content pointer-events-none relative z-[1] flex flex-1 flex-col gap-1.5 p-3.5 sm:gap-2 sm:p-5">
     <p class="truncate text-[0.72rem] font-bold text-[#6b7d5e] sm:text-sm">{{ product().brand }}</p>
-    <h2
-      class="line-clamp-2 min-h-[2.45rem] text-[0.95rem] font-bold leading-5 text-[#30362f] sm:min-h-0 sm:text-base sm:leading-6">
+    <h2 class="customer-product-card__title line-clamp-2 min-h-[2.45rem] text-[0.95rem] font-bold leading-5 text-[#30362f] sm:min-h-0 sm:text-base sm:leading-6">
       {{ product().name }}</h2>
     <div class="flex flex-wrap items-center gap-0.5 sm:gap-1">
       @for (star of starItems; track star) {

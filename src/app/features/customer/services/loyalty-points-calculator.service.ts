@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS: LoyaltyProgramSettings = {
   is_enabled: true,
   point_value_usd: 0.02,
   points_earned_per_usd: 1,
-  minimum_redemption_points: 200,
+  minimum_redemption_points: 400,
   updated_at: '',
 };
 
@@ -40,6 +40,35 @@ export class LoyaltyPointsCalculatorService {
         this.balanceState.set(0);
         this.clearRedemptions();
       }
+    });
+    effect((onCleanup) => {
+      const userId = this.auth.user()?.id;
+      if (!this.auth.isAuthenticated() || !userId) return;
+
+      const channel = this.supabase
+        .channel(`customer-loyalty-${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'customer_loyalty_points_ledger',
+            filter: `user_id=eq.${userId}`,
+          },
+          () => void this.refreshBalance().catch(() => undefined),
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'loyalty_program_settings',
+          },
+          () => void this.refresh().catch(() => undefined),
+        )
+        .subscribe();
+
+      onCleanup(() => void this.supabase.removeChannel(channel));
     });
   }
 
