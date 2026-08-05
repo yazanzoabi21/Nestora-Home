@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
+import { CustomerAuthService } from '../../../core/services/auth';
 import {
   CustomerLoyaltyTransaction,
   LoyaltyRedeemableProduct,
@@ -34,13 +35,21 @@ interface RedeemableProductRpcRow {
   category_name?: unknown;
 }
 
+interface PendingLoyaltyOrderRow {
+  status?: unknown;
+  loyalty_points_earned?: unknown;
+  loyalty_checkout_processed?: unknown;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CustomerLoyaltyPointsService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
+  private readonly auth = inject(CustomerAuthService);
   readonly calculator = inject(LoyaltyPointsCalculatorService);
 
   readonly transactions = signal<CustomerLoyaltyTransaction[]>([]);
   readonly redeemableProducts = signal<LoyaltyRedeemableProduct[]>([]);
+  readonly pendingPoints = signal(0);
   readonly loading = signal(false);
   readonly loadingMore = signal(false);
   readonly loadingMoreProducts = signal(false);
@@ -53,12 +62,14 @@ export class CustomerLoyaltyPointsService {
     this.error.set(null);
     try {
       await this.calculator.refresh();
-      const [history, products] = await Promise.all([
+      const [history, products, pendingPoints] = await Promise.all([
         this.fetchHistory(0),
         this.fetchRedeemableProducts(0),
+        this.fetchPendingPoints(),
       ]);
       this.transactions.set(history);
       this.redeemableProducts.set(products);
+      this.pendingPoints.set(pendingPoints);
       this.hasMoreHistory.set(history.length === HISTORY_PAGE_SIZE);
       this.hasMoreRedeemableProducts.set(
         products.length === REDEEMABLE_PRODUCTS_PAGE_SIZE,
@@ -120,6 +131,33 @@ export class CustomerLoyaltyPointsService {
     });
     if (error) throw new Error(error.message);
     return (Array.isArray(data) ? data : []).map((row) => this.mapProductRow(row));
+  }
+
+  private async fetchPendingPoints(): Promise<number> {
+    const userId = await this.auth.getCurrentUserId();
+    if (!userId) return 0;
+
+    const { data, error } = await this.supabase
+      .from('orders')
+      .select('status,loyalty_points_earned,loyalty_checkout_processed')
+      .eq('user_id', userId);
+    if (error) throw new Error(error.message);
+
+    const terminalStatuses = new Set([
+      'delivered',
+      'completed',
+      'cancelled',
+      'canceled',
+      'refunded',
+      'returned',
+    ]);
+
+    return (data ?? []).reduce((total, value) => {
+      const row = value as PendingLoyaltyOrderRow;
+      const status = typeof row.status === 'string' ? row.status.trim().toLowerCase() : 'pending';
+      if (terminalStatuses.has(status) || row.loyalty_checkout_processed !== true) return total;
+      return total + this.nonNegativeInteger(row.loyalty_points_earned, 'pending points');
+    }, 0);
   }
 
   private mapHistoryRow(value: unknown): CustomerLoyaltyTransaction {

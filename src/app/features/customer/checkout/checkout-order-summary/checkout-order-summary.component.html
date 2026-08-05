@@ -99,4 +99,43 @@
       </dd>
     </div>
   </dl>
+
+  @if (!authenticated() || loyaltyPoints() > 0) {
+  <section class="mt-5 rounded-2xl border border-[#d9e2d2] bg-[#f5f2ec] p-4"
+    [attr.aria-label]="'CUSTOMER.CHECKOUT.SUMMARY.LOYALTY_TITLE' | translate">
+    <div class="flex items-start gap-3">
+      <span class="grid size-9 shrink-0 place-items-center rounded-full bg-[#718369] text-sm text-white"
+        aria-hidden="true">
+        <i class="pi pi-star-fill"></i>
+      </span>
+      <div class="min-w-0">
+        @if (authenticated()) {
+        <p class="text-sm font-extrabold leading-6 text-[#3f503a]">
+          {{ 'CUSTOMER.CHECKOUT.SUMMARY.LOYALTY_AUTHENTICATED' | translate: { points: loyaltyPoints() } }}
+        </p>
+        } @else {
+        <p class="text-sm font-extrabold leading-6 text-[#3f503a]">
+          {{ 'CUSTOMER.LOYALTY.GUEST_CHECKOUT_MESSAGE' | translate }}
+        </p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <a class="inline-flex min-h-9 items-center rounded-lg bg-[#718369] px-3 text-xs font-black text-white"
+            routerLink="/auth/customer-login" [queryParams]="{ returnUrl: '/shop/checkout' }">
+            {{ 'CUSTOMER.LOYALTY.SIGN_IN' | translate }}
+          </a>
+          <a class="inline-flex min-h-9 items-center rounded-lg border border-[#718369] px-3 text-xs font-black text-[#53674d]"
+            routerLink="/auth/customer-register" [queryParams]="{ returnUrl: '/shop/checkout' }">
+            {{ 'CUSTOMER.LOYALTY.CREATE_ACCOUNT' | translate }}
+          </a>
+        </div>
+        }
+
+        @if (cashOnDelivery()) {
+        <p class="mt-2 text-xs font-bold leading-5 text-[#6f7569]">
+          {{ 'CUSTOMER.CHECKOUT.SUMMARY.LOYALTY_COD' | translate }}
+        </p>
+        }
+      </div>
+    </div>
+  </section>
+  }
 </aside>

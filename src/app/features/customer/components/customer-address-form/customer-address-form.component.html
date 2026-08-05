@@ -1,0 +1,124 @@
+<form class="grid grid-cols-2 gap-x-4 gap-y-3.5 max-sm:grid-cols-1" [formGroup]="form" (ngSubmit)="submit()">
+
+  <label class="grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f]">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.LABEL' | translate }} *</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="label" autocomplete="off" />
+    @if (error('label')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('label') }}</small>
+    }
+  </label>
+
+  <label class="grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f]">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.FULL_NAME' | translate }} *</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="fullName" autocomplete="name" />
+    @if (error('fullName')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('fullName') }}</small>
+    }
+  </label>
+
+  <label class="grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f]">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.PHONE' | translate }} *</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="phone" type="tel" autocomplete="tel" />
+    @if (error('phone')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('phone') }}</small>
+    }
+  </label>
+
+  <label class="col-span-full grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f] max-sm:col-span-1">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.STREET_ADDRESS' | translate }} *</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="streetAddress" autocomplete="street-address" />
+    @if (error('streetAddress')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('streetAddress') }}</small>
+    }
+  </label>
+
+  <label class="col-span-full grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f] max-sm:col-span-1">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.APARTMENT' | translate }}</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="apartmentOrBuilding" autocomplete="address-line2" />
+    @if (error('apartmentOrBuilding')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('apartmentOrBuilding') }}</small>
+    }
+  </label>
+
+  <label class="grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f]">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.CITY' | translate }} *</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="city" autocomplete="address-level2" />
+    @if (error('city')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('city') }}</small>
+    }
+  </label>
+
+  <label class="grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f]">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.AREA' | translate }}</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="areaOrDistrict" autocomplete="address-level1" />
+    @if (error('areaOrDistrict')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('areaOrDistrict') }}</small>
+    }
+  </label>
+
+  <label class="grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f]">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.COUNTRY' | translate }} *</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="country" autocomplete="country-name" />
+    @if (error('country')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('country') }}</small>
+    }
+  </label>
+
+  <label class="grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f]">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.POSTAL_CODE' | translate }}</span>
+    <input
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="postalCode" autocomplete="postal-code" />
+    @if (error('postalCode')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('postalCode') }}</small>
+    }
+  </label>
+
+  <label class="col-span-full grid gap-[.4rem] text-[.78rem] font-bold text-[#4f5a4f] max-sm:col-span-1">
+    <span>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.DELIVERY_NOTES' | translate }}</span>
+    <textarea
+      class="w-full rounded-[.8rem] border border-[#dfd6cc] bg-white px-[.85rem] py-[.72rem] font-[inherit] font-medium text-[#1f2a1f] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#718369] focus:shadow-[0_0_0_3px_rgba(113,131,105,0.15)]"
+      formControlName="deliveryNotes" rows="3"></textarea>
+    @if (error('deliveryNotes')) {
+    <small class="text-[.7rem] text-[#b43f4d]">{{ error('deliveryNotes') }}</small>
+    }
+  </label>
+
+  <label
+    class="col-span-full flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-[#344134] max-sm:col-span-1">
+    <input class="size-4 accent-[#718369]" type="checkbox" formControlName="isDefault" />
+    {{ 'CUSTOMER.ACCOUNT.ADDRESSES.MAKE_DEFAULT' | translate }}
+  </label>
+
+  <!-- <div class="col-span-full mt-2 flex justify-end gap-3 max-sm:col-span-1 max-sm:flex-col-reverse">
+    <button
+      class="inline-flex min-h-11 min-w-[8.5rem] items-center justify-center gap-2 rounded-[.8rem] border border-[#dfd6cc] bg-white px-4 py-[.65rem] text-[.85rem] font-extrabold text-[#344134] transition-[background-color,opacity] duration-150 hover:not-disabled:bg-[#f7f5f1] disabled:cursor-wait disabled:opacity-60"
+      type="button" [disabled]="saving()" (click)="dismissed.emit()">
+      {{ 'CUSTOMER.ACCOUNT.ADDRESSES.CANCEL' | translate }}
+    </button>
+
+    <button
+      class="inline-flex min-h-11 min-w-[8.5rem] items-center justify-center gap-2 rounded-[.8rem] border border-[#718369] bg-[#718369] px-4 py-[.65rem] text-[.85rem] font-extrabold text-white transition-[background-color,opacity] duration-150 hover:not-disabled:bg-[#607254] disabled:cursor-wait disabled:opacity-60"
+      type="submit" [disabled]="saving()">
+      @if (saving()) { <i class="pi pi-spinner pi-spin" aria-hidden="true"></i> }
+      {{ (address() ? 'CUSTOMER.ACCOUNT.ADDRESSES.SAVE_CHANGES' : 'CUSTOMER.ACCOUNT.ADDRESSES.SAVE_ADDRESS') | translate
+      }}
+    </button>
+  </div> -->
+</form>

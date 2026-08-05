@@ -202,7 +202,8 @@
           [attr.aria-label]="'CUSTOMER.LOYALTY.TITLE' | translate">
           <app-customer-loyalty-points-badge mode="detail"
             [pointsEarned]="loyaltyPreview().pointsEarned" [rewardCost]="loyaltyPreview().rewardCost"
-            [loading]="loyalty.loading()" />
+            [loading]="loyalty.loading()" [authenticated]="customerAuth.isAuthenticated()"
+            [returnUrl]="returnUrl" />
 
           <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm font-bold text-[#53604f]">
             @if (customerAuth.isAuthenticated()) {

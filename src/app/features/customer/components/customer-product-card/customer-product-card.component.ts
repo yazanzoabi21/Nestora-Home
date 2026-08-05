@@ -1,10 +1,11 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, inject, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CustomerProduct } from '../../models';
 import { LoyaltyPointsCalculatorService } from '../../services';
 import { CustomerLoyaltyPointsBadgeComponent } from '../../../../shared/components/customer-loyalty-points-badge';
+import { CustomerAuthService } from '../../../../core/services/auth';
 
 export type CustomerProductCardView = 'grid' | 'list';
 
@@ -14,9 +15,12 @@ export type CustomerProductCardView = 'grid' | 'list';
   imports: [CurrencyPipe, CustomerLoyaltyPointsBadgeComponent, RouterLink, TranslatePipe],
   templateUrl: './customer-product-card.component.html',
   styleUrl: './customer-product-card.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerProductCardComponent {
   readonly loyalty = inject(LoyaltyPointsCalculatorService);
+  readonly customerAuth = inject(CustomerAuthService);
+  private readonly router = inject(Router);
   readonly product = input.required<CustomerProduct>();
   readonly view = input<CustomerProductCardView>('grid');
   readonly wishlistActive = input(false);
@@ -49,6 +53,10 @@ export class CustomerProductCardComponent {
       !this.cartLoading() &&
       this.canAddToCart(),
   );
+
+  loyaltyReturnUrl(): string {
+    return this.router.url;
+  }
 
   decreaseCartQuantity(event: Event): void {
     event.preventDefault();

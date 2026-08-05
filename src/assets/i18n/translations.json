@@ -1606,6 +1606,13 @@
         "DETAILS_TITLE": "Order Details",
         "DETAILS_SUBTITLE": "Review the selected order"
       },
+      "LOYALTY": {
+        "CREDIT_WARNING": "This will automatically credit {{points}} loyalty points to the customer.",
+        "CONFIRM_TITLE": "Confirm loyalty credit",
+        "CONFIRM_SUBTITLE": "Delivery confirmation awards points automatically",
+        "CONFIRM_MESSAGE": "Saving this status will automatically credit {{points}} loyalty points to the customer.",
+        "CONFIRM_ACTION": "Confirm and save"
+      },
       "FIELDS": {
         "ORDER_NUMBER": "Order Number",
         "CUSTOMER_NAME": "Customer Name",
@@ -1819,6 +1826,14 @@
         "TITLE": "Nestora Loyalty Points",
         "LOADING": "Loading points",
         "EARN_POINTS": "Earn {{points}} points",
+        "SIGN_IN_TO_EARN": "Sign in to earn {{points}} points",
+        "SIGN_IN_TOOLTIP": "Create or sign in to your account to collect loyalty points.",
+        "SIGN_IN": "Sign in",
+        "CREATE_ACCOUNT": "Create account",
+        "CART_TITLE": "Loyalty points",
+        "CART_GUEST": "Sign in or create an account to earn {{points}} points from this order.",
+        "GUEST_CHECKOUT_MESSAGE": "You can place your order as a guest. Sign in or create an account before checkout to earn loyalty points. Points are credited after delivery.",
+        "CART_AUTHENTICATED": "You will earn {{points}} points after your order is delivered.",
         "FREE_WITH": "Free with {{points}} points",
         "AVAILABLE_BALANCE": "Available balance: {{points}} points",
         "REDEEM_WITH_POINTS": "Redeem with {{points}} points",
@@ -1829,6 +1844,8 @@
         "PAGE": {
           "TITLE": "My Nestora Points",
           "AVAILABLE": "Available balance",
+          "PENDING": "Pending points",
+          "PENDING_NOTE": "Pending points become available after your order is delivered.",
           "POINTS": "Nestora Points",
           "POINTS_VALUE": "{{value}} points",
           "ORDER_REFERENCE": "Order {{orderNumber}}",
@@ -1927,6 +1944,12 @@
         },
         "SHIPPING": {
           "TITLE": "Shipping Information",
+          "SAVED_ADDRESSES": "Saved addresses",
+          "ADD_NEW_ADDRESS": "Add a new address",
+          "LOADING_ADDRESSES": "Loading saved addresses...",
+          "ADDRESSES_ERROR": "Saved addresses could not be loaded. You can still enter an address below.",
+          "SAVE_FOR_FUTURE": "Save this address for future orders",
+          "ADDRESS_LABEL": "Address label (Home, Office, etc.)",
           "CONTINUE": "Continue to Delivery",
           "FIELDS": {
             "FIRST_NAME": "First Name",
@@ -1985,7 +2008,11 @@
           "DELIVERY": "Delivery",
           "PAYMENT_FEE": "Payment fee",
           "TOTAL": "Total",
-          "FREE": "Free"
+          "FREE": "Free",
+          "LOYALTY_TITLE": "Loyalty points",
+          "LOYALTY_GUEST": "This is a guest order. Sign in or create an account before placing your order to collect {{points}} points.",
+          "LOYALTY_AUTHENTICATED": "{{points}} points pending. They will be added automatically after your order is delivered.",
+          "LOYALTY_COD": "Pay on delivery. Points are credited after delivery is confirmed."
         },
         "CONFIRMATION": {
           "TITLE": "Order Confirmed!",
@@ -1998,6 +2025,7 @@
           "TOTAL_PAID": "Total Paid",
           "LOYALTY_PENDING_TITLE": "You’ll earn {{points}} Nestora Points",
           "LOYALTY_PENDING_DETAIL": "Points are added after your order is delivered.",
+          "LOYALTY_PENDING": "{{points}} points pending — available after delivery.",
           "VIEW_ORDERS": "View Orders",
           "BACK_HOME": "Back to Home"
         }
@@ -2047,6 +2075,41 @@
           "ADDRESSES": "Addresses",
           "SETTINGS": "Settings"
         },
+        "ADDRESSES": {
+          "EYEBROW": "Your account",
+          "TITLE": "Saved Addresses",
+          "ADD": "Add",
+          "ADD_NEW": "Add New Address",
+          "ADD_TITLE": "Add New Address",
+          "EDIT_TITLE": "Edit Address",
+          "EDIT": "Edit",
+          "REMOVE": "Remove",
+          "REMOVE_TITLE": "Remove address?",
+          "REMOVE_TEXT": "Remove {{label}} from your saved addresses? Historical orders will not be affected.",
+          "SET_DEFAULT": "Set as Default",
+          "DEFAULT": "Default",
+          "MAKE_DEFAULT": "Make this my default address",
+          "LABEL": "Label (Home, Office, etc.)",
+          "FULL_NAME": "Full name",
+          "PHONE": "Phone",
+          "STREET_ADDRESS": "Street address",
+          "APARTMENT": "Apartment or building",
+          "CITY": "City",
+          "AREA": "Area or district",
+          "COUNTRY": "Country",
+          "POSTAL_CODE": "Postal code",
+          "DELIVERY_NOTES": "Delivery notes",
+          "SAVE_ADDRESS": "Save Address",
+          "SAVE_CHANGES": "Save Changes",
+          "CANCEL": "Cancel",
+          "CLOSE": "Close address form",
+          "EMPTY_TITLE": "No saved addresses yet",
+          "EMPTY_TEXT": "Save a delivery address to move through checkout faster next time.",
+          "LOAD_ERROR": "We could not load your saved addresses.",
+          "RETRY": "Try again",
+          "ERROR_REQUIRED": "This field is required.",
+          "ERROR_MAX_LENGTH": "This value is too long."
+        },
         "ORDERS": {
           "EYEBROW": "Your account",
           "TITLE": "Order History",
@@ -2075,6 +2138,11 @@
           "PAYMENT_STATUS_LABEL": "Payment status",
           "DELIVERY_ADDRESS": "Delivery address",
           "DISCOUNT_CODE": "Discount code",
+          "LOYALTY_LABEL": "Loyalty points",
+          "LOYALTY_PENDING": "{{points}} points pending",
+          "LOYALTY_CREDITED": "{{points}} points credited",
+          "LOYALTY_PENDING_DETAIL": "{{points}} points pending — available after delivery.",
+          "LOYALTY_CREDITED_DETAIL": "{{points}} points credited to your available balance.",
           "STATUS": {
             "PENDING": "Pending",
             "PROCESSING": "Processing",
@@ -4114,6 +4182,13 @@
         "DETAILS_TITLE": "تفاصيل الطلب",
         "DETAILS_SUBTITLE": "مراجعة الطلب المحدد"
       },
+      "LOYALTY": {
+        "CREDIT_WARNING": "سيؤدي هذا تلقائياً إلى إضافة {{points}} نقطة ولاء إلى رصيد العميل.",
+        "CONFIRM_TITLE": "تأكيد إضافة نقاط الولاء",
+        "CONFIRM_SUBTITLE": "يؤدي تأكيد التسليم إلى منح النقاط تلقائياً",
+        "CONFIRM_MESSAGE": "سيؤدي حفظ هذه الحالة تلقائياً إلى إضافة {{points}} نقطة ولاء إلى رصيد العميل.",
+        "CONFIRM_ACTION": "تأكيد وحفظ"
+      },
       "FIELDS": {
         "ORDER_NUMBER": "رقم الطلب",
         "CUSTOMER_NAME": "اسم العميل",
@@ -4290,6 +4365,14 @@
         "TITLE": "نقاط ولاء نيستورا",
         "LOADING": "جارٍ تحميل النقاط",
         "EARN_POINTS": "اكسب {{points}} نقطة",
+        "SIGN_IN_TO_EARN": "سجّل الدخول لكسب {{points}} نقطة",
+        "SIGN_IN_TOOLTIP": "أنشئ حساباً أو سجّل الدخول لجمع نقاط الولاء.",
+        "SIGN_IN": "تسجيل الدخول",
+        "CREATE_ACCOUNT": "إنشاء حساب",
+        "CART_TITLE": "نقاط الولاء",
+        "CART_GUEST": "سجّل الدخول أو أنشئ حساباً لكسب {{points}} نقطة من هذا الطلب.",
+        "GUEST_CHECKOUT_MESSAGE": "يمكنك إتمام طلبك كضيف. سجّل الدخول أو أنشئ حساباً قبل الدفع لكسب نقاط الولاء. تُضاف النقاط بعد التسليم.",
+        "CART_AUTHENTICATED": "ستكسب {{points}} نقطة بعد تسليم طلبك.",
         "FREE_WITH": "مجاناً مقابل {{points}} نقطة",
         "AVAILABLE_BALANCE": "الرصيد المتاح: {{points}} نقطة",
         "REDEEM_WITH_POINTS": "استبدل مقابل {{points}} نقطة",
@@ -4300,6 +4383,8 @@
         "PAGE": {
           "TITLE": "نقاط نيستورا الخاصة بي",
           "AVAILABLE": "الرصيد المتاح",
+          "PENDING": "النقاط المعلّقة",
+          "PENDING_NOTE": "تصبح النقاط المعلّقة متاحة بعد تسليم طلبك.",
           "POINTS": "نقاط نيستورا",
           "POINTS_VALUE": "{{value}} نقطة",
           "ORDER_REFERENCE": "الطلب {{orderNumber}}",
@@ -4421,6 +4506,12 @@
         },
         "SHIPPING": {
           "TITLE": "معلومات الشحن",
+          "SAVED_ADDRESSES": "العناوين المحفوظة",
+          "ADD_NEW_ADDRESS": "إضافة عنوان جديد",
+          "LOADING_ADDRESSES": "جارٍ تحميل العناوين المحفوظة...",
+          "ADDRESSES_ERROR": "تعذر تحميل العناوين المحفوظة. لا يزال بإمكانك إدخال عنوان أدناه.",
+          "SAVE_FOR_FUTURE": "حفظ هذا العنوان للطلبات المستقبلية",
+          "ADDRESS_LABEL": "تسمية العنوان (المنزل، المكتب، إلخ)",
           "CONTINUE": "المتابعة إلى التوصيل",
           "FIELDS": {
             "FIRST_NAME": "الاسم الأول",
@@ -4479,7 +4570,11 @@
           "DELIVERY": "التوصيل",
           "PAYMENT_FEE": "رسوم الدفع",
           "TOTAL": "الإجمالي",
-          "FREE": "مجاني"
+          "FREE": "مجاني",
+          "LOYALTY_TITLE": "نقاط الولاء",
+          "LOYALTY_GUEST": "هذا طلب ضيف. سجّل الدخول أو أنشئ حساباً قبل تأكيد الطلب لجمع {{points}} نقطة.",
+          "LOYALTY_AUTHENTICATED": "{{points}} نقطة معلّقة. ستُضاف تلقائياً بعد تسليم طلبك.",
+          "LOYALTY_COD": "الدفع عند الاستلام. تُضاف النقاط بعد تأكيد التسليم."
         },
         "CONFIRMATION": {
           "TITLE": "تم تأكيد الطلب!",
@@ -4492,6 +4587,7 @@
           "TOTAL_PAID": "المبلغ المدفوع",
           "LOYALTY_PENDING_TITLE": "ستكسب {{points}} من نقاط نيستورا",
           "LOYALTY_PENDING_DETAIL": "تُضاف النقاط بعد تسليم طلبك.",
+          "LOYALTY_PENDING": "{{points}} نقطة معلّقة — تصبح متاحة بعد التسليم.",
           "VIEW_ORDERS": "عرض الطلبات",
           "BACK_HOME": "العودة إلى الرئيسية"
         }
@@ -4517,6 +4613,41 @@
           "WISHLIST": "المفضلة",
           "ADDRESSES": "العناوين",
           "SETTINGS": "الإعدادات"
+        },
+        "ADDRESSES": {
+          "EYEBROW": "حسابك",
+          "TITLE": "العناوين المحفوظة",
+          "ADD": "إضافة",
+          "ADD_NEW": "إضافة عنوان جديد",
+          "ADD_TITLE": "إضافة عنوان جديد",
+          "EDIT_TITLE": "تعديل العنوان",
+          "EDIT": "تعديل",
+          "REMOVE": "حذف",
+          "REMOVE_TITLE": "حذف العنوان؟",
+          "REMOVE_TEXT": "هل تريد حذف {{label}} من عناوينك المحفوظة؟ لن تتأثر الطلبات السابقة.",
+          "SET_DEFAULT": "تعيين كافتراضي",
+          "DEFAULT": "افتراضي",
+          "MAKE_DEFAULT": "تعيين هذا العنوان كعنواني الافتراضي",
+          "LABEL": "التسمية (المنزل، المكتب، إلخ)",
+          "FULL_NAME": "الاسم الكامل",
+          "PHONE": "رقم الهاتف",
+          "STREET_ADDRESS": "عنوان الشارع",
+          "APARTMENT": "الشقة أو المبنى",
+          "CITY": "المدينة",
+          "AREA": "المنطقة أو الحي",
+          "COUNTRY": "البلد",
+          "POSTAL_CODE": "الرمز البريدي",
+          "DELIVERY_NOTES": "ملاحظات التوصيل",
+          "SAVE_ADDRESS": "حفظ العنوان",
+          "SAVE_CHANGES": "حفظ التغييرات",
+          "CANCEL": "إلغاء",
+          "CLOSE": "إغلاق نموذج العنوان",
+          "EMPTY_TITLE": "لا توجد عناوين محفوظة بعد",
+          "EMPTY_TEXT": "احفظ عنوان توصيل لتسريع إتمام طلبك في المرة القادمة.",
+          "LOAD_ERROR": "تعذر تحميل عناوينك المحفوظة.",
+          "RETRY": "إعادة المحاولة",
+          "ERROR_REQUIRED": "هذا الحقل مطلوب.",
+          "ERROR_MAX_LENGTH": "هذه القيمة طويلة جداً."
         },
         "ORDERS": {
           "EYEBROW": "حسابك",
@@ -4546,6 +4677,11 @@
           "PAYMENT_STATUS_LABEL": "حالة الدفع",
           "DELIVERY_ADDRESS": "عنوان التوصيل",
           "DISCOUNT_CODE": "رمز الخصم",
+          "LOYALTY_LABEL": "نقاط الولاء",
+          "LOYALTY_PENDING": "{{points}} نقطة معلّقة",
+          "LOYALTY_CREDITED": "تمت إضافة {{points}} نقطة",
+          "LOYALTY_PENDING_DETAIL": "{{points}} نقطة معلّقة — تصبح متاحة بعد التسليم.",
+          "LOYALTY_CREDITED_DETAIL": "تمت إضافة {{points}} نقطة إلى رصيدك المتاح.",
           "STATUS": {
             "PENDING": "قيد الانتظار",
             "PROCESSING": "قيد المعالجة",

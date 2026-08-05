@@ -22,6 +22,9 @@ export interface AdminOrder {
   notes?: string;
   createdAt?: string;
   supabaseOrderId?: string; // UUID
+  customerUserId: string | null;
+  loyaltyPoints: number;
+  loyaltyProcessed: boolean;
 }
 
 export interface OrderStats {

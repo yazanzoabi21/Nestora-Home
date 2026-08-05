@@ -21,6 +21,9 @@ export class CustomerShoppingStateService {
   private serverCartId: string | null = null;
   private serverCartUserId: string | null = null;
   private isGuestCart = false;
+  private cartLoadSequence = 0;
+  private lastLoadedCartUserId: string | null | undefined;
+  private activeCartLoad: { userId: string | null; promise: Promise<void> } | null = null;
   private readonly _checkoutCartId = signal<string | null>(null);
   readonly checkoutCartId = this._checkoutCartId.asReadonly();
   readonly cart = signal<CustomerCartLine[]>([]);
@@ -94,20 +97,46 @@ export class CustomerShoppingStateService {
   });
 
   constructor() {
-    void this.initialize();
     effect(() => {
       const authLoading = this.auth.isLoading();
       const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
-      if (!authLoading) void this.loadWishlistForUser(userId);
+      if (!authLoading) {
+        void this.synchronizeCartForUser(userId);
+        void this.loadWishlistForUser(userId);
+      }
     });
   }
 
   async initialize(): Promise<void> {
+    await this.auth.initialize();
+    const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
+    await this.synchronizeCartForUser(userId, true);
+  }
+
+  private async synchronizeCartForUser(userId: string | null, force = false): Promise<void> {
+    if (this.activeCartLoad?.userId === userId) {
+      await this.activeCartLoad.promise;
+      return;
+    }
+
+    if (!force && this.lastLoadedCartUserId === userId) return;
+
+    const promise = this.loadCartForUser(userId);
+    this.activeCartLoad = { userId, promise };
+
+    try {
+      await promise;
+    } finally {
+      if (this.activeCartLoad?.promise === promise) this.activeCartLoad = null;
+    }
+  }
+
+  private async loadCartForUser(userId: string | null): Promise<void> {
+    const sequence = ++this.cartLoadSequence;
     this.loading.set(true);
     this.error.set(null);
 
     try {
-      const userId = await this.auth.getCurrentUserId();
       const guestItems = this.readGuestItems();
 
       // Guest customer: use localStorage only.
@@ -120,7 +149,9 @@ export class CustomerShoppingStateService {
         const guestLines =
           await this.carts.productsForGuest(guestItems);
 
+        if (sequence !== this.cartLoadSequence) return;
         this.cart.set(guestLines);
+        this.lastLoadedCartUserId = null;
         return;
       }
 
@@ -136,6 +167,8 @@ export class CustomerShoppingStateService {
 
       const serverLines =
         await this.carts.loadLines(cartId);
+
+      if (sequence !== this.cartLoadSequence) return;
 
       const merged = new Map(
         serverLines.map((line) => [
@@ -157,29 +190,6 @@ export class CustomerShoppingStateService {
             (existing?.quantity ?? 0) +
             guest.quantity;
 
-          if (
-            !this.canUseQuantity(
-              guest.product,
-              quantity,
-            )
-          ) {
-            this.toast.warn(
-              'Cart quantity needs review',
-              this.stockMessage(
-                guest.product,
-                quantity,
-              ),
-            );
-
-            merged.set(guest.product.id, {
-              ...guest,
-              id: existing?.id,
-              quantity,
-            });
-
-            continue;
-          }
-
           const itemId =
             await this.carts.upsertItem(
               cartId,
@@ -195,11 +205,14 @@ export class CustomerShoppingStateService {
           });
         }
 
+        if (sequence !== this.cartLoadSequence) return;
         this.clearGuestItems();
       }
 
       this.cart.set([...merged.values()]);
+      this.lastLoadedCartUserId = userId;
     } catch (error) {
+      if (sequence !== this.cartLoadSequence) return;
       const message =
         error instanceof Error
           ? error.message
@@ -207,12 +220,13 @@ export class CustomerShoppingStateService {
 
       this.error.set(message);
     } finally {
-      this.loading.set(false);
+      if (sequence === this.cartLoadSequence) this.loading.set(false);
     }
   }
 
   async addToCart(product: CustomerProduct, requestedQuantity = 1): Promise<void> {
     if (this.pendingProductIds().has(product.id)) return;
+    await this.ensureCurrentCartMode();
     const existing = this.cart().find((line) => line.product.id === product.id);
     const quantity = (existing?.quantity ?? 0) + requestedQuantity;
     if (!this.canUseQuantity(product, quantity)) {
@@ -221,8 +235,9 @@ export class CustomerShoppingStateService {
     }
     this.setPending(product.id, true);
     try {
-      const id = this.serverCartId
-        ? await this.carts.upsertItem(this.serverCartId, product.id, quantity, existing?.id)
+      const cartId = this.currentServerCartId();
+      const id = cartId
+        ? await this.carts.upsertItem(cartId, product.id, quantity, existing?.id)
         : existing?.id;
       this.cart.update((lines) =>
         existing
@@ -241,6 +256,7 @@ export class CustomerShoppingStateService {
   }
 
   async setQuantity(productId: string, requested: number): Promise<void> {
+    await this.ensureCurrentCartMode();
     const line = this.cart().find((item) => item.product.id === productId);
     if (!line || this.pendingProductIds().has(productId)) return;
     const requestedQuantity = Number(requested);
@@ -252,8 +268,9 @@ export class CustomerShoppingStateService {
     if (requestedQuantity === line.quantity) return;
     this.setPending(productId, true);
     try {
-      const id = this.serverCartId
-        ? await this.carts.upsertItem(this.serverCartId, productId, requestedQuantity, line.id)
+      const cartId = this.currentServerCartId();
+      const id = cartId
+        ? await this.carts.upsertItem(cartId, productId, requestedQuantity, line.id)
         : line.id;
       this.cart.update((lines) =>
         lines.map((item) =>
@@ -271,10 +288,12 @@ export class CustomerShoppingStateService {
   }
 
   async removeFromCart(productId: string): Promise<void> {
+    await this.ensureCurrentCartMode();
     if (this.pendingProductIds().has(productId)) return;
     this.setPending(productId, true);
     try {
-      if (this.serverCartId) await this.carts.removeItem(this.serverCartId, productId);
+      const cartId = this.currentServerCartId();
+      if (cartId) await this.carts.removeItem(cartId, productId);
       this.cart.update((lines) => lines.filter((line) => line.product.id !== productId));
       this.persistGuest();
       // this.toast.success('Item removed');
@@ -520,8 +539,16 @@ export class CustomerShoppingStateService {
     console.error('Wishlist request failed', error);
     this.toast.failed(this.translate.instant('CUSTOMER.WISHLIST.UPDATE_FAILED'));
   }
+  private async ensureCurrentCartMode(): Promise<void> {
+    const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
+    await this.synchronizeCartForUser(userId);
+  }
+  private currentServerCartId(): string | null {
+    const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
+    return userId && userId === this.serverCartUserId ? this.serverCartId : null;
+  }
   private persistGuest(): void {
-    if (this.isGuestCart && typeof window !== 'undefined')
+    if (!this.auth.isAuthenticated() && typeof window !== 'undefined')
       window.localStorage.setItem(
         GUEST_CART_KEY,
         JSON.stringify(

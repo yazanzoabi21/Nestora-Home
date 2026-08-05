@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { CustomerAuthService } from '../../../../core/services/auth';
 import { CUSTOMER_SUPABASE } from '../../../../core/tokens';
-import { CustomerShoppingStateService } from '../../services';
+import { CustomerAddressesService, CustomerShoppingStateService } from '../../services';
 import { LoyaltyPointsCalculatorService } from '../../services';
 import { CheckoutOrderItem, PlaceCustomerOrderRpcArgs, PlacedOrderResult } from '../models';
 import { CustomerCheckoutStateService } from './customer-checkout-state.service';
@@ -31,6 +31,7 @@ export class CustomerCheckoutOrderService {
   private readonly state = inject(CustomerCheckoutStateService);
   private readonly shopping = inject(CustomerShoppingStateService);
   private readonly loyalty = inject(LoyaltyPointsCalculatorService);
+  private readonly addresses = inject(CustomerAddressesService);
   private checkoutToken = uuidv4();
 
   async placeOrder(
@@ -110,6 +111,23 @@ export class CustomerCheckoutOrderService {
     this.state.setPlaceOrderError(null);
 
     try {
+      if (customerUserId && this.state.saveAddressForFuture()) {
+        const savedAddress = await this.addresses.create({
+          label: this.state.newAddressLabel(),
+          fullName: `${shippingInformation.firstName} ${shippingInformation.lastName}`.trim(),
+          phone: shippingInformation.phone?.trim() || '',
+          streetAddress: shippingInformation.streetAddress,
+          apartmentOrBuilding: shippingInformation.addressLine2,
+          city: shippingInformation.city,
+          areaOrDistrict: shippingInformation.stateProvince,
+          country: shippingInformation.country,
+          postalCode: shippingInformation.postalCode,
+          deliveryNotes: shippingInformation.deliveryInstructions,
+          isDefault: this.addresses.addresses().length === 0,
+        });
+        this.state.markPendingAddressSaved(savedAddress);
+      }
+
       const { data, error } = await this.supabase.rpc('place_customer_order', rpcArgs);
       if (error) throw new Error(error.message);
 

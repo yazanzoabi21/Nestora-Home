@@ -27,6 +27,19 @@
     </span>
 
     <span class="order-card__summary">
+      @if (loyaltyState(); as state) {
+      <span
+        class="inline-flex min-h-[1.65rem] items-center gap-1.5 rounded-full bg-[#f2eadc] px-3 py-1 text-[0.68rem] font-extrabold text-[#795f2f] max-[760px]:order-3 max-[760px]:w-fit max-[480px]:whitespace-normal"
+        [class.!bg-[#dcefe0]]="state === 'credited'" [class.!text-[#28723a]]="state === 'credited'">
+        <i class="pi pi-star-fill" aria-hidden="true"></i>
+        {{
+          (state === 'credited'
+            ? 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_CREDITED'
+            : 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_PENDING')
+          | translate: { points: order().loyaltyPointsEarned }
+        }}
+      </span>
+      }
       <span class="status-badge" [attr.data-tone]="statusTone()">
         @if (statusTranslationKey(order().status); as translationKey) {
           {{ translationKey | translate }}
@@ -89,6 +102,19 @@
         </dl>
 
         <dl class="order-card__information">
+          @if (loyaltyState(); as state) {
+          <div>
+            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_LABEL' | translate }}</dt>
+            <dd [class.!text-[#795f2f]]="state === 'pending'" [class.!text-[#28723a]]="state === 'credited'">
+              {{
+                (state === 'credited'
+                  ? 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_CREDITED_DETAIL'
+                  : 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_PENDING_DETAIL')
+                | translate: { points: order().loyaltyPointsEarned }
+              }}
+            </dd>
+          </div>
+          }
           <div>
             <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.PAYMENT_STATUS_LABEL' | translate }}</dt>
             <dd>

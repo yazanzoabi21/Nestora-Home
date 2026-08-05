@@ -105,6 +105,12 @@ export interface PlacedOrderResult {
   loyaltyPointsEarned: number;
 }
 
+export interface CheckoutShippingSubmission {
+  shippingInformation: CheckoutShippingInformation;
+  saveForFuture: boolean;
+  addressLabel: string;
+}
+
 export interface CheckoutConfirmation {
   order: PlacedOrderResult;
   customerName: string;

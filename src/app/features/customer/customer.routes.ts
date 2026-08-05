@@ -95,10 +95,9 @@ export const CUSTOMER_ROUTES: Routes = [
           {
             path: 'addresses',
             loadComponent: () =>
-              import('./components/customer-account-placeholder/customer-account-placeholder.component').then(
-                (m) => m.CustomerAccountPlaceholderComponent,
+              import('./components/customer-account-addresses/customer-account-addresses.component').then(
+                (m) => m.CustomerAccountAddressesComponent,
               ),
-            data: { title: 'Addresses' },
           },
           {
             path: 'settings',

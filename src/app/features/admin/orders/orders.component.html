@@ -156,6 +156,16 @@
             (valueChange)="selectedOrderPayment.set($any($event))" />
         </div>
 
+        @if (loyaltyCreditWarningPoints() > 0) {
+        <div class="flex items-start gap-3 rounded-2xl border border-[#e4c98f] bg-[#fff8e8] p-4 text-[#76571d]"
+          role="status">
+          <i class="pi pi-exclamation-triangle mt-0.5 shrink-0" aria-hidden="true"></i>
+          <p class="text-sm font-bold leading-6">
+            {{ 'ORDERS.LOYALTY.CREDIT_WARNING' | translate: { points: loyaltyCreditWarningPoints() } }}
+          </p>
+        </div>
+        }
+
         @if (order.notes) {
           <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
             <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.NOTES' | translate }}</p>
@@ -164,5 +174,21 @@
         }
       </section>
     }
+  </app-admin-form-modal>
+
+  <app-admin-form-modal [isOpen]="loyaltyConfirmationVisible()" size="sm"
+    [title]="'ORDERS.LOYALTY.CONFIRM_TITLE' | translate"
+    [subtitle]="'ORDERS.LOYALTY.CONFIRM_SUBTITLE' | translate"
+    [submitLabel]="'ORDERS.LOYALTY.CONFIRM_ACTION' | translate"
+    [cancelLabel]="'COMMON.CANCEL' | translate" [loading]="savingOrderStatus()"
+    (close)="closeLoyaltyConfirmation()" (submit)="confirmOrderStatusSave()">
+    <div class="rounded-2xl border border-[#e4c98f] bg-[#fff8e8] p-5 text-center text-[#76571d]">
+      <span class="mx-auto grid size-12 place-items-center rounded-full bg-[#f3dfb3] text-xl" aria-hidden="true">
+        <i class="pi pi-star-fill"></i>
+      </span>
+      <p class="mt-4 text-sm font-bold leading-6">
+        {{ 'ORDERS.LOYALTY.CONFIRM_MESSAGE' | translate: { points: loyaltyCreditWarningPoints() } }}
+      </p>
+    </div>
   </app-admin-form-modal>
 </main>

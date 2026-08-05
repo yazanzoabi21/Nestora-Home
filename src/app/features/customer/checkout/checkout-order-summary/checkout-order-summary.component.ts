@@ -4,6 +4,7 @@ import {
   Component,
   input,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import {
@@ -16,6 +17,7 @@ import {
   standalone: true,
   imports: [
     CurrencyPipe,
+    RouterLink,
     TranslatePipe,
   ],
   templateUrl: './checkout-order-summary.component.html',
@@ -28,4 +30,8 @@ export class CheckoutOrderSummaryComponent {
 
   readonly totals =
     input.required<CheckoutTotals>();
+
+  readonly loyaltyPoints = input(0);
+  readonly authenticated = input(false);
+  readonly cashOnDelivery = input(false);
 }

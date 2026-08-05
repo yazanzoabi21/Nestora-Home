@@ -17,12 +17,28 @@
       />
 
       <div class="checkout-layout">
+        <app-checkout-order-summary
+          class="checkout-layout__summary"
+          [items]="state.checkoutItems()"
+          [totals]="state.totals()"
+          [loyaltyPoints]="state.estimatedLoyaltyPoints()"
+          [authenticated]="state.isAuthenticated()"
+          [cashOnDelivery]="state.isCashOnDelivery()"
+        />
+
         <div class="checkout-layout__main">
           @switch (state.currentStep()) {
             @case ('shipping') {
               <app-checkout-shipping
                 [initialValue]="state.shippingInformation()"
                 [prefill]="state.shippingPrefill()"
+                [authenticated]="state.isAuthenticated()"
+                [addresses]="state.addressBook.addresses()"
+                [addressesLoading]="state.addressBook.loading()"
+                [addressesError]="state.addressBook.error()"
+                [selectedAddressId]="state.selectedAddressId()"
+                (addressSelect)="selectSavedAddress($event)"
+                (newAddress)="state.useNewAddress()"
                 (continue)="saveShipping($event)"
               />
             }
@@ -55,11 +71,6 @@
           }
         </div>
 
-        <app-checkout-order-summary
-          class="checkout-layout__summary"
-          [items]="state.checkoutItems()"
-          [totals]="state.totals()"
-        />
       </div>
     } @else {
       <app-checkout-confirmation [confirmation]="state.confirmation()" />

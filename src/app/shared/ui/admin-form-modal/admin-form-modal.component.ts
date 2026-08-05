@@ -1,4 +1,3 @@
-import { NgClass } from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -17,7 +16,7 @@ export type AdminFormModalVariant = 'form' | 'delete';
 @Component({
   selector: 'app-admin-form-modal',
   standalone: true,
-  imports: [NgClass, TranslatePipe],
+  imports: [TranslatePipe],
   templateUrl: './admin-form-modal.component.html',
   styleUrl: './admin-form-modal.component.css',
 })
@@ -82,30 +81,8 @@ export class AdminFormModalComponent implements OnChanges, OnDestroy {
     }
   }
 
-  sizeClass(): string {
-    if (this.variant === 'delete') {
-      return 'max-w-md';
-    }
-
-    switch (this.size) {
-      case 'sm':
-        return 'max-w-md';
-      case 'lg':
-        return 'max-w-3xl';
-      case 'xl':
-        return 'max-w-5xl';
-      case 'md':
-      default:
-        return 'max-w-2xl';
-    }
-  }
-
   isDeleteModal(): boolean {
     return this.variant === 'delete';
-  }
-
-  submitButtonClass(): string {
-    return this.isDeleteModal() ? 'admin-modal-delete-button' : 'admin-modal-submit-button';
   }
 
   onBackdropClick(event: MouseEvent): void {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -46,6 +46,7 @@ type PaymentStatusFilter = 'all' | OrderPaymentStatus;
   ],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrdersComponent implements OnInit {
   private readonly ordersService = inject(OrdersService);
@@ -64,6 +65,7 @@ export class OrdersComponent implements OnInit {
   readonly selectedOrderDelivery = signal<OrderDeliveryStatus>('Pending');
   readonly selectedOrderPayment = signal<OrderPaymentStatus>('Pending');
   readonly savingOrderStatus = signal(false);
+  readonly loyaltyConfirmationVisible = signal(false);
   readonly langVersion = signal(0);
 
   readonly orderTableColumns = computed<AdminTableColumn[]>(() => {
@@ -121,6 +123,27 @@ export class OrdersComponent implements OnInit {
   });
 
   readonly stats = computed(() => this.ordersService.getOrderStats(this.orders()));
+  readonly loyaltyCreditWarningPoints = computed(() => {
+    const order = this.selectedOrder();
+    const nextDeliveryStatus = this.selectedOrderDelivery();
+    const nextPaymentStatus = this.selectedOrderPayment();
+
+    if (!order || !order.customerUserId || order.loyaltyPoints <= 0 || order.loyaltyProcessed) {
+      return 0;
+    }
+    if (nextDeliveryStatus !== 'Delivered' && nextDeliveryStatus !== 'Completed') return 0;
+    if (order.delivery === 'Delivered' || order.delivery === 'Completed') return 0;
+    if (
+      order.delivery === 'Cancelled' ||
+      order.delivery === 'Returned' ||
+      order.payment === 'Refunded' ||
+      nextPaymentStatus === 'Refunded'
+    ) {
+      return 0;
+    }
+
+    return order.loyaltyPoints;
+  });
 
   readonly ordersExportConfig = computed<ExportReportConfig>(() => {
     this.langVersion();
@@ -348,10 +371,29 @@ export class OrdersComponent implements OnInit {
 
   closeOrderDetails(): void {
     if (this.savingOrderStatus()) return;
+    this.loyaltyConfirmationVisible.set(false);
     this.selectedOrder.set(null);
   }
 
   async saveOrderStatus(): Promise<void> {
+    if (this.loyaltyCreditWarningPoints() > 0) {
+      this.loyaltyConfirmationVisible.set(true);
+      return;
+    }
+
+    await this.persistOrderStatus();
+  }
+
+  closeLoyaltyConfirmation(): void {
+    if (!this.savingOrderStatus()) this.loyaltyConfirmationVisible.set(false);
+  }
+
+  async confirmOrderStatusSave(): Promise<void> {
+    this.loyaltyConfirmationVisible.set(false);
+    await this.persistOrderStatus();
+  }
+
+  private async persistOrderStatus(): Promise<void> {
     const order = this.selectedOrder();
     if (!order?.supabaseOrderId || this.savingOrderStatus()) return;
 

@@ -3,7 +3,8 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { CustomerAuthService } from '../../../../core/services/auth';
-import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../../services';
+import { CustomerAddressesService, CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../../services';
+import { CustomerAddress } from '../../models';
 import {
   CheckoutConfirmation,
   CheckoutOrderItem,
@@ -11,6 +12,7 @@ import {
   CheckoutSelection,
   CheckoutShippingInformation,
   CheckoutShippingPrefill,
+  CheckoutShippingSubmission,
   CheckoutShippingMethod,
   CheckoutStep,
   CheckoutTotals,
@@ -27,10 +29,14 @@ export class CustomerCheckoutStateService {
   private readonly router = inject(Router);
   private readonly data = inject(CustomerCheckoutDataService);
   private readonly loyalty = inject(LoyaltyPointsCalculatorService);
+  readonly addressBook = inject(CustomerAddressesService);
 
   private readonly _currentStep = signal<CheckoutStep>('shipping');
   private readonly _shippingInformation = signal<CheckoutShippingInformation | null>(null);
   private readonly _shippingPrefill = signal<CheckoutShippingPrefill | null>(null);
+  private readonly _selectedAddressId = signal<string | null>(null);
+  private readonly _saveAddressForFuture = signal(false);
+  private readonly _newAddressLabel = signal('Home');
   private readonly _selectedShippingMethod = signal<CheckoutShippingMethod | null>(null);
   private readonly _selectedPaymentMethod = signal<CheckoutPaymentMethod | null>(null);
   private readonly _isPlacingOrder = signal(false);
@@ -47,6 +53,9 @@ export class CustomerCheckoutStateService {
   readonly currentStep = this._currentStep.asReadonly();
   readonly shippingInformation = this._shippingInformation.asReadonly();
   readonly shippingPrefill = this._shippingPrefill.asReadonly();
+  readonly selectedAddressId = this._selectedAddressId.asReadonly();
+  readonly saveAddressForFuture = this._saveAddressForFuture.asReadonly();
+  readonly newAddressLabel = this._newAddressLabel.asReadonly();
   readonly selectedShippingMethod = this._selectedShippingMethod.asReadonly();
   readonly selectedPaymentMethod = this._selectedPaymentMethod.asReadonly();
   readonly isPlacingOrder = this._isPlacingOrder.asReadonly();
@@ -59,6 +68,7 @@ export class CustomerCheckoutStateService {
   readonly shippingMethodsError = this._shippingMethodsError.asReadonly();
   readonly paymentMethodsError = this._paymentMethodsError.asReadonly();
   readonly confirmation = this._confirmation.asReadonly();
+  readonly isAuthenticated = this.auth.isAuthenticated;
 
   readonly hasShippingInformation = computed(() => this._shippingInformation() !== null);
   readonly hasShippingMethod = computed(() => this._selectedShippingMethod() !== null);
@@ -128,6 +138,17 @@ export class CustomerCheckoutStateService {
       ),
     };
   });
+  readonly estimatedLoyaltyPoints = computed(() =>
+    this.auth.isAuthenticated()
+      ? this.loyalty.estimateOrderPoints(
+        this.subtotal(),
+        this.shopping.discountAmount(),
+      )
+      : 0,
+  );
+  readonly isCashOnDelivery = computed(
+    () => this._selectedPaymentMethod()?.code.trim().toLowerCase() === 'cod',
+  );
 
   async initialize(): Promise<void> {
     this._currentStep.set('shipping');
@@ -181,8 +202,29 @@ export class CustomerCheckoutStateService {
     }
   }
 
-  setShippingInformation(value: CheckoutShippingInformation): void {
-    this._shippingInformation.set(value);
+  setShippingInformation(submission: CheckoutShippingSubmission): void {
+    this._shippingInformation.set(submission.shippingInformation);
+    this._saveAddressForFuture.set(submission.saveForFuture && this.auth.isAuthenticated());
+    this._newAddressLabel.set(submission.addressLabel.trim() || 'Home');
+  }
+
+  selectSavedAddress(id: string): void {
+    const address = this.addressBook.addresses().find((item) => item.id === id);
+    if (!address) return;
+    this._selectedAddressId.set(id);
+    this._saveAddressForFuture.set(false);
+    this._shippingInformation.set(this.addressToShipping(address));
+  }
+
+  useNewAddress(): void {
+    this._selectedAddressId.set(null);
+    this._saveAddressForFuture.set(false);
+    this._shippingInformation.set(null);
+  }
+
+  markPendingAddressSaved(address: CustomerAddress): void {
+    this._selectedAddressId.set(address.id);
+    this._saveAddressForFuture.set(false);
   }
 
   selectShippingMethod(value: CheckoutShippingMethod): void {
@@ -265,6 +307,9 @@ export class CustomerCheckoutStateService {
     this._currentStep.set('shipping');
     this._shippingInformation.set(null);
     this._shippingPrefill.set(null);
+    this._selectedAddressId.set(null);
+    this._saveAddressForFuture.set(false);
+    this._newAddressLabel.set('Home');
     this._selectedShippingMethod.set(null);
     this._selectedPaymentMethod.set(null);
     this._isPlacingOrder.set(false);
@@ -287,10 +332,11 @@ export class CustomerCheckoutStateService {
   }
 
   private async loadShippingPrefill(): Promise<void> {
-    if (this._shippingInformation()) return;
-
     await this.auth.initialize();
     if (!this.auth.isAuthenticated()) {
+      if (this._selectedAddressId()) this._shippingInformation.set(null);
+      this._selectedAddressId.set(null);
+      this._saveAddressForFuture.set(false);
       this._shippingPrefill.set(null);
       return;
     }
@@ -301,15 +347,54 @@ export class CustomerCheckoutStateService {
       return;
     }
 
-    const names = splitFullName(profile.full_name);
-    const prefill = this.compactPrefill({
-      firstName: names.firstName,
-      lastName: names.lastName,
+    const profileNames = splitFullName(profile.full_name);
+    const profilePrefill = this.compactPrefill({
+      firstName: profileNames.firstName,
+      lastName: profileNames.lastName,
       email: this.auth.user()?.email ?? profile.email,
       phone: profile.phone ?? undefined,
     });
+    this._shippingPrefill.set(Object.keys(profilePrefill).length > 0 ? profilePrefill : null);
 
-    this._shippingPrefill.set(Object.keys(prefill).length > 0 ? prefill : null);
+    let addresses: readonly CustomerAddress[] = [];
+    try {
+      addresses = await this.addressBook.load();
+    } catch {
+      // Profile prefill and guest-style address entry remain available.
+    }
+
+    if (this._shippingInformation()) {
+      const selectedId = this._selectedAddressId();
+      if (selectedId && !addresses.some((address) => address.id === selectedId)) {
+        this._selectedAddressId.set(null);
+      }
+      return;
+    }
+
+    const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0];
+    if (defaultAddress) {
+      this._selectedAddressId.set(defaultAddress.id);
+      this._shippingInformation.set(this.addressToShipping(defaultAddress));
+      return;
+    }
+
+  }
+
+  private addressToShipping(address: CustomerAddress): CheckoutShippingInformation {
+    const names = splitFullName(address.fullName);
+    return {
+      firstName: names.firstName,
+      lastName: names.lastName,
+      email: this.auth.user()?.email ?? this.auth.customerProfile()?.email ?? '',
+      phone: address.phone,
+      streetAddress: address.streetAddress,
+      addressLine2: address.apartmentOrBuilding,
+      city: address.city,
+      stateProvince: address.areaOrDistrict ?? '',
+      postalCode: address.postalCode,
+      country: address.country,
+      deliveryInstructions: address.deliveryNotes,
+    };
   }
 
   private compactPrefill(value: CheckoutShippingPrefill): CheckoutShippingPrefill {

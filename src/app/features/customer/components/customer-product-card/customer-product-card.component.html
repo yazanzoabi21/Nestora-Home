@@ -34,8 +34,9 @@
         }
       </div>
       @if (product().isLoyaltyEligible && loyalty.enabled()) {
-      <app-customer-loyalty-points-badge class="ms-auto shrink-0" [pointsEarned]="loyaltyPreview().pointsEarned"
-        [loading]="loyalty.loading()" />
+      <app-customer-loyalty-points-badge class="pointer-events-auto relative z-10 ms-auto shrink-0"
+        [pointsEarned]="loyaltyPreview().pointsEarned" [loading]="loyalty.loading()"
+        [authenticated]="customerAuth.isAuthenticated()" [returnUrl]="loyaltyReturnUrl()" />
       }
     </div>
   </div>
@@ -187,7 +188,7 @@
       }
       <span class="ms-1 text-[0.72rem] text-[#8a847c] sm:text-sm">({{ product().reviewCount }})</span>
     </div>
-    <div class="mt-auto flex items-center gap-2 pt-1">
+    <div class="mt-auto flex flex-wrap items-center gap-2 pt-1">
       <div class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
         <span class="text-base font-black sm:text-xl">{{
           product().price | currency: 'USD' : 'symbol' : '1.2-2'
@@ -200,8 +201,10 @@
       </div>
 
       @if (product().isLoyaltyEligible && loyalty.enabled()) {
-      <app-customer-loyalty-points-badge class="ms-auto shrink-0" [pointsEarned]="loyaltyPreview().pointsEarned"
-        [loading]="loyalty.loading()" />
+      <app-customer-loyalty-points-badge
+        class="pointer-events-auto relative z-10 ms-auto flex max-w-full basis-full justify-end sm:basis-auto"
+        [pointsEarned]="loyaltyPreview().pointsEarned" [loading]="loyalty.loading()"
+        [authenticated]="customerAuth.isAuthenticated()" [returnUrl]="loyaltyReturnUrl()" />
       }
     </div>
 

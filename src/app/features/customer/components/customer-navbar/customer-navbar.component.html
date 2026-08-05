@@ -1,6 +1,6 @@
 <header class="sticky top-0 z-[1000] block w-full">
   <!-- Promotions and discounts carousel -->
-  <div class="relative flex h-10 w-full items-center justify-center overflow-hidden whitespace-nowrap bg-[#30362f] px-4 text-center text-[11px] font-semibold text-white max-sm:px-2.5 max-sm:text-[10px]"
+  <div class="relative flex min-h-10 w-full items-center justify-center overflow-clip bg-[#30362f] px-4 py-2 text-center text-[11px] font-semibold leading-4 text-white max-sm:px-2.5 max-sm:text-[10px]"
     aria-live="polite" aria-roledescription="carousel"
     (mouseenter)="pauseAnnouncementCarousel()" (mouseleave)="resumeAnnouncementCarousel()"
     (focusin)="pauseAnnouncementCarousel()" (focusout)="resumeAnnouncementCarousel()">
@@ -10,7 +10,7 @@
       <span>LOADING OFFERS</span>
     </span>
     } @else if (activeAnnouncement(); as announcement) {
-    <div class="flex min-w-0 max-w-[calc(100%-7rem)] items-center justify-center gap-2 transition-opacity duration-150 max-[390px]:max-w-[calc(100%-4.5rem)]"
+    <div class="flex min-w-0 max-w-[calc(100%-7rem)] flex-wrap items-center justify-center gap-x-2 gap-y-1 transition-opacity duration-150 max-[390px]:max-w-[calc(100%-4.5rem)]"
       [class.opacity-0]="!announcementVisible()" [class.opacity-100]="announcementVisible()">
       @if (announcement.icon) {
       <i [class]="announcement.icon + ' shrink-0'" aria-hidden="true"></i>
@@ -22,10 +22,10 @@
       </span>
       }
 
-      <span class="min-w-0 truncate">{{ announcement.title }}</span>
+      <span class="min-w-0 break-words">{{ announcement.title }}</span>
 
       @if (announcement.message) {
-      <span class="min-w-0 truncate max-sm:hidden">— {{ announcement.message }}</span>
+      <span class="min-w-0 break-words">— {{ announcement.message }}</span>
       }
 
       @if (announcement.link && announcement.linkText) {
@@ -68,15 +68,16 @@
 
   <!-- Discount shipping bar -->
   <div
-    class="flex h-8 w-full items-center justify-center overflow-hidden whitespace-nowrap bg-[#718369] px-4 text-center text-[11px] font-semibold uppercase leading-none tracking-[0.15em] text-white max-sm:h-[30px] max-sm:px-2.5 max-sm:text-[8px] max-sm:tracking-[0.09em]"
+    class="flex min-h-8 w-full items-center justify-center overflow-clip bg-[#718369] px-4 py-2 text-center text-[11px] font-semibold uppercase leading-4 tracking-[0.15em] text-white max-sm:min-h-[30px] max-sm:px-2.5 max-sm:text-[8px] max-sm:leading-3 max-sm:tracking-[0.09em]"
     aria-live="polite">
-    <span class="max-w-full truncate">{{ shippingDiscountAnnouncement() }}</span>
+    <span class="max-w-full break-words">{{ shippingDiscountAnnouncement() }}</span>
   </div>
 
   <!-- Main navbar -->
-  <nav class="w-full border-b border-[#e8dccf] bg-white/[0.98] backdrop-blur-[8px]" aria-label="Primary navigation">
+  <nav class="relative z-[1010] w-full border-b border-[#e8dccf] bg-white/[0.98] backdrop-blur-[8px]"
+    aria-label="Primary navigation">
     <!-- Desktop navbar -->
-    <div class="customer-page-container hidden h-[82px] items-center gap-7 max-[1280px]:gap-[18px] min-[1181px]:flex">
+    <div class="customer-page-container hidden h-[82px] items-center gap-[clamp(0.75rem,1.5vw,1.75rem)] min-[1181px]:flex">
       <!-- Brand -->
       <a routerLink="/shop"
         class="flex shrink-0 cursor-pointer items-center gap-3 text-[#202c22] no-underline max-sm:gap-[9px]"
@@ -154,7 +155,7 @@
       <div class="flex shrink-0 items-center gap-[9px] max-[920px]:ml-auto max-sm:gap-[7px] max-[390px]:gap-[5px]">
         <!-- Search -->
         <label
-          class="relative me-6 block w-[380px] max-[1280px]:me-2 max-[1280px]:w-[290px] max-[1120px]:w-[clamp(210px,22vw,270px)] max-[920px]:w-[min(280px,34vw)] max-sm:hidden">
+          class="relative me-[clamp(0.5rem,1vw,1.5rem)] block w-[clamp(220px,19vw,380px)] max-sm:hidden">
           <span class="sr-only">Search products</span>
 
           <i class="pi pi-search pointer-events-none absolute left-[15px] top-1/2 z-[1] -translate-y-1/2 text-[15px] text-[#899086]"
@@ -305,8 +306,9 @@
 
     <!-- Mobile navigation menu -->
     @if (mobileMenuOpen()) {
-    <div id="customer-mobile-menu" class="overflow-hidden border-t border-[#e8dccf] bg-white min-[1181px]:!hidden">
-      <div class="min-h-0 overflow-hidden">
+    <div id="customer-mobile-menu"
+      class="absolute inset-x-0 top-full z-[1020] max-h-[calc(100dvh-14rem)] overflow-y-auto overscroll-contain border-t border-[#e8dccf] bg-white shadow-[0_18px_35px_rgba(31,42,31,0.16)] min-[1181px]:!hidden">
+      <div class="min-h-0">
         <div class="customer-page-container grid gap-1 py-4">
           <!-- Language -->
           <div

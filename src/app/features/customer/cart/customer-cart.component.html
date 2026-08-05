@@ -92,7 +92,8 @@
               <app-customer-loyalty-points-badge class="mt-3 block" mode="detail"
                 [pointsEarned]="isLoyaltyRedemption(line.product.id) ? 0 : loyaltyPreview(line).pointsEarned * line.quantity"
                 [rewardCost]="loyaltyPreview(line).rewardCost * line.quantity"
-                [disabled]="isLoyaltyRedemption(line.product.id)" />
+                [disabled]="isLoyaltyRedemption(line.product.id)"
+                [authenticated]="customerAuth.isAuthenticated()" [returnUrl]="'/shop/cart'" />
               }
               <div
                 class="mt-6 inline-grid grid-cols-[46px_52px_46px] overflow-hidden rounded-full border border-[#e8d8c6] text-sm">
@@ -237,6 +238,38 @@
             <dd class="text-2xl font-bold">{{ total() | currency: 'USD' }}</dd>
           </div>
         </dl>
+        @if (!customerAuth.isAuthenticated() || estimatedLoyaltyPoints() > 0) {
+        <section class="mt-6 rounded-2xl border border-[#d9e2d2] bg-[#f5f2ec] p-4"
+          [attr.aria-label]="'CUSTOMER.LOYALTY.CART_TITLE' | translate">
+          <div class="flex items-start gap-3">
+            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-[#718369] text-white"
+              aria-hidden="true">
+              <i class="pi pi-star-fill"></i>
+            </span>
+            <div class="min-w-0 flex-1">
+              @if (customerAuth.isAuthenticated()) {
+              <p class="text-sm font-bold leading-6 text-[#3f503a]">
+                {{ 'CUSTOMER.LOYALTY.CART_AUTHENTICATED' | translate: { points: estimatedLoyaltyPoints() } }}
+              </p>
+              } @else {
+              <p class="text-sm font-bold leading-6 text-[#3f503a]">
+                {{ 'CUSTOMER.LOYALTY.GUEST_CHECKOUT_MESSAGE' | translate }}
+              </p>
+              <div class="mt-3 flex flex-wrap gap-3">
+                <a class="inline-flex min-h-10 items-center rounded-xl bg-[#718369] px-4 text-xs font-black text-white"
+                  routerLink="/auth/customer-login" [queryParams]="{ returnUrl: '/shop/cart' }">
+                  {{ 'CUSTOMER.LOYALTY.SIGN_IN' | translate }}
+                </a>
+                <a class="inline-flex min-h-10 items-center rounded-xl border border-[#718369] px-4 text-xs font-black text-[#53674d]"
+                  routerLink="/auth/customer-register" [queryParams]="{ returnUrl: '/shop/cart' }">
+                  {{ 'CUSTOMER.LOYALTY.CREATE_ACCOUNT' | translate }}
+                </a>
+              </div>
+              }
+            </div>
+          </div>
+        </section>
+        }
         <button
           class="mt-12 flex h-[61px] w-full items-center justify-center gap-4 rounded-[20px] bg-[#708565] text-sm font-semibold text-white hover:bg-[#607456] disabled:opacity-60"
           type="button" [disabled]="checkingOut() || shopping.stockConflicts().length > 0" (click)="checkout()">

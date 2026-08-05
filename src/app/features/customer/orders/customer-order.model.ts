@@ -29,5 +29,7 @@ export interface CustomerOrder {
   shippingMethodId: string | null;
   paymentMethodId: string | null;
   discountCode: string | null;
+  loyaltyPointsEarned: number;
+  loyaltyCheckoutProcessed: boolean;
   items: readonly CustomerOrderItem[];
 }

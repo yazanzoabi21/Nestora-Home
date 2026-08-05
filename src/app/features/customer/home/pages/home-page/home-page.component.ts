@@ -329,15 +329,13 @@ export class HomePageComponent {
     const actionLink = this.offerActionLink(offer);
     if (!actionLink) return;
 
-    if (actionLink.startsWith('/')) {
-      await this.router.navigateByUrl(actionLink);
+    if (/^https?:\/\//i.test(actionLink) && typeof window !== 'undefined') {
+      const opened = window.open(actionLink, '_blank', 'noopener,noreferrer');
+      if (opened) opened.opener = null;
       return;
     }
 
-    if (typeof window !== 'undefined') {
-      const opened = window.open(actionLink, '_blank', 'noopener,noreferrer');
-      if (opened) opened.opener = null;
-    }
+    await this.router.navigateByUrl(actionLink);
   }
 
   async copyDiscountCode(event: MouseEvent, code: string): Promise<void> {
@@ -486,30 +484,9 @@ export class HomePageComponent {
     return this.currentLanguage().toLowerCase().startsWith('ar');
   }
 
-  private isValidActionLink(value: string): boolean {
-    if (value.startsWith('/') && !value.startsWith('//')) return true;
-    try {
-      const url = new URL(value);
-      return url.protocol === 'http:' || url.protocol === 'https:';
-    } catch {
-      return false;
-    }
-  }
-
   private offerActionLink(offer: CustomerOffer): string | null {
-    const recommendedLinks: Readonly<Record<string, string | null>> = {
-      'welcome-first-order': '/shop/products',
-      'refer-a-friend': null,
-      'app-exclusive': null,
-      'loyalty-points': null,
-    };
-
-    if (offer.slug in recommendedLinks) {
-      return recommendedLinks[offer.slug] ?? null;
-    }
-
     const actionLink = offer.action_link?.trim() ?? '';
-    return actionLink && this.isValidActionLink(actionLink) ? actionLink : null;
+    return actionLink.length > 0 ? actionLink : null;
   }
 
   categoryIcon(slug: string | null | undefined): string {

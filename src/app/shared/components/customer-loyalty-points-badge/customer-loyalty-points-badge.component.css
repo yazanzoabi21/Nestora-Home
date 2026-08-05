@@ -25,6 +25,28 @@
   opacity: 0.55;
 }
 
+.loyalty-badge--guest {
+  cursor: pointer;
+  justify-content: center;
+  line-height: 1.15;
+  max-width: 100%;
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+  white-space: normal;
+}
+
+.loyalty-badge--guest:hover {
+  border-color: #718369;
+  background: #edf3e9;
+  color: #465a3e;
+}
+
+.loyalty-badge--guest:focus-visible {
+  outline: 3px solid rgba(113, 131, 105, 0.3);
+  outline-offset: 2px;
+}
+
 .loyalty-badge__divider {
   width: 1px;
   height: 1rem;

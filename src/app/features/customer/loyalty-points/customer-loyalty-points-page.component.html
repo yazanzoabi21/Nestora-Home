@@ -17,15 +17,28 @@
   } @else {
   <section class="relative min-w-0 overflow-hidden rounded-[1.5rem] bg-[#1f2a1f] p-4 text-white shadow-[0_16px_38px_rgba(31,42,31,.16)] min-[361px]:p-5 sm:p-8">
     <div class="absolute -end-12 -top-12 size-44 rounded-full bg-[#718369]/30" aria-hidden="true"></div>
-    <div class="relative">
-      <div class="flex min-w-0 items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.13em] text-[#cbd6c4] min-[361px]:text-xs min-[361px]:tracking-[0.16em]">
-        <i class="pi pi-star-fill text-[#d8c399]" aria-hidden="true"></i>
-        {{ 'CUSTOMER.LOYALTY.PAGE.AVAILABLE' | translate }}
+    <div class="relative grid min-w-0 gap-6 sm:grid-cols-2 sm:gap-8">
+      <div class="min-w-0">
+        <div class="flex min-w-0 items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.13em] text-[#cbd6c4] min-[361px]:text-xs min-[361px]:tracking-[0.16em]">
+          <i class="pi pi-star-fill text-[#d8c399]" aria-hidden="true"></i>
+          {{ 'CUSTOMER.LOYALTY.PAGE.AVAILABLE' | translate }}
+        </div>
+        <p class="mt-3 break-words text-4xl font-black tracking-tight min-[361px]:mt-4 min-[361px]:text-5xl sm:text-6xl">{{ balance() }}</p>
+        <p class="mt-1.5 text-xs font-bold text-[#d7dfd2] min-[361px]:mt-2 min-[361px]:text-sm">{{ 'CUSTOMER.LOYALTY.PAGE.POINTS' | translate }}</p>
+        <div class="mt-4 inline-flex max-w-full flex-wrap rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-bold leading-5 min-[361px]:mt-6 min-[361px]:px-4 min-[361px]:text-sm">
+          {{ 'CUSTOMER.LOYALTY.PAGE.WORTH' | translate: { amount: (dollarEquivalent() | currency: 'USD') } }}
+        </div>
       </div>
-      <p class="mt-3 break-words text-4xl font-black tracking-tight min-[361px]:mt-4 min-[361px]:text-5xl sm:text-6xl">{{ balance() }}</p>
-      <p class="mt-1.5 text-xs font-bold text-[#d7dfd2] min-[361px]:mt-2 min-[361px]:text-sm">{{ 'CUSTOMER.LOYALTY.PAGE.POINTS' | translate }}</p>
-      <div class="mt-4 inline-flex max-w-full flex-wrap rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-bold leading-5 min-[361px]:mt-6 min-[361px]:px-4 min-[361px]:text-sm">
-        {{ 'CUSTOMER.LOYALTY.PAGE.WORTH' | translate: { amount: (dollarEquivalent() | currency: 'USD') } }}
+      <div class="min-w-0 border-t border-white/15 pt-5 sm:border-s sm:border-t-0 sm:ps-8 sm:pt-0">
+        <div class="flex min-w-0 items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.13em] text-[#cbd6c4] min-[361px]:text-xs min-[361px]:tracking-[0.16em]">
+          <i class="pi pi-clock text-[#d8c399]" aria-hidden="true"></i>
+          {{ 'CUSTOMER.LOYALTY.PAGE.PENDING' | translate }}
+        </div>
+        <p class="mt-3 break-words text-4xl font-black tracking-tight min-[361px]:mt-4 min-[361px]:text-5xl sm:text-6xl">{{ loyalty.pendingPoints() }}</p>
+        <p class="mt-1.5 text-xs font-bold text-[#d7dfd2] min-[361px]:mt-2 min-[361px]:text-sm">{{ 'CUSTOMER.LOYALTY.PAGE.POINTS' | translate }}</p>
+        <p class="mt-4 max-w-sm text-xs font-semibold leading-5 text-[#cbd6c4] min-[361px]:text-sm">
+          {{ 'CUSTOMER.LOYALTY.PAGE.PENDING_NOTE' | translate }}
+        </p>
       </div>
     </div>
   </section>

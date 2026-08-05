@@ -68,3 +68,8 @@
     grid-template-columns: 1fr;
   }
 } */
+.saved-address { display: grid; gap: .35rem; min-width: 0; border: 1px solid #e7dfd6; border-radius: .85rem; background: #fff; padding: .9rem; text-align: start; color: #615d58; font-size: .75rem; line-height: 1.35; transition: border-color .15s, box-shadow .15s, background-color .15s; }
+.saved-address:hover { border-color: #a9b49f; background: #fafbf8; }
+.saved-address--selected { border-color: #718369; background: #f5f8f2; box-shadow: inset 0 0 0 1px #718369; }
+.saved-address strong { color: #263326; font-size: .85rem; }
+.saved-address small { border-radius: 999px; background: #eee5d8; padding: .2rem .45rem; color: #806f58; font-size: .62rem; }

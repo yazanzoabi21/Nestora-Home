@@ -92,6 +92,20 @@ export class LoyaltyPointsCalculatorService {
     };
   }
 
+  estimateOrderPoints(
+    eligibleSubtotal: number | null | undefined,
+    discountAmount: number | null | undefined = 0,
+  ): number {
+    const paidSubtotal = Math.max(
+      0,
+      this.nonNegativeNumber(eligibleSubtotal) - this.nonNegativeNumber(discountAmount),
+    );
+
+    return this.enabled()
+      ? Math.floor(paidSubtotal * this.settings().points_earned_per_usd)
+      : 0;
+  }
+
   canRedeem(rewardCost: number, quantity = 1): boolean {
     const totalCost = Math.ceil(rewardCost * Math.max(1, quantity));
     return this.enabled()

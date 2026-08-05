@@ -1,3 +1,17 @@
+@if (!authenticated() && !loading()) {
+<a class="loyalty-badge loyalty-badge--guest" routerLink="/auth/customer-login"
+  [queryParams]="{ returnUrl: returnUrl() }" [class.loyalty-badge--detail]="mode() === 'detail'"
+  [class.loyalty-badge--disabled]="disabled()"
+  [attr.title]="'CUSTOMER.LOYALTY.SIGN_IN_TOOLTIP' | translate">
+  <i class="pi pi-star-fill" aria-hidden="true"></i>
+  <span>{{ 'CUSTOMER.LOYALTY.SIGN_IN_TO_EARN' | translate: { points: pointsEarned() } }}</span>
+
+  @if (mode() === 'detail' && rewardCost() !== null) {
+  <span class="loyalty-badge__divider" aria-hidden="true"></span>
+  <strong>{{ 'CUSTOMER.LOYALTY.FREE_WITH' | translate: { points: rewardCost() } }}</strong>
+  }
+</a>
+} @else {
 <div class="loyalty-badge" [class.loyalty-badge--detail]="mode() === 'detail'"
   [class.loyalty-badge--disabled]="disabled()" [attr.aria-busy]="loading()">
   @if (loading()) {
@@ -13,3 +27,4 @@
   }
   }
 </div>
+}

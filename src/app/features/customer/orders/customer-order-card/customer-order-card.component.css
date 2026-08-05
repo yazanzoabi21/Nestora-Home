@@ -251,6 +251,7 @@
     gap: 0.65rem;
   }
 
+
   .order-card__summary > strong {
     min-width: 0;
     margin-inline-start: auto;
@@ -275,6 +276,7 @@
   .order-card__summary {
     flex-wrap: wrap;
   }
+
 
   .order-card__summary > strong {
     order: 2;

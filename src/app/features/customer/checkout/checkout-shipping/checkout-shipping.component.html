@@ -5,6 +5,32 @@
     {{ 'CUSTOMER.CHECKOUT.SHIPPING.TITLE' | translate }}
   </h1>
 
+  @if (authenticated()) {
+    <div class="mt-5">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h2 class="text-sm font-extrabold text-[#344134]">{{ 'CUSTOMER.CHECKOUT.SHIPPING.SAVED_ADDRESSES' | translate }}</h2>
+        <button class="text-xs font-extrabold text-[#607254] hover:underline" type="button" (click)="chooseNewAddress()">
+          <i class="pi pi-plus me-1" aria-hidden="true"></i>{{ 'CUSTOMER.CHECKOUT.SHIPPING.ADD_NEW_ADDRESS' | translate }}
+        </button>
+      </div>
+      @if (addressesLoading()) {
+        <div class="rounded-xl border border-[#e8e1d9] p-4 text-center text-sm text-[#77716b]"><i class="pi pi-spinner pi-spin me-2" aria-hidden="true"></i>{{ 'CUSTOMER.CHECKOUT.SHIPPING.LOADING_ADDRESSES' | translate }}</div>
+      } @else if (addressesError()) {
+        <p class="rounded-xl bg-[#fff5f5] p-3 text-xs text-[#a34b55]">{{ 'CUSTOMER.CHECKOUT.SHIPPING.ADDRESSES_ERROR' | translate }}</p>
+      } @else if (addresses().length) {
+        <div class="grid grid-cols-2 gap-3 max-sm:grid-cols-1" role="radiogroup" [attr.aria-label]="'CUSTOMER.CHECKOUT.SHIPPING.SAVED_ADDRESSES' | translate">
+          @for (address of addresses(); track address.id) {
+            <button class="saved-address" [class.saved-address--selected]="selectedAddressId() === address.id" type="button" role="radio" [attr.aria-checked]="selectedAddressId() === address.id" (click)="chooseAddress(address.id)">
+              <span class="flex items-center justify-between gap-2"><strong class="truncate">{{ address.label }}</strong>@if (address.isDefault) { <small>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.DEFAULT' | translate }}</small> }</span>
+              <span>{{ address.streetAddress }}@if (address.apartmentOrBuilding) {, {{ address.apartmentOrBuilding }}}</span>
+              <span>{{ address.city }}@if (address.areaOrDistrict) {, {{ address.areaOrDistrict }}}</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
   <form class="mt-[1.35rem] grid grid-cols-2
            gap-x-[1.1rem] gap-y-4
            max-sm:grid-cols-1" [formGroup]="form" (ngSubmit)="submit()">
@@ -78,6 +104,21 @@
         'CUSTOMER.CHECKOUT.SHIPPING.PLACEHOLDERS.DELIVERY_INSTRUCTIONS'
           | translate
       " [control]="form.controls.deliveryInstructions" [error]="error('deliveryInstructions')" />
+
+    @if (authenticated() && !selectedAddressId()) {
+      <div class="col-span-full rounded-xl bg-[#f6f7f3] p-4 max-sm:col-span-1">
+        <label class="flex cursor-pointer items-center gap-2.5 text-sm font-bold text-[#344134]">
+          <input class="size-4 accent-[#718369]" type="checkbox" [formControl]="saveForFuture" />
+          {{ 'CUSTOMER.CHECKOUT.SHIPPING.SAVE_FOR_FUTURE' | translate }}
+        </label>
+        @if (saveForFuture.value) {
+          <label class="mt-3 grid gap-1.5 text-xs font-bold text-[#4f5a4f]">
+            {{ 'CUSTOMER.CHECKOUT.SHIPPING.ADDRESS_LABEL' | translate }}
+            <input class="rounded-xl border border-[#dfd6cc] bg-white px-3 py-2.5 outline-none focus:border-[#718369]" [formControl]="addressLabel" maxlength="40" />
+          </label>
+        }
+      </div>
+    }
 
     <button class="col-span-full inline-flex h-[2.95rem]
              cursor-pointer items-center justify-center

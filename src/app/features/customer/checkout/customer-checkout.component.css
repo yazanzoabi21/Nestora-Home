@@ -44,6 +44,16 @@
   min-width: 0;
 }
 
+.checkout-layout__main {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.checkout-layout__summary {
+  grid-column: 2;
+  grid-row: 1;
+}
+
 @media (min-width: 1024px) {
   .checkout-page {
     padding-top: 1.75rem;
@@ -63,5 +73,11 @@
 @media (max-width: 860px) {
   .checkout-layout {
     grid-template-columns: 1fr;
+  }
+
+  .checkout-layout__main,
+  .checkout-layout__summary {
+    grid-column: 1;
+    grid-row: auto;
   }
 }

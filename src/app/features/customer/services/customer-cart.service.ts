@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
+import { CustomerAuthService } from '../../../core/services/auth';
 import { Product } from '../../../data-access';
 import { CustomerCartLine, CustomerProduct, GuestCartItem } from '../models';
 
@@ -16,8 +17,10 @@ interface CartItemRecord {
 @Injectable({ providedIn: 'root' })
 export class CustomerCartService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
+  private readonly auth = inject(CustomerAuthService);
 
   async getOrCreateCart(userId: string): Promise<string> {
+    this.requireAuthenticatedCustomer(userId);
     const { data, error } = await this.supabase
       .from('carts')
       .select('id,user_id')
@@ -39,6 +42,7 @@ export class CustomerCartService {
   }
 
   async loadLines(cartId: string): Promise<CustomerCartLine[]> {
+    this.requireAuthenticatedCustomer();
     const { data, error } = await this.supabase
       .from('cart_items')
       .select(`id,quantity,products:product_id(*,categories(name))`)
@@ -60,6 +64,7 @@ export class CustomerCartService {
     quantity: number,
     cartItemId?: string,
   ): Promise<string> {
+    this.requireAuthenticatedCustomer();
     if (!Number.isInteger(quantity) || quantity < 1) {
       throw new Error('Cart quantity must be a positive integer.');
     }
@@ -101,6 +106,7 @@ export class CustomerCartService {
   }
 
   async removeItem(cartId: string, productId: string): Promise<void> {
+    this.requireAuthenticatedCustomer();
     const { error } = await this.supabase
       .from('cart_items')
       .delete()
@@ -139,6 +145,16 @@ export class CustomerCartService {
 
     if (error) throw new Error('Unable to refresh product availability.');
     return (data ?? []).map((row) => this.toCustomerProduct(row as Product));
+  }
+
+  private requireAuthenticatedCustomer(expectedUserId?: string): string {
+    const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
+
+    if (!userId || (expectedUserId !== undefined && userId !== expectedUserId)) {
+      throw new Error('An authenticated customer is required for the server cart.');
+    }
+
+    return userId;
   }
 
   private toCustomerProduct(product: Product): CustomerProduct {

@@ -1,0 +1,104 @@
+<section class="min-w-0" aria-labelledby="saved-addresses-title">
+  <header class="mb-5 flex items-center justify-between gap-4 max-sm:items-start">
+    <div>
+      <p class="mb-1 text-xs font-bold uppercase tracking-[.14em] text-[#718369]">{{
+        'CUSTOMER.ACCOUNT.ADDRESSES.EYEBROW' | translate }}</p>
+      <h1 id="saved-addresses-title" class="m-0 text-2xl font-extrabold text-[#1f2a1f] max-sm:text-xl">{{
+        'CUSTOMER.ACCOUNT.ADDRESSES.TITLE' | translate }}</h1>
+    </div>
+    <button
+      class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-[#718369] px-4 text-sm font-extrabold text-white hover:bg-[#607254]"
+      type="button" (click)="openAdd()">
+      <i class="pi pi-plus text-xs" aria-hidden="true"></i>
+      <span class="max-[420px]:hidden">{{ 'CUSTOMER.ACCOUNT.ADDRESSES.ADD_NEW' | translate }}</span>
+      <span class="hidden max-[420px]:inline">{{ 'CUSTOMER.ACCOUNT.ADDRESSES.ADD' | translate }}</span>
+    </button>
+  </header>
+
+  @if (addressBook.loading()) {
+  <div class="grid min-h-52 place-items-center rounded-2xl bg-white text-[#718369]"><i
+      class="pi pi-spinner pi-spin text-2xl" aria-hidden="true"></i></div>
+  } @else if (addressBook.error()) {
+  <div class="rounded-2xl border border-[#ead2d5] bg-white p-8 text-center">
+    <i class="pi pi-exclamation-circle text-2xl text-[#b43f4d]" aria-hidden="true"></i>
+    <p class="mt-3 text-sm text-[#5f5b57]">{{ 'CUSTOMER.ACCOUNT.ADDRESSES.LOAD_ERROR' | translate }}</p>
+    <button class="mt-4 font-bold text-[#607254] underline" type="button" (click)="reload()">{{
+      'CUSTOMER.ACCOUNT.ADDRESSES.RETRY' | translate }}</button>
+  </div>
+  } @else if (addressBook.addresses().length === 0) {
+  <div
+    class="grid min-h-64 place-items-center rounded-2xl border border-dashed border-[#d8d1c8] bg-white p-8 text-center">
+    <div>
+      <span class="mx-auto grid size-14 place-items-center rounded-full bg-[#f1f4ed] text-[#718369]"><i
+          class="pi pi-map-marker text-xl" aria-hidden="true"></i></span>
+      <h2 class="mt-4 text-lg font-extrabold text-[#1f2a1f]">{{ 'CUSTOMER.ACCOUNT.ADDRESSES.EMPTY_TITLE' | translate }}
+      </h2>
+      <p class="mt-2 max-w-md text-sm leading-6 text-[#77716b]">{{ 'CUSTOMER.ACCOUNT.ADDRESSES.EMPTY_TEXT' | translate
+        }}</p>
+      <button class="mt-5 rounded-xl bg-[#718369] px-5 py-3 text-sm font-extrabold text-white" type="button"
+        (click)="openAdd()">{{ 'CUSTOMER.ACCOUNT.ADDRESSES.ADD_NEW' | translate }}</button>
+    </div>
+  </div>
+  } @else {
+  <div class="grid grid-cols-2 gap-4 max-[1050px]:grid-cols-1">
+    @for (address of addressBook.addresses(); track address.id) {
+    <article class="address-card" [class.address-card--default]="address.isDefault">
+      <div class="flex min-w-0 items-start justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-2.5">
+          <i class="pi pi-map-marker shrink-0 text-[#718369]" aria-hidden="true"></i>
+          <h2 class="truncate text-base font-extrabold text-[#263326]">{{ address.label }}</h2>
+        </div>
+        @if (address.isDefault) { <span
+          class="rounded-full bg-[#eee5d8] px-2.5 py-1 text-[.68rem] font-bold text-[#806f58]">{{
+          'CUSTOMER.ACCOUNT.ADDRESSES.DEFAULT' | translate }}</span> }
+      </div>
+      <p class="mt-4 font-bold text-[#303a30]">{{ address.fullName }}</p>
+      <address class="mt-2 not-italic text-sm leading-6 text-[#615d58]">
+        {{ address.streetAddress }}@if (address.apartmentOrBuilding) {, {{ address.apartmentOrBuilding }}}<br />
+        {{ address.city }}@if (address.areaOrDistrict) {, {{ address.areaOrDistrict }}}@if (address.postalCode) { {{
+        address.postalCode }}}<br />
+        {{ address.country }} · {{ address.phone }}
+      </address>
+      <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#eee8e1] pt-4 text-xs font-bold">
+        <button class="text-[#718369] hover:underline" type="button" (click)="openEdit(address)"><i
+            class="pi pi-pencil me-1" aria-hidden="true"></i>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.EDIT' | translate
+          }}</button>
+        <button class="text-[#a34b55] hover:underline" type="button" (click)="askRemove(address)"><i
+            class="pi pi-trash me-1" aria-hidden="true"></i>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.REMOVE' | translate
+          }}</button>
+        @if (!address.isDefault) {
+        <button class="ms-auto text-[#52664a] hover:underline disabled:opacity-50" type="button"
+          [disabled]="settingDefaultId() === address.id" (click)="setDefault(address)">
+          @if (settingDefaultId() === address.id) { <i class="pi pi-spinner pi-spin me-1" aria-hidden="true"></i> }
+          {{ 'CUSTOMER.ACCOUNT.ADDRESSES.SET_DEFAULT' | translate }}
+        </button>
+        }
+      </div>
+    </article>
+    }
+  </div>
+  }
+</section>
+
+<app-admin-form-modal [isOpen]="editing() !== undefined" variant="form" size="xl" [title]="editing()
+    ? 'CUSTOMER.ACCOUNT.ADDRESSES.EDIT_TITLE'
+    : 'CUSTOMER.ACCOUNT.ADDRESSES.ADD_TITLE'" [submitLabel]="editing()
+    ? 'CUSTOMER.ACCOUNT.ADDRESSES.SAVE_CHANGES'
+    : 'CUSTOMER.ACCOUNT.ADDRESSES.SAVE_ADDRESS'" cancelLabel="CUSTOMER.ACCOUNT.ADDRESSES.CANCEL" [loading]="saving()"
+  (close)="closeForm()" (submit)="addressForm.submit()">
+
+  <app-customer-address-form #addressForm [address]="editing() ?? null" [saving]="saving()" [showActions]="false"
+    (save)="saveAddress($event)" (dismissed)="closeForm()" />
+</app-admin-form-modal>
+
+<app-admin-form-modal [isOpen]="removing() !== null" variant="delete" title="CUSTOMER.ACCOUNT.ADDRESSES.REMOVE_TITLE"
+  [message]="'CUSTOMER.ACCOUNT.ADDRESSES.REMOVE_TEXT'" submitLabel="CUSTOMER.ACCOUNT.ADDRESSES.REMOVE"
+  cancelLabel="CUSTOMER.ACCOUNT.ADDRESSES.CANCEL" [loading]="deleting()" (close)="cancelRemove()"
+  (submit)="confirmRemove()">
+
+  @if (removing(); as address) {
+  <p class="mt-3 rounded-xl bg-[#f7f4ef] px-4 py-3 text-sm font-extrabold text-[#1f2a1f]">
+    {{ address.label }}
+  </p>
+  }
+</app-admin-form-modal>

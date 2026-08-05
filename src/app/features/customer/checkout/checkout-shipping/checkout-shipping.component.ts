@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { CheckoutSelectOption, CheckoutShippingInformation, CheckoutShippingPrefill } from '../models';
+import { CheckoutSelectOption, CheckoutShippingInformation, CheckoutShippingPrefill, CheckoutShippingSubmission } from '../models';
+import { CustomerAddress } from '../../models';
 import { CheckoutFormFieldComponent } from '../shared/checkout-form-field';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -33,7 +34,14 @@ type ShippingFormControlName = keyof ShippingForm['controls'];
 export class CheckoutShippingComponent {
   readonly initialValue = input<CheckoutShippingInformation | null>(null);
   readonly prefill = input<CheckoutShippingPrefill | null>(null);
-  readonly continue = output<CheckoutShippingInformation>();
+  readonly authenticated = input(false);
+  readonly addresses = input<readonly CustomerAddress[]>([]);
+  readonly addressesLoading = input(false);
+  readonly addressesError = input<string | null>(null);
+  readonly selectedAddressId = input<string | null>(null);
+  readonly addressSelect = output<string>();
+  readonly newAddress = output<void>();
+  readonly continue = output<CheckoutShippingSubmission>();
 
   private hasSubmitted = false;
   private appliedValueKey: string | null = null;
@@ -42,6 +50,11 @@ export class CheckoutShippingComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly countries = signal<CheckoutSelectOption[]>([]);
+  readonly saveForFuture = new FormControl(false, { nonNullable: true });
+  readonly addressLabel = new FormControl('Home', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.maxLength(40)],
+  });
 
   readonly form: ShippingForm = new FormGroup({
     firstName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -192,24 +205,45 @@ export class CheckoutShippingComponent {
     this.hasSubmitted = true;
     this.form.markAllAsTouched();
 
-    if (this.form.invalid) {
+    if (this.saveForFuture.value && !this.form.controls.phone.value.trim()) {
+      this.form.controls.phone.addValidators(Validators.required);
+    } else {
+      this.form.controls.phone.removeValidators(Validators.required);
+    }
+    this.form.controls.phone.updateValueAndValidity({ emitEvent: false });
+
+    if (this.form.invalid || (this.saveForFuture.value && this.addressLabel.invalid)) {
+      this.addressLabel.markAsTouched();
       return;
     }
 
     const value = this.form.getRawValue();
 
     this.continue.emit({
-      ...value,
-      phone: value.phone.trim() || null,
-      addressLine2: value.addressLine2.trim() || null,
-      postalCode: value.postalCode.trim() || null,
-      deliveryInstructions:
-        value.deliveryInstructions.trim() || null,
+      shippingInformation: {
+        ...value,
+        phone: value.phone.trim() || null,
+        addressLine2: value.addressLine2.trim() || null,
+        postalCode: value.postalCode.trim() || null,
+        deliveryInstructions: value.deliveryInstructions.trim() || null,
+      },
+      saveForFuture: this.authenticated() && !this.selectedAddressId() && this.saveForFuture.value,
+      addressLabel: this.addressLabel.value.trim() || 'Home',
     });
   }
 
+  chooseAddress(id: string): void {
+    this.saveForFuture.setValue(false);
+    this.addressSelect.emit(id);
+  }
+
+  chooseNewAddress(): void {
+    this.saveForFuture.setValue(false);
+    this.newAddress.emit();
+  }
+
   private patchSafePrefill(prefill: CheckoutShippingPrefill): void {
-    for (const [name, value] of Object.entries(prefill) as Array<[ShippingFormControlName, string | undefined]>) {
+    for (const [name, value] of Object.entries(prefill) as [ShippingFormControlName, string | undefined][]) {
       const nextValue = value?.trim();
       if (!nextValue) continue;
 

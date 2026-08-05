@@ -8,7 +8,7 @@ import { CheckoutOrderSummaryComponent } from './checkout-order-summary/checkout
 import { CheckoutPaymentComponent } from './checkout-payment/checkout-payment.component';
 import { CheckoutShippingComponent } from './checkout-shipping/checkout-shipping.component';
 import { CheckoutStepperComponent } from './checkout-stepper/checkout-stepper.component';
-import { CheckoutShippingInformation, CheckoutStep } from './models';
+import { CheckoutShippingSubmission, CheckoutStep } from './models';
 import { CustomerCheckoutOrderService, CustomerCheckoutStateService } from './services';
 
 @Component({
@@ -49,9 +49,13 @@ export class CustomerCheckoutComponent implements OnInit {
 
   readonly canOpenStep = (step: CheckoutStep): boolean => this.state.canOpenStep(step);
 
-  saveShipping(value: CheckoutShippingInformation): void {
+  saveShipping(value: CheckoutShippingSubmission): void {
     this.state.setShippingInformation(value);
     this.state.goToDelivery();
+  }
+
+  selectSavedAddress(id: string): void {
+    this.state.selectSavedAddress(id);
   }
 
   selectShippingMethod(id: string): void {

@@ -24,6 +24,8 @@ interface CustomerOrderDatabaseRow {
   shipping_method_id: string | null;
   payment_method_id: string | null;
   discount_code: string | null;
+  loyalty_points_earned: number | string | null;
+  loyalty_checkout_processed: boolean | null;
 }
 
 interface CustomerOrderItemDatabaseRow {
@@ -60,7 +62,9 @@ const ORDER_SELECT = `
   created_at,
   shipping_method_id,
   payment_method_id,
-  discount_code
+  discount_code,
+  loyalty_points_earned,
+  loyalty_checkout_processed
 `;
 
 const ORDER_ITEM_SELECT = 'order_id, product_id, quantity, price, total';
@@ -185,6 +189,8 @@ export class CustomerOrdersService {
       shippingMethodId: order.shipping_method_id,
       paymentMethodId: order.payment_method_id,
       discountCode: order.discount_code,
+      loyaltyPointsEarned: Math.max(0, Math.trunc(this.toAmount(order.loyalty_points_earned))),
+      loyaltyCheckoutProcessed: order.loyalty_checkout_processed === true,
       items,
     };
   }

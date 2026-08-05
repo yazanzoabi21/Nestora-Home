@@ -11,6 +11,7 @@ interface SupabaseOrder {
   status: string | null;
   payment_status: string | null;
   subtotal: number | null;
+  discount_amount: number | null;
   shipping: number | null;
   total: number | null;
   address: string | null;
@@ -19,6 +20,8 @@ interface SupabaseOrder {
   phone: string | null;
   notes: string | null;
   created_at: string | null;
+  loyalty_points_earned: number | null;
+  loyalty_checkout_processed: boolean | null;
 }
 
 interface SupabaseProfile {
@@ -31,6 +34,10 @@ interface SupabaseProfile {
 interface SupabaseOrderItem {
   order_id: string;
   quantity: number | null;
+}
+
+interface SupabaseLoyaltyLedgerEntry {
+  order_id: string | null;
 }
 
 interface SupabaseOrderShippingAddress {
@@ -69,6 +76,7 @@ export class OrdersService {
           status,
           payment_status,
           subtotal,
+          discount_amount,
           shipping,
           total,
           address,
@@ -76,7 +84,9 @@ export class OrdersService {
           country,
           phone,
           notes,
-          created_at
+          created_at,
+          loyalty_points_earned,
+          loyalty_checkout_processed
         `)
         .order('created_at', { ascending: false });
 
@@ -110,10 +120,12 @@ export class OrdersService {
       profiles,
       orderItemsCounts,
       shippingAddresses,
+      loyaltyProcessedOrderIds,
     ] = await Promise.all([
       this.fetchProfiles(userIds),
       this.fetchOrderItemsCounts(orderIds),
       this.fetchShippingAddresses(orderIds),
+      this.fetchLoyaltyProcessedOrderIds(orderIds),
     ]);
 
     const profilesById = new Map(
@@ -161,6 +173,7 @@ export class OrdersService {
         profile,
         shippingAddress,
         orderItemsCounts[order.id] ?? 0,
+        loyaltyProcessedOrderIds.has(order.id),
       );
     });
   } catch (error) {
@@ -356,6 +369,28 @@ export class OrdersService {
     return counts;
   }
 
+  private async fetchLoyaltyProcessedOrderIds(
+    orderIds: readonly string[],
+  ): Promise<ReadonlySet<string>> {
+    if (!orderIds.length) return new Set<string>();
+
+    const { data, error } = await this.supabase
+      .from('customer_loyalty_points_ledger')
+      .select('order_id')
+      .in('order_id', [...orderIds])
+      .eq('transaction_type', 'earn');
+
+    if (error) {
+      throw new Error(`Unable to load loyalty processing state: ${error.message}`);
+    }
+
+    return new Set(
+      ((data ?? []) as SupabaseLoyaltyLedgerEntry[])
+        .map((entry) => entry.order_id)
+        .filter((orderId): orderId is string => typeof orderId === 'string'),
+    );
+  }
+
   private mapToAdminOrder(
   order: SupabaseOrder,
   profile: SupabaseProfile | undefined,
@@ -363,6 +398,7 @@ export class OrdersService {
     | SupabaseOrderShippingAddress
     | undefined,
   itemCount: number,
+  loyaltyProcessed: boolean,
 ): AdminOrder {
   const orderId =
     order.order_number?.trim() ||
@@ -375,6 +411,12 @@ export class OrdersService {
     );
 
   const isLoggedInOrder = !!order.user_id;
+  const loyaltyPoints = order.loyalty_checkout_processed
+    ? Math.max(0, Math.floor(Number(order.loyalty_points_earned ?? 0)))
+    : Math.max(
+        0,
+        Math.floor(Number(order.subtotal ?? 0) - Number(order.discount_amount ?? 0)),
+      );
 
   const customerName = isLoggedInOrder
     ? profile?.full_name?.trim() ||
@@ -401,6 +443,9 @@ export class OrdersService {
     id: orderId,
     orderId,
     supabaseOrderId: order.id,
+    customerUserId: order.user_id,
+    loyaltyPoints,
+    loyaltyProcessed,
 
     customerName,
     customerEmail,

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 export type LoyaltyPointsBadgeMode = 'compact' | 'detail';
@@ -6,7 +7,7 @@ export type LoyaltyPointsBadgeMode = 'compact' | 'detail';
 @Component({
   selector: 'app-customer-loyalty-points-badge',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './customer-loyalty-points-badge.component.html',
   styleUrl: './customer-loyalty-points-badge.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,4 +18,6 @@ export class CustomerLoyaltyPointsBadgeComponent {
   readonly mode = input<LoyaltyPointsBadgeMode>('compact');
   readonly loading = input(false);
   readonly disabled = input(false);
+  readonly authenticated = input(false);
+  readonly returnUrl = input('/shop/products');
 }

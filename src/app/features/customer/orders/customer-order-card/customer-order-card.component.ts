@@ -9,6 +9,7 @@ type OrderStatusTone = 'success' | 'info' | 'warning' | 'danger' | 'neutral';
 
 const STATUS_TONES: Readonly<Record<string, OrderStatusTone>> = {
   delivered: 'success',
+  completed: 'success',
   shipped: 'warning',
   processing: 'info',
   confirmed: 'warning',
@@ -25,6 +26,7 @@ const KNOWN_STATUS_KEYS = new Set([
   'confirmed',
   'shipped',
   'delivered',
+  'completed',
   'cancelled',
   'canceled',
   'refunded',
@@ -72,6 +74,20 @@ export class CustomerOrderCardComponent {
       .filter((part): part is string => Boolean(part))
       .join(', '),
   );
+  readonly loyaltyState = computed<'pending' | 'credited' | null>(() => {
+    const order = this.order();
+    if (order.loyaltyPointsEarned <= 0 || !order.loyaltyCheckoutProcessed) return null;
+    if (order.status === 'delivered' || order.status === 'completed') return 'credited';
+    if (
+      order.status === 'cancelled' ||
+      order.status === 'canceled' ||
+      order.status === 'refunded' ||
+      order.status === 'returned'
+    ) {
+      return null;
+    }
+    return 'pending';
+  });
 
   requestToggle(): void {
     this.toggleRequested.emit();

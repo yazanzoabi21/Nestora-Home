@@ -80,7 +80,7 @@
 
   <app-checkout-order-summary class="confirmation__summary" [items]="order.items" [totals]="order.totals" />
 
-  @if (pendingLoyaltyPoints() > 0) {
+  @if (isAuthenticated() && pendingLoyaltyPoints() > 0) {
   <aside class="confirmation__loyalty" aria-live="polite">
     <span class="confirmation__loyalty-icon" aria-hidden="true">
       <i class="pi pi-sparkles"></i>
@@ -88,11 +88,10 @@
     <div>
       <strong>
         {{
-        'CUSTOMER.CHECKOUT.CONFIRMATION.LOYALTY_PENDING_TITLE'
+        'CUSTOMER.CHECKOUT.CONFIRMATION.LOYALTY_PENDING'
         | translate: { points: pendingLoyaltyPoints() }
         }}
       </strong>
-      <p>{{ 'CUSTOMER.CHECKOUT.CONFIRMATION.LOYALTY_PENDING_DETAIL' | translate }}</p>
     </div>
   </aside>
   }

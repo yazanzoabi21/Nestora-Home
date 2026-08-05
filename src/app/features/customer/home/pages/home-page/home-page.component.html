@@ -300,8 +300,8 @@
           (click)="openOfferAction(offer)">
           {{
           hasValidOfferAction(offer)
-          ? offerActionText(offer) || ('CUSTOMER.HOME.OFFERS.VIEW_OFFER' | translate)
-          : ('CUSTOMER.HOME.OFFERS.COMING_SOON' | translate)
+            ? (offerActionText(offer) || ('CUSTOMER.HOME.OFFERS.VIEW_OFFER' | translate))
+            : ('CUSTOMER.HOME.OFFERS.COMING_SOON' | translate)
           }}
           @if (hasValidOfferAction(offer)) {
           <i class="pi pi-arrow-right text-xs rtl:rotate-180" aria-hidden="true"></i>

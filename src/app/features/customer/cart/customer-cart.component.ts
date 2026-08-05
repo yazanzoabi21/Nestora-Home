@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ToastService } from '../../../core/services';
+import { CustomerAuthService } from '../../../core/services/auth';
 import { Discount, DiscountsService } from '../../../data-access';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { CustomerLoyaltyPointsBadgeComponent } from '../../../shared/components/customer-loyalty-points-badge';
@@ -23,6 +24,7 @@ import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '..
 export class CustomerCartComponent implements OnInit {
   readonly shopping = inject(CustomerShoppingStateService);
   readonly loyalty = inject(LoyaltyPointsCalculatorService);
+  readonly customerAuth = inject(CustomerAuthService);
   private readonly discounts = inject(DiscountsService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
@@ -158,6 +160,22 @@ export class CustomerCartComponent implements OnInit {
       this.shopping.discountAmount(),
     ),
   );
+  readonly estimatedLoyaltyPoints = computed(() => {
+    if (!this.customerAuth.isAuthenticated()) return 0;
+
+    const redeemedIds = new Set(this.loyalty.requestedRedemptionProductIds());
+    const eligibleSubtotal = this.shopping.cart().reduce(
+      (subtotal, line) => redeemedIds.has(line.product.id)
+        ? subtotal
+        : subtotal + line.product.price * line.quantity,
+      0,
+    );
+
+    return this.loyalty.estimateOrderPoints(
+      eligibleSubtotal,
+      this.shopping.discountAmount(),
+    );
+  });
 
   readonly freeShippingDiscount = signal<Discount | null>(null);
   readonly loadingShippingDiscount = signal(false);
