@@ -1,2 +1,1 @@
 export * from './customer-product-quick-view.component';
-

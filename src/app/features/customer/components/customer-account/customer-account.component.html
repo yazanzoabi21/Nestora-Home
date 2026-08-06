@@ -64,7 +64,8 @@
               </p>
 
               @if (showLoyalty()) {
-              <span class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#edf4e9] px-2.5 py-1 text-[0.68rem] font-black text-[#58704e]">
+              <span
+                class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#edf4e9] px-2.5 py-1 text-[0.68rem] font-black text-[#58704e]">
                 <i class="pi pi-star-fill" aria-hidden="true"></i>
                 {{ 'CUSTOMER.LOYALTY.AVAILABLE_SHORT' | translate: { points: counts().points } }}
               </span>
@@ -77,9 +78,7 @@
                    [&>div]:px-[0.35rem]
                    [&>div+div]:border-s
                    [&>div+div]:border-[#eee8e1]
-                   max-[520px]:mt-4"
-            [class.grid-cols-4]="showLoyalty()"
-            [class.grid-cols-3]="!showLoyalty()">
+                   max-[520px]:mt-4" [class.grid-cols-4]="showLoyalty()" [class.grid-cols-3]="!showLoyalty()">
             <div>
               <dt class="m-0 text-base font-extrabold leading-[1.2]
                        text-[#172117]
@@ -194,7 +193,8 @@
 
             @if (item.badgeKey; as badgeKey) {
             <app-count-badge class="ms-auto shrink-0
-                         max-[800px]:ms-[0.2rem]" [value]="counts()[badgeKey]" [hideWhenZero]="badgeKey !== 'points'" [ariaLabel]="
+                         max-[800px]:ms-[0.2rem]" [value]="counts()[badgeKey]" [hideWhenZero]="badgeKey !== 'points'"
+              [ariaLabel]="
                     counts()[badgeKey] +
                     ' ' +
                     (item.labelKey | translate)

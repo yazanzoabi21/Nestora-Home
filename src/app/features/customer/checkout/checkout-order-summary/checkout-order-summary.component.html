@@ -100,7 +100,7 @@
     </div>
   </dl>
 
-  @if (!authenticated() || loyaltyPoints() > 0) {
+  @if (!authenticated() || (authenticated() && loyaltyPoints() > 0)) {
   <section class="mt-5 rounded-2xl border border-[#d9e2d2] bg-[#f5f2ec] p-4"
     [attr.aria-label]="'CUSTOMER.CHECKOUT.SUMMARY.LOYALTY_TITLE' | translate">
     <div class="flex items-start gap-3">

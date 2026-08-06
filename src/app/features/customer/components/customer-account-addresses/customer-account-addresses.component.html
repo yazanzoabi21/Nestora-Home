@@ -7,7 +7,7 @@
         'CUSTOMER.ACCOUNT.ADDRESSES.TITLE' | translate }}</h1>
     </div>
     <button
-      class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-[#718369] px-4 text-sm font-extrabold text-white hover:bg-[#607254]"
+      class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-[#718369] px-4 text-sm font-extrabold text-white hover:bg-[#607254] cursor-pointer"
       type="button" (click)="openAdd()">
       <i class="pi pi-plus text-xs" aria-hidden="true"></i>
       <span class="max-[420px]:hidden">{{ 'CUSTOMER.ACCOUNT.ADDRESSES.ADD_NEW' | translate }}</span>
@@ -60,10 +60,10 @@
         {{ address.country }} · {{ address.phone }}
       </address>
       <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#eee8e1] pt-4 text-xs font-bold">
-        <button class="text-[#718369] hover:underline" type="button" (click)="openEdit(address)"><i
+        <button class="text-[#718369] hover:underline cursor-pointer" type="button" (click)="openEdit(address)"><i
             class="pi pi-pencil me-1" aria-hidden="true"></i>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.EDIT' | translate
           }}</button>
-        <button class="text-[#a34b55] hover:underline" type="button" (click)="askRemove(address)"><i
+        <button class="text-[#a34b55] hover:underline cursor-pointer" type="button" (click)="askRemove(address)"><i
             class="pi pi-trash me-1" aria-hidden="true"></i>{{ 'CUSTOMER.ACCOUNT.ADDRESSES.REMOVE' | translate
           }}</button>
         @if (!address.isDefault) {

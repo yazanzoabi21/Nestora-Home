@@ -1,0 +1,119 @@
+<section class="space-y-5">
+    @if (isLoading()) {
+    <div class="rounded-[1.25rem] bg-white p-6 text-sm text-[#77736d] shadow-[0_6px_18px_rgba(49,43,37,0.08)]">
+        {{ 'CUSTOMER.ACCOUNT.SETTINGS.LOADING' | translate }}
+    </div>
+    } @else {
+    <!-- Notifications -->
+    <section class="rounded-[1.25rem] bg-white px-6 py-6 shadow-[0_6px_18px_rgba(49,43,37,0.08)] sm:px-7">
+        <div class="flex items-center gap-2.5">
+            <i class="pi pi-bell text-[17px] text-[#708165]"></i>
+
+            <h3 class="text-[18px] font-semibold text-[#2e342b]">
+                {{ 'CUSTOMER.ACCOUNT.SETTINGS.NOTIFICATIONS' | translate }}
+            </h3>
+        </div>
+
+        @if (notificationError()) {
+        <p class="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ notificationError()! | translate }}
+        </p>
+        }
+
+        <div class="mt-5 space-y-3.5">
+            @for (item of notificationItems; track item.key) {
+            <div class="flex min-h-7 items-center justify-between gap-5">
+                <p class="text-sm font-medium text-[#30362f]">
+                    {{ item.titleKey | translate }}
+                </p>
+
+                <button type="button" role="switch" [attr.aria-checked]="isPreferenceEnabled(item.key)"
+                    [attr.aria-label]="item.titleKey | translate" [disabled]="savingKey() === item.key"
+                    (click)="togglePreference(item.key, !isPreferenceEnabled(item.key))"
+                    class="relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-55"
+                    [class.bg-[#718369]]="isPreferenceEnabled(item.key)"
+                    [class.bg-[#e7ddd1]]="!isPreferenceEnabled(item.key)">
+                    <span
+                        class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200"
+                        [class.translate-x-5]="isPreferenceEnabled(item.key)"
+                        [class.translate-x-0]="!isPreferenceEnabled(item.key)"></span>
+                </button>
+            </div>
+            }
+        </div>
+    </section>
+
+    <!-- Change password -->
+    @if (isPasswordLoginAvailable()) {
+    <section class="rounded-[1.25rem] bg-white px-6 py-6 shadow-[0_6px_18px_rgba(49,43,37,0.08)] sm:px-7">
+        <div class="flex items-center gap-2.5">
+            <i class="pi pi-lock text-[17px] text-[#708165]"></i>
+
+            <h3 class="text-[18px] font-semibold text-[#2e342b]">
+                {{ 'CUSTOMER.ACCOUNT.SETTINGS.CHANGE_PASSWORD' | translate }}
+            </h3>
+        </div>
+
+        @if (passwordError()) {
+        <p class="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ passwordError()! | translate }}
+        </p>
+        }
+
+        @if (passwordSuccess()) {
+        <p class="mt-5 rounded-xl bg-[#eff6ea] px-4 py-3 text-sm text-[#557147]">
+            {{ passwordSuccess()! | translate }}
+        </p>
+        }
+
+        <form class="mt-5 grid gap-4" (ngSubmit)="updatePassword()">
+            <label class="block">
+                <span class="mb-2 block text-xs font-medium text-[#6d7280]">
+                    {{ 'CUSTOMER.ACCOUNT.SETTINGS.CURRENT_PASSWORD' | translate }}
+                </span>
+
+                <input type="password" name="currentPassword" [(ngModel)]="currentPassword"
+                    autocomplete="current-password"
+                    class="h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+            </label>
+
+            <label class="block">
+                <span class="mb-2 block text-xs font-medium text-[#6d7280]">
+                    {{ 'CUSTOMER.ACCOUNT.SETTINGS.NEW_PASSWORD' | translate }}
+                </span>
+
+                <input type="password" name="newPassword" [(ngModel)]="newPassword" autocomplete="new-password"
+                    class="h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+            </label>
+
+            <label class="block">
+                <span class="mb-2 block text-xs font-medium text-[#6d7280]">
+                    {{ 'CUSTOMER.ACCOUNT.SETTINGS.CONFIRM_NEW_PASSWORD' | translate }}
+                </span>
+
+                <input type="password" name="confirmNewPassword" [(ngModel)]="confirmNewPassword"
+                    autocomplete="new-password"
+                    class="h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+            </label>
+
+            <div class="pt-0.5">
+                <button type="submit" [disabled]="isUpdatingPassword()"
+                    class="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#718369] px-6 text-sm font-semibold text-white transition hover:bg-[#617456] disabled:cursor-not-allowed disabled:opacity-60">
+                    @if (isUpdatingPassword()) {
+                    <i class="pi pi-spin pi-spinner"></i>
+                    {{ 'CUSTOMER.ACCOUNT.SETTINGS.UPDATING_PASSWORD' | translate }}
+                    } @else {
+                    {{ 'CUSTOMER.ACCOUNT.SETTINGS.UPDATE_PASSWORD' | translate }}
+                    }
+                </button>
+            </div>
+        </form>
+    </section>
+    } @else {
+    <section
+        class="rounded-[1.25rem] bg-white px-6 py-6 text-sm leading-6 text-[#77736d] shadow-[0_6px_18px_rgba(49,43,37,0.08)] sm:px-7">
+        {{ 'CUSTOMER.ACCOUNT.SETTINGS.OAUTH_PASSWORD_MESSAGE' | translate }}
+    </section>
+    }
+    }
+</section>

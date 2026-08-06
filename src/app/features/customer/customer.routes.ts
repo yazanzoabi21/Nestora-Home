@@ -102,10 +102,9 @@ export const CUSTOMER_ROUTES: Routes = [
           {
             path: 'settings',
             loadComponent: () =>
-              import('./components/customer-account-placeholder/customer-account-placeholder.component').then(
-                (m) => m.CustomerAccountPlaceholderComponent,
+              import('./components/customer-settings/customer-settings').then(
+                (m) => m.CustomerSettings,
               ),
-            data: { title: 'Settings' },
           },
         ],
       },

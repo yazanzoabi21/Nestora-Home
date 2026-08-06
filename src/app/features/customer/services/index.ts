@@ -8,3 +8,4 @@ export * from './customer-promotional-bar.service';
 export * from './loyalty-points-calculator.service';
 export * from './customer-loyalty-points.service';
 export * from './customer-addresses.service';
+export * from './customer-settings.service';

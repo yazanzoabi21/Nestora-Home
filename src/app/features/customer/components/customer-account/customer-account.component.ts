@@ -8,6 +8,7 @@ import { CUSTOMER_SUPABASE } from '../../../../core/tokens';
 import { CustomerOrdersService } from '../../orders/customer-orders.service';
 import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../../services';
 import { CountBadgeComponent } from '../../../../shared/ui/count-badge';
+// import { CustomerSettings } from '../customer-settings';
 
 interface AccountCounts {
   orders: number;
@@ -24,6 +25,13 @@ interface AccountNavItem {
   path: string;
   badgeKey?: AccountCountKey;
 }
+
+type CustomerAccountTab =
+  | 'profile'
+  | 'orders'
+  | 'wishlist'
+  | 'addresses'
+  | 'settings';
 
 @Component({
   selector: 'app-customer-account',
