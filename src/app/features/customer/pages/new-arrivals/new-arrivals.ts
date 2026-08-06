@@ -11,6 +11,7 @@ import {
 } from '../../components';
 import { NewArrivalsService } from '../../services';
 import { ProductBrowserPage } from '../product-browser-page';
+import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination';
 
 @Component({
   selector: 'app-new-arrivals',
@@ -23,6 +24,7 @@ import { ProductBrowserPage } from '../product-browser-page';
     CustomerProductQuickViewComponent,
     RouterLink,
     TranslatePipe,
+    AdminPaginationComponent
   ],
   templateUrl: './new-arrivals.html',
   styleUrls: [

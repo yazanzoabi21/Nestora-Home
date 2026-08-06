@@ -124,6 +124,43 @@ export abstract class ProductBrowserPage {
     () =>
       `${this.visibleProducts().length} ${this.visibleProducts().length === 1 ? 'product' : 'products'}`,
   );
+
+  readonly currentPage = signal(1);
+  readonly productsPerPage = 12;
+
+  readonly paginatedProducts = computed(() => {
+    const startIndex = (this.currentPage() - 1) * this.productsPerPage;
+
+    return this.visibleProducts().slice(
+      startIndex,
+      startIndex + this.productsPerPage,
+    );
+  });
+
+  setPage(page: number): void {
+    const totalPages = Math.max(
+      1,
+      Math.ceil(this.visibleProducts().length / this.productsPerPage),
+    );
+
+    this.currentPage.set(Math.min(Math.max(page, 1), totalPages));
+    this.closeQuickView();
+  }
+
+  setSort(value: CustomerProductSort): void {
+    this.sortBy.set(value);
+    this.resetPagination();
+  }
+
+  setInStockOnly(value: boolean): void {
+    this.inStockOnly.set(value);
+    this.resetPagination();
+  }
+
+  protected resetPagination(): void {
+    this.currentPage.set(1);
+  }
+
   private scrollLockState: { scrollY: number; previousBodyStyle: Partial<CSSStyleDeclaration> } | null =
     null;
   private filterTrigger: HTMLElement | null = null;
@@ -171,18 +208,22 @@ export abstract class ProductBrowserPage {
     this.selectedCategories.update((items) =>
       items.includes(value) ? items.filter((item) => item !== value) : [...items, value],
     );
+    this.resetPagination();
   }
   setPriceRange(value: string | null): void {
     this.selectedPriceRange.set(this.selectedPriceRange() === value ? null : value);
+    this.resetPagination();
   }
   setRating(value: number | null): void {
     this.selectedRating.set(this.selectedRating() === value ? null : value);
+    this.resetPagination();
   }
   clearFilters(): void {
     this.selectedCategories.set([]);
     this.selectedPriceRange.set(null);
     this.selectedRating.set(null);
     this.inStockOnly.set(false);
+    this.resetPagination();
   }
   removeActiveFilter(chip: ActiveFilterChip): void {
     switch (chip.kind) {
@@ -199,6 +240,7 @@ export abstract class ProductBrowserPage {
         this.inStockOnly.set(false);
         break;
     }
+    this.resetPagination();
   }
   async toggleWishlist(product: CustomerProduct): Promise<void> {
     await this.shopping.toggleWishlist(product);

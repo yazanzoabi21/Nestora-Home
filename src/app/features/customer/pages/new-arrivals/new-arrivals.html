@@ -69,7 +69,7 @@
                    outline-none transition focus:border-[#6b7d5e]
                    sm:h-12 sm:w-[190px] sm:rounded-2xl
                    sm:ps-5 sm:pe-11 sm:text-base sm:font-bold" [value]="sortBy()"
-            (change)="sortBy.set($any($event.target).value)">
+            (change)="setSort($any($event.target).value)">
             @for (option of sortOptions; track option.value) {
             <option [value]="option.value">
               {{ option.label }}
@@ -155,7 +155,7 @@
           [ratings]="ratingOptions" [selectedCategories]="selectedCategories()"
           [selectedPriceRange]="selectedPriceRange()" [selectedRating]="selectedRating()" [inStockOnly]="inStockOnly()"
           (categoryToggle)="toggleCategory($event)" (priceRangeChange)="setPriceRange($event)"
-          (ratingChange)="setRating($event)" (inStockOnlyChange)="inStockOnly.set($event)"
+          (ratingChange)="setRating($event)" (inStockOnlyChange)="setInStockOnly($event)"
           (clearFilters)="clearFilters()" />
       </aside>
 
@@ -203,7 +203,7 @@
                   : 'grid grid-cols-1 gap-4 min-[340px]:grid-cols-2 sm:gap-6 xl:grid-cols-3'
                 : 'grid grid-cols-1 gap-6'
             ">
-          @for (product of visibleProducts(); track product.id) {
+          @for (product of paginatedProducts(); track product.id) {
           <app-customer-product-card [product]="product" [view]="viewMode()" [wishlistActive]="isWishlisted(product.id)"
             [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
             [cartLoading]="isAddingToCart(product.id)" [canAddToCart]="shopping.canAdd(product)"
@@ -211,7 +211,15 @@
             (addToCart)="addProductToCart($event)" (toggleWishlist)="toggleWishlist($event)" />
           }
         </div>
-        } @else {
+
+        @if (visibleProducts().length > productsPerPage) {
+        <div class="mt-8 w-full">
+          <app-admin-pagination class="block w-full" variant="customer" [currentPage]="currentPage()"
+            [totalItems]="visibleProducts().length" [pageSize]="productsPerPage" [showPageSize]="false"
+            (pageChange)="setPage($event)" />
+        </div>
+        }
+        } @else { 
         <div class="rounded-[1.5rem] border border-[#e8dccf]
                    bg-white px-6 py-16 text-center shadow-sm">
           <div class="mx-auto flex h-16 w-16 items-center justify-center
@@ -301,7 +309,7 @@
         [ratings]="ratingOptions" [selectedCategories]="selectedCategories()"
         [selectedPriceRange]="selectedPriceRange()" [selectedRating]="selectedRating()" [inStockOnly]="inStockOnly()"
         (categoryToggle)="toggleCategory($event)" (priceRangeChange)="setPriceRange($event)"
-        (ratingChange)="setRating($event)" (inStockOnlyChange)="inStockOnly.set($event)"
+        (ratingChange)="setRating($event)" (inStockOnlyChange)="setInStockOnly($event)"
         (clearFilters)="clearFilters()" />
     </div>
 

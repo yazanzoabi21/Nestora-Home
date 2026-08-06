@@ -46,7 +46,7 @@
           <span class="sr-only">{{ 'CUSTOMER.PRODUCTS.SORT_BY' | translate }}</span>
           <select
             class="h-10 min-w-0 w-[min(44vw,190px)] appearance-none rounded-full border border-[#e8dccf] bg-white py-0 ps-4 pe-9 text-sm font-semibold text-[#30362f] outline-none transition focus:border-[#6b7d5e] sm:h-12 sm:w-[190px] sm:rounded-2xl sm:ps-5 sm:pe-11 sm:text-base sm:font-bold"
-            [value]="sortBy()" (change)="sortBy.set($any($event.target).value)">
+            [value]="sortBy()" (change)="setSort($any($event.target).value)">
             @for (option of sortOptions; track option.value) {
             <option [value]="option.value">{{ option.label }}</option>
             }
@@ -107,7 +107,7 @@
           [ratings]="ratingOptions" [selectedCategories]="selectedCategories()"
           [selectedPriceRange]="selectedPriceRange()" [selectedRating]="selectedRating()" [inStockOnly]="inStockOnly()"
           (categoryToggle)="toggleCategory($event)" (priceRangeChange)="setPriceRange($event)"
-          (ratingChange)="setRating($event)" (inStockOnlyChange)="inStockOnly.set($event)"
+          (ratingChange)="setRating($event)" (inStockOnlyChange)="setInStockOnly($event)"
           (clearFilters)="clearFilters()" />
       </aside>
       }
@@ -142,7 +142,7 @@
                   : 'grid grid-cols-1 gap-4 min-[340px]:grid-cols-2 sm:gap-6 xl:mx-auto xl:w-full xl:max-w-[1068px] xl:grid-cols-3'
                 : 'grid grid-cols-1 gap-6'
             ">
-          @for (product of visibleProducts(); track product.id) {
+          @for (product of paginatedProducts(); track product.id) {
           <app-customer-product-card [product]="product" [view]="viewMode()" [wishlistActive]="isWishlisted(product.id)"
             [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
             [cartLoading]="isAddingToCart(product.id)" [canAddToCart]="shopping.canAdd(product)"
@@ -152,6 +152,13 @@
             (toggleWishlist)="toggleWishlist($event)" />
           }
         </div>
+        @if (visibleProducts().length > productsPerPage) {
+        <div class="mt-8 w-full">
+          <app-admin-pagination class="block w-full" variant="customer" [currentPage]="currentPage()"
+            [totalItems]="visibleProducts().length" [pageSize]="productsPerPage" [showPageSize]="false"
+            (pageChange)="setPage($event)" />
+        </div>
+        }
         } @else {
         <div class="rounded-[1.5rem] border border-[#e8dccf] bg-white px-6 py-16 text-center shadow-sm">
           <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#eef1ea] text-[#6b7d5e]">
@@ -184,6 +191,7 @@
   </div>
 </section>
 
+
 @if (filtersEnabled && mobileFiltersOpen()) {
 <div class="customer-filter-drawer-shell fixed inset-0 z-[1200] lg:hidden" role="dialog" aria-modal="true"
   aria-labelledby="customer-mobile-filter-title" id="customer-mobile-filter-drawer">
@@ -215,7 +223,7 @@
         [ratings]="ratingOptions" [selectedCategories]="selectedCategories()"
         [selectedPriceRange]="selectedPriceRange()" [selectedRating]="selectedRating()" [inStockOnly]="inStockOnly()"
         (categoryToggle)="toggleCategory($event)" (priceRangeChange)="setPriceRange($event)"
-        (ratingChange)="setRating($event)" (inStockOnlyChange)="inStockOnly.set($event)"
+        (ratingChange)="setRating($event)" (inStockOnlyChange)="setInStockOnly($event)"
         (clearFilters)="clearFilters()" />
     </div>
 

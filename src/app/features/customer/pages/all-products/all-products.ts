@@ -9,10 +9,11 @@ import { CustomerProductQuickViewComponent } from '../../components/customer-pro
 import { NewArrivalsService } from '../../services';
 import { ProductBrowserPage } from '../product-browser-page';
 import { CustomerProductCardSkeleton } from '../../components/customer-product-card-skeleton/customer-product-card-skeleton';
+import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination';
 
 @Component({
   selector: 'app-all-products', standalone: true,
-  imports: [CdkTrapFocus, CustomerProductCardComponent, CustomerProductFiltersComponent, CustomerProductCardSkeleton, CustomerProductQuickViewComponent, RouterLink, TranslatePipe],
+  imports: [CdkTrapFocus, CustomerProductCardComponent, CustomerProductFiltersComponent, CustomerProductCardSkeleton, CustomerProductQuickViewComponent, RouterLink, TranslatePipe, AdminPaginationComponent],
   templateUrl: './all-products.html', styleUrl: './all-products.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -78,6 +79,7 @@ export class AllProducts extends ProductBrowserPage {
       (option) => this.slugify(option.value) === normalizedRequestedCategorySlug,
     );
     this.selectedCategories.set(category ? [category.value] : []);
+    this.resetPagination();
   }
 
   private slugify(value: string): string {
