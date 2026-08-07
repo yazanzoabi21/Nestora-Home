@@ -25,8 +25,16 @@ export class AdminLayoutComponent implements OnInit {
   readonly userError = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
-    await this.loadCurrentUser();
-  }
+  await this.loadCurrentUser();
+}
+
+openMobileSidebar(): void {
+  this.mobileSidebarOpen.set(true);
+}
+
+closeMobileSidebar(): void {
+  this.mobileSidebarOpen.set(false);
+}
 
   private async loadCurrentUser(): Promise<void> {
     try {

@@ -1,8 +1,23 @@
-import { Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { filter } from 'rxjs';
+
 import {
   ADMIN_NAVIGATION_SECTIONS,
   AdminNavigationItem,
@@ -23,10 +38,12 @@ type OpenSections = Record<string, boolean>;
 export class SidebarComponent implements OnInit {
   @Input() collapsed = false;
   @Input() mobileOpen = false;
+
   @Output() collapsedChange = new EventEmitter<boolean>();
   @Output() mobileClose = new EventEmitter<void>();
 
   readonly sections = ADMIN_NAVIGATION_SECTIONS;
+
   readonly openSections = signal<OpenSections>({
     main: true,
     catalogue: true,
@@ -48,11 +65,18 @@ export class SidebarComponent implements OnInit {
 
     this.router.events
       .pipe(
-        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        filter(
+          (event): event is NavigationEnd =>
+            event instanceof NavigationEnd,
+        ),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((event) => {
         this.openActiveSection(event.urlAfterRedirects);
+
+        if (this.mobileOpen) {
+          this.closeMobile();
+        }
       });
   }
 
@@ -69,6 +93,10 @@ export class SidebarComponent implements OnInit {
   }
 
   closeMobile(): void {
+    if (!this.mobileOpen) {
+      return;
+    }
+
     this.mobileClose.emit();
   }
 
@@ -88,12 +116,20 @@ export class SidebarComponent implements OnInit {
   }
 
   isSectionActive(section: AdminNavigationSection): boolean {
-    return section.items.some((item) => this.isRouteActive(item.route));
+    return section.items.some((item) =>
+      this.isRouteActive(item.route),
+    );
+  }
+
+  isRouteActive(route: string): boolean {
+    return this.urlMatchesRoute(this.router.url, route);
   }
 
   private openActiveSection(url: string): void {
     const activeSection = this.sections.find((section) =>
-      section.items.some((item) => this.urlMatchesRoute(url, item.route)),
+      section.items.some((item) =>
+        this.urlMatchesRoute(url, item.route),
+      ),
     );
 
     if (!activeSection) {
@@ -104,10 +140,6 @@ export class SidebarComponent implements OnInit {
       ...sections,
       [activeSection.key]: true,
     }));
-  }
-
-  private isRouteActive(route: string): boolean {
-    return this.urlMatchesRoute(this.router.url, route);
   }
 
   private urlMatchesRoute(url: string, route: string): boolean {
