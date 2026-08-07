@@ -1633,6 +1633,22 @@
       "TOAST": {
         "LOAD_FAILED_TITLE": "Orders could not be loaded",
         "LOAD_FAILED_DETAIL": "Please try again."
+      },
+      "DETAILS": {
+        "CUSTOMER": "Customer",
+        "SHIPPING_ADDRESS": "Shipping Address",
+        "ORDER_ITEMS": "Order Items",
+        "ITEMS_COUNT": "items",
+        "SKU": "SKU",
+        "QTY": "Qty",
+        "POINTS": "points",
+        "LOYALTY_REDEEMED": "Redeemed with points",
+        "NO_ITEMS": "No order items were found.",
+        "INVOICE_SUMMARY": "Invoice Summary",
+        "DISCOUNT": "Discount",
+        "ORDER_TOTAL": "Order Total",
+        "STATUS_CONTROLS": "Order Status",
+        "STATUS_HELPER": "Update delivery and payment status."
       }
     },
     "MEDIA_PICKER": {
@@ -2114,6 +2130,7 @@
           "EYEBROW": "Your account",
           "TITLE": "Order History",
           "ORDER_COUNT": "{{count}} orders",
+          "TOTAL_SPENT": "Total spent",
           "PAGINATION_SUMMARY": "Showing {{start}}–{{end}} of {{total}} orders",
           "LOADING": "Loading orders",
           "ERROR_TITLE": "We could not load your orders",
@@ -2502,6 +2519,25 @@
         "EXPORT_FAILED_TITLE": "Analytics export failed",
         "EXPORT_FAILED_DETAIL": "Unable to export analytics."
       }
+    },
+    "NOTIFICATIONS_PAGE": {
+      "TITLE": "Notifications",
+      "SUBTITLE": "Stay updated with orders, inventory alerts, customers, promotions, and important store activity.",
+      "REFRESH": "Refresh",
+      "MARK_ALL_READ": "Mark all as read",
+      "TOTAL": "Total Notifications",
+      "UNREAD": "Unread",
+      "READ": "Read",
+      "TODAY": "Today",
+      "SEARCH_PLACEHOLDER": "Search notifications...",
+      "FILTER_ALL": "All",
+      "FILTER_UNREAD": "Unread",
+      "FILTER_READ": "Read",
+      "NEW_COUNT": "{{count}} new",
+      "EMPTY_TITLE": "No notifications",
+      "EMPTY_TEXT": "You're all caught up. New notifications will appear here.",
+      "LOAD_ERROR": "Unable to load notifications. Please try again.",
+      "VIEW_ALL": "View all notifications"
     },
     "AUTH": {
       "BRAND": "Nestora Home",
@@ -4153,6 +4189,22 @@
           "COPYRIGHT": "© 2026 Nestora Home. جميع الحقوق محفوظة.",
           "PAYMENT_METHODS": "نقبل الدفع عبر Whish"
         }
+      },
+      "DETAILS": {
+        "CUSTOMER": "العميل",
+        "SHIPPING_ADDRESS": "عنوان الشحن",
+        "ORDER_ITEMS": "منتجات الطلب",
+        "ITEMS_COUNT": "عناصر",
+        "SKU": "رمز SKU",
+        "QTY": "الكمية",
+        "POINTS": "نقطة",
+        "LOYALTY_REDEEMED": "تم الاستبدال باستخدام النقاط",
+        "NO_ITEMS": "لم يتم العثور على منتجات لهذا الطلب.",
+        "INVOICE_SUMMARY": "ملخص الفاتورة",
+        "DISCOUNT": "الخصم",
+        "ORDER_TOTAL": "إجمالي الطلب",
+        "STATUS_CONTROLS": "حالة الطلب",
+        "STATUS_HELPER": "تحديث حالة التوصيل والدفع."
       }
     },
     "ORDERS": {
@@ -4682,6 +4734,7 @@
           "EYEBROW": "حسابك",
           "TITLE": "سجل الطلبات",
           "ORDER_COUNT": "{{count}} طلبات",
+          "TOTAL_SPENT": "إجمالي الإنفاق",
           "PAGINATION_SUMMARY": "عرض {{start}}–{{end}} من أصل {{total}} طلبات",
           "LOADING": "جارٍ تحميل الطلبات",
           "ERROR_TITLE": "تعذر تحميل طلباتك",
@@ -5070,6 +5123,25 @@
         "EXPORT_FAILED_TITLE": "فشل تصدير التحليلات",
         "EXPORT_FAILED_DETAIL": "تعذر تصدير التحليلات."
       }
+    },
+    "NOTIFICATIONS_PAGE": {
+      "TITLE": "الإشعارات",
+      "SUBTITLE": "تابع تحديثات الطلبات وتنبيهات المخزون والعملاء والعروض وأهم أنشطة المتجر.",
+      "REFRESH": "تحديث",
+      "MARK_ALL_READ": "تحديد الكل كمقروء",
+      "TOTAL": "إجمالي الإشعارات",
+      "UNREAD": "غير مقروءة",
+      "READ": "مقروءة",
+      "TODAY": "اليوم",
+      "SEARCH_PLACEHOLDER": "البحث في الإشعارات...",
+      "FILTER_ALL": "الكل",
+      "FILTER_UNREAD": "غير المقروءة",
+      "FILTER_READ": "المقروءة",
+      "NEW_COUNT": "{{count}} جديد",
+      "EMPTY_TITLE": "لا توجد إشعارات",
+      "EMPTY_TEXT": "لقد اطلعت على جميع الإشعارات. ستظهر الإشعارات الجديدة هنا.",
+      "LOAD_ERROR": "تعذر تحميل الإشعارات. يرجى المحاولة مرة أخرى.",
+      "VIEW_ALL": "عرض جميع الإشعارات"
     }
   }
 }

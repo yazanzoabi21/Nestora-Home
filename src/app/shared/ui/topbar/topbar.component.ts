@@ -19,6 +19,9 @@ import { AdminGlobalSearchService, AdminSearchResult } from '../../../core/servi
 import { TranslationService } from '../../../core/services/translation';
 import { UserMenuComponent } from '../user-menu';
 
+import { AdminNotificationsService } from '../../../data-access/services/admin-notifications.service';
+import { AdminNotificationsPopoverComponent } from '../admin-notifications-popover/admin-notifications-popover.component';
+
 export interface TopbarUser {
   name: string;
   role: string;
@@ -36,7 +39,7 @@ export const TOPBAR_USER_FALLBACK: TopbarUser = {
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [TranslatePipe, UserMenuComponent],
+  imports: [TranslatePipe, UserMenuComponent, UserMenuComponent, AdminNotificationsPopoverComponent,],
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.css',
 })
@@ -64,6 +67,12 @@ export class TopbarComponent implements OnInit {
     return this.loadedUser();
   });
 
+  private readonly notificationsService = inject(AdminNotificationsService);
+
+  readonly notificationsOpen = signal(false);
+
+  readonly notificationCount = this.notificationsService.unreadCount;
+
   @Input()
   set user(value: TopbarUser | null | undefined) {
     this.inputUser.set(value ?? null);
@@ -73,11 +82,15 @@ export class TopbarComponent implements OnInit {
   @Output() menuClick = new EventEmitter<void>();
 
   readonly dateLabel = 'Wednesday, 22 April 2026';
-  readonly notificationCount = 3;
+  // readonly notificationCount = 3;
 
   async ngOnInit(): Promise<void> {
-    await this.loadCurrentUser();
+    await Promise.all([
+      this.loadCurrentUser(),
+      this.notificationsService.ensureLoaded(),
+    ]);
   }
+
 
   @HostListener('window:current-user-profile-updated', ['$event'])
   onCurrentUserProfileUpdated(event: Event): void {
@@ -95,7 +108,20 @@ export class TopbarComponent implements OnInit {
   onDocumentClick(event: MouseEvent): void {
     if (!this.elementRef.nativeElement.contains(event.target as Node)) {
       this.searchOpen.set(false);
+      this.notificationsOpen.set(false);
     }
+  }
+
+  toggleNotifications(event: MouseEvent): void {
+    event.stopPropagation();
+
+    this.searchOpen.set(false);
+
+    this.notificationsOpen.update((open) => !open);
+  }
+
+  closeNotifications(): void {
+    this.notificationsOpen.set(false);
   }
 
   switchLanguage(): void {
@@ -215,3 +241,4 @@ function formatRoleName(role: string | null | undefined): string {
     .map((part) => part[0].toUpperCase() + part.slice(1).toLowerCase())
     .join(' ');
 }
+

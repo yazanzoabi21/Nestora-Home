@@ -11,7 +11,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminPaginationComponent, PaginationPageSize } from '../../../shared/ui/admin-pagination';
-
+import { CurrencyPipe } from '@angular/common';
 import { CustomerOrderCardComponent } from './customer-order-card/customer-order-card.component';
 import { CustomerOrder } from './customer-order.model';
 import { CustomerOrdersService } from './customer-orders.service';
@@ -19,9 +19,18 @@ import { CustomerOrdersService } from './customer-orders.service';
 @Component({
   selector: 'app-customer-orders',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, CustomerOrderCardComponent, AdminPaginationComponent],
+  imports: [
+    RouterLink,
+    TranslatePipe,
+    CurrencyPipe,
+    CustomerOrderCardComponent,
+    AdminPaginationComponent,
+  ],
   templateUrl: './customer-orders.component.html',
   styleUrl: './customer-orders.component.css',
+  host: {
+    class: 'block min-w-0',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerOrdersComponent implements OnInit {
@@ -46,6 +55,13 @@ export class CustomerOrdersComponent implements OnInit {
     const start = (this.currentPage() - 1) * size;
     return items.slice(start, start + size);
   });
+
+  readonly totalSpent = computed(() =>
+    this.orders().reduce(
+      (total, order) => total + Number(order.total ?? 0),
+      0,
+    ),
+  );
 
   ngOnInit(): void {
     void this.loadOrders();

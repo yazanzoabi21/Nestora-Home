@@ -11,3 +11,4 @@ export * from './product.model';
 export * from './promotion.model';
 export * from './review.model';
 export * from './shipping.model';
+export * from './admin-notification.model';

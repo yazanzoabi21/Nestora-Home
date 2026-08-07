@@ -1,67 +1,123 @@
-<section class="orders-page" aria-labelledby="orders-page-title">
-  <header class="orders-page__header">
+<section class="block min-w-0" aria-labelledby="orders-page-title">
+  <header class="mb-[1.35rem] flex items-end justify-between gap-4 max-[620px]:items-start">
     <div>
-      <p>{{ 'CUSTOMER.ACCOUNT.ORDERS.EYEBROW' | translate }}</p>
-      <h1 id="orders-page-title">{{ 'CUSTOMER.ACCOUNT.ORDERS.TITLE' | translate }}</h1>
+      <p class="mb-[0.3rem] text-[0.72rem] font-black uppercase tracking-[0.1em] text-[#718369]">
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.EYEBROW' | translate }}
+      </p>
+
+      <h1 id="orders-page-title" class="text-[clamp(1.65rem,3vw,2.1rem)] font-black leading-[1.15] text-[#1f2a1f]">
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.TITLE' | translate }}
+      </h1>
     </div>
+
     @if (!loading() && orders().length) {
-    <span class="orders-page__count">
-      {{ 'CUSTOMER.ACCOUNT.ORDERS.ORDER_COUNT' | translate: { count: orders().length } }}
-    </span>
+    <div class="flex flex-wrap items-center justify-end gap-[0.65rem]">
+      <span
+        class="shrink-0 rounded-full border border-[#dfe5da] bg-[#f2f5ef] px-[0.8rem] py-[0.45rem] text-[0.75rem] font-extrabold text-[#607253]">
+        {{
+        'CUSTOMER.ACCOUNT.ORDERS.ORDER_COUNT'
+        | translate: { count: orders().length }
+        }}
+      </span>
+
+      <span
+        class="inline-flex min-h-8 items-center gap-[0.4rem] whitespace-nowrap rounded-full border border-[#e5e1d9] bg-white px-3 py-[0.4rem] text-[0.75rem] text-[#34402f]">
+        <span class="font-semibold text-[#817b71]">
+          {{ 'CUSTOMER.ACCOUNT.ORDERS.TOTAL_SPENT' | translate }}
+        </span>
+
+        <strong class="font-extrabold text-[#243020]">
+          {{ totalSpent() | currency: 'USD' : 'symbol' : '1.2-2' }}
+        </strong>
+      </span>
+    </div>
     }
   </header>
 
   @if (loading()) {
-  <div class="orders-page__skeletons" aria-busy="true"
-    [attr.aria-label]="'CUSTOMER.ACCOUNT.ORDERS.LOADING' | translate">
+  <div class="grid gap-[0.9rem]" aria-busy="true" [attr.aria-label]="'CUSTOMER.ACCOUNT.ORDERS.LOADING' | translate">
     @for (skeleton of [1, 2, 3]; track skeleton) {
-    <article class="order-skeleton">
-      <span class="order-skeleton__icon"></span>
-      <span class="order-skeleton__identity">
-        <span></span>
-        <span></span>
+    <article
+      class="grid min-h-[4.75rem] grid-cols-[2.35rem_minmax(0,1fr)_5.5rem_4.5rem] items-center gap-4 overflow-hidden rounded-[1.25rem] border border-[#eee8e1] bg-white px-5 py-4 max-[620px]:grid-cols-[2.35rem_minmax(0,1fr)]">
+      <span class="order-skeleton-shimmer block h-[2.35rem] w-[2.35rem] rounded-full motion-reduce:animate-none"></span>
+
+      <span class="grid gap-[0.45rem]">
+        <span
+          class="order-skeleton-shimmer block h-[0.85rem] w-[min(10rem,70%)] rounded-full motion-reduce:animate-none"></span>
+
+        <span
+          class="order-skeleton-shimmer block h-[0.65rem] w-[min(7rem,50%)] rounded-full motion-reduce:animate-none"></span>
       </span>
-      <span class="order-skeleton__badge"></span>
-      <span class="order-skeleton__price"></span>
+
+      <span
+        class="order-skeleton-shimmer block h-[1.55rem] w-[5.5rem] rounded-full motion-reduce:animate-none max-[620px]:col-start-2 max-[620px]:col-end-3"></span>
+
+      <span
+        class="order-skeleton-shimmer block h-[0.9rem] w-[4.5rem] rounded-full motion-reduce:animate-none max-[620px]:col-start-2 max-[620px]:col-end-3 max-[620px]:hidden"></span>
     </article>
     }
   </div>
   } @else if (error()) {
-  <section class="orders-page__state orders-page__state--error" role="alert">
-    <span class="orders-page__state-icon" aria-hidden="true">
+  <section
+    class="grid min-h-80 place-items-center content-center gap-[0.8rem] rounded-3xl border border-[#eee8e1] bg-white p-8 text-center shadow-[0_12px_32px_rgba(52,47,41,0.055)] max-[620px]:min-h-[17rem] max-[620px]:px-4 max-[620px]:py-6"
+    role="alert">
+    <span
+      class="inline-flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full bg-[#f8e8e5] text-[1.45rem] text-[#a64b43]"
+      aria-hidden="true">
       <i class="pi pi-exclamation-circle"></i>
     </span>
-    <h2>{{ 'CUSTOMER.ACCOUNT.ORDERS.ERROR_TITLE' | translate }}</h2>
-    <p>{{ 'CUSTOMER.ACCOUNT.ORDERS.ERROR_TEXT' | translate }}</p>
-    <button type="button" (click)="loadOrders()">
+
+    <h2 class="text-xl font-black text-[#1f2a1f]">
+      {{ 'CUSTOMER.ACCOUNT.ORDERS.ERROR_TITLE' | translate }}
+    </h2>
+
+    <p class="max-w-[31rem] text-[0.9rem] font-semibold leading-[1.65] text-[#817a71]">
+      {{ 'CUSTOMER.ACCOUNT.ORDERS.ERROR_TEXT' | translate }}
+    </p>
+
+    <button type="button"
+      class="mt-[0.35rem] inline-flex min-h-[2.85rem] cursor-pointer items-center justify-center gap-[0.55rem] rounded-full bg-[#6b7d5e] px-5 py-[0.7rem] text-[0.85rem] font-black text-white transition-[background-color,transform] duration-150 hover:-translate-y-px hover:bg-[#596b4d] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[rgba(113,131,105,0.3)]"
+      (click)="loadOrders()">
       <i class="pi pi-refresh" aria-hidden="true"></i>
       {{ 'CUSTOMER.ACCOUNT.ORDERS.RETRY' | translate }}
     </button>
   </section>
   } @else if (!orders().length) {
-  <section class="orders-page__state">
-    <span class="orders-page__state-icon" aria-hidden="true">
+  <section
+    class="grid min-h-80 place-items-center content-center gap-[0.8rem] rounded-3xl border border-[#eee8e1] bg-white p-8 text-center shadow-[0_12px_32px_rgba(52,47,41,0.055)] max-[620px]:min-h-[17rem] max-[620px]:px-4 max-[620px]:py-6">
+    <span
+      class="inline-flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full bg-[#eef3ea] text-[1.45rem] text-[#6b7d5e]"
+      aria-hidden="true">
       <i class="pi pi-shopping-bag"></i>
     </span>
-    <h2>{{ 'CUSTOMER.ACCOUNT.ORDERS.EMPTY_TITLE' | translate }}</h2>
-    <p>{{ 'CUSTOMER.ACCOUNT.ORDERS.EMPTY_TEXT' | translate }}</p>
-    <a routerLink="/shop/products">
+
+    <h2 class="text-xl font-black text-[#1f2a1f]">
+      {{ 'CUSTOMER.ACCOUNT.ORDERS.EMPTY_TITLE' | translate }}
+    </h2>
+
+    <p class="max-w-[31rem] text-[0.9rem] font-semibold leading-[1.65] text-[#817a71]">
+      {{ 'CUSTOMER.ACCOUNT.ORDERS.EMPTY_TEXT' | translate }}
+    </p>
+
+    <a routerLink="/shop/products"
+      class="mt-[0.35rem] inline-flex min-h-[2.85rem] cursor-pointer items-center justify-center gap-[0.55rem] rounded-full bg-[#6b7d5e] px-5 py-[0.7rem] text-[0.85rem] font-black text-white transition-[background-color,transform] duration-150 hover:-translate-y-px hover:bg-[#596b4d] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[rgba(113,131,105,0.3)]">
       {{ 'CUSTOMER.ACCOUNT.ORDERS.START_SHOPPING' | translate }}
+
       <i class="pi pi-arrow-right" aria-hidden="true"></i>
     </a>
   </section>
   } @else {
-  <div #ordersList class="orders-page__list scroll-mt-28" tabindex="-1">
+  <div #ordersList class="grid scroll-mt-28 gap-[0.9rem] outline-none" tabindex="-1">
     @for (order of paginatedOrders(); track order.id) {
     <app-customer-order-card [order]="order" [expanded]="expandedOrderId() === order.id"
       (toggleRequested)="toggleOrder(order.id)" />
     }
   </div>
+
   @if (orders().length > 5) {
-  <app-admin-pagination variant="customer" class="customer-pagination orders-page__pagination"
-    [currentPage]="currentPage()" [totalItems]="orders().length" [pageSize]="pageSize()"
-    [pageSizeOptions]="[5, 10, 20, 'all']" [showPageSize]="true" [showSummary]="true"
-    summaryKey="CUSTOMER.ACCOUNT.ORDERS.PAGINATION_SUMMARY" (pageChange)="changePage($event)"
+  <app-admin-pagination variant="customer" class="customer-pagination mt-4" [currentPage]="currentPage()"
+    [totalItems]="orders().length" [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 20, 'all']" [showPageSize]="true"
+    [showSummary]="true" summaryKey="CUSTOMER.ACCOUNT.ORDERS.PAGINATION_SUMMARY" (pageChange)="changePage($event)"
     (pageSizeChange)="setPageSize($event)" />
   }
   }

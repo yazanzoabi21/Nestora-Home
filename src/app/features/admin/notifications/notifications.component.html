@@ -1,0 +1,195 @@
+<main class="min-h-[calc(100vh-72px)] bg-[#f7f4ef] px-4 py-6 sm:px-6 sm:py-8 lg:min-h-[calc(100vh-88px)] lg:px-8 lg:py-9">
+  <div class="mx-auto w-full max-w-[1500px]">
+    <header class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-[11px] font-black uppercase tracking-[0.18em] text-[#718369]">
+          {{ 'SIDEBAR.SYSTEM' | translate }}
+        </p>
+        <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[#1f2a1f] sm:text-[2rem]">
+          {{ 'NOTIFICATIONS_PAGE.TITLE' | translate }}
+        </h1>
+        <p class="mt-2 max-w-2xl text-sm font-medium leading-6 text-[#817a72]">
+          {{ 'NOTIFICATIONS_PAGE.SUBTITLE' | translate }}
+        </p>
+      </div>
+
+      <div class="flex flex-wrap gap-2.5">
+        <button type="button"
+          class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#ded6cb] bg-white px-4 text-sm font-bold text-[#625b53] shadow-sm transition hover:bg-[#f2eee8] disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="loading()" (click)="refresh()">
+          <i class="pi pi-refresh text-xs" [class.pi-spin]="loading()"></i>
+          {{ 'NOTIFICATIONS_PAGE.REFRESH' | translate }}
+        </button>
+
+        <button type="button"
+          class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#6b7d5e] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#5d704f] disabled:cursor-not-allowed disabled:opacity-45"
+          [disabled]="unreadCount() === 0" (click)="markAllAsRead()">
+          <i class="pi pi-check-circle text-sm"></i>
+          {{ 'NOTIFICATIONS_PAGE.MARK_ALL_READ' | translate }}
+        </button>
+      </div>
+    </header>
+
+    <section class="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4" aria-label="Notification summary">
+      <article class="rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm sm:p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'NOTIFICATIONS_PAGE.TOTAL' | translate }}</p>
+            <p class="mt-2 text-2xl font-black text-[#27231f]">{{ totalCount() }}</p>
+          </div>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f2efe9] text-[#6f675e]">
+            <i class="pi pi-bell"></i>
+          </span>
+        </div>
+      </article>
+
+      <article class="rounded-2xl border border-[#dfe8d8] bg-[#f7fbf4] p-4 shadow-sm sm:p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold text-[#75816e]">{{ 'NOTIFICATIONS_PAGE.UNREAD' | translate }}</p>
+            <p class="mt-2 text-2xl font-black text-[#43513b]">{{ unreadCount() }}</p>
+          </div>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e8f0e2] text-[#6b7d5e]">
+            <i class="pi pi-envelope"></i>
+          </span>
+        </div>
+      </article>
+
+      <article class="rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm sm:p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'NOTIFICATIONS_PAGE.READ' | translate }}</p>
+            <p class="mt-2 text-2xl font-black text-[#27231f]">{{ readCount() }}</p>
+          </div>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f2efe9] text-[#7e766d]">
+            <i class="pi pi-check"></i>
+          </span>
+        </div>
+      </article>
+
+      <article class="rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm sm:p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold text-[#8d877e]">{{ 'NOTIFICATIONS_PAGE.TODAY' | translate }}</p>
+            <p class="mt-2 text-2xl font-black text-[#27231f]">{{ todayCount() }}</p>
+          </div>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f6efe6] text-[#8d6f4e]">
+            <i class="pi pi-clock"></i>
+          </span>
+        </div>
+      </article>
+    </section>
+
+    <section class="mt-5 overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-sm">
+      <div class="flex flex-col gap-3 border-b border-[#ece6dd] p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+        <label class="flex min-h-11 w-full items-center gap-2.5 rounded-xl border border-[#ded6cb] bg-[#faf9f7] px-3.5 transition focus-within:border-[#b7c1af] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#718369]/10 lg:max-w-md">
+          <i class="pi pi-search text-sm text-[#9c958c]"></i>
+          <input type="search" class="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#4d4741] outline-none placeholder:text-[#a39c93]"
+            [placeholder]="'NOTIFICATIONS_PAGE.SEARCH_PLACEHOLDER' | translate" [value]="searchTerm()"
+            (input)="setSearch($any($event.target).value)" />
+        </label>
+
+        <div class="flex w-full gap-2 overflow-x-auto pb-0.5 lg:w-auto" role="group" aria-label="Notification filters">
+          <button type="button"
+            class="notification-filter min-h-10 shrink-0 cursor-pointer rounded-xl px-3.5 text-xs font-black transition"
+            [class.notification-filter-active]="selectedFilter() === 'all'"
+            (click)="setFilter('all')">
+            {{ 'NOTIFICATIONS_PAGE.FILTER_ALL' | translate }}
+          </button>
+          <button type="button"
+            class="notification-filter min-h-10 shrink-0 cursor-pointer rounded-xl px-3.5 text-xs font-black transition"
+            [class.notification-filter-active]="selectedFilter() === 'unread'"
+            (click)="setFilter('unread')">
+            {{ 'NOTIFICATIONS_PAGE.FILTER_UNREAD' | translate }}
+          </button>
+          <button type="button"
+            class="notification-filter min-h-10 shrink-0 cursor-pointer rounded-xl px-3.5 text-xs font-black transition"
+            [class.notification-filter-active]="selectedFilter() === 'read'"
+            (click)="setFilter('read')">
+            {{ 'NOTIFICATIONS_PAGE.FILTER_READ' | translate }}
+          </button>
+        </div>
+      </div>
+
+      @if (error()) {
+      <div class="mx-4 mt-4 flex items-start gap-3 rounded-xl border border-[#f0cfc9] bg-[#fff6f4] px-4 py-3 text-sm text-[#8e443c] sm:mx-5">
+        <i class="pi pi-exclamation-circle mt-0.5"></i>
+        <span class="font-semibold">{{ 'NOTIFICATIONS_PAGE.LOAD_ERROR' | translate }}</span>
+      </div>
+      }
+
+      <div class="divide-y divide-[#eee8df]">
+        @if (loading() && notifications().length === 0) {
+          @for (item of [1, 2, 3, 4, 5]; track item) {
+          <div class="flex gap-3 px-4 py-5 sm:px-5">
+            <span class="mt-2 h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-[#ddd7cf]"></span>
+            <div class="min-w-0 flex-1">
+              <div class="h-4 w-2/3 animate-pulse rounded bg-[#ebe6df]"></div>
+              <div class="mt-2 h-3 w-1/3 animate-pulse rounded bg-[#f0ece6]"></div>
+            </div>
+          </div>
+          }
+        } @else {
+          @for (notification of visibleNotifications(); track notification.id) {
+          <button type="button"
+            class="group flex w-full cursor-pointer items-start gap-3 px-4 py-4 text-start transition hover:bg-[#faf8f5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#718369]/30 sm:px-5 sm:py-5"
+            [class.notification-row-unread]="!notification.isRead"
+            (click)="selectNotification(notification)">
+            <span class="mt-[7px] h-2.5 w-2.5 shrink-0 rounded-full"
+              [class.notification-dot-unread]="!notification.isRead"
+              [class.notification-dot-read]="notification.isRead"></span>
+
+            <span class="min-w-0 flex-1">
+              <span class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <span class="min-w-0 text-sm leading-5 text-[#4e4943] sm:text-[15px]"
+                  [class.font-black]="!notification.isRead"
+                  [class.font-semibold]="notification.isRead">
+                  {{ notification.title }}
+                </span>
+                <span class="shrink-0 text-[11px] font-semibold text-[#aaa39a] sm:pt-0.5">
+                  {{ relativeTime(notification.createdAt) }}
+                </span>
+              </span>
+
+              @if (notification.message) {
+              <span class="mt-1 block max-w-4xl text-xs leading-5 text-[#8b847b] sm:text-[13px]">
+                {{ notification.message }}
+              </span>
+              }
+
+              <span class="mt-2 inline-flex rounded-full bg-[#f0ede8] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#7a7269]">
+                {{ notification.type }}
+              </span>
+            </span>
+
+            @if (notification.actionUrl) {
+            <i class="pi pi-chevron-right mt-1 hidden shrink-0 text-xs text-[#b0a99f] transition group-hover:translate-x-0.5 sm:block rtl:rotate-180"></i>
+            }
+          </button>
+          } @empty {
+          <div class="px-6 py-16 text-center">
+            <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eef4e8] text-[#718369]">
+              <i class="pi pi-bell text-xl"></i>
+            </span>
+            <h2 class="mt-4 text-base font-black text-[#342f29]">{{ 'NOTIFICATIONS_PAGE.EMPTY_TITLE' | translate }}</h2>
+            <p class="mx-auto mt-1.5 max-w-md text-sm font-medium leading-6 text-[#8d877e]">{{ 'NOTIFICATIONS_PAGE.EMPTY_TEXT' | translate }}</p>
+          </div>
+          }
+        }
+      </div>
+
+      @if (filteredNotifications().length > 0) {
+      <div class="border-t border-[#ece6dd] bg-[#fcfbf9] px-3 py-3 sm:px-5">
+        <app-admin-pagination
+          [currentPage]="currentPage()"
+          [totalItems]="filteredNotifications().length"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="[10, 20, 50, 'all']"
+          (pageChange)="setPage($event)"
+          (pageSizeChange)="setPageSize($event)">
+        </app-admin-pagination>
+      </div>
+      }
+    </section>
+  </div>
+</main>

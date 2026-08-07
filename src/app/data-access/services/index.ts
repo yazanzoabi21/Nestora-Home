@@ -12,3 +12,4 @@ export * from './promotions.service';
 export * from './reviews.service';
 export * from './shipping.service';
 export * from './upload.service';
+export * from './admin-notifications.service';

@@ -1,28 +1,96 @@
-export type OrderPaymentStatus = 'Paid' | 'Pending' | 'Refunded' | 'Unpaid' | 'Failed';
-export type OrderDeliveryStatus = 'Processing' | 'Delivered' | 'Completed' | 'Shipped' | 'Returned' | 'Cancelled' | 'Pending';
-export type OrderDateFilter = 'all' | 'today' | 'this_week' | 'this_month';
+export type OrderPaymentStatus =
+  | 'Paid'
+  | 'Pending'
+  | 'Refunded'
+  | 'Unpaid'
+  | 'Failed';
+
+export type OrderDeliveryStatus =
+  | 'Processing'
+  | 'Delivered'
+  | 'Completed'
+  | 'Shipped'
+  | 'Returned'
+  | 'Cancelled'
+  | 'Pending';
+
+export type OrderDateFilter =
+  | 'all'
+  | 'today'
+  | 'this_week'
+  | 'this_month';
+
+export interface AdminOrderItem {
+  id: string;
+  productId: string | null;
+
+  /**
+   * Snapshot name saved in order_items at checkout.
+   * We keep this instead of relying on the current product name.
+   */
+  name: string;
+
+  /**
+   * Current product metadata used only for display.
+   */
+  sku: string | null;
+  imageUrl: string | null;
+
+  quantity: number;
+  unitPrice: number;
+  total: number;
+
+  loyaltyRedeemed: boolean;
+  loyaltyPointsCost: number;
+  loyaltyPointsEarned: number;
+}
 
 export interface AdminOrder {
   id: string;
-  orderId: string; // order_number from Supabase
+
+  /**
+   * Human-readable order number.
+   */
+  orderId: string;
+
+  /**
+   * Real orders.id UUID from Supabase.
+   */
+  supabaseOrderId?: string;
+
+  customerUserId: string | null;
+
   customerName: string;
   customerEmail: string;
+  phone?: string;
+
   date: string;
+  createdAt?: string;
+
+  /**
+   * Total quantity of units in this order.
+   * Used by the Admin table.
+   */
   items: number;
+
+  /**
+   * Full invoice item information.
+   */
+  orderItems: AdminOrderItem[];
+
+  subtotal?: string;
+  discount?: string;
+  shipping?: string;
   total: string;
+
   payment: OrderPaymentStatus;
   delivery: OrderDeliveryStatus;
-  // Additional fields for modal
-  phone?: string;
+
   address?: string;
   city?: string;
   country?: string;
-  subtotal?: string;
-  shipping?: string;
   notes?: string;
-  createdAt?: string;
-  supabaseOrderId?: string; // UUID
-  customerUserId: string | null;
+
   loyaltyPoints: number;
   loyaltyProcessed: boolean;
 }

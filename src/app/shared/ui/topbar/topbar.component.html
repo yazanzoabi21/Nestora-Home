@@ -65,15 +65,25 @@
       {{ translation.currentLang() === 'en' ? ('COMMON.AR' | translate) : ('COMMON.EN' | translate) }}
     </button>
 
-    <button type="button"
-      class="relative flex h-11 w-11 items-center justify-center rounded-full text-[#6f675e] transition duration-200 hover:bg-[#efeae2] hover:text-[#37322d]"
-      [attr.aria-label]="'TOPBAR.NOTIFICATIONS' | translate">
-      <i class="pi pi-bell text-xl"></i>
-      <span
-        class="absolute end-2 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#dc3f35] px-1 text-[11px] font-bold leading-none text-white ring-2 ring-[#f8f7f5]">
-        {{ notificationCount }}
-      </span>
-    </button>
+    <!-- Notifications -->
+    <div class="relative">
+      <button type="button"
+        class="relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-[#6f675e] transition duration-200 hover:bg-[#efeae2] hover:text-[#37322d]"
+        [attr.aria-label]="'TOPBAR.NOTIFICATIONS' | translate" [attr.aria-expanded]="notificationsOpen()"
+        (click)="toggleNotifications($event)">
+        <i class="pi pi-bell text-[1.15rem]"></i>
+
+        @if (notificationCount() > 0) {
+        <span
+          class="absolute end-[2px] top-[1px] flex h-[19px] min-w-[19px] items-center justify-center rounded-full border-2 border-[#f8f7f5] bg-[#df443b] px-1 text-[9px] font-black leading-none text-white shadow-sm">
+          {{ notificationCount() > 99 ? '99+' : notificationCount() }}
+        </span>
+        }
+      </button>
+
+      <app-admin-notifications-popover [open]="notificationsOpen()"
+        (closed)="closeNotifications()"></app-admin-notifications-popover>
+    </div>
 
     <span class="hidden h-10 w-px bg-[#e5ded2] sm:block" aria-hidden="true"></span>
 

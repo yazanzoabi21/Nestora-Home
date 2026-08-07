@@ -1,0 +1,33 @@
+:host {
+  display: contents;
+}
+
+.notification-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #aaa39a transparent;
+}
+
+.notification-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #aaa39a;
+}
+
+.notification-row-unread {
+  background: #eef4e8;
+}
+
+.notification-dot-unread {
+  background: #718369;
+}
+
+.notification-dot-read {
+  background: #e4dfd7;
+}

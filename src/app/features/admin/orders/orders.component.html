@@ -1,193 +1,805 @@
 <main
-  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8">
+  class="min-h-[calc(100vh-72px)] w-full max-w-full min-w-0 overflow-x-hidden bg-[#f7f4ef] px-4 py-6 sm:min-h-[calc(100vh-88px)] sm:px-6 sm:py-7 lg:px-8"
+>
+  <!-- Page Header -->
   <section
-    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    class="mb-6 flex w-full max-w-full min-w-0 flex-col gap-5 px-0 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between"
+  >
     <div class="min-w-0">
-      <h1 class="text-3xl font-extrabold text-[#1f2a1f]">{{ 'ORDERS.TITLE' | translate }}</h1>
-      <p class="mt-2 text-base font-medium text-[#8d877e]">
-        {{ 'ORDERS.SUBTITLE' | translate: { total: stats().totalOrders, processing: stats().processing } }}
+      <h1
+        class="text-3xl font-extrabold text-[#1f2a1f]"
+      >
+        {{ 'ORDERS.TITLE' | translate }}
+      </h1>
+
+      <p
+        class="mt-2 text-base font-medium text-[#8d877e]"
+      >
+        {{
+          'ORDERS.SUBTITLE'
+            | translate
+              : {
+                  total: stats().totalOrders,
+                  processing: stats().processing
+                }
+        }}
       </p>
     </div>
 
     <app-export-report
       [config]="ordersExportConfig()"
       [buttonLabel]="'ORDERS.EXPORT' | translate"
-      variant="secondary">
-    </app-export-report>
+      variant="secondary"
+    ></app-export-report>
   </section>
 
-  <section class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <!-- KPI -->
+  <section
+    class="grid w-full max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+  >
     @for (card of kpiCards(); track card.title) {
-      <app-kpi-card class="min-w-0" [data]="card" variant="compact"></app-kpi-card>
+      <app-kpi-card
+        class="min-w-0"
+        [data]="card"
+        variant="compact"
+      ></app-kpi-card>
     }
   </section>
 
-  <section class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm">
-    <div class="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_180px_180px_180px] xl:items-center">
-      <app-admin-form-field type="search" name="orderSearch" [placeholder]="'ORDERS.FILTERS.SEARCH_PLACEHOLDER' | translate"
-        [value]="searchTerm()" (valueChange)="updateSearch($event)" />
+  <!-- Filters -->
+  <section
+    class="mt-6 rounded-2xl border border-[#e5ded2] bg-white p-4 shadow-sm"
+  >
+    <div
+      class="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_180px_180px_180px] xl:items-center"
+    >
+      <app-admin-form-field
+        type="search"
+        name="orderSearch"
+        [placeholder]="'ORDERS.FILTERS.SEARCH_PLACEHOLDER' | translate"
+        [value]="searchTerm()"
+        (valueChange)="updateSearch($event)"
+      />
 
-      <app-admin-form-field type="select" name="orderStatusFilter" [value]="selectedDelivery()"
-        [options]="deliveryOptions()" optionLabel="label" optionValue="value" (valueChange)="updateDelivery($event)" />
+      <app-admin-form-field
+        type="select"
+        name="orderStatusFilter"
+        [value]="selectedDelivery()"
+        [options]="deliveryOptions()"
+        optionLabel="label"
+        optionValue="value"
+        (valueChange)="updateDelivery($event)"
+      />
 
-      <app-admin-form-field type="select" name="orderPaymentFilter" [value]="selectedPayment()"
-        [options]="paymentOptions()" optionLabel="label" optionValue="value" (valueChange)="updatePayment($event)" />
+      <app-admin-form-field
+        type="select"
+        name="orderPaymentFilter"
+        [value]="selectedPayment()"
+        [options]="paymentOptions()"
+        optionLabel="label"
+        optionValue="value"
+        (valueChange)="updatePayment($event)"
+      />
 
-      <app-admin-form-field type="select" name="orderDateFilter" [value]="selectedDate()" [options]="dateOptions()"
-        optionLabel="label" optionValue="value" (valueChange)="updateDate($event)" />
+      <app-admin-form-field
+        type="select"
+        name="orderDateFilter"
+        [value]="selectedDate()"
+        [options]="dateOptions()"
+        optionLabel="label"
+        optionValue="value"
+        (valueChange)="updateDate($event)"
+      />
     </div>
   </section>
 
-  <app-admin-table class="mt-6 block" [columns]="orderTableColumns()" [rows]="tableRows()" [loading]="loading()"
-    [emptyTitle]="'ORDERS.EMPTY.TITLE' | translate" [emptyText]="'ORDERS.EMPTY.TEXT' | translate" [selectable]="false"
-    [showActions]="true" actionsMode="crud"
-    [showPaginationSummary]="true" (rowView)="openOrderDetails($event)">
-    <ng-template adminTableCell="orderId" let-row="row">
-      <span class="text-sm font-black text-[#5f6f43]">{{ row.orderId }}</span>
+  <!-- Orders Table -->
+  <app-admin-table
+    class="mt-6 block"
+    [columns]="orderTableColumns()"
+    [rows]="tableRows()"
+    [loading]="loading()"
+    [emptyTitle]="'ORDERS.EMPTY.TITLE' | translate"
+    [emptyText]="'ORDERS.EMPTY.TEXT' | translate"
+    [selectable]="false"
+    [showActions]="true"
+    actionsMode="crud"
+    [showPaginationSummary]="true"
+    (rowView)="openOrderDetails($event)"
+  >
+    <ng-template
+      adminTableCell="orderId"
+      let-row="row"
+    >
+      <span
+        class="text-sm font-black text-[#5f6f43]"
+      >
+        {{ row.orderId }}
+      </span>
     </ng-template>
 
-    <ng-template adminTableCell="customer" let-value="value">
+    <ng-template
+      adminTableCell="customer"
+      let-value="value"
+    >
       <div class="min-w-55">
-        <p class="truncate text-base font-extrabold text-[#182116]">{{ value.title }}</p>
-        <p class="mt-1 truncate text-sm font-medium text-[#9a9389]">{{ value.subtitle }}</p>
+        <p
+          class="truncate text-base font-extrabold text-[#182116]"
+        >
+          {{ value.title }}
+        </p>
+
+        <p
+          class="mt-1 truncate text-sm font-medium text-[#9a9389]"
+        >
+          {{ value.subtitle }}
+        </p>
       </div>
     </ng-template>
 
-    <ng-template adminTableCell="actions" let-row="row">
-      <div class="flex items-center justify-end">
-        <button type="button"
-          class="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[#dfe7d5] bg-[#f7faf3] px-3 text-sm font-bold text-[#5f6f43] transition hover:bg-[#eef4e8]"
-          (click)="openOrderDetails(row)">
-          <i class="pi pi-eye text-xs"></i>
-          <span>{{ 'ORDERS.ACTIONS.VIEW' | translate }}</span>
+    <ng-template
+      adminTableCell="actions"
+      let-row="row"
+    >
+      <div
+        class="flex items-center justify-end"
+      >
+        <button
+          type="button"
+          class="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#dfe7d5] bg-[#f7faf3] px-3 text-sm font-bold text-[#5f6f43] transition hover:bg-[#eef4e8]"
+          (click)="openOrderDetails(row)"
+        >
+          <i
+            class="pi pi-eye text-xs"
+          ></i>
+
+          <span>
+            {{ 'ORDERS.ACTIONS.VIEW' | translate }}
+          </span>
         </button>
       </div>
     </ng-template>
   </app-admin-table>
 
-  <app-admin-form-modal [isOpen]="!!selectedOrder()" [title]="'ORDERS.MODAL.DETAILS_TITLE' | translate" [subtitle]="'ORDERS.MODAL.DETAILS_SUBTITLE' | translate"
-    size="md" [submitLabel]="'COMMON.SAVE_CHANGES' | translate" [cancelLabel]="'COMMON.CANCEL' | translate"
-    [loading]="savingOrderStatus()" (close)="closeOrderDetails()" (submit)="saveOrderStatus()">
+  <!-- ===================================== -->
+  <!-- Professional Order / Invoice Modal -->
+  <!-- ===================================== -->
+
+  <app-admin-form-modal
+    [isOpen]="!!selectedOrder()"
+    [title]="'ORDERS.MODAL.DETAILS_TITLE' | translate"
+    [subtitle]="'ORDERS.MODAL.DETAILS_SUBTITLE' | translate"
+    size="xl"
+    [submitLabel]="'COMMON.SAVE_CHANGES' | translate"
+    [cancelLabel]="'COMMON.CANCEL' | translate"
+    [loading]="savingOrderStatus()"
+    (close)="closeOrderDetails()"
+    (submit)="saveOrderStatus()"
+  >
     @if (selectedOrder(); as order) {
-      <section class="grid gap-3 text-sm font-semibold text-[#342f29]">
-        <div class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
-          <p class="text-xs font-black uppercase tracking-[0.08em] text-[#9a9389]">{{ 'ORDERS.FIELDS.ORDER_NUMBER' | translate }}</p>
-          <h2 class="mt-1 text-xl font-black text-[#182116]">{{ order.orderId }}</h2>
+      <div class="space-y-5">
+        <!-- Invoice Header -->
+        <section
+          class="overflow-hidden rounded-2xl border border-[#dfe7d5] bg-[#f7faf3]"
+        >
+          <div
+            class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div class="min-w-0">
+              <p
+                class="text-[10px] font-black uppercase tracking-[0.18em] text-[#718369]"
+              >
+                {{ 'ORDERS.FIELDS.ORDER_NUMBER' | translate }}
+              </p>
+
+              <h2
+                class="mt-1 break-all text-xl font-black tracking-tight text-[#182116] sm:text-2xl"
+              >
+                {{ order.orderId }}
+              </h2>
+
+              <p
+                class="mt-1 text-xs font-semibold text-[#8d877e]"
+              >
+                {{ order.date }}
+              </p>
+            </div>
+
+            <div
+              class="flex flex-wrap items-center gap-2"
+            >
+              <span
+                class="inline-flex rounded-full px-3 py-1.5 text-xs font-black"
+                [class]="paymentBadgeClass(order.payment)"
+              >
+                {{ statusLabel(order.payment) }}
+              </span>
+
+              <span
+                class="inline-flex rounded-full px-3 py-1.5 text-xs font-black"
+                [class]="deliveryBadgeClass(order.delivery)"
+              >
+                {{ statusLabel(order.delivery) }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Customer + Shipping -->
+        <div
+          class="grid gap-4 lg:grid-cols-2"
+        >
+          <!-- Customer -->
+          <section
+            class="rounded-2xl border border-[#e5ded2] bg-white p-5"
+          >
+            <div
+              class="mb-4 flex items-center gap-3"
+            >
+              <span
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eef4e8] text-[#5f6f43]"
+              >
+                <i class="pi pi-user"></i>
+              </span>
+
+              <div>
+                <p
+                  class="text-[10px] font-black uppercase tracking-[0.15em] text-[#718369]"
+                >
+                  {{ 'ORDERS.DETAILS.CUSTOMER' | translate }}
+                </p>
+
+                <h3
+                  class="mt-0.5 text-sm font-black text-[#27231f]"
+                >
+                  {{ order.customerName }}
+                </h3>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div
+                class="flex items-start gap-3"
+              >
+                <i
+                  class="pi pi-envelope mt-0.5 text-sm text-[#9a9389]"
+                ></i>
+
+                <div class="min-w-0">
+                  <p
+                    class="text-[10px] font-bold uppercase text-[#9a9389]"
+                  >
+                    {{ 'ORDERS.FIELDS.EMAIL' | translate }}
+                  </p>
+
+                  <p
+                    class="mt-0.5 break-all text-sm font-bold text-[#342f29]"
+                  >
+                    {{
+                      order.customerEmail ||
+                        ('ORDERS.NA' | translate)
+                    }}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="flex items-start gap-3"
+              >
+                <i
+                  class="pi pi-phone mt-0.5 text-sm text-[#9a9389]"
+                ></i>
+
+                <div>
+                  <p
+                    class="text-[10px] font-bold uppercase text-[#9a9389]"
+                  >
+                    {{ 'ORDERS.FIELDS.PHONE' | translate }}
+                  </p>
+
+                  <p
+                    class="mt-0.5 text-sm font-bold text-[#342f29]"
+                  >
+                    {{
+                      order.phone ||
+                        ('ORDERS.NA' | translate)
+                    }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Shipping -->
+          <section
+            class="rounded-2xl border border-[#e5ded2] bg-white p-5"
+          >
+            <div
+              class="mb-4 flex items-center gap-3"
+            >
+              <span
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f6efe6] text-[#8d6f4e]"
+              >
+                <i class="pi pi-map-marker"></i>
+              </span>
+
+              <div>
+                <p
+                  class="text-[10px] font-black uppercase tracking-[0.15em] text-[#8d6f4e]"
+                >
+                  {{ 'ORDERS.DETAILS.SHIPPING_ADDRESS' | translate }}
+                </p>
+
+                <h3
+                  class="mt-0.5 text-sm font-black text-[#27231f]"
+                >
+                  {{ order.city || ('ORDERS.NA' | translate) }}
+                </h3>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <p
+                class="text-sm font-bold leading-6 text-[#4f4943]"
+              >
+                {{
+                  order.address ||
+                    ('ORDERS.NA' | translate)
+                }}
+              </p>
+
+              <p
+                class="text-xs font-semibold text-[#8d877e]"
+              >
+                @if (order.city) {
+                  {{ order.city }}
+                }
+
+                @if (order.city && order.country) {
+                  <span> · </span>
+                }
+
+                @if (order.country) {
+                  {{ order.country }}
+                }
+              </p>
+            </div>
+          </section>
         </div>
 
-        <div class="grid gap-3 sm:grid-cols-2">
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.CUSTOMER_NAME' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.customerName }}</p>
+        <!-- ===================================== -->
+        <!-- Ordered Products -->
+        <!-- ===================================== -->
+
+        <section
+          class="overflow-hidden rounded-2xl border border-[#e5ded2] bg-white"
+        >
+          <header
+            class="flex items-center justify-between gap-4 border-b border-[#ece6dd] bg-[#faf8f5] px-4 py-4 sm:px-5"
+          >
+            <div>
+              <p
+                class="text-[10px] font-black uppercase tracking-[0.16em] text-[#718369]"
+              >
+                {{ 'ORDERS.DETAILS.ORDER_ITEMS' | translate }}
+              </p>
+
+              <p
+                class="mt-1 text-sm font-black text-[#27231f]"
+              >
+                {{ order.items }}
+                {{ 'ORDERS.DETAILS.ITEMS_COUNT' | translate }}
+              </p>
+            </div>
+
+            <span
+              class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef4e8] text-[#5f6f43]"
+            >
+              <i
+                class="pi pi-shopping-bag"
+              ></i>
+            </span>
+          </header>
+
+          <div
+            class="divide-y divide-[#eee8df]"
+          >
+            @for (
+              item of order.orderItems;
+              track item.id
+            ) {
+              <article
+                class="flex gap-3 p-4 sm:gap-4 sm:p-5"
+              >
+                <!-- Product image -->
+                <div
+                  class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e8e1d8] bg-[#f7f4ef] sm:h-24 sm:w-24"
+                >
+                  @if (item.imageUrl) {
+                    <img
+                      [src]="item.imageUrl"
+                      [alt]="item.name"
+                      loading="lazy"
+                      class="h-full w-full object-cover"
+                    />
+                  } @else {
+                    <i
+                      class="pi pi-image text-xl text-[#aaa39a]"
+                    ></i>
+                  }
+                </div>
+
+                <!-- Product info -->
+                <div
+                  class="min-w-0 flex-1"
+                >
+                  <div
+                    class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"
+                  >
+                    <div class="min-w-0">
+                      <h4
+                        class="text-sm font-black leading-5 text-[#27231f] sm:text-[15px]"
+                      >
+                        {{ item.name }}
+                      </h4>
+
+                      @if (item.sku) {
+                        <p
+                          class="mt-1 text-[11px] font-semibold text-[#9a9389]"
+                        >
+                          {{ 'ORDERS.DETAILS.SKU' | translate }}:
+                          {{ item.sku }}
+                        </p>
+                      }
+                    </div>
+
+                    <p
+                      class="shrink-0 text-base font-black text-[#4f643e]"
+                    >
+                      {{
+                        item.total
+                          | currency
+                            : 'USD'
+                            : 'symbol'
+                            : '1.2-2'
+                      }}
+                    </p>
+                  </div>
+
+                  <div
+                    class="mt-3 flex flex-wrap items-center gap-2"
+                  >
+                    <span
+                      class="rounded-full bg-[#f2efe9] px-2.5 py-1 text-xs font-black text-[#6f675e]"
+                    >
+                      {{ 'ORDERS.DETAILS.QTY' | translate }}
+                      {{ item.quantity }}
+                    </span>
+
+                    <span
+                      class="text-xs font-semibold text-[#8d877e]"
+                    >
+                      ×
+                      {{
+                        item.unitPrice
+                          | currency
+                            : 'USD'
+                            : 'symbol'
+                            : '1.2-2'
+                      }}
+                    </span>
+
+                    @if (item.loyaltyRedeemed) {
+                      <span
+                        class="inline-flex items-center rounded-full bg-[#eef4e8] px-2.5 py-1 text-[10px] font-black text-[#5f6f43]"
+                      >
+                        <i
+                          class="pi pi-star-fill me-1 text-[9px]"
+                        ></i>
+
+                        {{ 'ORDERS.DETAILS.LOYALTY_REDEEMED' | translate }}
+
+                        @if (item.loyaltyPointsCost > 0) {
+                          · {{ item.loyaltyPointsCost }}
+                          {{ 'ORDERS.DETAILS.POINTS' | translate }}
+                        }
+                      </span>
+                    }
+
+                    @if (item.loyaltyPointsEarned > 0) {
+                      <span
+                        class="rounded-full bg-[#fff8e8] px-2.5 py-1 text-[10px] font-black text-[#8a6a2a]"
+                      >
+                        +{{ item.loyaltyPointsEarned }}
+                        {{ 'ORDERS.DETAILS.POINTS' | translate }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </article>
+            } @empty {
+              <div
+                class="px-5 py-10 text-center"
+              >
+                <span
+                  class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#f2efe9] text-[#9a9389]"
+                >
+                  <i
+                    class="pi pi-shopping-bag"
+                  ></i>
+                </span>
+
+                <p
+                  class="mt-3 text-sm font-bold text-[#7e766d]"
+                >
+                  {{ 'ORDERS.DETAILS.NO_ITEMS' | translate }}
+                </p>
+              </div>
+            }
           </div>
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.EMAIL' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.customerEmail || ('ORDERS.NA' | translate) }}</p>
-          </div>
+        </section>
+
+        <!-- Invoice + Status -->
+        <div
+          class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]"
+        >
+          <!-- Invoice summary -->
+          <section
+            class="rounded-2xl border border-[#e5ded2] bg-[#fcfbf9] p-5"
+          >
+            <div
+              class="flex items-center gap-3"
+            >
+              <span
+                class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef4e8] text-[#5f6f43]"
+              >
+                <i
+                  class="pi pi-receipt"
+                ></i>
+              </span>
+
+              <div>
+                <p
+                  class="text-[10px] font-black uppercase tracking-[0.15em] text-[#718369]"
+                >
+                  {{ 'ORDERS.DETAILS.INVOICE_SUMMARY' | translate }}
+                </p>
+
+                <p
+                  class="mt-0.5 text-sm font-black text-[#27231f]"
+                >
+                  {{ order.orderId }}
+                </p>
+              </div>
+            </div>
+
+            <div
+              class="mt-5 space-y-3 text-sm"
+            >
+              <div
+                class="flex items-center justify-between gap-4"
+              >
+                <span
+                  class="font-semibold text-[#817a72]"
+                >
+                  {{ 'ORDERS.FIELDS.SUBTOTAL' | translate }}
+                </span>
+
+                <span
+                  class="font-black text-[#342f29]"
+                >
+                  {{ order.subtotal }}
+                </span>
+              </div>
+
+              <div
+                class="flex items-center justify-between gap-4"
+              >
+                <span
+                  class="font-semibold text-[#817a72]"
+                >
+                  {{ 'ORDERS.DETAILS.DISCOUNT' | translate }}
+                </span>
+
+                <span
+                  class="font-black text-[#8b6b56]"
+                >
+                  -{{ order.discount }}
+                </span>
+              </div>
+
+              <div
+                class="flex items-center justify-between gap-4"
+              >
+                <span
+                  class="font-semibold text-[#817a72]"
+                >
+                  {{ 'ORDERS.FIELDS.SHIPPING' | translate }}
+                </span>
+
+                <span
+                  class="font-black text-[#342f29]"
+                >
+                  {{ order.shipping }}
+                </span>
+              </div>
+
+              <div
+                class="mt-4 flex items-end justify-between gap-4 border-t border-[#ded7cd] pt-4"
+              >
+                <div>
+                  <p
+                    class="text-[10px] font-black uppercase tracking-[0.15em] text-[#718369]"
+                  >
+                    {{ 'ORDERS.DETAILS.ORDER_TOTAL' | translate }}
+                  </p>
+
+                  <p
+                    class="mt-1 text-xs font-semibold text-[#8d877e]"
+                  >
+                    {{ order.items }}
+                    {{ 'ORDERS.DETAILS.ITEMS_COUNT' | translate }}
+                  </p>
+                </div>
+
+                <p
+                  class="text-2xl font-black tracking-tight text-[#4f643e]"
+                >
+                  {{ order.total }}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Status management -->
+          <section
+            class="rounded-2xl border border-[#dfe7d5] bg-[#f7faf3] p-5"
+          >
+            <div
+              class="mb-4 flex items-center gap-3"
+            >
+              <span
+                class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#5f6f43] shadow-sm"
+              >
+                <i
+                  class="pi pi-cog"
+                ></i>
+              </span>
+
+              <div>
+                <p
+                  class="text-[10px] font-black uppercase tracking-[0.15em] text-[#718369]"
+                >
+                  {{ 'ORDERS.DETAILS.STATUS_CONTROLS' | translate }}
+                </p>
+
+                <p
+                  class="mt-0.5 text-xs font-semibold text-[#8d877e]"
+                >
+                  {{ 'ORDERS.DETAILS.STATUS_HELPER' | translate }}
+                </p>
+              </div>
+            </div>
+
+            <div class="grid gap-4">
+              <app-admin-form-field
+                type="select"
+                name="orderDeliveryStatus"
+                [label]="'ORDERS.FIELDS.DELIVERY_STATUS'"
+                [value]="selectedOrderDelivery()"
+                [options]="deliveryOptions().slice(1)"
+                optionLabel="label"
+                optionValue="value"
+                (valueChange)="selectedOrderDelivery.set($any($event))"
+              />
+
+              <app-admin-form-field
+                type="select"
+                name="orderPaymentStatus"
+                [label]="'ORDERS.FIELDS.PAYMENT_STATUS'"
+                [value]="selectedOrderPayment()"
+                [options]="paymentOptions().slice(1)"
+                optionLabel="label"
+                optionValue="value"
+                (valueChange)="selectedOrderPayment.set($any($event))"
+              />
+            </div>
+          </section>
         </div>
 
-        <div class="grid gap-3 sm:grid-cols-2">
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.PHONE' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.phone || ('ORDERS.NA' | translate) }}</p>
-          </div>
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.ORDER_DATE' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.date }}</p>
-          </div>
-        </div>
-
-        <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-          <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.ADDRESS' | translate }}</p>
-          <p class="mt-1 font-black text-[#182116]">{{ order.address || ('ORDERS.NA' | translate) }}</p>
-        </div>
-
-        <div class="grid gap-3 sm:grid-cols-2">
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.CITY' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.city || ('ORDERS.NA' | translate) }}</p>
-          </div>
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.COUNTRY' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.country || ('ORDERS.NA' | translate) }}</p>
-          </div>
-        </div>
-
-        <div class="grid gap-3 sm:grid-cols-3">
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.ITEMS' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.items }}</p>
-          </div>
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.SUBTOTAL' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.subtotal || ('ORDERS.NA' | translate) }}</p>
-          </div>
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.SHIPPING' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.shipping || ('ORDERS.NA' | translate) }}</p>
-          </div>
-        </div>
-
-        <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-          <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.TOTAL' | translate }}</p>
-          <p class="mt-2 text-xl font-black text-[#5f6f43]">{{ order.total }}</p>
-        </div>
-
-        <div class="grid gap-3 sm:grid-cols-2">
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.PAYMENT_STATUS' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ statusLabel(order.payment) }}</p>
-          </div>
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.DELIVERY_STATUS' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ statusLabel(order.delivery) }}</p>
-          </div>
-        </div>
-
-        <div class="grid gap-3 rounded-2xl border border-[#dfe7d5] bg-[#f7faf3] p-4 sm:grid-cols-2">
-          <app-admin-form-field type="select" name="orderDeliveryStatus"
-            [label]="'ORDERS.FIELDS.DELIVERY_STATUS'" [value]="selectedOrderDelivery()"
-            [options]="deliveryOptions().slice(1)" optionLabel="label" optionValue="value"
-            (valueChange)="selectedOrderDelivery.set($any($event))" />
-
-          <app-admin-form-field type="select" name="orderPaymentStatus"
-            [label]="'ORDERS.FIELDS.PAYMENT_STATUS'" [value]="selectedOrderPayment()"
-            [options]="paymentOptions().slice(1)" optionLabel="label" optionValue="value"
-            (valueChange)="selectedOrderPayment.set($any($event))" />
-        </div>
-
+        <!-- Loyalty warning -->
         @if (loyaltyCreditWarningPoints() > 0) {
-        <div class="flex items-start gap-3 rounded-2xl border border-[#e4c98f] bg-[#fff8e8] p-4 text-[#76571d]"
-          role="status">
-          <i class="pi pi-exclamation-triangle mt-0.5 shrink-0" aria-hidden="true"></i>
-          <p class="text-sm font-bold leading-6">
-            {{ 'ORDERS.LOYALTY.CREDIT_WARNING' | translate: { points: loyaltyCreditWarningPoints() } }}
-          </p>
-        </div>
-        }
+          <div
+            class="flex items-start gap-3 rounded-2xl border border-[#e4c98f] bg-[#fff8e8] p-4 text-[#76571d]"
+            role="status"
+          >
+            <i
+              class="pi pi-exclamation-triangle mt-0.5 shrink-0"
+            ></i>
 
-        @if (order.notes) {
-          <div class="rounded-xl border border-[#e5ded2] bg-white p-3">
-            <p class="text-xs font-bold text-[#8d877e]">{{ 'ORDERS.FIELDS.NOTES' | translate }}</p>
-            <p class="mt-1 font-black text-[#182116]">{{ order.notes }}</p>
+            <p
+              class="text-sm font-bold leading-6"
+            >
+              {{
+                'ORDERS.LOYALTY.CREDIT_WARNING'
+                  | translate
+                    : {
+                        points: loyaltyCreditWarningPoints()
+                      }
+              }}
+            </p>
           </div>
         }
-      </section>
+
+        <!-- Notes -->
+        @if (order.notes) {
+          <section
+            class="rounded-2xl border border-[#e5ded2] bg-white p-5"
+          >
+            <div
+              class="flex items-start gap-3"
+            >
+              <span
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2efe9] text-[#7e766d]"
+              >
+                <i
+                  class="pi pi-file-edit"
+                ></i>
+              </span>
+
+              <div>
+                <p
+                  class="text-[10px] font-black uppercase tracking-[0.15em] text-[#8d877e]"
+                >
+                  {{ 'ORDERS.FIELDS.NOTES' | translate }}
+                </p>
+
+                <p
+                  class="mt-2 text-sm font-semibold leading-6 text-[#4f4943]"
+                >
+                  {{ order.notes }}
+                </p>
+              </div>
+            </div>
+          </section>
+        }
+      </div>
     }
   </app-admin-form-modal>
 
-  <app-admin-form-modal [isOpen]="loyaltyConfirmationVisible()" size="sm"
+  <!-- Loyalty confirmation -->
+  <app-admin-form-modal
+    [isOpen]="loyaltyConfirmationVisible()"
+    size="sm"
     [title]="'ORDERS.LOYALTY.CONFIRM_TITLE' | translate"
     [subtitle]="'ORDERS.LOYALTY.CONFIRM_SUBTITLE' | translate"
     [submitLabel]="'ORDERS.LOYALTY.CONFIRM_ACTION' | translate"
-    [cancelLabel]="'COMMON.CANCEL' | translate" [loading]="savingOrderStatus()"
-    (close)="closeLoyaltyConfirmation()" (submit)="confirmOrderStatusSave()">
-    <div class="rounded-2xl border border-[#e4c98f] bg-[#fff8e8] p-5 text-center text-[#76571d]">
-      <span class="mx-auto grid size-12 place-items-center rounded-full bg-[#f3dfb3] text-xl" aria-hidden="true">
-        <i class="pi pi-star-fill"></i>
+    [cancelLabel]="'COMMON.CANCEL' | translate"
+    [loading]="savingOrderStatus()"
+    (close)="closeLoyaltyConfirmation()"
+    (submit)="confirmOrderStatusSave()"
+  >
+    <div
+      class="rounded-2xl border border-[#e4c98f] bg-[#fff8e8] p-5 text-center text-[#76571d]"
+    >
+      <span
+        class="mx-auto grid size-12 place-items-center rounded-full bg-[#f3dfb3] text-xl"
+      >
+        <i
+          class="pi pi-star-fill"
+        ></i>
       </span>
-      <p class="mt-4 text-sm font-bold leading-6">
-        {{ 'ORDERS.LOYALTY.CONFIRM_MESSAGE' | translate: { points: loyaltyCreditWarningPoints() } }}
+
+      <p
+        class="mt-4 text-sm font-bold leading-6"
+      >
+        {{
+          'ORDERS.LOYALTY.CONFIRM_MESSAGE'
+            | translate
+              : {
+                  points: loyaltyCreditWarningPoints()
+                }
+        }}
       </p>
     </div>
   </app-admin-form-modal>

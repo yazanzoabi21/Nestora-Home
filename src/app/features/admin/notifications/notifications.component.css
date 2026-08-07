@@ -1,0 +1,36 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.notification-filter {
+  border: 1px solid #ded6cb;
+  background: #ffffff;
+  color: #6d655c;
+}
+
+.notification-filter:hover {
+  background: #f7f4ef;
+}
+
+.notification-filter-active {
+  border-color: #718369;
+  background: #718369;
+  color: #ffffff;
+}
+
+.notification-filter-active:hover {
+  background: #647758;
+}
+
+.notification-row-unread {
+  background: #f4f8f1;
+}
+
+.notification-dot-unread {
+  background: #718369;
+}
+
+.notification-dot-read {
+  background: #dfdad2;
+}
