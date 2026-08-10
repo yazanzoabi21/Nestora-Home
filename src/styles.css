@@ -576,3 +576,14 @@ select option {
     height: 34px !important;
   }
 }
+
+.auth-field input[type='password']::-ms-reveal,
+.auth-field input[type='password']::-ms-clear,
+.password-input[type='password']::-ms-reveal,
+.password-input[type='password']::-ms-clear {
+  display: none;
+}
+
+.auth-eye {
+  cursor: pointer;
+}

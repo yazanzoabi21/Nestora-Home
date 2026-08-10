@@ -50,6 +50,7 @@ const ANNOUNCEMENT_DURATION_MS = 3000;
 export class CustomerNavbarComponent {
   readonly shopping = inject(CustomerShoppingStateService);
   readonly categoriesMenuOpen = signal(false);
+  readonly mobileCategoriesMenuOpen = signal(false);
   readonly mobileMenuOpen = signal(false);
   readonly navbarCategories = signal<Category[]>([]);
   readonly subCategories = computed(() =>
@@ -85,7 +86,6 @@ export class CustomerNavbarComponent {
   readonly customerAuth = inject(CustomerAuthService);
   readonly accountDestination = computed(() => this.customerAuth.isAuthenticated() ? '/shop/customer-account' : '/auth/customer-login');
   readonly accountAriaLabel = computed(() => this.customerAuth.isLoading() ? 'Restoring customer session' : this.customerAuth.isAuthenticated() ? 'Open customer account' : 'Sign in to customer account');
-  readonly customerInitials = computed(() => this.customerAuth.isAuthenticated() ? this.customerAuth.initials() : 'N');
 
   private readonly categoriesService = inject(CategoriesService);
   private readonly promotionalBarService = inject(CustomerPromotionalBarService);
@@ -127,12 +127,22 @@ export class CustomerNavbarComponent {
   }
 
   toggleMobileMenu(): void {
-    this.mobileMenuOpen.update((open) => !open);
+    if (this.mobileMenuOpen()) {
+      this.closeMobileMenu();
+    } else {
+      this.mobileMenuOpen.set(true);
+    }
+
     this.closeCategoriesMenu();
   }
 
   closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
+    this.mobileCategoriesMenuOpen.set(false);
+  }
+
+  toggleMobileCategoriesMenu(): void {
+    this.mobileCategoriesMenuOpen.update((open) => !open);
   }
 
   pauseAnnouncementCarousel(): void {

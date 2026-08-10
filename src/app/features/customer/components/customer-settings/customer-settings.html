@@ -72,9 +72,15 @@
                     {{ 'CUSTOMER.ACCOUNT.SETTINGS.CURRENT_PASSWORD' | translate }}
                 </span>
 
-                <input type="password" name="currentPassword" [(ngModel)]="currentPassword"
-                    autocomplete="current-password"
-                    class="h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+                <span class="password-field">
+                    <input [type]="currentPasswordVisible() ? 'text' : 'password'" name="currentPassword"
+                        [(ngModel)]="currentPassword" autocomplete="current-password"
+                        class="password-input h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 pe-14 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+                    <button type="button" class="auth-eye" (click)="toggleCurrentPasswordVisibility()">
+                        <i class="pi" [class.pi-eye]="!currentPasswordVisible()"
+                            [class.pi-eye-slash]="currentPasswordVisible()"></i>
+                    </button>
+                </span>
             </label>
 
             <label class="block">
@@ -82,8 +88,15 @@
                     {{ 'CUSTOMER.ACCOUNT.SETTINGS.NEW_PASSWORD' | translate }}
                 </span>
 
-                <input type="password" name="newPassword" [(ngModel)]="newPassword" autocomplete="new-password"
-                    class="h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+                <span class="password-field">
+                    <input [type]="newPasswordVisible() ? 'text' : 'password'" name="newPassword"
+                        [(ngModel)]="newPassword" autocomplete="new-password"
+                        class="password-input h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 pe-14 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+                    <button type="button" class="auth-eye" (click)="toggleNewPasswordVisibility()">
+                        <i class="pi" [class.pi-eye]="!newPasswordVisible()"
+                            [class.pi-eye-slash]="newPasswordVisible()"></i>
+                    </button>
+                </span>
             </label>
 
             <label class="block">
@@ -91,9 +104,15 @@
                     {{ 'CUSTOMER.ACCOUNT.SETTINGS.CONFIRM_NEW_PASSWORD' | translate }}
                 </span>
 
-                <input type="password" name="confirmNewPassword" [(ngModel)]="confirmNewPassword"
-                    autocomplete="new-password"
-                    class="h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+                <span class="password-field">
+                    <input [type]="confirmNewPasswordVisible() ? 'text' : 'password'" name="confirmNewPassword"
+                        [(ngModel)]="confirmNewPassword" autocomplete="new-password"
+                        class="password-input h-10 w-full rounded-[0.9rem] border border-[#e4d8cb] bg-white px-3 pe-14 text-sm text-[#30362f] outline-none transition placeholder:text-[#a4a09a] focus:border-[#718369] focus:ring-2 focus:ring-[#718369]/10" />
+                    <button type="button" class="auth-eye" (click)="toggleConfirmNewPasswordVisibility()">
+                        <i class="pi" [class.pi-eye]="!confirmNewPasswordVisible()"
+                            [class.pi-eye-slash]="confirmNewPasswordVisible()"></i>
+                    </button>
+                </span>
             </label>
 
             <div class="pt-0.5">

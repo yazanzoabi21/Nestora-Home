@@ -20,6 +20,7 @@ interface NotificationItem {
   standalone: true,
   imports: [FormsModule, TranslatePipe],
   templateUrl: './customer-settings.html',
+  styleUrl: './customer-settings.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerSettings {
@@ -31,6 +32,9 @@ export class CustomerSettings {
 
   readonly isPasswordLoginAvailable = signal(false);
   readonly isUpdatingPassword = signal(false);
+  readonly currentPasswordVisible = signal(false);
+  readonly newPasswordVisible = signal(false);
+  readonly confirmNewPasswordVisible = signal(false);
 
   readonly notificationError = signal<string | null>(null);
   readonly passwordError = signal<string | null>(null);
@@ -39,6 +43,18 @@ export class CustomerSettings {
   currentPassword = '';
   newPassword = '';
   confirmNewPassword = '';
+
+  toggleCurrentPasswordVisibility(): void {
+    this.currentPasswordVisible.update((visible) => !visible);
+  }
+
+  toggleNewPasswordVisibility(): void {
+    this.newPasswordVisible.update((visible) => !visible);
+  }
+
+  toggleConfirmNewPasswordVisibility(): void {
+    this.confirmNewPasswordVisible.update((visible) => !visible);
+  }
 
   readonly notificationItems: readonly NotificationItem[] = [
     {

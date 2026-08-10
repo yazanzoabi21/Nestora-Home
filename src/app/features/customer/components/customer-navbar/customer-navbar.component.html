@@ -234,11 +234,25 @@
     <!-- Mobile navbar -->
     <div class="customer-page-container flex flex-col gap-3 py-4 min-[1181px]:hidden">
       <div class="flex min-w-0 items-center justify-between gap-3">
-        <a routerLink="/shop"
-          class="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#718369] text-sm font-black text-white no-underline"
-          aria-label="Nestora Home" (click)="closeMobileMenu()">
-          {{ customerInitials() }}
-        </a>
+        <button type="button"
+          class="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-[#718369] text-sm font-black uppercase text-white disabled:cursor-not-allowed disabled:opacity-60"
+          [attr.aria-label]="accountAriaLabel()" [disabled]="customerAuth.isLoading()"
+          [attr.aria-busy]="customerAuth.isLoading()" (click)="openAccount()">
+          @if (customerAuth.isLoading()) {
+          <i class="pi pi-spinner pi-spin text-sm" aria-hidden="true"></i>
+          } @else if (customerAuth.isAuthenticated()) {
+          @if (
+          customerAuth.customerProfile()?.avatar_url;
+          as avatarUrl
+          ) {
+          <img class="h-9 w-9 rounded-full object-cover" [src]="avatarUrl" [alt]="customerAuth.displayName()" />
+          } @else {
+          <span aria-hidden="true">{{ customerAuth.initials() }}</span>
+          }
+          } @else {
+          <i class="pi pi-user text-sm" aria-hidden="true"></i>
+          }
+        </button>
 
         <div class="ml-auto flex shrink-0 items-center gap-3 text-[#1f2a1f]">
           <!-- Mobile wishlist -->
@@ -336,25 +350,39 @@
           }
 
           <!-- Mobile categories -->
-          @for (
-          category of navbarCategories();
-          track category.id
-          ) {
-          <a routerLink="/shop/products" [queryParams]="{
-                  category: category.slug,
-                  source: 'navbar'
-                }"
-            class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] py-[0.55rem] ps-4 text-[0.92rem] font-[650] text-[#536b50] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:ps-6 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
-            (click)="closeMobileMenu()">
-            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#f2f4ed] text-[#6b7d5e]"
-              aria-hidden="true">
-              <i [class]="
-                      categoryIconClass(category) + ' text-sm'
-                    "></i>
-            </span>
+          <button type="button"
+            class="flex min-h-11 w-full cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] border-0 bg-transparent px-0 py-[0.55rem] text-start text-[0.92rem] font-[650] text-[#1f2a1f] transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:px-2 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+            aria-controls="customer-mobile-categories" [attr.aria-expanded]="mobileCategoriesMenuOpen()"
+            (click)="toggleMobileCategoriesMenu()">
+            <span>{{ 'SIDEBAR.CATEGORIES' | translate }}</span>
+            <i class="pi pi-chevron-down ms-auto text-[0.7rem] transition-transform duration-200 ease-out"
+              [class.rotate-180]="mobileCategoriesMenuOpen()" aria-hidden="true"></i>
+          </button>
 
-            <span>{{ category.name }}</span>
-          </a>
+          @if (mobileCategoriesMenuOpen()) {
+          <div id="customer-mobile-categories" class="grid gap-0.5" role="group"
+            [attr.aria-label]="'SIDEBAR.CATEGORIES' | translate">
+            @for (
+            category of navbarCategories();
+            track category.id
+            ) {
+            <a routerLink="/shop/products" [queryParams]="{
+                    category: category.slug,
+                    source: 'navbar'
+                  }"
+              class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] py-[0.45rem] ps-4 text-[0.92rem] font-[650] text-[#536b50] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:ps-6 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
+              (click)="closeMobileMenu()">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#f2f4ed] text-[#6b7d5e]"
+                aria-hidden="true">
+                <i [class]="
+                        categoryIconClass(category) + ' text-sm'
+                      "></i>
+              </span>
+
+              <span>{{ category.name }}</span>
+            </a>
+            }
+          </div>
           }
 
           <!-- Account -->
