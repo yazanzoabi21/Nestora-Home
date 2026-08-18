@@ -274,7 +274,7 @@
         </section>
         }
         <button
-          class="mt-12 flex h-[61px] w-full items-center justify-center gap-4 rounded-[20px] bg-[#708565] text-sm font-semibold text-white hover:bg-[#607456] disabled:opacity-60"
+          class="mt-12 flex h-[61px] w-full items-center justify-center gap-4 rounded-[20px] bg-[#708565] text-sm font-semibold text-white hover:bg-[#607456] disabled:opacity-60 cursor-pointer"
           type="button" [disabled]="checkingOut() || shopping.stockConflicts().length > 0" (click)="checkout()">
           @if (checkingOut()) {
           <i class="pi pi-spin pi-spinner"></i>
@@ -282,10 +282,10 @@
           {{ 'CUSTOMER.CART.CHECKOUT' | translate }}
           <i class="pi pi-arrow-right text-sm rtl:rotate-180"></i>
         </button>
-        <div class="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-[#aaa]"
+        <!-- <div class="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-[#aaa]"
           aria-label="Accepted payment methods">
           <span>Visa</span><span>MC</span><span>PayPal</span><span>Apple Pay</span>
-        </div>
+        </div> -->
       </aside>
     </div>
     }

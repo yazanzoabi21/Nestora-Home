@@ -1,0 +1,59 @@
+<section class="min-h-[60vh] bg-[#f8f7f5]">
+  @if (localizedPage(); as page) {
+  <app-customer-help-header [title]="page.title" [subtitle]="page.subtitle" />
+  } @else {
+  <app-customer-help-header [title]="'CUSTOMERS.HELP.TITLE' | translate"
+    [subtitle]="'CUSTOMERS.HELP.SUBTITLE' | translate" />
+  }
+
+  <div class="customer-page-container py-9 sm:py-12 lg:py-14">
+    @if (status() === 'loading') {
+    <app-customer-page-state kind="loading" titleKey="CUSTOMERS.HELP.LOADING"
+      detailKey="CUSTOMERS.HELP.LOADING_DETAIL" />
+    } @else if (status() === 'error') {
+    <app-customer-page-state kind="error" titleKey="CUSTOMERS.HELP.ERROR"
+      detailKey="CUSTOMERS.HELP.ERROR_DETAIL" (retry)="load()" />
+    } @else if (status() === 'not-found') {
+    <app-customer-page-state kind="not-found" titleKey="CUSTOMERS.HELP.NOT_FOUND"
+      detailKey="CUSTOMERS.HELP.NOT_FOUND_DETAIL" />
+    } @else if (localizedPage(); as page) {
+    <div class="mx-auto grid max-w-3xl gap-5 sm:gap-6">
+      @for (section of page.content; track $index) {
+      @if (section.type === 'notice') {
+      <aside class="rounded-3xl border border-[#cad3c3] bg-[#eef1ea] p-6 sm:p-8">
+        <div class="flex items-start gap-4">
+          <span class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#6b7d5e]">
+            <i class="pi pi-info-circle"></i>
+          </span>
+          <div class="min-w-0">
+            <h2 class="text-lg font-black text-[#1f2a1f] sm:text-xl">{{ section.title }}</h2>
+            <p class="mt-3 whitespace-pre-line text-sm font-medium leading-7 text-[#545c52] sm:text-base">
+              {{ section.body }}
+            </p>
+          </div>
+        </div>
+      </aside>
+      } @else {
+      <article class="rounded-3xl border border-[#e8dccf] bg-white p-6 shadow-sm sm:p-8">
+        <h2 class="text-xl font-black text-[#1f2a1f] sm:text-2xl">{{ section.title }}</h2>
+        @if (section.type === 'list') {
+        <ul class="mt-4 grid gap-3 text-sm font-medium leading-7 text-[#5f625c] sm:text-base">
+          @for (item of section.items; track $index) {
+          <li class="flex items-start gap-3">
+            <i class="pi pi-check-circle mt-1.5 shrink-0 text-sm text-[#718369]"></i>
+            <span>{{ item }}</span>
+          </li>
+          }
+        </ul>
+        } @else {
+        <p class="mt-4 whitespace-pre-line text-sm font-medium leading-7 text-[#5f625c] sm:text-base">
+          {{ section.body }}
+        </p>
+        }
+      </article>
+      }
+      }
+    </div>
+    }
+  </div>
+</section>

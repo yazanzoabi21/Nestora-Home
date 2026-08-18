@@ -16,6 +16,10 @@ import {
 import { CustomerShoppingStateService } from '../services';
 import { Category } from '../../../data-access/models';
 import { CategoriesService } from '../../../data-access/services';
+import {
+  PaginationPageSize,
+  paginationPageSizeLabel,
+} from '../../../shared/ui/admin-pagination';
 
 type ActiveFilterChip =
   | { kind: 'category'; label: string; value: string }
@@ -39,6 +43,7 @@ export abstract class ProductBrowserPage {
   readonly selectedPriceRange = signal<string | null>(null);
   readonly selectedRating = signal<number | null>(null);
   readonly inStockOnly = signal(false);
+  readonly searchTerm = signal('');
   readonly sortBy = signal<CustomerProductSort>('featured');
   readonly viewMode = signal<CustomerProductView>('grid');
   readonly mobileFiltersOpen = signal(false);
@@ -104,12 +109,27 @@ export abstract class ProductBrowserPage {
   });
   readonly activeFilterCount = computed(() => this.activeFilterChips().length);
   readonly visibleProducts = computed(() => {
+    const searchTerm = this.searchTerm().trim().toLocaleLowerCase();
+    const searchedProducts = searchTerm
+      ? this.products().filter((product) =>
+          [
+            product.name,
+            product.brand,
+            product.category,
+            product.description ?? '',
+            product.sku ?? '',
+            product.variantLabel ?? '',
+            product.variantOptionValue ?? '',
+          ].some((value) => value.toLocaleLowerCase().includes(searchTerm)),
+        )
+      : this.products();
+
     if (!this.filtersEnabled) {
-      return this.sortProducts([...this.products()]);
+      return this.sortProducts([...searchedProducts]);
     }
 
     const range = this.activePriceRange();
-    const filtered = this.products().filter(
+    const filtered = searchedProducts.filter(
       (product) =>
         (!this.selectedCategories().length ||
           this.selectedCategories().includes(product.category)) &&
@@ -126,24 +146,34 @@ export abstract class ProductBrowserPage {
   );
 
   readonly currentPage = signal(1);
-  readonly productsPerPage = 12;
+  readonly productsPerPage = signal<PaginationPageSize>(12);
+  readonly pageSizeOptions: PaginationPageSize[] = [12, 20, 25, 'all'];
+  readonly pageSizeLabel = paginationPageSizeLabel;
 
   readonly paginatedProducts = computed(() => {
-    const startIndex = (this.currentPage() - 1) * this.productsPerPage;
+    const products = this.visibleProducts();
+    const pageSize = this.productsPerPage();
+    if (pageSize === 'all') return products;
 
-    return this.visibleProducts().slice(
-      startIndex,
-      startIndex + this.productsPerPage,
-    );
+    const startIndex = (this.currentPage() - 1) * pageSize;
+
+    return products.slice(startIndex, startIndex + pageSize);
   });
 
   setPage(page: number): void {
+    const pageSize = this.productsPerPage();
     const totalPages = Math.max(
       1,
-      Math.ceil(this.visibleProducts().length / this.productsPerPage),
+      pageSize === 'all' ? 1 : Math.ceil(this.visibleProducts().length / pageSize),
     );
 
     this.currentPage.set(Math.min(Math.max(page, 1), totalPages));
+    this.closeQuickView();
+  }
+
+  setProductsPerPage(pageSize: PaginationPageSize): void {
+    this.productsPerPage.set(pageSize);
+    this.resetPagination();
     this.closeQuickView();
   }
 
@@ -155,6 +185,14 @@ export abstract class ProductBrowserPage {
   setInStockOnly(value: boolean): void {
     this.inStockOnly.set(value);
     this.resetPagination();
+  }
+
+  setProductSearch(value: string): void {
+    const normalized = value.trim().replace(/\s+/g, ' ');
+    if (normalized === this.searchTerm()) return;
+    this.searchTerm.set(normalized);
+    this.resetPagination();
+    this.closeQuickView();
   }
 
   protected resetPagination(): void {

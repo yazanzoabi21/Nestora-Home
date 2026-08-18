@@ -21,6 +21,7 @@ import {
 import { CustomerAuthService } from '../../../../core/services/auth';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CustomerLanguageSwitchComponent } from '../customer-language-switch/customer-language-switch.component';
+import { CustomerGlobalSearchComponent } from '../customer-global-search/customer-global-search.component';
 
 interface CustomerNavLink {
   labelKey: string;
@@ -39,6 +40,7 @@ const ANNOUNCEMENT_DURATION_MS = 3000;
   },
   imports: [
     CustomerLanguageSwitchComponent,
+    CustomerGlobalSearchComponent,
     RouterLink,
     RouterLinkActive,
     TranslatePipe,
@@ -75,17 +77,23 @@ export class CustomerNavbarComponent {
       : null;
   });
   readonly shippingDiscountAnnouncement = computed(
-    () =>
-      this.discountAnnouncements()[0]?.shippingText ??
-      DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT,
+    () => this.discountAnnouncements()[0]?.shippingText ?? DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT,
   );
   readonly navLinks: CustomerNavLink[] = [
     { labelKey: 'CUSTOMER.PRODUCTS.ALL_PRODUCTS', path: '/shop/products' },
     { labelKey: 'CUSTOMER.PRODUCTS.NEW_ARRIVALS', path: '/shop/new-arrivals' },
   ];
   readonly customerAuth = inject(CustomerAuthService);
-  readonly accountDestination = computed(() => this.customerAuth.isAuthenticated() ? '/shop/customer-account' : '/auth/customer-login');
-  readonly accountAriaLabel = computed(() => this.customerAuth.isLoading() ? 'Restoring customer session' : this.customerAuth.isAuthenticated() ? 'Open customer account' : 'Sign in to customer account');
+  readonly accountDestination = computed(() =>
+    this.customerAuth.isAuthenticated() ? '/shop/customer-account' : '/auth/customer-login',
+  );
+  readonly accountAriaLabel = computed(() =>
+    this.customerAuth.isLoading()
+      ? 'Restoring customer session'
+      : this.customerAuth.isAuthenticated()
+        ? 'Open customer account'
+        : 'Sign in to customer account',
+  );
 
   private readonly categoriesService = inject(CategoriesService);
   private readonly promotionalBarService = inject(CustomerPromotionalBarService);
@@ -180,7 +188,10 @@ export class CustomerNavbarComponent {
 
   @HostListener('document:click', ['$event'])
   closeMenuOnOutsideClick(event: MouseEvent): void {
-    if (this.categoriesMenuOpen() && !this.elementRef.nativeElement.contains(event.target as Node)) {
+    if (
+      this.categoriesMenuOpen() &&
+      !this.elementRef.nativeElement.contains(event.target as Node)
+    ) {
       this.closeCategoriesMenu();
     }
   }
@@ -195,14 +206,7 @@ export class CustomerNavbarComponent {
     try {
       const categories = await this.categoriesService.getCategories();
 
-      this.navbarCategories.set(
-        categories.filter(
-          (category) =>
-            category.is_active === true &&
-            category.parent_id !== null &&
-            category.parent_id !== undefined,
-        )
-      );
+      this.navbarCategories.set(categories.filter((category) => category.is_active === true));
     } catch {
       this.navbarCategories.set([]);
     }
@@ -233,10 +237,7 @@ export class CustomerNavbarComponent {
       this.announcementRotationRemainingMs = ANNOUNCEMENT_DURATION_MS;
     }
 
-    if (
-      this.promotionalAnnouncements().length < 2 ||
-      this.announcementCarouselPaused()
-    ) {
+    if (this.promotionalAnnouncements().length < 2 || this.announcementCarouselPaused()) {
       return;
     }
 
@@ -245,7 +246,8 @@ export class CustomerNavbarComponent {
       this.announcementRotationId = null;
       this.announcementRotationStartedAt = null;
       this.announcementRotationRemainingMs = 0;
-      const nextIndex = (this.activeAnnouncementIndex() + 1) % this.promotionalAnnouncements().length;
+      const nextIndex =
+        (this.activeAnnouncementIndex() + 1) % this.promotionalAnnouncements().length;
       this.showAnnouncement(nextIndex);
     }, this.announcementRotationRemainingMs);
   }
@@ -300,14 +302,9 @@ export class CustomerNavbarComponent {
     this.startAnnouncementRotation();
   }
 
-  private isIconValue(
-    value: string | null | undefined,
-  ): value is string {
-    return !!value &&
-      (
-        value.startsWith('pi ') ||
-        value.startsWith('fa ') ||
-        value.startsWith('fa-')
-      );
+  private isIconValue(value: string | null | undefined): value is string {
+    return (
+      !!value && (value.startsWith('pi ') || value.startsWith('fa ') || value.startsWith('fa-'))
+    );
   }
 }

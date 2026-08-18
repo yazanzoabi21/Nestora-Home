@@ -1,0 +1,15 @@
+<header class="border-b border-[#e8dccf] bg-white/70">
+  <div class="customer-page-container py-10 text-center sm:py-12 lg:py-14">
+    <p class="text-xs font-black uppercase tracking-[0.22em] text-[#718369] sm:text-sm">
+      {{ 'CUSTOMERS.HELP.EYEBROW' | translate }}
+    </p>
+    <h1 class="mx-auto mt-3 max-w-3xl text-3xl font-black leading-tight text-[#1f2a1f] sm:text-4xl">
+      {{ title() }}
+    </h1>
+    @if (subtitle()) {
+    <p class="mx-auto mt-4 max-w-2xl text-sm font-semibold leading-7 text-[#77736d] sm:text-base">
+      {{ subtitle() }}
+    </p>
+    }
+  </div>
+</header>

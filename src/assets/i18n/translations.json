@@ -1531,9 +1531,10 @@
         },
         "BRAND_DESCRIPTION": "Elevating everyday living with premium home accessories, kitchen tools, cookware, and smart home solutions.",
         "SOCIAL": {
+          "WHATSAPP": "Contact us on WhatsApp",
           "INSTAGRAM": "Visit our Instagram page",
           "FACEBOOK": "Visit our Facebook page",
-          "TWITTER": "Visit our Twitter page",
+          "TIKTOK": "Visit our TikTok page",
           "YOUTUBE": "Visit our YouTube channel"
         },
         "SHOP": {
@@ -1565,6 +1566,88 @@
         "BOTTOM": {
           "COPYRIGHT": "© 2026 Nestora Home. All rights reserved.",
           "PAYMENT_METHODS": "We accept Whish payments"
+        }
+      },
+      "HELP": {
+        "EYEBROW": "Help Center",
+        "TITLE": "Help & Information",
+        "SUBTITLE": "Clear information and helpful answers for shopping with Nestora Home.",
+        "LOADING": "Loading information",
+        "LOADING_DETAIL": "Please wait while we prepare this page.",
+        "ERROR": "We could not load this page",
+        "ERROR_DETAIL": "Please check your connection and try again.",
+        "NOT_FOUND": "Page not found",
+        "NOT_FOUND_DETAIL": "The requested information page is unavailable or has moved.",
+        "RETRY": "Try again",
+        "BACK_HOME": "Back to home"
+      },
+      "FAQ": {
+        "TITLE": "Frequently Asked Questions",
+        "SUBTITLE": "Find quick answers about orders, delivery, returns, and customer support.",
+        "META_TITLE": "Frequently Asked Questions | Nestora Home",
+        "META_DESCRIPTION": "Find answers to common questions about shopping with Nestora Home.",
+        "FILTER_LABEL": "Filter frequently asked questions by category",
+        "ALL": "All",
+        "EMPTY": "No questions available",
+        "EMPTY_DETAIL": "Frequently asked questions will appear here when available.",
+        "ERROR": "Questions could not be loaded",
+        "ERROR_DETAIL": "Please try again in a moment.",
+        "CATEGORIES": {
+          "ORDERS": "Orders",
+          "DELIVERY": "Delivery",
+          "RETURNS": "Returns",
+          "SUPPORT": "Support"
+        }
+      },
+      "CONTACT": {
+        "TITLE": "Contact Us",
+        "SUBTITLE": "Tell us how we can help and our team will review your message.",
+        "META_TITLE": "Contact Us | Nestora Home",
+        "META_DESCRIPTION": "Contact Nestora Home through our secure form or official social channels.",
+        "CHANNELS_EYEBROW": "Connect with us",
+        "CHANNELS_TITLE": "Choose the channel that suits you",
+        "CHANNELS_DESCRIPTION": "Use the secure form or visit one of our official social pages. Please avoid sharing payment credentials in messages.",
+        "SUCCESS": "Your message was sent successfully. We will review it as soon as possible.",
+        "ERROR": "Your message could not be sent. Please try again.",
+        "FORM": {
+          "TITLE": "Send a message",
+          "DESCRIPTION": "Fields marked with an asterisk are required.",
+          "FULL_NAME": "Full Name",
+          "EMAIL": "Email",
+          "PHONE": "Phone",
+          "SUBJECT": "Subject",
+          "MESSAGE": "Message",
+          "SUBMIT": "Send Message",
+          "SENDING": "Sending...",
+          "REQUIRED": "This field is required.",
+          "INVALID_EMAIL": "Enter a valid email address.",
+          "MAX_LENGTH": "This value is too long."
+        }
+      },
+      "SEARCH": {
+        "PLACEHOLDER": "Search products, categories & help",
+        "CLEAR": "Clear search",
+        "SEARCHING": "Searching...",
+        "MINIMUM": "Enter at least 2 characters to search.",
+        "ERROR": "Search is temporarily unavailable.",
+        "TRY_AGAIN": "Please try again.",
+        "RETRY": "Retry",
+        "NO_RESULTS": "No results for “{{query}}”",
+        "NO_RESULTS_HINT": "Check the spelling or search by product name, SKU, or category.",
+        "PRODUCTS": "Products",
+        "CATEGORIES": "Categories",
+        "HELP": "Help",
+        "FAQ": "FAQ",
+        "CONTACT": "Contact Us",
+        "SUGGESTED": "Suggested searches",
+        "VIEW_ALL": "View all results for “{{query}}”",
+        "NEED_HELP": "Need help?",
+        "REMOVE_FILTER": "Remove search filter {{query}}",
+        "SUGGESTIONS": {
+          "KITCHEN": "Kitchen",
+          "COOKWARE": "Cookware",
+          "CLEANING": "Cleaning",
+          "GEBE": "GeBe"
         }
       }
     },
@@ -4192,9 +4275,10 @@
         },
         "BRAND_DESCRIPTION": "نرتقي بتفاصيل الحياة اليومية من خلال إكسسوارات منزلية مميزة وأدوات مطبخ وأواني طهي وحلول منزلية ذكية.",
         "SOCIAL": {
+          "WHATSAPP": "تواصلوا معنا عبر واتساب",
           "INSTAGRAM": "زيارة صفحتنا على إنستغرام",
           "FACEBOOK": "زيارة صفحتنا على فيسبوك",
-          "TWITTER": "زيارة صفحتنا على تويتر",
+          "TIKTOK": "زيارة صفحتنا على تيك توك",
           "YOUTUBE": "زيارة قناتنا على يوتيوب"
         },
         "SHOP": {
@@ -4226,6 +4310,88 @@
         "BOTTOM": {
           "COPYRIGHT": "© 2026 Nestora Home. جميع الحقوق محفوظة.",
           "PAYMENT_METHODS": "نقبل الدفع عبر Whish"
+        }
+      },
+      "HELP": {
+        "EYEBROW": "مركز المساعدة",
+        "TITLE": "المساعدة والمعلومات",
+        "SUBTITLE": "معلومات واضحة وإجابات مفيدة للتسوق مع Nestora Home.",
+        "LOADING": "جارٍ تحميل المعلومات",
+        "LOADING_DETAIL": "يرجى الانتظار بينما نقوم بإعداد الصفحة.",
+        "ERROR": "تعذر تحميل الصفحة",
+        "ERROR_DETAIL": "يرجى التحقق من الاتصال والمحاولة مرة أخرى.",
+        "NOT_FOUND": "الصفحة غير موجودة",
+        "NOT_FOUND_DETAIL": "صفحة المعلومات المطلوبة غير متوفرة أو تم نقلها.",
+        "RETRY": "إعادة المحاولة",
+        "BACK_HOME": "العودة إلى الرئيسية"
+      },
+      "FAQ": {
+        "TITLE": "الأسئلة الشائعة",
+        "SUBTITLE": "إجابات سريعة حول الطلبات والتوصيل والإرجاع ودعم العملاء.",
+        "META_TITLE": "الأسئلة الشائعة | Nestora Home",
+        "META_DESCRIPTION": "إجابات عن الأسئلة الشائعة حول التسوق مع Nestora Home.",
+        "FILTER_LABEL": "تصفية الأسئلة الشائعة حسب الفئة",
+        "ALL": "الكل",
+        "EMPTY": "لا توجد أسئلة متاحة",
+        "EMPTY_DETAIL": "ستظهر الأسئلة الشائعة هنا عند توفرها.",
+        "ERROR": "تعذر تحميل الأسئلة",
+        "ERROR_DETAIL": "يرجى المحاولة مرة أخرى بعد قليل.",
+        "CATEGORIES": {
+          "ORDERS": "الطلبات",
+          "DELIVERY": "التوصيل",
+          "RETURNS": "الإرجاع",
+          "SUPPORT": "الدعم"
+        }
+      },
+      "CONTACT": {
+        "TITLE": "تواصل معنا",
+        "SUBTITLE": "أخبرونا كيف يمكننا مساعدتكم وسيقوم فريقنا بمراجعة الرسالة.",
+        "META_TITLE": "تواصل معنا | Nestora Home",
+        "META_DESCRIPTION": "تواصلوا مع Nestora Home عبر النموذج الآمن أو قنوات التواصل الرسمية.",
+        "CHANNELS_EYEBROW": "ابقوا على تواصل",
+        "CHANNELS_TITLE": "اختاروا قناة التواصل المناسبة",
+        "CHANNELS_DESCRIPTION": "استخدموا النموذج الآمن أو زوروا إحدى صفحاتنا الرسمية. يرجى عدم مشاركة بيانات الدفع ضمن الرسائل.",
+        "SUCCESS": "تم إرسال رسالتكم بنجاح وسنقوم بمراجعتها في أقرب وقت ممكن.",
+        "ERROR": "تعذر إرسال الرسالة. يرجى المحاولة مرة أخرى.",
+        "FORM": {
+          "TITLE": "إرسال رسالة",
+          "DESCRIPTION": "الحقول المشار إليها بنجمة مطلوبة.",
+          "FULL_NAME": "الاسم الكامل",
+          "EMAIL": "البريد الإلكتروني",
+          "PHONE": "الهاتف",
+          "SUBJECT": "الموضوع",
+          "MESSAGE": "الرسالة",
+          "SUBMIT": "إرسال الرسالة",
+          "SENDING": "جارٍ الإرسال...",
+          "REQUIRED": "هذا الحقل مطلوب.",
+          "INVALID_EMAIL": "يرجى إدخال بريد إلكتروني صالح.",
+          "MAX_LENGTH": "القيمة المدخلة طويلة جداً."
+        }
+      },
+      "SEARCH": {
+        "PLACEHOLDER": "ابحث عن المنتجات والفئات والمساعدة",
+        "CLEAR": "مسح البحث",
+        "SEARCHING": "جارٍ البحث...",
+        "MINIMUM": "أدخلوا حرفين على الأقل للبحث.",
+        "ERROR": "البحث غير متاح مؤقتاً.",
+        "TRY_AGAIN": "يرجى المحاولة مرة أخرى.",
+        "RETRY": "إعادة المحاولة",
+        "NO_RESULTS": "لا توجد نتائج لـ «{{query}}»",
+        "NO_RESULTS_HINT": "تحققوا من الكتابة أو ابحثوا باسم المنتج أو رمز SKU أو الفئة.",
+        "PRODUCTS": "المنتجات",
+        "CATEGORIES": "الفئات",
+        "HELP": "المساعدة",
+        "FAQ": "الأسئلة الشائعة",
+        "CONTACT": "تواصل معنا",
+        "SUGGESTED": "عمليات بحث مقترحة",
+        "VIEW_ALL": "عرض كل النتائج لـ «{{query}}»",
+        "NEED_HELP": "تحتاجون إلى مساعدة؟",
+        "REMOVE_FILTER": "إزالة عامل البحث {{query}}",
+        "SUGGESTIONS": {
+          "KITCHEN": "المطبخ",
+          "COOKWARE": "أواني الطهي",
+          "CLEANING": "التنظيف",
+          "GEBE": "GeBe"
         }
       },
       "DETAILS": {

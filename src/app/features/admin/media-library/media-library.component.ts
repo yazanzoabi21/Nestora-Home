@@ -100,7 +100,7 @@ export class MediaLibraryComponent implements OnInit {
   readonly failedImages = signal<Set<string>>(new Set());
   readonly mediaForm = signal<MediaEditForm>({ ...EMPTY_MEDIA_FORM });
   readonly gridCurrentPage = signal(1);
-  readonly gridPageSize = signal<PaginationPageSize>(10);
+  readonly gridPageSize = signal<PaginationPageSize>(12);
 
   readonly filterOptions: { labelKey: string; value: MediaFilter }[] = [
     { labelKey: 'MEDIA_LIBRARY.FILTERS.ALL', value: 'all' },

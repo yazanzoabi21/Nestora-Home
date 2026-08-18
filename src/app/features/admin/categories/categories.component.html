@@ -260,7 +260,7 @@
   </section>
   @if (showPagination()) {
   <app-admin-pagination class="mt-4 block" [currentPage]="currentPage()" [totalItems]="paginationItems().length"
-    [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setPage($event)"
+    [pageSize]="pageSize()" [pageSizeOptions]="[12, 20, 25, 'all']" (pageChange)="setPage($event)"
     (pageSizeChange)="setPageSize($event)" />
   }
   } @else {
@@ -316,7 +316,7 @@
   </section>
   @if (showPagination()) {
   <app-admin-pagination class="mt-4 block" [currentPage]="currentPage()" [totalItems]="paginationItems().length"
-    [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setPage($event)"
+    [pageSize]="pageSize()" [pageSizeOptions]="[12, 20, 25, 'all']" (pageChange)="setPage($event)"
     (pageSizeChange)="setPageSize($event)" />
   }
   }

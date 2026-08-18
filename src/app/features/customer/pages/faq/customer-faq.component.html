@@ -1,0 +1,68 @@
+<section class="min-h-[60vh] bg-[#f8f7f5]">
+  <app-customer-help-header [title]="'CUSTOMERS.FAQ.TITLE' | translate"
+    [subtitle]="'CUSTOMERS.FAQ.SUBTITLE' | translate" />
+
+  <div class="customer-page-container py-9 sm:py-12 lg:py-14">
+    @if (status() === 'loading') {
+    <app-customer-page-state kind="loading" titleKey="CUSTOMERS.HELP.LOADING"
+      detailKey="CUSTOMERS.HELP.LOADING_DETAIL" />
+    } @else if (status() === 'error') {
+    <app-customer-page-state kind="error" titleKey="CUSTOMERS.FAQ.ERROR"
+      detailKey="CUSTOMERS.FAQ.ERROR_DETAIL" (retry)="load()" />
+    } @else if (!faqs().length) {
+    <app-customer-page-state kind="empty" titleKey="CUSTOMERS.FAQ.EMPTY"
+      detailKey="CUSTOMERS.FAQ.EMPTY_DETAIL" />
+    } @else {
+    <div class="mx-auto max-w-3xl">
+      @if (categories().length > 1) {
+      <div class="mb-7 flex flex-wrap justify-center gap-2" [attr.aria-label]="'CUSTOMERS.FAQ.FILTER_LABEL' | translate">
+        <button type="button"
+          class="min-h-10 rounded-full border px-4 text-sm font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
+          [class.border-[#6b7d5e]]="selectedCategory() === 'all'"
+          [class.bg-[#6b7d5e]]="selectedCategory() === 'all'" [class.text-white]="selectedCategory() === 'all'"
+          [class.border-[#e8dccf]]="selectedCategory() !== 'all'" [class.bg-white]="selectedCategory() !== 'all'"
+          [class.text-[#545c52]]="selectedCategory() !== 'all'" (click)="selectCategory('all')">
+          {{ 'CUSTOMERS.FAQ.ALL' | translate }}
+        </button>
+        @for (category of categories(); track category) {
+        <button type="button"
+          class="min-h-10 rounded-full border px-4 text-sm font-bold capitalize transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
+          [class.border-[#6b7d5e]]="selectedCategory() === category"
+          [class.bg-[#6b7d5e]]="selectedCategory() === category" [class.text-white]="selectedCategory() === category"
+          [class.border-[#e8dccf]]="selectedCategory() !== category" [class.bg-white]="selectedCategory() !== category"
+          [class.text-[#545c52]]="selectedCategory() !== category" (click)="selectCategory(category)">
+          {{ categoryLabel(category) }}
+        </button>
+        }
+      </div>
+      }
+
+      <div class="grid gap-3">
+        @for (faq of visibleFaqs(); track faq.id) {
+        <article class="overflow-hidden rounded-2xl border border-[#e8dccf] bg-white shadow-sm">
+          <h2>
+            <button type="button"
+              class="flex w-full items-center justify-between gap-4 px-5 py-5 text-start text-base font-black text-[#1f2a1f] transition hover:bg-[#faf8f5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#6b7d5e] sm:px-6 sm:text-lg"
+              [id]="'faq-question-' + faq.id"
+              [attr.aria-expanded]="openFaqId() === faq.id" [attr.aria-controls]="'faq-answer-' + faq.id"
+              (click)="toggleFaq(faq.id)">
+              <span>{{ faq.question }}</span>
+              <i class="pi pi-chevron-down shrink-0 text-xs text-[#718369] transition-transform duration-200"
+                [class.rotate-180]="openFaqId() === faq.id"></i>
+            </button>
+          </h2>
+          @if (openFaqId() === faq.id) {
+          <div [id]="'faq-answer-' + faq.id" class="border-t border-[#eee7de] px-5 py-5 sm:px-6" role="region"
+            [attr.aria-labelledby]="'faq-question-' + faq.id">
+            <p class="whitespace-pre-line text-sm font-medium leading-7 text-[#5f625c] sm:text-base">
+              {{ faq.answer }}
+            </p>
+          </div>
+          }
+        </article>
+        }
+      </div>
+    </div>
+    }
+  </div>
+</section>

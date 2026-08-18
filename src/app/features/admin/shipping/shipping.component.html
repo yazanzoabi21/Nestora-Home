@@ -142,7 +142,7 @@
   @if (showMethodsPagination()) {
   <app-admin-pagination class="mt-4 block" [currentPage]="methodsCurrentPage()"
     [totalItems]="filteredMethods().length" [pageSize]="methodsPageSize()"
-    [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setMethodsPage($event)"
+    [pageSizeOptions]="[12, 20, 25, 'all']" (pageChange)="setMethodsPage($event)"
     (pageSizeChange)="setMethodsPageSize($event)" />
   }
   }

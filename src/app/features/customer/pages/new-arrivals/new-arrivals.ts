@@ -2,6 +2,7 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
 
 import {
   CustomerProductCardComponent,
@@ -18,6 +19,7 @@ import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination
   standalone: true,
   imports: [
     CdkTrapFocus,
+    FormsModule,
     CustomerProductCardComponent,
     CustomerProductCardSkeleton,
     CustomerProductFiltersComponent,

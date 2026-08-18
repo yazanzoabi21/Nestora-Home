@@ -5,3 +5,8 @@ export * from './customer-cart.model';
 export * from './loyalty-points.model';
 export * from './customer-address.model';
 export * from './customer-notification-preferences.model';
+export * from './customer-content-section.model';
+export * from './customer-content-page.model';
+export * from './customer-faq.model';
+export * from './customer-contact-message.model';
+export * from './customer-search-result.model';

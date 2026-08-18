@@ -40,7 +40,7 @@ export class PromotionProductPickerComponent {
   readonly selectedCategory = signal('all');
   readonly view = signal<ProductPickerView>('all');
   readonly page = signal(1);
-  readonly pageSize = signal<PaginationPageSize>(10);
+  readonly pageSize = signal<PaginationPageSize>(12);
   readonly temporarySelectedProductIds = signal<string[]>([]);
 
   private wasOpen = false;

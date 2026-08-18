@@ -31,6 +31,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: '',
+    loadChildren: () =>
+      import('./features/customer/customer-help.routes').then(
+        (m) => m.CUSTOMER_HELP_ROUTES
+      ),
+  },
+  {
     path: '**',
     redirectTo: 'shop',
   },

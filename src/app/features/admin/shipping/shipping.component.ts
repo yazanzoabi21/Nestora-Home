@@ -168,7 +168,7 @@ export class ShippingComponent implements OnInit {
   readonly methodZoneForm = signal<MethodZoneForm>({ ...DEFAULT_METHOD_ZONE_FORM });
   readonly pendingDelete = signal<PendingDelete | null>(null);
   readonly methodsCurrentPage = signal(1);
-  readonly methodsPageSize = signal<PaginationPageSize>(10);
+  readonly methodsPageSize = signal<PaginationPageSize>(12);
 
   readonly tabs: SelectOption<ShippingTab>[] = [
     { label: 'SHIPPING.TABS.METHODS', value: 'methods' },

@@ -1,8 +1,17 @@
-import { ChangeDetectionStrategy, Component, HostListener, effect, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  effect,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { FormsModule } from '@angular/forms';
 import { CustomerProductCardComponent } from '../../components/customer-product-card';
 import { CustomerProductFiltersComponent } from '../../components/customer-product-filters';
 import { CustomerProductQuickViewComponent } from '../../components/customer-product-quick-view';
@@ -12,9 +21,21 @@ import { CustomerProductCardSkeleton } from '../../components/customer-product-c
 import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination';
 
 @Component({
-  selector: 'app-all-products', standalone: true,
-  imports: [CdkTrapFocus, CustomerProductCardComponent, CustomerProductFiltersComponent, CustomerProductCardSkeleton, CustomerProductQuickViewComponent, RouterLink, TranslatePipe, AdminPaginationComponent],
-  templateUrl: './all-products.html', styleUrl: './all-products.css',
+  selector: 'app-all-products',
+  standalone: true,
+  imports: [
+    CdkTrapFocus,
+    FormsModule,
+    CustomerProductCardComponent,
+    CustomerProductFiltersComponent,
+    CustomerProductCardSkeleton,
+    CustomerProductQuickViewComponent,
+    RouterLink,
+    TranslatePipe,
+    AdminPaginationComponent,
+  ],
+  templateUrl: './all-products.html',
+  styleUrl: './all-products.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AllProducts extends ProductBrowserPage {
@@ -31,6 +52,7 @@ export class AllProducts extends ProductBrowserPage {
   });
   private readonly catalog = inject(NewArrivalsService);
   private readonly route = inject(ActivatedRoute);
+  private readonly routeNavigator = inject(Router);
   private readonly requestedCategorySlug = signal<string | null>(null);
   private readonly navigationSource = signal<string | null>(null);
 
@@ -47,6 +69,7 @@ export class AllProducts extends ProductBrowserPage {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       this.requestedCategorySlug.set(params.get('category'));
       this.navigationSource.set(params.get('source'));
+      this.setProductSearch(params.get('search') ?? '');
       this.applyRouteCategory();
       this.closeMobileFilters();
     });
@@ -57,13 +80,36 @@ export class AllProducts extends ProductBrowserPage {
   closePanelsOnEscape(): void {
     this.closeMobileFilters();
   }
+
+  override clearFilters(): void {
+    super.clearFilters();
+    this.setProductSearch('');
+    void this.routeNavigator.navigate([], {
+      relativeTo: this.route,
+      queryParams: { search: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  clearProductSearch(): void {
+    this.setProductSearch('');
+    void this.routeNavigator.navigate([], {
+      relativeTo: this.route,
+      queryParams: { search: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
   private async load(): Promise<void> {
     try {
       this.products.set(await this.catalog.getProducts());
       this.applyRouteCategory();
+    } catch (error) {
+      this.error.set(error instanceof Error ? error.message : 'Unable to load products.');
+    } finally {
+      this.loading.set(false);
     }
-    catch (error) { this.error.set(error instanceof Error ? error.message : 'Unable to load products.'); }
-    finally { this.loading.set(false); }
   }
 
   private applyRouteCategory(): void {
@@ -75,14 +121,18 @@ export class AllProducts extends ProductBrowserPage {
 
     const normalizedRequestedCategorySlug = this.slugify(requestedCategorySlug);
 
-    const category = this.categoryOptions().find(
-      (option) => this.slugify(option.value) === normalizedRequestedCategorySlug,
+    const category = this.filterCategories().find(
+      (option) => this.slugify(option.slug) === normalizedRequestedCategorySlug,
     );
-    this.selectedCategories.set(category ? [category.value] : []);
+    this.selectedCategories.set(category ? [category.name] : []);
     this.resetPagination();
   }
 
   private slugify(value: string): string {
-    return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
   }
 }

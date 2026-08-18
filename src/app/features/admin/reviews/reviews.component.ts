@@ -54,7 +54,7 @@ export class ReviewsComponent implements OnInit {
   readonly replyOpen = signal(false);
   readonly deleteOpen = signal(false);
   readonly currentPage = signal(1);
-  readonly pageSize = signal<PaginationPageSize>(10);
+  readonly pageSize = signal<PaginationPageSize>(12);
 
   readonly filters = signal<ReviewFilters>({
     search: '',

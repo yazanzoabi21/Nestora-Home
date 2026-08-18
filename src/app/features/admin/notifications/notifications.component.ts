@@ -65,7 +65,7 @@ export class NotificationsComponent implements OnInit {
   readonly currentPage = signal(1);
 
   readonly pageSize =
-    signal<PaginationPageSize>(10);
+    signal<PaginationPageSize>(12);
 
   readonly totalCount = computed(
     () => this.notifications().length,

@@ -153,7 +153,7 @@ export class CategoriesComponent implements OnInit {
   readonly selectedIcon = signal(DEFAULT_CATEGORY_ICON);
   readonly expandedCategoryIds = signal<Set<string>>(new Set());
   readonly currentPage = signal(1);
-  readonly pageSize = signal<PaginationPageSize>(10);
+  readonly pageSize = signal<PaginationPageSize>(12);
 
   readonly selectedParentId = signal<string | null>(null);
 

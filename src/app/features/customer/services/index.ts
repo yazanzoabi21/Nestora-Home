@@ -9,3 +9,5 @@ export * from './loyalty-points-calculator.service';
 export * from './customer-loyalty-points.service';
 export * from './customer-addresses.service';
 export * from './customer-settings.service';
+export * from './customer-content.service';
+export * from './customer-search.service';

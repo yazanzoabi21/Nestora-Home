@@ -14,16 +14,20 @@
   </p>
   }
 
-  <div class="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
+  <div class="flex min-w-0 items-center gap-2" [ngClass]="
+    variant === 'customer'
+      ? 'w-full flex-nowrap justify-end sm:w-auto sm:justify-between'
+      : 'flex-wrap sm:justify-end'
+  ">
     @if (showPageSize && pageSizeOptions.length) {
-    <div class="flex min-w-0 items-center gap-2">
+    <div class="flex shrink-0 items-center gap-2">
       <label class="text-sm font-semibold text-[#8d877e]" for="pagination-page-size">
         {{ 'COMMON.PAGINATION.ROWS' | translate }}
       </label>
 
       <div class="relative min-w-[5.75rem]">
         <select id="pagination-page-size"
-          class="min-h-10 w-full appearance-none rounded-[0.875rem] border border-[#e5ded2] bg-white py-2.5 pl-3 pr-10 text-sm font-extrabold text-[#342f29] outline-none transition focus:border-[#5f6f43] focus:ring-[3px] focus:ring-[#5f6f43]/[0.08]"
+          class="min-h-10 w-full appearance-none rounded-[0.875rem] border border-[#e5ded2] bg-white py-2.5 ps-3 pe-10 text-sm font-extrabold text-[#342f29] outline-none transition focus:border-[#5f6f43] focus:ring-[3px] focus:ring-[#5f6f43]/[0.08]"
           [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
           @for (size of pageSizeOptions; track size) {
           <option [ngValue]="size">{{ pageSizeLabel(size) | translate }}</option>
@@ -31,19 +35,22 @@
         </select>
 
         <i
-          class="pi pi-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#675f55]"></i>
+          class="pi pi-chevron-down pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-xs text-[#675f55]"></i>
       </div>
     </div>
     }
 
-    <div class="flex min-w-0 flex-wrap items-center gap-1.5"
-      [ngClass]="variant === 'customer' ? 'w-full justify-start sm:w-auto sm:justify-end' : ''">
+    <div class="flex min-w-0 items-center gap-1.5" [ngClass]="
+    variant === 'customer'
+      ? 'shrink-0 flex-nowrap justify-end'
+      : 'flex-wrap'
+  ">
       <button type="button"
         class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-[0.875rem] border border-[#e5ded2] bg-white text-sm font-extrabold text-[#342f29] transition duration-150 enabled:hover:-translate-y-px enabled:hover:border-[#d8d0c3] enabled:hover:bg-[#f7f4ef] disabled:cursor-not-allowed disabled:opacity-45"
         [ngClass]="variant === 'customer' ? '!min-h-9 !min-w-9 !rounded-xl !border-[#e8dccf] !text-[0.8rem] !text-[#1f2a1f]' : ''"
         [disabled]="safeCurrentPage === 1" (click)="setPage(safeCurrentPage - 1)"
         [attr.aria-label]="previousPageLabelKey | translate">
-        <i class="pi pi-chevron-left text-xs"></i>
+        <i class="pi pi-chevron-left text-xs rtl:rotate-180"></i>
       </button>
 
       @for (item of pageItems; track $index) {
@@ -72,7 +79,7 @@
         [ngClass]="variant === 'customer' ? '!min-h-9 !min-w-9 !rounded-xl !border-[#e8dccf] !text-[0.8rem] !text-[#1f2a1f]' : ''"
         [disabled]="safeCurrentPage === totalPages" (click)="setPage(safeCurrentPage + 1)"
         [attr.aria-label]="nextPageLabelKey | translate">
-        <i class="pi pi-chevron-right text-xs"></i>
+        <i class="pi pi-chevron-right text-xs rtl:rotate-180"></i>
       </button>
     </div>
   </div>

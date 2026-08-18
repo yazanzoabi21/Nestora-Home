@@ -219,7 +219,7 @@
             @if (showPagination()) {
               <app-admin-pagination class="mt-6 block" [currentPage]="currentPage()"
                 [totalItems]="filteredProducts().length" [pageSize]="pageSize()"
-                [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setPage($event)"
+                [pageSizeOptions]="[12, 20, 25, 'all']" (pageChange)="setPage($event)"
                 (pageSizeChange)="setPageSize($event)" />
             }
           </div>

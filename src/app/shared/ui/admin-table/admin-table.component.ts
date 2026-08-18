@@ -146,8 +146,8 @@ export class AdminTableComponent implements OnChanges {
   @Input() selectable = false;
   @Input() showActions = true;
   @Input() actionsMode: 'crud' | 'editOnly' = 'crud';
-  @Input() pageSize: PaginationPageSize = 10;
-  @Input() pageSizeOptions: PaginationPageSize[] = [5, 10, 20, 'all'];
+  @Input() pageSize: PaginationPageSize = 12;
+  @Input() pageSizeOptions: PaginationPageSize[] = [12, 20, 25, 'all'];
   @Input() showPageSize = true;
   @Input() showPaginationSummary = true;
   @Input() selectionResetKey = 0;

@@ -119,7 +119,7 @@ export class ProductsComponent implements OnInit {
   readonly selectedPriceRange = signal<ProductPriceRange>('all');
   readonly viewMode = signal<ViewMode>('list');
   readonly gridCurrentPage = signal(1);
-  readonly gridPageSize = signal<PaginationPageSize>(10);
+  readonly gridPageSize = signal<PaginationPageSize>(12);
   readonly selectedProductIds = signal<Set<string>>(new Set());
   readonly selectedProductsCount = computed(() => this.selectedProductIds().size);
   readonly selectedProductsLabel = computed(() => {

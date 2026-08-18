@@ -266,7 +266,7 @@
     @if (showGridPagination()) {
       <app-admin-pagination class="mt-4 block" [currentPage]="gridCurrentPage()"
         [totalItems]="filteredProducts().length" [pageSize]="gridPageSize()"
-        [pageSizeOptions]="[5, 10, 20, 'all']" (pageChange)="setGridPage($event)"
+        [pageSizeOptions]="[12, 20, 25, 'all']" (pageChange)="setGridPage($event)"
         (pageSizeChange)="setGridPageSize($event)" />
     }
   }

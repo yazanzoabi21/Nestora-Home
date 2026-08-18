@@ -12,6 +12,10 @@ import { TranslatePipe } from '@ngx-translate/core';
 type PageItem = number | 'ellipsis';
 export type PaginationPageSize = number | 'all';
 
+export function paginationPageSizeLabel(size: PaginationPageSize): string {
+  return size === 'all' ? 'COMMON.PAGINATION.ALL' : String(size);
+}
+
 @Component({
   selector: 'app-admin-pagination',
   standalone: true,
@@ -22,8 +26,8 @@ export type PaginationPageSize = number | 'all';
 export class AdminPaginationComponent {
   @Input() currentPage = 1;
   @Input() totalItems = 0;
-  @Input() pageSize: PaginationPageSize = 10;
-  @Input() pageSizeOptions: PaginationPageSize[] = [5, 10, 20, 'all'];
+  @Input() pageSize: PaginationPageSize = 12;
+  @Input() pageSizeOptions: PaginationPageSize[] = [12, 20, 25, 'all'];
   @Input() showPageSize = true;
   @Input() showSummary = true;
   @Input() variant: 'admin' | 'customer' = 'admin';
@@ -111,7 +115,7 @@ export class AdminPaginationComponent {
   }
 
   pageSizeLabel(size: PaginationPageSize): string {
-    return size === 'all' ? 'COMMON.PAGINATION.ALL' : String(size);
+    return paginationPageSizeLabel(size);
   }
 
   private get safePageSize(): number {
