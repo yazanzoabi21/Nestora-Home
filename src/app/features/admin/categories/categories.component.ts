@@ -355,24 +355,38 @@ export class CategoriesComponent implements OnInit {
   openAddCategoryModal(): void {
     this.categoryModalMode.set('add-parent');
     this.selectedParentCategory.set(null);
+    this.selectedParentId.set(null);
     this.selectedCategory.set(null);
     this.slugEdited.set(false);
-    this.categoryForm.set({ ...EMPTY_CATEGORY_FORM });
+
+    this.categoryForm.set({
+      ...EMPTY_CATEGORY_FORM,
+      icon: DEFAULT_CATEGORY_ICON,
+    });
+
     this.resetAssetState();
     this.selectedIcon.set(DEFAULT_CATEGORY_ICON);
-    this.categoryForm.update((form) => ({ ...form, mediaId: null, imageUrl: DEFAULT_CATEGORY_ICON }));
+
     this.isCategoryModalOpen.set(true);
   }
 
   openAddChildCategoryModal(parent: Category): void {
     this.categoryModalMode.set('add-child');
+
     this.selectedParentCategory.set(parent);
+    this.selectedParentId.set(parent.id);
     this.selectedCategory.set(parent);
+
     this.slugEdited.set(false);
-    this.categoryForm.set({ ...EMPTY_CATEGORY_FORM });
+
+    this.categoryForm.set({
+      ...EMPTY_CATEGORY_FORM,
+      icon: DEFAULT_CATEGORY_ICON,
+    });
+
     this.resetAssetState();
     this.selectedIcon.set(DEFAULT_CATEGORY_ICON);
-    this.categoryForm.update((form) => ({ ...form, mediaId: null, imageUrl: DEFAULT_CATEGORY_ICON }));
+
     this.isCategoryModalOpen.set(true);
   }
 
@@ -401,6 +415,9 @@ export class CategoriesComponent implements OnInit {
       icon: category.icon ?? '',
       isActive: category.is_active ?? true,
     });
+    this.selectedIcon.set(
+      category.icon || DEFAULT_CATEGORY_ICON
+    );
     this.loadAssetState(category.image_url);
     this.isCategoryModalOpen.set(true);
   }
@@ -436,18 +453,19 @@ export class CategoriesComponent implements OnInit {
   setAssetMode(mode: CategoryAssetMode): void {
     this.assetMode.set(mode);
 
-    if (mode === 'upload') {
-      this.selectedIcon.set('');
-      return;
-    }
+    if (mode === 'icon') {
+      const icon =
+        this.categoryForm().icon ||
+        this.selectedIcon() ||
+        DEFAULT_CATEGORY_ICON;
 
-    this.selectedCategoryImageFile.set(null);
-    this.selectedMediaAsset.set(null);
-    this.categoryForm.update((form) => ({ ...form, mediaId: null }));
-    this.imagePreviewUrl.set(null);
-    const icon = this.selectedIcon() || DEFAULT_CATEGORY_ICON;
-    this.selectedIcon.set(icon);
-    this.categoryForm.update((form) => ({ ...form, imageUrl: icon }));
+      this.selectedIcon.set(icon);
+
+      this.categoryForm.update((form) => ({
+        ...form,
+        icon,
+      }));
+    }
   }
 
   onCategoryImageSelected(event: Event): void {
@@ -463,25 +481,30 @@ export class CategoriesComponent implements OnInit {
         this.translate.instant('CATEGORIES.UNSUPPORTED_IMAGE_TYPE'),
         this.translate.instant('CATEGORIES.IMAGE_TYPE_HELPER')
       );
+
       input.value = '';
       return;
     }
 
     this.assetMode.set('upload');
-    this.selectedIcon.set('');
+
     this.selectedCategoryImageFile.set(file);
     this.selectedMediaAsset.set(null);
     this.imagePreviewUrl.set(URL.createObjectURL(file));
-    this.categoryForm.update((form) => ({ ...form, mediaId: null, imageUrl: form.imageUrl }));
+
+    this.categoryForm.update((form) => ({
+      ...form,
+      mediaId: null,
+    }));
   }
 
   selectIcon(icon: string): void {
-    this.assetMode.set('icon');
-    this.selectedCategoryImageFile.set(null);
-    this.selectedMediaAsset.set(null);
-    this.imagePreviewUrl.set(null);
     this.selectedIcon.set(icon);
-    this.categoryForm.update((form) => ({ ...form, mediaId: null, imageUrl: icon }));
+
+    this.categoryForm.update((form) => ({
+      ...form,
+      icon,
+    }));
   }
 
   openMediaPicker(): void {
@@ -499,14 +522,17 @@ export class CategoriesComponent implements OnInit {
   selectMediaAsset(asset: MediaAsset): void {
     this.selectedCategoryImageFile.set(null);
     this.selectedMediaAsset.set(asset);
+
     this.assetMode.set('upload');
-    this.selectedIcon.set('');
+
     this.imagePreviewUrl.set(asset.file_url);
+
     this.categoryForm.update((form) => ({
       ...form,
       mediaId: asset.id,
       imageUrl: asset.file_url,
     }));
+
     this.isMediaPickerOpen.set(false);
   }
 
@@ -651,7 +677,16 @@ export class CategoriesComponent implements OnInit {
   }
 
   categoryIconClass(category: Category): string {
-    return this.isIconValue(category.image_url) ? category.image_url ?? DEFAULT_CATEGORY_ICON : DEFAULT_CATEGORY_ICON;
+    if (category.icon) {
+      return category.icon;
+    }
+
+    // Support old categories where icon was stored in image_url
+    if (this.isIconValue(category.image_url)) {
+      return category.image_url!;
+    }
+
+    return DEFAULT_CATEGORY_ICON;
   }
 
   categoryImageUrl(category: Category): string | null {
@@ -794,7 +829,7 @@ export class CategoriesComponent implements OnInit {
     const form = this.categoryForm();
 
     return {
-      parent_id: this.selectedParentId(),
+      parent_id: this.resolveParentIdForPayload(),
       name: form.name,
       slug: form.slug,
       image_url: form.imageUrl.trim() || null,
@@ -807,6 +842,7 @@ export class CategoriesComponent implements OnInit {
   private resetCategoryForm(): void {
     this.selectedCategory.set(null);
     this.selectedParentCategory.set(null);
+    this.selectedParentId.set(null);
     this.slugEdited.set(false);
     this.categoryForm.set({ ...EMPTY_CATEGORY_FORM });
     this.resetAssetState();

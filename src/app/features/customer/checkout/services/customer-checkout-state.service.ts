@@ -86,9 +86,11 @@ export class CustomerCheckoutStateService {
       !this._isPlacingOrder(),
   );
   readonly subtotal = computed(() => {
-    const redeemedIds = new Set(this.loyalty.requestedRedemptionProductIds());
     return this.shopping.cart().reduce(
-      (total, line) => redeemedIds.has(line.product.id)
+      (total, line) => this.loyalty.isRedemptionRequested(
+        line.product.id,
+        line.product.variantId,
+      )
         ? total
         : total + line.product.price * line.quantity,
       0,
@@ -104,16 +106,23 @@ export class CustomerCheckoutStateService {
     paymentMethod: this._selectedPaymentMethod(),
   }));
   readonly checkoutItems = computed<readonly CheckoutOrderItem[]>(() => {
-    const redeemedIds = new Set(this.loyalty.requestedRedemptionProductIds());
     return this.shopping.cart().map((line) => ({
       productId: line.product.id,
+      variantId: line.product.variantId ?? null,
+      variantLabel: line.product.variantLabel ?? null,
       productName: line.product.name,
       productImageUrl: line.product.imageUrl || null,
       quantity: line.quantity,
       unitPrice: line.product.price,
       lineTotal: line.product.price * line.quantity,
-      redeemWithPoints: redeemedIds.has(line.product.id),
-      loyaltyPointsCost: redeemedIds.has(line.product.id)
+      redeemWithPoints: this.loyalty.isRedemptionRequested(
+        line.product.id,
+        line.product.variantId,
+      ),
+      loyaltyPointsCost: this.loyalty.isRedemptionRequested(
+        line.product.id,
+        line.product.variantId,
+      )
         ? this.loyalty.preview(line.product.price).rewardCost * line.quantity
         : 0,
     }));

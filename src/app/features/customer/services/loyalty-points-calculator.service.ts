@@ -117,16 +117,22 @@ export class LoyaltyPointsCalculatorService {
     return Math.max(0, Math.ceil(rewardCost * Math.max(1, quantity)) - this.balance());
   }
 
-  requestProductRedemption(productId: string): void {
-    this.requestedRedemptionsState.update((current) => new Set(current).add(productId));
+  requestProductRedemption(productId: string, variantId: string | null = null): void {
+    this.requestedRedemptionsState.update((current) =>
+      new Set(current).add(this.redemptionKey(productId, variantId)),
+    );
   }
 
-  clearProductRedemption(productId: string): void {
+  clearProductRedemption(productId: string, variantId: string | null = null): void {
     this.requestedRedemptionsState.update((current) => {
       const next = new Set(current);
-      next.delete(productId);
+      next.delete(this.redemptionKey(productId, variantId));
       return next;
     });
+  }
+
+  isRedemptionRequested(productId: string, variantId: string | null = null): boolean {
+    return this.requestedRedemptionsState().has(this.redemptionKey(productId, variantId));
   }
 
   clearRedemptions(): void {
@@ -181,5 +187,9 @@ export class LoyaltyPointsCalculatorService {
   private positiveNumber(value: unknown, fallback: number): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  }
+
+  private redemptionKey(productId: string, variantId: string | null): string {
+    return `${productId}:${variantId ?? 'base'}`;
   }
 }

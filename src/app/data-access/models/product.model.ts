@@ -15,6 +15,61 @@ export interface ProductGalleryItem {
 
 export type ProductGallery = string[] | ProductGalleryItem[] | null;
 
+export type ProductVariantAttributes = Readonly<Record<string, string>>;
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  option_name: string;
+  option_value: string;
+  name: string | null;
+  sku: string | null;
+  price: number | null;
+  sale_price: number | null;
+  stock: number | null;
+  attributes: ProductVariantAttributes;
+  media_id: string | null;
+  image_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ProductVariantMutationPayload {
+  id?: string;
+  option_name: string;
+  option_value: string;
+  name?: string | null;
+  sku?: string | null;
+  price?: number | null;
+  sale_price?: number | null;
+  stock?: number | null;
+  attributes?: ProductVariantAttributes;
+  media_id?: string | null;
+  image_url?: string | null;
+  is_active?: boolean;
+  sort_order: number;
+}
+
+export interface ProductVariantFormModel {
+  clientId: string;
+  id: string | null;
+  optionName: string;
+  optionValue: string;
+  name: string;
+  sku: string;
+  price: number | null;
+  salePrice: number | null;
+  stock: number | null;
+  attributes: ProductVariantAttributes;
+  attributesText: string;
+  mediaId: string | null;
+  imageUrl: string;
+  imageFile: File | null;
+  isActive: boolean;
+}
+
 export interface Product {
   id: string;
   category_id: string | null;
@@ -37,6 +92,7 @@ export interface Product {
   is_loyalty_eligible: boolean;
   rating: number | null;
   created_at: string | null;
+  product_variants?: ProductVariant[] | null;
 
   categories?: ProductCategoryRelation | ProductCategoryRelation[] | null;
   categoryName?: string;
@@ -94,6 +150,7 @@ export interface ProductFormModel {
   isNew: boolean;
   isActive: boolean;
   isLoyaltyEligible: boolean;
+  hasVariants: boolean;
 }
 
 export interface ProductTableBadgeData {

@@ -19,6 +19,8 @@ import {
   ProductStatus,
   ProductStatusFilter,
   ProductTableRowData,
+  ProductVariantFormModel,
+  ProductVariantMutationPayload,
   ProductsService,
   UploadService,
 } from '../../../data-access';
@@ -72,6 +74,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   isNew: false,
   isActive: true,
   isLoyaltyEligible: true,
+  hasVariants: false,
 };
 
 @Component({
@@ -140,6 +143,9 @@ export class ProductsComponent implements OnInit {
     this.productForm().salePrice,
   ));
   readonly productImages = signal<ProductImageItem[]>([]);
+  readonly productVariants = signal<ProductVariantFormModel[]>([]);
+  readonly variantError = signal<string | null>(null);
+  readonly variantMediaTargetId = signal<string | null>(null);
   readonly coverImageId = signal<string | null>(null);
   readonly isProductMediaPickerOpen = signal(false);
   readonly productMediaFileTypes: MediaFileType[] = ['image', 'banner'];
@@ -479,6 +485,8 @@ export class ProductsComponent implements OnInit {
     this.productModalMode.set('add');
     this.selectedProduct.set(null);
     this.productForm.set({ ...EMPTY_PRODUCT_FORM });
+    this.productVariants.set([]);
+    this.variantError.set(null);
     this.resetImageState();
     this.imageUploadError.set(null);
     this.isProductModalOpen.set(true);
@@ -515,7 +523,29 @@ export class ProductsComponent implements OnInit {
       isNew: !!product.is_new,
       isActive: product.is_active !== false,
       isLoyaltyEligible: product.is_loyalty_eligible !== false,
+      hasVariants: (product.product_variants?.length ?? 0) > 0,
     });
+
+    this.productVariants.set(
+      (product.product_variants ?? []).map((variant) => ({
+        clientId: variant.id,
+        id: variant.id,
+        optionName: variant.option_name,
+        optionValue: variant.option_value,
+        name: variant.name ?? '',
+        sku: variant.sku ?? '',
+        price: variant.price,
+        salePrice: variant.sale_price,
+        stock: variant.stock,
+        attributes: variant.attributes ?? {},
+        attributesText: this.formatVariantAttributes(variant.attributes ?? {}),
+        mediaId: variant.media_id,
+        imageUrl: variant.image_url ?? '',
+        imageFile: null,
+        isActive: variant.is_active !== false,
+      })),
+    );
+    this.variantError.set(null);
 
     const images = this.productImageUrls(product).map((url, index) => ({
       id: `existing-${index}-${url}`,
@@ -593,11 +623,13 @@ export class ProductsComponent implements OnInit {
       return;
     }
 
+    this.variantMediaTargetId.set(null);
     this.isProductMediaPickerOpen.set(true);
   }
 
   closeProductMediaPicker(): void {
     this.isProductMediaPickerOpen.set(false);
+    this.variantMediaTargetId.set(null);
   }
 
   selectProductMedia(asset: MediaAsset): void {
@@ -624,8 +656,15 @@ export class ProductsComponent implements OnInit {
     this.saving.set(true);
     this.imageUploadError.set(null);
     const uploadedUrls: string[] = [];
+    const variantUploadedUrls: string[] = [];
 
     try {
+      const variantValidationError = this.validateVariants();
+      if (variantValidationError) {
+        this.variantError.set(variantValidationError);
+        throw new Error(variantValidationError);
+      }
+
       const resolvedImages: ProductImageItem[] = [];
       try {
         for (const image of this.productImages()) {
@@ -649,6 +688,35 @@ export class ProductsComponent implements OnInit {
         .filter((image) => image.id !== cover?.id)
         .map((image) => image.url);
       const payload = this.buildProductPayload(cover?.url ?? null, gallery, cover?.mediaId ?? null);
+      const resolvedVariants = this.productForm().hasVariants ? await Promise.all(
+        this.productVariants().map(async (variant, index): Promise<ProductVariantMutationPayload> => {
+          const assignedGalleryIndex = this.productImages().findIndex(
+            (image) => image.url === variant.imageUrl,
+          );
+          let imageUrl =
+            assignedGalleryIndex >= 0
+              ? resolvedImages[assignedGalleryIndex]?.url ?? null
+              : variant.imageUrl.trim() || null;
+          if (variant.imageFile) {
+            imageUrl = await this.uploadService.uploadProductImage(variant.imageFile);
+            variantUploadedUrls.push(imageUrl);
+          }
+          return {
+            option_name: variant.optionName.trim(),
+            option_value: variant.optionValue.trim(),
+            name: variant.name.trim() || null,
+            sku: variant.sku.trim() || null,
+            price: variant.price,
+            sale_price: variant.salePrice,
+            stock: variant.stock,
+            attributes: this.parseVariantAttributes(variant.attributesText),
+            media_id: variant.mediaId,
+            image_url: imageUrl,
+            is_active: variant.isActive,
+            sort_order: index,
+          };
+        }),
+      ) : [];
       const selectedProduct = this.selectedProduct();
       const isEdit = this.productModalMode() === 'edit' && !!selectedProduct;
       let savedProduct: Product;
@@ -658,6 +726,11 @@ export class ProductsComponent implements OnInit {
       } else {
         savedProduct = await this.productsService.createProduct(payload);
       }
+
+      await this.productsService.replaceProductVariants(
+        savedProduct.id,
+        this.productForm().hasVariants ? resolvedVariants : [],
+      );
 
       await this.saveProductMediaUsage(savedProduct, payload.media_id);
 
@@ -673,7 +746,9 @@ export class ProductsComponent implements OnInit {
       this.closeProductModal();
     } catch (error) {
       await Promise.allSettled(
-        uploadedUrls.map((url) => this.uploadService.deleteProductImage(url)),
+        [...uploadedUrls, ...variantUploadedUrls].map((url) =>
+          this.uploadService.deleteProductImage(url),
+        ),
       );
       console.error('Product save failed.', error);
       const message =
@@ -692,6 +767,110 @@ export class ProductsComponent implements OnInit {
       ...form,
       [key]: value,
     }));
+  }
+
+  toggleProductVariants(enabled: boolean): void {
+    this.updateProductForm('hasVariants', enabled);
+    if (enabled && this.productVariants().length === 0) this.addVariant();
+    this.variantError.set(null);
+  }
+
+  addVariant(): void {
+    this.productVariants.update((variants) => [
+      ...variants,
+      {
+        clientId: crypto.randomUUID(),
+        id: null,
+        optionName: variants[0]?.optionName ?? '',
+        optionValue: '',
+        name: '',
+        sku: '',
+        price: null,
+        salePrice: null,
+        stock: null,
+        attributes: {},
+        attributesText: '',
+        mediaId: null,
+        imageUrl: '',
+        imageFile: null,
+        isActive: true,
+      },
+    ]);
+    this.variantError.set(null);
+  }
+
+  updateVariant<K extends keyof ProductVariantFormModel>(
+    clientId: string,
+    key: K,
+    value: ProductVariantFormModel[K],
+  ): void {
+    this.productVariants.update((variants) =>
+      variants.map((variant) =>
+        variant.clientId === clientId ? { ...variant, [key]: value } : variant,
+      ),
+    );
+    this.variantError.set(null);
+  }
+
+  removeVariant(clientId: string): void {
+    const variant = this.productVariants().find((item) => item.clientId === clientId);
+    if (variant?.imageFile && variant.imageUrl) URL.revokeObjectURL(variant.imageUrl);
+    this.productVariants.update((variants) =>
+      variants.filter((item) => item.clientId !== clientId),
+    );
+  }
+
+  moveVariant(index: number, direction: -1 | 1): void {
+    this.productVariants.update((variants) => {
+      const target = index + direction;
+      if (target < 0 || target >= variants.length) return variants;
+      const reordered = [...variants];
+      [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+      return reordered;
+    });
+  }
+
+  onVariantImageSelected(clientId: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const error = this.validateImageFile(file);
+    if (error) {
+      this.variantError.set(error);
+      return;
+    }
+    const current = this.productVariants().find((variant) => variant.clientId === clientId);
+    if (current?.imageFile && current.imageUrl) URL.revokeObjectURL(current.imageUrl);
+    this.updateVariant(clientId, 'imageFile', file);
+    this.updateVariant(clientId, 'imageUrl', URL.createObjectURL(file));
+    this.updateVariant(clientId, 'mediaId', null);
+  }
+
+  removeVariantImage(clientId: string): void {
+    const variant = this.productVariants().find((item) => item.clientId === clientId);
+    if (!variant) return;
+    if (variant.imageFile && variant.imageUrl) URL.revokeObjectURL(variant.imageUrl);
+    this.productVariants.update((variants) =>
+      variants.map((item) =>
+        item.clientId === clientId
+          ? { ...item, imageUrl: '', imageFile: null, mediaId: null }
+          : item,
+      ),
+    );
+    this.variantError.set(null);
+  }
+
+  assignGalleryImageToVariant(clientId: string, imageUrl: string): void {
+    this.updateVariant(clientId, 'imageUrl', imageUrl);
+    const mediaId = this.productImages().find((image) => image.url === imageUrl)?.mediaId ?? null;
+    this.updateVariant(clientId, 'mediaId', mediaId);
+    this.updateVariant(clientId, 'imageFile', null);
+  }
+
+  openVariantMediaPicker(clientId: string): void {
+    this.variantMediaTargetId.set(clientId);
+    this.isProductMediaPickerOpen.set(true);
   }
 
   addFeature(): void {
@@ -996,12 +1175,19 @@ export class ProductsComponent implements OnInit {
     this.productImages.set([]);
     this.coverImageId.set(null);
     this.isProductMediaPickerOpen.set(false);
+    this.variantMediaTargetId.set(null);
     this.imageUploadError.set(null);
   }
 
   private resetProductForm(): void {
     this.selectedProduct.set(null);
     this.productForm.set({ ...EMPTY_PRODUCT_FORM });
+    for (const variant of this.productVariants()) {
+      if (variant.imageFile && variant.imageUrl) URL.revokeObjectURL(variant.imageUrl);
+    }
+    this.productVariants.set([]);
+    this.variantError.set(null);
+    this.variantMediaTargetId.set(null);
     this.resetImageState();
   }
 
@@ -1188,6 +1374,67 @@ export class ProductsComponent implements OnInit {
   selectProductMediaItems(assets: MediaAsset[]): void {
     for (const asset of assets) this.selectProductMedia(asset);
     this.isProductMediaPickerOpen.set(false);
+  }
+
+  selectVariantMedia(asset: MediaAsset): void {
+    const targetId = this.variantMediaTargetId();
+    if (!targetId) return;
+    this.updateVariant(targetId, 'imageUrl', asset.file_url);
+    this.updateVariant(targetId, 'mediaId', asset.id);
+    this.updateVariant(targetId, 'imageFile', null);
+    this.closeProductMediaPicker();
+  }
+
+  private validateVariants(): string | null {
+    if (!this.productForm().hasVariants) return null;
+    const variants = this.productVariants();
+    if (!variants.length) return 'Add at least one product variant.';
+
+    const combinations = new Set<string>();
+    const skus = new Set<string>();
+    for (const variant of variants) {
+      const optionName = variant.optionName.trim();
+      const optionValue = variant.optionValue.trim();
+      if (!optionName || !optionValue) return 'Every variant needs an option name and value.';
+      const combination = `${optionName.toLocaleLowerCase()}:${optionValue.toLocaleLowerCase()}`;
+      if (combinations.has(combination)) return 'Duplicate variant options are not allowed.';
+      combinations.add(combination);
+
+      const sku = variant.sku.trim().toLocaleLowerCase();
+      if (sku && skus.has(sku)) return 'Variant SKUs must be unique.';
+      if (sku) skus.add(sku);
+      if (variant.price !== null && (!Number.isFinite(Number(variant.price)) || Number(variant.price) <= 0)) {
+        return 'Variant prices must be greater than zero.';
+      }
+      if (variant.salePrice !== null) {
+        const regularPrice = variant.price ?? this.productForm().price ?? 0;
+        if (Number(variant.salePrice) <= 0 || Number(variant.salePrice) >= Number(regularPrice)) {
+          return 'Variant sale price must be lower than its effective regular price.';
+        }
+      }
+      if (variant.stock !== null && (!Number.isInteger(Number(variant.stock)) || Number(variant.stock) < 0)) {
+        return 'Variant stock must be a non-negative whole number.';
+      }
+    }
+    return null;
+  }
+
+  private parseVariantAttributes(value: string): Readonly<Record<string, string>> {
+    const attributes: Record<string, string> = {};
+    for (const line of value.split(/\r?\n/)) {
+      const separator = line.indexOf(':');
+      if (separator < 1) continue;
+      const key = line.slice(0, separator).trim();
+      const attributeValue = line.slice(separator + 1).trim();
+      if (key && attributeValue) attributes[key] = attributeValue;
+    }
+    return attributes;
+  }
+
+  private formatVariantAttributes(attributes: Readonly<Record<string, string>>): string {
+    return Object.entries(attributes)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n');
   }
 
   private productImageUrls(product: Product): string[] {

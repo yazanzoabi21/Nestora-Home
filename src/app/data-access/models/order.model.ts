@@ -23,6 +23,9 @@ export type OrderDateFilter =
 export interface AdminOrderItem {
   id: string;
   productId: string | null;
+  variantId: string | null;
+  variantName: string | null;
+  variantAttributes: Readonly<Record<string, string>>;
 
   /**
    * Snapshot name saved in order_items at checkout.

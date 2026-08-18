@@ -4,6 +4,10 @@ export interface CustomerOrderItem {
   productName: string | null;
   productSlug: string | null;
   productImageUrl: string | null;
+  variantId: string | null;
+  variantName: string | null;
+  variantSku: string | null;
+  variantAttributes: Readonly<Record<string, string>>;
   quantity: number;
   unitPrice: number;
   lineTotal: number;

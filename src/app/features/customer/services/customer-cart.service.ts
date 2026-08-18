@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 import { CustomerAuthService } from '../../../core/services/auth';
-import { Product } from '../../../data-access';
+import { Product, ProductVariant } from '../../../data-access';
 import { CustomerCartLine, CustomerProduct, GuestCartItem } from '../models';
 
 interface CartRecord {
@@ -45,7 +45,7 @@ export class CustomerCartService {
     this.requireAuthenticatedCustomer();
     const { data, error } = await this.supabase
       .from('cart_items')
-      .select(`id,quantity,products:product_id(*,categories(name))`)
+      .select('id,quantity,products:product_id(*,categories(name))')
       .eq('cart_id', cartId)
       .order('created_at');
     if (error) throw new Error('Unable to load cart items.');
@@ -63,20 +63,22 @@ export class CustomerCartService {
     productId: string,
     quantity: number,
     cartItemId?: string,
+    variantId: string | null = null,
   ): Promise<string> {
     this.requireAuthenticatedCustomer();
+    void variantId;
     if (!Number.isInteger(quantity) || quantity < 1) {
       throw new Error('Cart quantity must be a positive integer.');
     }
 
     let itemId = cartItemId;
     if (!itemId) {
-      const existing = await this.supabase
+      const existingQuery = this.supabase
         .from('cart_items')
         .select('id')
         .eq('cart_id', cartId)
-        .eq('product_id', productId)
-        .maybeSingle();
+        .eq('product_id', productId);
+      const existing = await existingQuery.maybeSingle();
       if (existing.error) throw new Error('Unable to check your cart.');
       itemId = existing.data?.id as string | undefined;
     }
@@ -95,18 +97,16 @@ export class CustomerCartService {
 
     const { data, error } = await this.supabase
       .from('cart_items')
-      .upsert(
-        { cart_id: cartId, product_id: productId, quantity },
-        { onConflict: 'cart_id,product_id' },
-      )
+      .insert({ cart_id: cartId, product_id: productId, quantity })
       .select('id')
       .single();
     if (error || !data) throw new Error('Unable to update your cart.');
     return data.id as string;
   }
 
-  async removeItem(cartId: string, productId: string): Promise<void> {
+  async removeItem(cartId: string, productId: string, variantId: string | null = null): Promise<void> {
     this.requireAuthenticatedCustomer();
+    void variantId;
     const { error } = await this.supabase
       .from('cart_items')
       .delete()
@@ -128,10 +128,16 @@ export class CustomerCartService {
     return (data ?? [])
       .map((row) => {
         const product = row as Product;
-        const stored = items.find((item) => item.productId === product.id)!;
-        const mapped = this.toCustomerProduct(product);
-        return { product: mapped, quantity: stored.quantity };
+        return items
+          .filter((item) => item.productId === product.id)
+          .map((stored) => {
+            return {
+              product: this.toCustomerProduct(product),
+              quantity: stored.quantity,
+            };
+          });
       })
+      .flat()
       .filter((line) => line.quantity > 0);
   }
 
@@ -157,18 +163,23 @@ export class CustomerCartService {
     return userId;
   }
 
-  private toCustomerProduct(product: Product): CustomerProduct {
-    const regular = Number(product.price ?? 0);
-    const sale = product.sale_price === null ? null : Number(product.sale_price);
+  private toCustomerProduct(product: Product, variant?: ProductVariant | null): CustomerProduct {
+    const regular = Number(variant?.price ?? product.price ?? 0);
+    const sale =
+      variant?.sale_price === null || variant?.sale_price === undefined
+        ? product.sale_price === null
+          ? null
+          : Number(product.sale_price)
+        : Number(variant.sale_price);
     const price = sale !== null && sale < regular ? sale : regular;
     const relation = Array.isArray(product.categories) ? product.categories[0] : product.categories;
-    const stock = Math.max(0, Number(product.stock ?? 0));
+    const stock = Math.max(0, Number(variant?.stock ?? product.stock ?? 0));
     return {
       id: product.id,
       name: product.name,
       brand: 'Nestora',
       category: relation?.name || product.categoryName || 'Home',
-      imageUrl: product.image_url || 'assets/images/product-placeholder.png',
+      imageUrl: variant?.image_url || product.image_url || 'assets/images/product-placeholder.png',
       description: product.short_description || undefined,
       price,
       originalPrice: price < regular ? regular : null,
@@ -183,6 +194,12 @@ export class CustomerCartService {
       inStock: product.is_active !== false && stock > 0,
       stock,
       slug: product.slug,
+      sku: variant?.sku ?? product.sku,
+      variantId: variant?.id ?? null,
+      variantLabel: variant ? variant.name || `${variant.option_name}: ${variant.option_value}` : null,
+      variantOptionName: variant?.option_name ?? null,
+      variantOptionValue: variant?.option_value ?? null,
+      variantAttributes: variant?.attributes ?? {},
     };
   }
 }

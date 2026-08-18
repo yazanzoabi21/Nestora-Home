@@ -34,6 +34,11 @@ interface CustomerOrderItemDatabaseRow {
   quantity: number | string | null;
   price: number | string | null;
   total: number | string | null;
+  variant_id: string | null;
+  variant_name: string | null;
+  variant_sku: string | null;
+  variant_attributes: Readonly<Record<string, string>> | null;
+  variant_image_url: string | null;
 }
 
 interface CustomerOrderProductDatabaseRow {
@@ -67,7 +72,7 @@ const ORDER_SELECT = `
   loyalty_checkout_processed
 `;
 
-const ORDER_ITEM_SELECT = 'order_id, product_id, quantity, price, total';
+const ORDER_ITEM_SELECT = 'order_id, product_id, variant_id, variant_name, variant_sku, variant_attributes, variant_image_url, quantity, price, total';
 const PRODUCT_SELECT = 'id, name, slug, image_url';
 
 @Injectable({ providedIn: 'root' })
@@ -205,11 +210,15 @@ export class CustomerOrdersService {
       item.total === null ? unitPrice * quantity : this.toAmount(item.total);
 
     return {
-      id: `${item.order_id}:${item.product_id}`,
+      id: `${item.order_id}:${item.product_id}:${item.variant_id ?? 'base'}`,
       productId: item.product_id,
       productName: product?.name?.trim() || null,
       productSlug: product?.slug?.trim() || null,
-      productImageUrl: product?.image_url?.trim() || null,
+      productImageUrl: item.variant_image_url?.trim() || product?.image_url?.trim() || null,
+      variantId: item.variant_id,
+      variantName: item.variant_name,
+      variantSku: item.variant_sku,
+      variantAttributes: item.variant_attributes ?? {},
       quantity,
       unitPrice,
       lineTotal,

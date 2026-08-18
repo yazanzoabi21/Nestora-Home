@@ -99,12 +99,16 @@ export class CustomerCheckoutOrderService {
       },
       p_items: items.map((item) => ({
         product_id: item.productId,
+        variant_id: item.variantId,
         quantity: item.quantity,
       })),
       p_customer_notes: customerNotes?.trim() || null,
       p_redeem_product_ids: items
-        .filter((item) => item.redeemWithPoints)
+        .filter((item) => item.redeemWithPoints && item.variantId === null)
         .map((item) => item.productId),
+      p_redeem_variant_ids: items
+        .filter((item) => item.redeemWithPoints && item.variantId !== null)
+        .map((item) => item.variantId!),
     };
 
     this.state.setPlacingOrder(true);

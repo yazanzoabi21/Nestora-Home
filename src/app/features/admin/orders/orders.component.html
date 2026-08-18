@@ -443,6 +443,10 @@
                         {{ item.name }}
                       </h4>
 
+                      @if (item.variantName) {
+                        <p class="mt-1 text-xs font-bold text-[#6b7d5e]">{{ item.variantName }}</p>
+                      }
+
                       @if (item.sku) {
                         <p
                           class="mt-1 text-[11px] font-semibold text-[#9a9389]"

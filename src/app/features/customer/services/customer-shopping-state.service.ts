@@ -172,7 +172,7 @@ export class CustomerShoppingStateService {
 
       const merged = new Map(
         serverLines.map((line) => [
-          line.product.id,
+          this.lineKey(line.product.id, line.product.variantId),
           line,
         ]),
       );
@@ -183,8 +183,8 @@ export class CustomerShoppingStateService {
           await this.carts.productsForGuest(guestItems);
 
         for (const guest of guestLines) {
-          const existing =
-            merged.get(guest.product.id);
+          const key = this.lineKey(guest.product.id, guest.product.variantId);
+          const existing = merged.get(key);
 
           const quantity =
             (existing?.quantity ?? 0) +
@@ -196,9 +196,10 @@ export class CustomerShoppingStateService {
               guest.product.id,
               quantity,
               existing?.id,
+              guest.product.variantId,
             );
 
-          merged.set(guest.product.id, {
+          merged.set(key, {
             ...guest,
             id: itemId,
             quantity,
@@ -227,7 +228,10 @@ export class CustomerShoppingStateService {
   async addToCart(product: CustomerProduct, requestedQuantity = 1): Promise<void> {
     if (this.pendingProductIds().has(product.id)) return;
     await this.ensureCurrentCartMode();
-    const existing = this.cart().find((line) => line.product.id === product.id);
+    const key = this.lineKey(product.id, product.variantId);
+    const existing = this.cart().find(
+      (line) => this.lineKey(line.product.id, line.product.variantId) === key,
+    );
     const quantity = (existing?.quantity ?? 0) + requestedQuantity;
     if (!this.canUseQuantity(product, quantity)) {
       this.toast.warn('Stock unavailable', this.stockMessage(product, quantity));
@@ -237,12 +241,20 @@ export class CustomerShoppingStateService {
     try {
       const cartId = this.currentServerCartId();
       const id = cartId
-        ? await this.carts.upsertItem(cartId, product.id, quantity, existing?.id)
+        ? await this.carts.upsertItem(
+            cartId,
+            product.id,
+            quantity,
+            existing?.id,
+            product.variantId,
+          )
         : existing?.id;
       this.cart.update((lines) =>
         existing
           ? lines.map((line) =>
-            line.product.id === product.id ? { ...line, id: id ?? line.id, quantity } : line,
+            this.lineKey(line.product.id, line.product.variantId) === key
+              ? { ...line, id: id ?? line.id, quantity }
+              : line,
           )
           : [...lines, { id, product, quantity }],
       );
@@ -255,9 +267,16 @@ export class CustomerShoppingStateService {
     }
   }
 
-  async setQuantity(productId: string, requested: number): Promise<void> {
+  async setQuantity(
+    productId: string,
+    requested: number,
+    variantId: string | null = null,
+  ): Promise<void> {
     await this.ensureCurrentCartMode();
-    const line = this.cart().find((item) => item.product.id === productId);
+    const key = this.lineKey(productId, variantId);
+    const line = this.cart().find(
+      (item) => this.lineKey(item.product.id, item.product.variantId) === key,
+    );
     if (!line || this.pendingProductIds().has(productId)) return;
     const requestedQuantity = Number(requested);
     if (!Number.isInteger(requestedQuantity)) return;
@@ -270,11 +289,11 @@ export class CustomerShoppingStateService {
     try {
       const cartId = this.currentServerCartId();
       const id = cartId
-        ? await this.carts.upsertItem(cartId, productId, requestedQuantity, line.id)
+        ? await this.carts.upsertItem(cartId, productId, requestedQuantity, line.id, variantId)
         : line.id;
       this.cart.update((lines) =>
         lines.map((item) =>
-          item.product.id === productId
+          this.lineKey(item.product.id, item.product.variantId) === key
             ? { ...item, id: id ?? item.id, quantity: requestedQuantity }
             : item,
         ),
@@ -287,14 +306,17 @@ export class CustomerShoppingStateService {
     }
   }
 
-  async removeFromCart(productId: string): Promise<void> {
+  async removeFromCart(productId: string, variantId: string | null = null): Promise<void> {
     await this.ensureCurrentCartMode();
     if (this.pendingProductIds().has(productId)) return;
     this.setPending(productId, true);
     try {
       const cartId = this.currentServerCartId();
-      if (cartId) await this.carts.removeItem(cartId, productId);
-      this.cart.update((lines) => lines.filter((line) => line.product.id !== productId));
+      if (cartId) await this.carts.removeItem(cartId, productId, variantId);
+      const key = this.lineKey(productId, variantId);
+      this.cart.update((lines) =>
+        lines.filter((line) => this.lineKey(line.product.id, line.product.variantId) !== key),
+      );
       this.persistGuest();
       // this.toast.success('Item removed');
     } catch (error) {
@@ -361,7 +383,7 @@ export class CustomerShoppingStateService {
     this.wishlistIds.update((ids) => new Set(ids).add(product.id));
     this.wishlistProducts.update((products) => [product, ...products.filter((item) => item.id !== product.id)]);
     try {
-      await this.wishlistRepository.add(userId, product.id);
+      await this.wishlistRepository.add(userId, product.id, product.variantId);
       this.toast.wishlist(this.translate.instant('CUSTOMER.WISHLIST.SAVED'));
     } catch (error) {
       this.wishlistIds.update((ids) => {
@@ -436,27 +458,47 @@ export class CustomerShoppingStateService {
     }
   }
 
-  quantityFor(productId: string): number {
-    return this.cart().find((line) => line.product.id === productId)?.quantity ?? 0;
+  quantityFor(productId: string, variantId: string | null = null): number {
+    const key = this.lineKey(productId, variantId);
+    return (
+      this.cart().find(
+        (line) => this.lineKey(line.product.id, line.product.variantId) === key,
+      )?.quantity ?? 0
+    );
   }
 
   remainingStock(product: CustomerProduct): number {
-    return Math.max(0, product.stock - this.quantityFor(product.id));
+    return Math.max(0, product.stock - this.quantityFor(product.id, product.variantId));
   }
 
   canAdd(product: CustomerProduct, requestedQuantity = 1): boolean {
-    return this.canUseQuantity(product, this.quantityFor(product.id) + requestedQuantity);
+    return this.canUseQuantity(
+      product,
+      this.quantityFor(product.id, product.variantId) + requestedQuantity,
+    );
   }
 
   private async refreshCartStock(): Promise<void> {
     const currentLines = this.cart();
-    const products = await this.carts.loadProducts(currentLines.map((line) => line.product.id));
-    const latestById = new Map(products.map((product) => [product.id, product]));
+    const refreshedLines = await this.carts.productsForGuest(
+      currentLines.map((line) => ({
+        productId: line.product.id,
+        variantId: line.product.variantId,
+        quantity: line.quantity,
+      })),
+    );
+    const latestByKey = new Map(
+      refreshedLines.map((line) => [
+        this.lineKey(line.product.id, line.product.variantId),
+        line.product,
+      ]),
+    );
 
     this.cart.set(
       currentLines.map((line) => ({
         ...line,
-        product: latestById.get(line.product.id) ?? {
+        product:
+          latestByKey.get(this.lineKey(line.product.id, line.product.variantId)) ?? {
           ...line.product,
           inStock: false,
           stock: 0,
@@ -539,6 +581,10 @@ export class CustomerShoppingStateService {
     console.error('Wishlist request failed', error);
     this.toast.failed(this.translate.instant('CUSTOMER.WISHLIST.UPDATE_FAILED'));
   }
+
+  lineKey(productId: string, variantId?: string | null): string {
+    return `${productId}:${variantId ?? 'base'}`;
+  }
   private async ensureCurrentCartMode(): Promise<void> {
     const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
     await this.synchronizeCartForUser(userId);
@@ -552,7 +598,11 @@ export class CustomerShoppingStateService {
       window.localStorage.setItem(
         GUEST_CART_KEY,
         JSON.stringify(
-          this.cart().map((line) => ({ productId: line.product.id, quantity: line.quantity })),
+          this.cart().map((line) => ({
+            productId: line.product.id,
+            variantId: line.product.variantId ?? null,
+            quantity: line.quantity,
+          })),
         ),
       );
   }
@@ -566,6 +616,9 @@ export class CustomerShoppingStateService {
             typeof item === 'object' &&
             item !== null &&
             typeof (item as GuestCartItem).productId === 'string' &&
+            ((item as GuestCartItem).variantId === undefined ||
+              (item as GuestCartItem).variantId === null ||
+              typeof (item as GuestCartItem).variantId === 'string') &&
             Number.isInteger((item as GuestCartItem).quantity),
         )
         : [];

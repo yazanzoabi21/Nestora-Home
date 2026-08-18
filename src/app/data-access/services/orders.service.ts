@@ -44,6 +44,11 @@ interface SupabaseOrderItem {
   order_id: string;
   product_id: string | null;
   product_name: string | null;
+  variant_id: string | null;
+  variant_name: string | null;
+  variant_sku: string | null;
+  variant_attributes: Readonly<Record<string, string>> | null;
+  variant_image_url: string | null;
 
   quantity: number | null;
   price: number | null;
@@ -351,6 +356,11 @@ export class OrdersService {
         order_id,
         product_id,
         product_name,
+        variant_id,
+        variant_name,
+        variant_sku,
+        variant_attributes,
+        variant_image_url,
         quantity,
         price,
         total,
@@ -424,6 +434,10 @@ export class OrdersService {
         productId:
           item.product_id ?? null,
 
+        variantId: item.variant_id,
+        variantName: item.variant_name,
+        variantAttributes: item.variant_attributes ?? {},
+
         // Use the checkout snapshot first.
         name:
           item.product_name?.trim() ||
@@ -431,10 +445,10 @@ export class OrdersService {
           'Product',
 
         sku:
-          product?.sku?.trim() || null,
+          item.variant_sku?.trim() || product?.sku?.trim() || null,
 
         imageUrl:
-          product?.image_url?.trim() || null,
+          item.variant_image_url?.trim() || product?.image_url?.trim() || null,
 
         quantity,
         unitPrice,

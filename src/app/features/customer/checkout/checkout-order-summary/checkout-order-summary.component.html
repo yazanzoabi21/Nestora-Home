@@ -16,6 +16,9 @@
 
       <p class="order-summary__name">
         {{ item.productName }}
+        @if (item.variantLabel) {
+          <span class="block text-xs font-bold text-[#708565]">{{ item.variantLabel }}</span>
+        }
       </p>
 
       <strong class="order-summary__price">

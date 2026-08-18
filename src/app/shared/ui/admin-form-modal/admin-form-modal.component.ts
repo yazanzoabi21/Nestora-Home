@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   HostListener,
@@ -19,10 +20,14 @@ export type AdminFormModalVariant = 'form' | 'delete';
   imports: [TranslatePipe],
   templateUrl: './admin-form-modal.component.html',
   styleUrl: './admin-form-modal.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminFormModalComponent implements OnChanges, OnDestroy {
+  private static readonly baseZIndex = 10000;
   private static openModalCount = 0;
+  private static readonly openModals: AdminFormModalComponent[] = [];
   private scrollLocked = false;
+  zIndex = AdminFormModalComponent.baseZIndex;
   @Input() isOpen = false;
   @Input() title = '';
   @Input() subtitle = '';
@@ -54,6 +59,10 @@ export class AdminFormModalComponent implements OnChanges, OnDestroy {
   private lockBodyScroll(): void {
     if (this.scrollLocked || typeof document === 'undefined') return;
     this.scrollLocked = true;
+    AdminFormModalComponent.openModals.push(this);
+    this.zIndex =
+      AdminFormModalComponent.baseZIndex +
+      (AdminFormModalComponent.openModals.length - 1) * 10;
     AdminFormModalComponent.openModalCount += 1;
     if (AdminFormModalComponent.openModalCount === 1) {
       document.body.dataset['adminModalOverflow'] = document.body.style.overflow;
@@ -64,6 +73,10 @@ export class AdminFormModalComponent implements OnChanges, OnDestroy {
   private unlockBodyScroll(): void {
     if (!this.scrollLocked || typeof document === 'undefined') return;
     this.scrollLocked = false;
+    const modalIndex = AdminFormModalComponent.openModals.indexOf(this);
+    if (modalIndex >= 0) {
+      AdminFormModalComponent.openModals.splice(modalIndex, 1);
+    }
     AdminFormModalComponent.openModalCount = Math.max(
       0,
       AdminFormModalComponent.openModalCount - 1,
@@ -76,9 +89,13 @@ export class AdminFormModalComponent implements OnChanges, OnDestroy {
 
   @HostListener('document:keydown.escape')
   closeOnEscape(): void {
-    if (this.isOpen) {
+    if (this.isOpen && this.isTopmostModal()) {
       this.close.emit();
     }
+  }
+
+  private isTopmostModal(): boolean {
+    return AdminFormModalComponent.openModals.at(-1) === this;
   }
 
   isDeleteModal(): boolean {
@@ -87,6 +104,16 @@ export class AdminFormModalComponent implements OnChanges, OnDestroy {
 
   onBackdropClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) {
+      this.close.emit();
+    }
+  }
+
+  onBackdropKeydown(event: KeyboardEvent): void {
+    if (
+      event.target === event.currentTarget &&
+      (event.key === 'Enter' || event.key === ' ')
+    ) {
+      event.preventDefault();
       this.close.emit();
     }
   }

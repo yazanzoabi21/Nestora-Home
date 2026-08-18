@@ -146,7 +146,7 @@
           <app-customer-product-card [product]="product" [view]="viewMode()" [wishlistActive]="isWishlisted(product.id)"
             [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
             [cartLoading]="isAddingToCart(product.id)" [canAddToCart]="shopping.canAdd(product)"
-            [cartQuantity]="shopping.quantityFor(product.id)" [selected]="isSelected(product.id)"
+            [cartQuantity]="shopping.quantityFor(product.id, product.variantId)" [selected]="isSelected(product.id)"
             (quickView)="selectProduct($event)" (addToCart)="addProductToCart($event)"
             (cartQuantityChange)="updateProductCartQuantity($event.product, $event.quantity)"
             (toggleWishlist)="toggleWishlist($event)" />

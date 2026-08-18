@@ -30,16 +30,19 @@ export class CustomerWishlistService {
       this.throwSupabaseError(error, 'Unable to load your wishlist.');
     }
 
-    const ids = [...new Set((data as WishlistRecord[] | null ?? []).map((item) => item.product_id))];
-    const products = await this.products.loadProducts(ids);
-    const byId = new Map(products.map((product) => [product.id, product]));
-    return ids.flatMap((id) => {
-      const product = byId.get(id);
-      return product ? [product] : [];
-    });
+    const records = data as WishlistRecord[] | null ?? [];
+    const lines = await this.products.productsForGuest(
+      records.map((item) => ({
+        productId: item.product_id,
+        variantId: null,
+        quantity: 1,
+      })),
+    );
+    return lines.map((line) => line.product);
   }
 
-  async add(userId: string, productId: string): Promise<void> {
+  async add(userId: string, productId: string, variantId: string | null = null): Promise<void> {
+    void variantId;
     const existing = await this.supabase
       .from('wishlist')
       .select('id')

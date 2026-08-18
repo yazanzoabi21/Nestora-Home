@@ -7,6 +7,8 @@ import {
   ProductMutationPayload,
   ProductStats,
   ProductStatus,
+  ProductVariant,
+  ProductVariantMutationPayload,
 } from '../models';
 
 const LOW_STOCK_LIMIT = 25;
@@ -37,6 +39,24 @@ const PRODUCT_SELECT = `
     id,
     name,
     slug
+  ),
+  product_variants (
+    id,
+    product_id,
+    option_name,
+    option_value,
+    name,
+    sku,
+    price,
+    sale_price,
+    stock,
+    attributes,
+    media_id,
+    image_url,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at
   )
 `;
 
@@ -160,6 +180,33 @@ export class ProductsService {
     }
   }
 
+  async replaceProductVariants(
+    productId: string,
+    variants: readonly ProductVariantMutationPayload[],
+  ): Promise<void> {
+    const { error } = await this.supabase.rpc('replace_product_variants', {
+      p_product_id: productId,
+      p_variants: variants.map((variant, index) => ({
+        option_name: variant.option_name.trim(),
+        option_value: variant.option_value.trim(),
+        name: variant.name?.trim() || null,
+        sku: variant.sku?.trim() || null,
+        price: variant.price ?? null,
+        sale_price: variant.sale_price ?? null,
+        stock: variant.stock ?? null,
+        attributes: variant.attributes ?? {},
+        media_id: variant.media_id ?? null,
+        image_url: variant.image_url?.trim() || null,
+        is_active: variant.is_active ?? true,
+        sort_order: index,
+      })),
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
   getProductStatus(stock: number | null | undefined): ProductStatus {
     const stockValue = stock ?? 0;
 
@@ -188,7 +235,23 @@ export class ProductsService {
       is_new: product.is_new ?? null,
       is_active: product.is_active ?? null,
       rating: product.rating ?? null,
+      product_variants: (product.product_variants ?? [])
+        .map((variant) => this.mapVariant(variant))
+        .sort((left, right) => left.sort_order - right.sort_order),
       categoryName: categoryRelation?.name || 'Uncategorized',
+    };
+  }
+
+  private mapVariant(variant: ProductVariant): ProductVariant {
+    return {
+      ...variant,
+      price: variant.price === null ? null : Number(variant.price),
+      sale_price: variant.sale_price === null ? null : Number(variant.sale_price),
+      stock: variant.stock === null ? null : Number(variant.stock),
+      attributes:
+        variant.attributes && typeof variant.attributes === 'object' ? variant.attributes : {},
+      is_active: variant.is_active !== false,
+      sort_order: Number(variant.sort_order ?? 0),
     };
   }
 

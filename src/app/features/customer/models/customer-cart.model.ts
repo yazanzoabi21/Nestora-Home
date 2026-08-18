@@ -7,6 +7,7 @@ export interface CustomerCartLine {
 }
 export interface GuestCartItem {
   productId: string;
+  variantId?: string | null;
   quantity: number;
 }
 export interface CartTotals {

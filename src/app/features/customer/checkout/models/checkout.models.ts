@@ -71,6 +71,8 @@ export interface CheckoutSelection {
 
 export interface CheckoutOrderItem {
   productId: string;
+  variantId: string | null;
+  variantLabel: string | null;
   productName: string;
   productImageUrl: string | null;
   quantity: number;

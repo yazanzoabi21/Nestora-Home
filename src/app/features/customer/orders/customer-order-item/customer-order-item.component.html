@@ -19,6 +19,13 @@
       </span>
     }
 
+    @if (item().variantName) {
+      <p class="order-item__quantity">{{ item().variantName }}</p>
+    }
+    @if (item().variantSku) {
+      <p class="order-item__quantity">SKU: {{ item().variantSku }}</p>
+    }
+
     <p class="order-item__quantity">
       {{ 'CUSTOMER.ACCOUNT.ORDERS.QUANTITY' | translate }}: {{ item().quantity }}
     </p>

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 import { Product } from '../../../data-access/models';
-import { CustomerProduct, CustomerProductDetails } from '../models';
+import { CustomerProduct, CustomerProductDetails, CustomerProductVariant } from '../models';
 import { CustomerReviewsService } from './customer-reviews.service';
 
 const PRODUCT_SELECT = `
@@ -30,6 +30,24 @@ const PRODUCT_SELECT = `
     id,
     name,
     slug
+  ),
+  product_variants (
+    id,
+    product_id,
+    option_name,
+    option_value,
+    name,
+    sku,
+    price,
+    sale_price,
+    stock,
+    attributes,
+    media_id,
+    image_url,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at
   )
 `;
 
@@ -103,16 +121,33 @@ export class NewArrivalsService {
       return null;
     }
     const reviews = await this.reviewsService.getPublishedReviewsByProduct(product.id);
-    const mapped = this.withPublishedReviewStats(this.toCustomerProduct(product), reviews);
+    const mapped = this.withPublishedReviewStats(this.toCustomerProduct(product, false), reviews);
     return {
       ...mapped,
       longDescription: product.description || undefined,
       gallery: this.galleryUrls(product),
       sku: product.sku,
+      variants: (product.product_variants ?? [])
+        .filter((variant) => variant.is_active !== false)
+        .map((variant): CustomerProductVariant => ({
+          id: variant.id,
+          optionName: variant.option_name,
+          optionValue: variant.option_value,
+          name: variant.name,
+          sku: variant.sku,
+          price: variant.price === null ? null : Number(variant.price),
+          salePrice: variant.sale_price === null ? null : Number(variant.sale_price),
+          stock: variant.stock === null ? null : Math.max(0, Number(variant.stock)),
+          attributes: variant.attributes ?? {},
+          imageUrl: variant.image_url,
+          isActive: variant.is_active !== false,
+          sortOrder: Number(variant.sort_order ?? 0),
+        }))
+        .sort((left, right) => left.sortOrder - right.sortOrder),
       features: Array.isArray(product.features)
         ? product.features.filter(
-            (feature): feature is string => typeof feature === 'string' && !!feature.trim(),
-          )
+          (feature): feature is string => typeof feature === 'string' && !!feature.trim(),
+        )
         : [],
     };
   }
@@ -131,19 +166,28 @@ export class NewArrivalsService {
     };
   }
 
-  private toCustomerProduct(product: Product): CustomerProduct {
-    const regularPrice = Number(product.price ?? 0);
-    const salePrice = product.sale_price === null ? null : Number(product.sale_price);
+  private toCustomerProduct(product: Product, useDefaultVariant = true): CustomerProduct {
+    const defaultVariant = useDefaultVariant ? (product.product_variants ?? [])
+      .filter((variant) => variant.is_active !== false)
+      .sort((left, right) => Number(left.sort_order) - Number(right.sort_order))[0] : undefined;
+    const regularPrice = Number(defaultVariant?.price ?? product.price ?? 0);
+    const salePrice =
+      defaultVariant?.sale_price === null || defaultVariant?.sale_price === undefined
+        ? product.sale_price === null
+          ? null
+          : Number(product.sale_price)
+        : Number(defaultVariant.sale_price);
     const currentPrice = salePrice !== null && salePrice < regularPrice ? salePrice : regularPrice;
     const hasDiscount = regularPrice > 0 && currentPrice < regularPrice;
-    const stock = Math.max(0, Number(product.stock ?? 0));
+    const stock = Math.max(0, Number(defaultVariant?.stock ?? product.stock ?? 0));
 
     return {
       id: product.id,
       name: product.name,
       brand: 'Nestora',
       category: product.categoryName || 'Uncategorized',
-      imageUrl: product.image_url || 'assets/images/product-placeholder.png',
+      imageUrl:
+        defaultVariant?.image_url || product.image_url || 'assets/images/product-placeholder.png',
       description: product.short_description || product.description || undefined,
       price: currentPrice,
       originalPrice: hasDiscount ? regularPrice : null,
@@ -162,6 +206,14 @@ export class NewArrivalsService {
       stock,
       createdAt: product.created_at,
       slug: product.slug,
+      sku: defaultVariant?.sku ?? product.sku,
+      variantId: defaultVariant?.id ?? null,
+      variantLabel: defaultVariant
+        ? defaultVariant.name || `${defaultVariant.option_name}: ${defaultVariant.option_value}`
+        : null,
+      variantOptionName: defaultVariant?.option_name ?? null,
+      variantOptionValue: defaultVariant?.option_value ?? null,
+      variantAttributes: defaultVariant?.attributes ?? {},
     };
   }
 
@@ -221,6 +273,7 @@ export class NewArrivalsService {
       is_new: product.is_new ?? null,
       is_active: product.is_active ?? null,
       rating: product.rating ?? null,
+      product_variants: product.product_variants ?? [],
       categoryName: category?.name || 'Uncategorized',
     };
   }

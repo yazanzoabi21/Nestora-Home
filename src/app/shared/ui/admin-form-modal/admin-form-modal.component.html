@@ -1,6 +1,6 @@
 @if (isOpen) {
-<div class="fixed inset-0 z-[10000] overflow-hidden bg-black/50 p-3 backdrop-blur-sm sm:p-6" tabindex="-1"
-  (click)="onBackdropClick($event)">
+<div class="fixed inset-0 overflow-hidden bg-black/50 p-3 backdrop-blur-sm sm:p-6" [style.z-index]="zIndex" tabindex="-1"
+  (click)="onBackdropClick($event)" (keydown)="onBackdropKeydown($event)">
   <section class="mx-auto flex h-full min-h-0 w-full items-center justify-center">
     <div
       class="flex max-h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-xl"

@@ -78,7 +78,7 @@
     <div class="grid items-start gap-7 xl:grid-cols-[minmax(0,1fr)_488px] xl:gap-10">
       <div>
         <section class="grid gap-4" [attr.aria-label]="'CUSTOMER.CART.ITEMS' | translate">
-          @for (line of shopping.cart(); track line.product.id) {
+          @for (line of shopping.cart(); track shopping.lineKey(line.product.id, line.product.variantId)) {
           <article
             class="grid min-h-[180px] grid-cols-[112px_minmax(0,1fr)] gap-5 rounded-[20px] bg-white p-5 shadow-[0_8px_26px_rgba(52,47,41,.07)] sm:grid-cols-[140px_minmax(0,1fr)_130px]">
             <img class="size-28 rounded-[16px] bg-[#eee] object-cover sm:size-[140px]" [src]="line.product.imageUrl"
@@ -88,24 +88,27 @@
               <h2 class="mt-1 truncate text-base font-medium text-[#171717]">
                 {{ line.product.name }}
               </h2>
+              @if (line.product.variantLabel) {
+              <p class="mt-1 text-xs font-bold text-[#708565]">{{ line.product.variantLabel }}</p>
+              }
               @if (line.product.isLoyaltyEligible && loyalty.enabled()) {
               <app-customer-loyalty-points-badge class="mt-3 block" mode="detail"
-                [pointsEarned]="isLoyaltyRedemption(line.product.id) ? 0 : loyaltyPreview(line).pointsEarned * line.quantity"
+                [pointsEarned]="isLoyaltyRedemption(line.product.id, line.product.variantId) ? 0 : loyaltyPreview(line).pointsEarned * line.quantity"
                 [rewardCost]="loyaltyPreview(line).rewardCost * line.quantity"
-                [disabled]="isLoyaltyRedemption(line.product.id)"
+                [disabled]="isLoyaltyRedemption(line.product.id, line.product.variantId)"
                 [authenticated]="customerAuth.isAuthenticated()" [returnUrl]="'/shop/cart'" />
               }
               <div
                 class="mt-6 inline-grid grid-cols-[46px_52px_46px] overflow-hidden rounded-full border border-[#e8d8c6] text-sm">
                 <button class="flex h-8 items-center justify-center disabled:opacity-35" type="button" [disabled]="
                         line.quantity <= 1 || shopping.pendingProductIds().has(line.product.id)
-                      " (click)="shopping.setQuantity(line.product.id, line.quantity - 1)"
+                      " (click)="shopping.setQuantity(line.product.id, line.quantity - 1, line.product.variantId)"
                   [attr.aria-label]="'CUSTOMER.CART.DECREASE' | translate">
                   −</button><span class="flex h-8 items-center justify-center">{{ line.quantity }}</span><button
                   class="flex h-8 items-center justify-center disabled:opacity-35" type="button" [disabled]="
                         line.quantity >= line.product.stock ||
                         shopping.pendingProductIds().has(line.product.id)
-                      " (click)="shopping.setQuantity(line.product.id, line.quantity + 1)"
+                      " (click)="shopping.setQuantity(line.product.id, line.quantity + 1, line.product.variantId)"
                   [attr.aria-label]="'CUSTOMER.CART.INCREASE' | translate">
                   +
                 </button>
@@ -134,12 +137,12 @@
                 }
               </button>
               <div class="text-end">
-                @if (isLoyaltyRedemption(line.product.id)) {
+                @if (isLoyaltyRedemption(line.product.id, line.product.variantId)) {
                 <strong class="block text-base font-semibold text-[#5b6d50]">
                   {{ 'CUSTOMER.LOYALTY.FREE_WITH' | translate: { points: loyaltyPreview(line).rewardCost * line.quantity } }}
                 </strong>
                 <button type="button" class="mt-2 text-xs font-bold text-[#8b5e3c] underline"
-                  (click)="cancelLoyaltyRedemption(line.product.id)">
+                  (click)="cancelLoyaltyRedemption(line.product.id, line.product.variantId)">
                   {{ 'CUSTOMER.LOYALTY.CANCEL_REDEMPTION' | translate }}
                 </button>
                 } @else {

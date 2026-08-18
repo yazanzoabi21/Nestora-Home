@@ -41,16 +41,16 @@ export class CustomerCartComponent implements OnInit {
   readonly removeModalVisible = signal(false);
   readonly removingItem = signal(false);
 
-  isLoyaltyRedemption(productId: string): boolean {
-    return this.loyalty.requestedRedemptionProductIds().includes(productId);
+  isLoyaltyRedemption(productId: string, variantId: string | null = null): boolean {
+    return this.loyalty.isRedemptionRequested(productId, variantId);
   }
 
   loyaltyPreview(line: CustomerCartLine) {
     return this.loyalty.preview(line.product.price);
   }
 
-  cancelLoyaltyRedemption(productId: string): void {
-    this.loyalty.clearProductRedemption(productId);
+  cancelLoyaltyRedemption(productId: string, variantId: string | null = null): void {
+    this.loyalty.clearProductRedemption(productId, variantId);
   }
   readonly removeItemError = signal<string | null>(null);
   readonly shippingThreshold = computed(
@@ -163,9 +163,11 @@ export class CustomerCartComponent implements OnInit {
   readonly estimatedLoyaltyPoints = computed(() => {
     if (!this.customerAuth.isAuthenticated()) return 0;
 
-    const redeemedIds = new Set(this.loyalty.requestedRedemptionProductIds());
     const eligibleSubtotal = this.shopping.cart().reduce(
-      (subtotal, line) => redeemedIds.has(line.product.id)
+      (subtotal, line) => this.loyalty.isRedemptionRequested(
+        line.product.id,
+        line.product.variantId,
+      )
         ? subtotal
         : subtotal + line.product.price * line.quantity,
       0,
@@ -229,8 +231,8 @@ export class CustomerCartComponent implements OnInit {
     this.removingItem.set(true);
     this.removeItemError.set(null);
     try {
-      await this.shopping.removeFromCart(line.product.id);
-      this.loyalty.clearProductRedemption(line.product.id);
+      await this.shopping.removeFromCart(line.product.id, line.product.variantId);
+      this.loyalty.clearProductRedemption(line.product.id, line.product.variantId);
       this.toast.productRemoved(
         line.product.name,
         line.product.imageUrl,
@@ -246,7 +248,13 @@ export class CustomerCartComponent implements OnInit {
   }
 
   isRemovingLine(line: CustomerCartLine): boolean {
-    return this.removingItem() && this.selectedLineForRemoval()?.product.id === line.product.id;
+    const selected = this.selectedLineForRemoval();
+    return Boolean(
+      this.removingItem() &&
+      selected &&
+      this.shopping.lineKey(selected.product.id, selected.product.variantId) ===
+        this.shopping.lineKey(line.product.id, line.product.variantId),
+    );
   }
 
   async applyPromo(): Promise<void> {

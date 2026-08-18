@@ -265,11 +265,11 @@ export abstract class ProductBrowserPage {
   }
   updateProductCartQuantity(product: CustomerProduct, quantity: number): void {
     if (quantity <= 0) {
-      void this.shopping.removeFromCart(product.id);
+      void this.shopping.removeFromCart(product.id, product.variantId);
       return;
     }
 
-    void this.shopping.setQuantity(product.id, quantity);
+    void this.shopping.setQuantity(product.id, quantity, product.variantId);
   }
 
   private async loadFilterCategories(): Promise<void> {

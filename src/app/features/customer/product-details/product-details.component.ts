@@ -1,4 +1,4 @@
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe, KeyValuePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -7,12 +7,12 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { CustomerAuthService } from '../../../core/services/auth';
 import { CustomerLoyaltyPointsBadgeComponent } from '../../../shared/components/customer-loyalty-points-badge';
 import { ProductReviewsComponent } from '../components/product-reviews';
-import { CustomerProductDetails } from '../models';
+import { CustomerProduct, CustomerProductDetails, CustomerProductVariant } from '../models';
 import {
   CustomerRecentlyViewedService,
   CustomerShoppingStateService,
@@ -28,6 +28,7 @@ type DetailsTab = 'description' | 'features' | 'reviews';
   imports: [
     CurrencyPipe,
     DecimalPipe,
+    KeyValuePipe,
     CustomerLoyaltyPointsBadgeComponent,
     RouterLink,
     ProductReviewsComponent,
@@ -44,6 +45,7 @@ export class ProductDetailsComponent {
   private readonly router = inject(Router);
   private readonly catalog = inject(NewArrivalsService);
   private readonly recentlyViewed = inject(CustomerRecentlyViewedService);
+  private readonly translate = inject(TranslateService);
 
   readonly shopping = inject(CustomerShoppingStateService);
   readonly customerAuth = inject(CustomerAuthService);
@@ -61,6 +63,8 @@ export class ProductDetailsComponent {
 
   readonly quantity = signal(1);
   readonly currentImageIndex = signal(0);
+  readonly selectedVariant = signal<CustomerProductVariant | null>(null);
+  readonly variantImageOverride = signal<string | null>(null);
   readonly activeTab = signal<DetailsTab>('description');
 
   readonly stars = [1, 2, 3, 4, 5];
@@ -81,15 +85,59 @@ export class ProductDetailsComponent {
   });
 
   readonly selectedImage = computed(() => {
+    const variantImage = this.variantImageOverride();
+    if (variantImage) return variantImage;
     const images = this.galleryImages();
     const selectedIndex = this.currentImageIndex();
 
     return images[selectedIndex] ?? this.product()?.imageUrl ?? '';
   });
 
+  readonly displayProduct = computed<CustomerProduct | null>(() => {
+    const item = this.product();
+    const variant = this.selectedVariant();
+    if (!item) return null;
+    if (!variant) return item;
+
+    const baseRegularPrice = item.originalPrice ?? item.price;
+    const baseSalePrice = item.originalPrice ? item.price : null;
+    const regularPrice = variant.price ?? baseRegularPrice;
+    const salePrice = variant.salePrice ?? baseSalePrice;
+    const effectivePrice =
+      salePrice !== null && salePrice > 0 && salePrice < regularPrice ? salePrice : regularPrice;
+    const stock = Math.max(0, variant.stock ?? item.stock);
+
+    return {
+      ...item,
+      name: variant.name?.trim() || item.name,
+      imageUrl: variant.imageUrl || item.imageUrl,
+      price: effectivePrice,
+      originalPrice: effectivePrice < regularPrice ? regularPrice : null,
+      discountPercentage:
+        regularPrice > 0 && effectivePrice < regularPrice
+          ? Math.round(((regularPrice - effectivePrice) / regularPrice) * 100)
+          : null,
+      stock,
+      inStock: variant.isActive && item.isActive && stock > 0,
+      sku: variant.sku ?? item.sku,
+      variantId: variant.id,
+      variantLabel: variant.name || `${variant.optionName}: ${variant.optionValue}`,
+      variantOptionName: variant.optionName,
+      variantOptionValue: variant.optionValue,
+      variantAttributes: variant.attributes,
+    };
+  });
+
   readonly hasMultipleImages = computed(
     () => this.galleryImages().length > 1,
   );
+
+  readonly variantSelectorLabel = computed(() => {
+    const names = [...new Set((this.product()?.variants ?? []).map((variant) => variant.optionName))];
+    return names.length === 1
+      ? names[0]
+      : this.translate.instant('CUSTOMER.PRODUCT_DETAILS.OPTIONS');
+  });
 
   readonly currentImageNumber = computed(() => {
     const imageCount = this.galleryImages().length;
@@ -106,9 +154,9 @@ export class ProductDetailsComponent {
   });
 
   readonly cartQuantity = computed(() => {
-    const item = this.product();
+    const item = this.displayProduct();
 
-    return item ? this.shopping.quantityFor(item.id) : 0;
+    return item ? this.shopping.quantityFor(item.id, item.variantId) : 0;
   });
 
   readonly cartLoading = computed(() => {
@@ -120,7 +168,7 @@ export class ProductDetailsComponent {
   });
 
   readonly canIncreaseCartQuantity = computed(() => {
-    const item = this.product();
+    const item = this.displayProduct();
 
     return Boolean(
       item &&
@@ -131,7 +179,7 @@ export class ProductDetailsComponent {
   });
 
   readonly savings = computed(() => {
-    const item = this.product();
+    const item = this.displayProduct();
 
     if (
       !item?.originalPrice ||
@@ -143,7 +191,7 @@ export class ProductDetailsComponent {
     return item.originalPrice - item.price;
   });
 
-  readonly loyaltyPreview = computed(() => this.loyalty.preview(this.product()?.price ?? 0));
+  readonly loyaltyPreview = computed(() => this.loyalty.preview(this.displayProduct()?.price ?? 0));
   readonly loyaltyRedemptionQuantity = computed(() => this.cartQuantity() || this.quantity());
   readonly loyaltyRedemptionCost = computed(
     () => this.loyaltyPreview().rewardCost * this.loyaltyRedemptionQuantity(),
@@ -162,7 +210,7 @@ export class ProductDetailsComponent {
   );
 
   readonly availableQuantity = computed(() => {
-    const item = this.product();
+    const item = this.displayProduct();
 
     return item
       ? this.shopping.remainingStock(item)
@@ -174,10 +222,29 @@ export class ProductDetailsComponent {
   }
 
   selectImage(index: number): void {
+    this.variantImageOverride.set(null);
     this.activateImage(index);
   }
 
+  selectVariant(variant: CustomerProductVariant): void {
+    if (!variant.isActive || (variant.stock ?? this.product()?.stock ?? 0) <= 0) return;
+    this.selectedVariant.set(variant);
+    this.quantity.set(1);
+    this.variantImageOverride.set(variant.imageUrl?.trim() || null);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { variant: variant.id },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  isVariantUnavailable(variant: CustomerProductVariant): boolean {
+    return !variant.isActive || (variant.stock ?? this.product()?.stock ?? 0) <= 0;
+  }
+
   showPreviousImage(): void {
+    this.variantImageOverride.set(null);
     const imageCount = this.galleryImages().length;
 
     if (imageCount <= 1) {
@@ -191,6 +258,7 @@ export class ProductDetailsComponent {
   }
 
   showNextImage(): void {
+    this.variantImageOverride.set(null);
     const imageCount = this.galleryImages().length;
 
     if (imageCount <= 1) {
@@ -263,7 +331,7 @@ export class ProductDetailsComponent {
   }
 
   addToCart(): void {
-    const item = this.product();
+    const item = this.displayProduct();
 
     if (
       !item ||
@@ -279,7 +347,7 @@ export class ProductDetailsComponent {
   }
 
   async redeemWithPoints(): Promise<void> {
-    const item = this.product();
+    const item = this.displayProduct();
     if (!item) return;
 
     if (!this.customerAuth.isAuthenticated()) {
@@ -295,12 +363,12 @@ export class ProductDetailsComponent {
       await this.shopping.addToCart(item, this.quantity());
     }
     this.shopping.clearAppliedDiscount();
-    this.loyalty.requestProductRedemption(item.id);
+    this.loyalty.requestProductRedemption(item.id, item.variantId);
     await this.router.navigate(['/shop/cart']);
   }
 
   async decreaseCartQuantity(): Promise<void> {
-    const item = this.product();
+    const item = this.displayProduct();
     const currentQuantity = this.cartQuantity();
 
     if (!item || currentQuantity <= 0 || this.cartLoading()) {
@@ -308,18 +376,19 @@ export class ProductDetailsComponent {
     }
 
     if (currentQuantity === 1) {
-      await this.shopping.removeFromCart(item.id);
+      await this.shopping.removeFromCart(item.id, item.variantId);
       return;
     }
 
     await this.shopping.setQuantity(
       item.id,
       currentQuantity - 1,
+      item.variantId,
     );
   }
 
   async increaseCartQuantity(): Promise<void> {
-    const item = this.product();
+    const item = this.displayProduct();
 
     if (
       !item ||
@@ -331,11 +400,12 @@ export class ProductDetailsComponent {
     await this.shopping.setQuantity(
       item.id,
       this.cartQuantity() + 1,
+      item.variantId,
     );
   }
 
   async toggleWishlist(): Promise<void> {
-    const item = this.product();
+    const item = this.displayProduct();
 
     if (!item) {
       return;
@@ -451,6 +521,14 @@ export class ProductDetailsComponent {
       this.product.set(item);
       this.quantity.set(1);
       this.currentImageIndex.set(0);
+
+      const requestedVariantId = this.route.snapshot.queryParamMap.get('variant');
+      const initialVariant =
+        item?.variants.find(
+          (variant) => variant.id === requestedVariantId && variant.isActive,
+        ) ?? item?.variants.find((variant) => variant.isActive) ?? null;
+      this.selectedVariant.set(initialVariant);
+      this.variantImageOverride.set(initialVariant?.imageUrl?.trim() || null);
 
       if (item) {
         void this.recentlyViewed.recordView(item.id);
