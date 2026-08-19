@@ -5,11 +5,27 @@ export interface CustomerSocialLink {
   readonly iconClass: string;
 }
 
+export const CUSTOMER_WHATSAPP_CONTACT = {
+  phoneNumber: '96176557980',
+  defaultMessage: 'Hello Nestora Home, I would like to order.',
+  labelKey: 'CUSTOMERS.WHATSAPP.LABEL',
+  ariaLabelKey: 'CUSTOMERS.WHATSAPP.ARIA_LABEL',
+  messageKey: 'CUSTOMERS.WHATSAPP.DEFAULT_MESSAGE',
+} as const;
+
+export function buildCustomerWhatsAppUrl(phoneNumber: string, message: string): string {
+  const normalizedPhoneNumber = phoneNumber.replace(/\D/g, '');
+  return `https://wa.me/${normalizedPhoneNumber}?text=${encodeURIComponent(message.trim())}`;
+}
+
 export const CUSTOMER_SOCIAL_LINKS: readonly CustomerSocialLink[] = [
   {
     id: 'whatsapp',
     labelKey: 'CUSTOMERS.FOOTER.SOCIAL.WHATSAPP',
-    url: 'https://wa.me/96176557980?text=Hello%20Nestora%20Home%2C%20I%20would%20like%20to%20order.',
+    url: buildCustomerWhatsAppUrl(
+      CUSTOMER_WHATSAPP_CONTACT.phoneNumber,
+      CUSTOMER_WHATSAPP_CONTACT.defaultMessage,
+    ),
     iconClass: 'pi pi-whatsapp',
   },
   {

@@ -5,3 +5,4 @@ export * from './customer-product-quick-view';
 export * from './customer-product-card-skeleton/customer-product-card-skeleton';
 export * from './customer-recently-viewed';
 export * from './customer-settings/customer-settings';
+export * from './whatsapp-contact/whatsapp-contact.component';

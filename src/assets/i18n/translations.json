@@ -1568,6 +1568,11 @@
           "PAYMENT_METHODS": "We accept Whish payments"
         }
       },
+      "WHATSAPP": {
+        "LABEL": "Chat with us",
+        "ARIA_LABEL": "Chat with Nestora Home on WhatsApp",
+        "DEFAULT_MESSAGE": "Hello Nestora Home, I would like to order."
+      },
       "HELP": {
         "EYEBROW": "Help Center",
         "TITLE": "Help & Information",
@@ -4311,6 +4316,11 @@
           "COPYRIGHT": "© 2026 Nestora Home. جميع الحقوق محفوظة.",
           "PAYMENT_METHODS": "نقبل الدفع عبر Whish"
         }
+      },
+      "WHATSAPP": {
+        "LABEL": "تواصلوا معنا",
+        "ARIA_LABEL": "تواصلوا مع Nestora Home عبر واتساب",
+        "DEFAULT_MESSAGE": "مرحباً Nestora Home، أود تقديم طلب."
       },
       "HELP": {
         "EYEBROW": "مركز المساعدة",

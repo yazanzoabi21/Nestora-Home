@@ -1,0 +1,12 @@
+<a
+  class="whatsapp-contact"
+  [href]="whatsappUrl()"
+  target="_blank"
+  rel="noopener noreferrer"
+  [attr.aria-label]="ariaLabelKey | translate"
+>
+  <span class="whatsapp-contact__icon" aria-hidden="true">
+    <i class="pi pi-whatsapp"></i>
+  </span>
+  <span class="whatsapp-contact__label">{{ labelKey | translate }}</span>
+</a>
