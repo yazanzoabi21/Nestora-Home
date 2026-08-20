@@ -1,22 +1,21 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ToastService } from '../../../core/services';
 import { CustomerAuthService } from '../../../core/services/auth';
-import { Discount, DiscountsService } from '../../../data-access';
+import { Discount, DiscountGiftProduct, DiscountsService } from '../../../data-access';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { CustomerLoyaltyPointsBadgeComponent } from '../../../shared/components/customer-loyalty-points-badge';
 import { CustomerCartLine } from '../models';
 import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../services';
-
-// const STANDARD_SHIPPING = 7.99;
+import { CustomerFreeGiftSelectorComponent } from '../components/customer-free-gift-selector';
 
 @Component({
   selector: 'app-customer-cart',
   standalone: true,
-  imports: [AdminFormModalComponent, CurrencyPipe, CustomerLoyaltyPointsBadgeComponent, FormsModule, RouterLink, TranslatePipe],
+  imports: [AdminFormModalComponent, CurrencyPipe, CustomerFreeGiftSelectorComponent, CustomerLoyaltyPointsBadgeComponent, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './customer-cart.component.html',
   styleUrl: './customer-cart.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,8 +33,6 @@ export class CustomerCartComponent implements OnInit {
   readonly appliedDiscount = this.shopping.appliedDiscount;
   readonly discountAmount = this.shopping.discountAmount;
   readonly applyingPromo = signal(false);
-  // readonly appliedDiscount = signal<Discount | null>(null);
-  // readonly applyingPromo = signal(false);
   readonly checkingOut = signal(false);
   readonly selectedLineForRemoval = signal<CustomerCartLine | null>(null);
   readonly removeModalVisible = signal(false);
@@ -53,105 +50,89 @@ export class CustomerCartComponent implements OnInit {
     this.loyalty.clearProductRedemption(productId, variantId);
   }
   readonly removeItemError = signal<string | null>(null);
-  readonly shippingThreshold = computed(
-    () => this.freeShippingDiscount()?.minimum_order_amount ?? 0,
+  readonly removeModalDescription = computed(() => {
+    const productName = this.selectedLineForRemoval()?.product.name ?? 'this item';
+    return `Are you sure you want to remove "${productName}" from your cart?`;
+  });
+  readonly freeGiftDiscount = signal<Discount | null>(null);
+  readonly loadingFreeGiftDiscount = signal(false);
+  readonly eligibleGiftProducts = signal<DiscountGiftProduct[]>([]);
+  readonly loadingGiftProducts = signal(false);
+  readonly selectingGiftProductId = signal<string | null>(null);
+  readonly selectedGiftProductIds = computed(() =>
+    this.shopping.freeGiftLines().map((line) => line.product.id),
   );
-  readonly freeShippingUnlocked = computed(() => {
-    const discount = this.freeShippingDiscount();
+  readonly showGiftSelector = computed(() => {
+    const applied = this.appliedDiscount();
+    return applied?.discount_type === 'free_gift' && this.freeGiftUnlocked();
+  });
+
+  readonly freeGiftThreshold = computed(
+    () => this.freeGiftDiscount()?.minimum_order_amount ?? 0,
+  );
+
+  readonly freeGiftUnlocked = computed(() => {
+    const discount = this.freeGiftDiscount();
 
     if (!discount) {
       return false;
     }
 
-    return this.shopping.subtotal() >= this.shippingThreshold();
+    return this.shopping.subtotal() >= this.freeGiftThreshold();
   });
-  readonly removeModalDescription = computed(() => {
-    const productName = this.selectedLineForRemoval()?.product.name ?? 'this item';
-    return `Are you sure you want to remove "${productName}" from your cart?`;
-  });
-  readonly remainingForFreeShipping = computed(() => {
-    const threshold = this.shippingThreshold();
 
-    if (!this.freeShippingDiscount() || threshold <= 0) {
+  readonly remainingForFreeGift = computed(() => {
+    const threshold = this.freeGiftThreshold();
+
+    if (!this.freeGiftDiscount() || threshold <= 0) {
       return 0;
     }
 
     return Math.max(0, threshold - this.shopping.subtotal());
   });
-  readonly shippingProgress = computed(() => {
-    if (!this.freeShippingDiscount()) {
+
+  readonly freeGiftProgress = computed(() => {
+    if (!this.freeGiftDiscount()) {
       return 0;
     }
 
-    const threshold = this.shippingThreshold();
+    const threshold = this.freeGiftThreshold();
 
     if (threshold <= 0) {
       return 100;
     }
 
-    return Math.min(100, (this.shopping.subtotal() / threshold) * 100);
+    return Math.min(
+      100,
+      (this.shopping.subtotal() / threshold) * 100,
+    );
   });
-  // readonly shipping = computed(() =>
-  //   this.freeShippingUnlocked() ? 0 : STANDARD_SHIPPING,
-  // );
-  // readonly discountAmount = computed(() => {
-  //   const discount = this.appliedDiscount();
 
-  //   if (!discount) {
-  //     return 0;
-  //   }
+  readonly freeGiftCode = computed(
+    () => this.freeGiftDiscount()?.code?.trim().toUpperCase() ?? '',
+  );
 
-  //   const eligibleSubtotal = this.getEligibleSubtotal(discount);
+  async copyFreeGiftCode(): Promise<void> {
+    const code = this.freeGiftCode();
 
-  //   if (eligibleSubtotal <= 0) {
-  //     return 0;
-  //   }
+    if (!code || typeof navigator === 'undefined') {
+      return;
+    }
 
-  //   switch (discount.discount_type) {
-  //     case 'percentage': {
-  //       const percentage = Math.min(
-  //         100,
-  //         Math.max(0, discount.discount_value ?? 0),
-  //       );
+    try {
+      await navigator.clipboard.writeText(code);
 
-  //       return (eligibleSubtotal * percentage) / 100;
-  //     }
-
-  //     case 'fixed_amount': {
-  //       return Math.min(
-  //         eligibleSubtotal,
-  //         Math.max(0, discount.discount_value ?? 0),
-  //       );
-  //     }
-
-  //     default:
-  //       return 0;
-  //   }
-  // });
-  // private getEligibleSubtotal(discount: Discount): number {
-  //   return this.shopping
-  //     .cart()
-  //     .filter((line) => {
-  //       if (discount.applies_to === 'all') {
-  //         return true;
-  //       }
-
-  //       if (discount.applies_to === 'product') {
-  //         return discount.product_id === line.product.id;
-  //       }
-
-  //       if (discount.applies_to === 'category') {
-  //         return line.product.category === discount.categories?.name;
-  //       }
-
-  //       return false;
-  //     })
-  //     .reduce(
-  //       (total, line) =>
-  //         total + line.product.price * line.quantity,
-  //       0,
-  //     );
-  // }
+      this.toast.success(
+        'Promo code copied',
+        `${code} was copied to your clipboard.`,
+      );
+    } catch {
+      this.toast.error(
+        'Unable to copy code',
+        'Please copy the promo code manually.',
+      );
+    }
+  }
 
   readonly total = computed(() =>
     Math.max(
@@ -164,7 +145,7 @@ export class CustomerCartComponent implements OnInit {
     if (!this.customerAuth.isAuthenticated()) return 0;
 
     const eligibleSubtotal = this.shopping.cart().reduce(
-      (subtotal, line) => this.loyalty.isRedemptionRequested(
+      (subtotal, line) => line.isFreeGift || this.loyalty.isRedemptionRequested(
         line.product.id,
         line.product.variantId,
       )
@@ -179,34 +160,74 @@ export class CustomerCartComponent implements OnInit {
     );
   });
 
-  readonly freeShippingDiscount = signal<Discount | null>(null);
-  readonly loadingShippingDiscount = signal(false);
-
-  ngOnInit(): void {
-    void this.loadFreeShippingDiscount();
+  constructor() {
+    effect(() => {
+      const applied = this.appliedDiscount();
+      if (applied && this.shopping.subtotal() < (applied.minimum_order_amount ?? 0)) {
+        this.shopping.clearAppliedDiscount();
+        if (applied.discount_type === 'free_gift') {
+          this.eligibleGiftProducts.set([]);
+          void this.shopping.clearFreeGiftSelection(applied.id);
+        }
+      }
+    });
   }
 
-  private async loadFreeShippingDiscount(): Promise<void> {
-    if (this.loadingShippingDiscount()) {
+  ngOnInit(): void {
+    void this.loadFreeGiftDiscount();
+    const applied = this.appliedDiscount();
+    if (applied?.discount_type === 'free_gift') void this.loadEligibleGiftProducts(applied);
+  }
+
+  private async loadFreeGiftDiscount(): Promise<void> {
+    if (this.loadingFreeGiftDiscount()) {
       return;
     }
 
-    this.loadingShippingDiscount.set(true);
+    this.loadingFreeGiftDiscount.set(true);
 
     try {
       const discount =
-        await this.discounts.getAutomaticFreeShippingDiscount();
+        await this.discounts.getAutomaticFreeGiftDiscount();
 
-      this.freeShippingDiscount.set(discount);
+      this.freeGiftDiscount.set(discount);
     } catch {
-      this.freeShippingDiscount.set(null);
-
-      this.toast.error(
-        'Unable to load shipping offer',
-        'Standard shipping will be used.',
-      );
+      this.freeGiftDiscount.set(null);
     } finally {
-      this.loadingShippingDiscount.set(false);
+      this.loadingFreeGiftDiscount.set(false);
+    }
+  }
+
+  private async loadEligibleGiftProducts(discount: Discount): Promise<void> {
+    this.loadingGiftProducts.set(true);
+    try {
+      this.eligibleGiftProducts.set(
+        (await this.discounts.getGiftProductsForDiscount(discount.id)).filter(
+          (gift) => gift.isActive && gift.product.is_active !== false && Number(gift.product.stock ?? 0) > 0,
+        ),
+      );
+    } catch {
+      this.eligibleGiftProducts.set([]);
+      this.toast.error('Unable to load gifts', 'Please try again.');
+    } finally {
+      this.loadingGiftProducts.set(false);
+    }
+  }
+
+  async selectGift(productId: string): Promise<void> {
+    const discount = this.appliedDiscount();
+    if (discount?.discount_type !== 'free_gift' || this.selectingGiftProductId()) return;
+    this.selectingGiftProductId.set(productId);
+    try {
+      await this.shopping.selectFreeGift(discount, productId);
+    } catch (error) {
+      this.toast.error(
+        'Gift unavailable',
+        error instanceof Error ? error.message : 'Please choose another free gift.',
+      );
+      await this.loadEligibleGiftProducts(discount);
+    } finally {
+      this.selectingGiftProductId.set(null);
     }
   }
 
@@ -231,7 +252,12 @@ export class CustomerCartComponent implements OnInit {
     this.removingItem.set(true);
     this.removeItemError.set(null);
     try {
-      await this.shopping.removeFromCart(line.product.id, line.product.variantId);
+      await this.shopping.removeFromCart(
+        line.product.id,
+        line.product.variantId,
+        line.isFreeGift,
+        line.appliedDiscountId,
+      );
       this.loyalty.clearProductRedemption(line.product.id, line.product.variantId);
       this.toast.productRemoved(
         line.product.name,
@@ -253,7 +279,7 @@ export class CustomerCartComponent implements OnInit {
       this.removingItem() &&
       selected &&
       this.shopping.lineKey(selected.product.id, selected.product.variantId) ===
-        this.shopping.lineKey(line.product.id, line.product.variantId),
+      this.shopping.lineKey(line.product.id, line.product.variantId),
     );
   }
 
@@ -281,18 +307,6 @@ export class CustomerCartComponent implements OnInit {
         this.toast.error(
           'Promo code unavailable',
           'This promotion is inactive, expired, scheduled, or exhausted.',
-        );
-        return;
-      }
-
-      /*
-       * Free shipping is automatically controlled by the shipping bar.
-       * It is not applied through the percentage/fixed promo form.
-       */
-      if (discount.discount_type === 'free_shipping') {
-        this.toast.info(
-          'Automatic shipping offer',
-          'Free shipping is applied automatically when the required cart amount is reached.',
         );
         return;
       }
@@ -325,6 +339,10 @@ export class CustomerCartComponent implements OnInit {
       this.shopping.setAppliedDiscount(discount);
       this.promoCode.set(discount.code);
 
+      if (discount.discount_type === 'free_gift') {
+        await this.loadEligibleGiftProducts(discount);
+      }
+
       this.toast.success(
         'Promo code applied',
         `${discount.code} was applied successfully.`,
@@ -346,7 +364,12 @@ export class CustomerCartComponent implements OnInit {
 
     const removedCode = this.shopping.appliedDiscount()?.code;
 
+    const removedDiscount = this.shopping.appliedDiscount();
     this.shopping.clearAppliedDiscount();
+    if (removedDiscount?.discount_type === 'free_gift') {
+      void this.shopping.clearFreeGiftSelection(removedDiscount.id);
+      this.eligibleGiftProducts.set([]);
+    }
     this.promoCode.set('');
 
     if (removedCode) {

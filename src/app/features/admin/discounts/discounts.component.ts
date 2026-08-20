@@ -16,6 +16,7 @@ import {
   DiscountStatusFilter,
   DiscountType,
   Product,
+  PromotionSelectableProduct,
   ProductsService,
 } from '../../../data-access';
 import { ToastService } from '../../../core/services';
@@ -23,6 +24,7 @@ import { AdminFormFieldComponent } from '../../../shared/ui/admin-form-field';
 import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { AdminTableColumn, AdminTableComponent, AdminTableRow } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
+import { PromotionProductPickerComponent } from '../promotions-ads/promotion-product-picker';
 
 type DiscountModalMode = 'add' | 'edit';
 
@@ -70,12 +72,14 @@ const EMPTY_DISCOUNT_FORM: DiscountFormModel = {
   discountType: 'percentage',
   discountValue: null,
   minimumOrderAmount: 0,
+  giftQuantity: 1,
+  eligibleGiftProductIds: [],
   appliesTo: 'all',
   productId: null,
   categoryId: null,
   usageLimit: null,
   usageCount: 0,
-  usagePerCustomer: 1,
+  usagePerCustomer: null,
   isActive: true,
   startDate: '',
   endDate: '',
@@ -90,6 +94,7 @@ const EMPTY_DISCOUNT_FORM: DiscountFormModel = {
     AdminTableComponent,
     CommonModule,
     KpiCardComponent,
+    PromotionProductPickerComponent,
     TranslatePipe,
   ],
   templateUrl: './discounts.component.html',
@@ -117,6 +122,7 @@ export class DiscountsComponent implements OnInit {
   readonly discountPendingDelete = signal<Discount | null>(null);
   readonly isDiscountModalOpen = signal(false);
   readonly isDeleteModalOpen = signal(false);
+  readonly isGiftProductPickerOpen = signal(false);
   readonly formError = signal<string | null>(null);
   readonly discountForm = signal<DiscountFormModel>({ ...EMPTY_DISCOUNT_FORM });
 
@@ -138,6 +144,7 @@ export class DiscountsComponent implements OnInit {
     { label: 'PROMOTIONS.TYPE.PERCENTAGE', value: 'percentage' },
     { label: 'PROMOTIONS.TYPE.FIXED_AMOUNT', value: 'fixed_amount' },
     { label: 'PROMOTIONS.TYPE.FREE_SHIPPING', value: 'free_shipping' },
+    { label: 'PROMOTIONS.TYPE.FREE_GIFT', value: 'free_gift' },
   ];
 
   readonly appliesToOptions: SelectOption<DiscountAppliesTo>[] = [
@@ -152,6 +159,25 @@ export class DiscountsComponent implements OnInit {
       .sort((first, second) => first.name.localeCompare(second.name))
       .map((product) => ({ label: product.name, value: product.id }))
   );
+
+  readonly giftPickerProducts = computed<PromotionSelectableProduct[]>(() =>
+    this.products().map((product) => ({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      category_id: product.category_id,
+      category_name: product.categoryName ?? null,
+      image_url: product.image_url,
+      price: product.price,
+      sale_price: product.sale_price,
+      is_active: product.is_active,
+    })),
+  );
+
+  readonly selectedGiftProducts = computed(() => {
+    const selected = new Set(this.discountForm().eligibleGiftProductIds);
+    return this.products().filter((product) => selected.has(product.id));
+  });
 
   readonly categoryOptions = computed<SelectOption[]>(() =>
     this.categories()
@@ -393,17 +419,38 @@ export class DiscountsComponent implements OnInit {
       discountType: discount.discount_type,
       discountValue: discount.discount_type === 'free_shipping' ? null : discount.discount_value,
       minimumOrderAmount: discount.minimum_order_amount ?? 0,
+      giftQuantity: discount.gift_quantity,
+      eligibleGiftProductIds: [],
       appliesTo: discount.applies_to,
       productId: discount.product_id,
       categoryId: discount.category_id,
       usageLimit: discount.usage_limit,
       usageCount: discount.usage_count,
-      usagePerCustomer: discount.usage_per_customer ?? 1,
+      usagePerCustomer: discount.usage_per_customer,
       isActive: discount.is_active,
       startDate: this.toDateInputValue(discount.start_date),
       endDate: this.toDateInputValue(discount.end_date),
     });
     this.isDiscountModalOpen.set(true);
+    if (discount.discount_type === 'free_gift') {
+      void this.loadSelectedGiftProducts(discount.id);
+    }
+  }
+
+  private async loadSelectedGiftProducts(discountId: string): Promise<void> {
+    try {
+      const giftProducts = await this.discountsService.getGiftProductsForDiscount(discountId);
+      if (this.selectedDiscount()?.id === discountId) {
+        this.updateDiscountForm('eligibleGiftProductIds', giftProducts.map((item) => item.productId));
+      }
+    } catch (error) {
+      this.toast.failed('Loading gift products', this.errorDetail(error, 'Please try again.'));
+    }
+  }
+
+  setGiftProductSelection(productIds: string[]): void {
+    this.updateDiscountForm('eligibleGiftProductIds', productIds);
+    this.isGiftProductPickerOpen.set(false);
   }
 
   closeDiscountModal(force = false): void {
@@ -453,6 +500,11 @@ export class DiscountsComponent implements OnInit {
         nextForm.discountValue = null;
       }
 
+      if (key === 'discountType' && value !== 'free_gift') {
+        nextForm.eligibleGiftProductIds = [];
+        nextForm.giftQuantity = 1;
+      }
+
       if (key === 'appliesTo') {
         nextForm.productId = value === 'product' ? nextForm.productId : null;
         nextForm.categoryId = value === 'category' ? nextForm.categoryId : null;
@@ -492,6 +544,12 @@ export class DiscountsComponent implements OnInit {
         }
 
         const updatedDiscount = await this.discountsService.updateDiscount(discount.id, payload);
+        if (form.discountType === 'free_gift') {
+          await this.discountsService.setGiftProductsForDiscount(
+            updatedDiscount.id,
+            form.eligibleGiftProductIds,
+          );
+        }
 
         this.discounts.update((items) =>
           items.map((item) => (item.id === updatedDiscount.id ? updatedDiscount : item))
@@ -500,6 +558,12 @@ export class DiscountsComponent implements OnInit {
         this.toast.updated('Discount');
       } else {
         const createdDiscount = await this.discountsService.createDiscount(payload);
+        if (form.discountType === 'free_gift') {
+          await this.discountsService.setGiftProductsForDiscount(
+            createdDiscount.id,
+            form.eligibleGiftProductIds,
+          );
+        }
 
         this.discounts.update((items) => [createdDiscount, ...items]);
         this.clearFilters();
@@ -720,14 +784,17 @@ export class DiscountsComponent implements OnInit {
 
   private toMutationPayload(form: DiscountFormModel): DiscountMutationPayload {
     const usageLimit = this.optionalNumber(form.usageLimit);
-    const usagePerCustomer = this.optionalNumber(form.usagePerCustomer) ?? 1;
+    const usagePerCustomer = this.optionalNumber(form.usagePerCustomer);
 
     return {
       name: form.name.trim(),
       code: form.code.trim().toUpperCase(),
       discount_type: form.discountType,
-      discount_value: form.discountType === 'free_shipping' ? null : Number(form.discountValue),
+      discount_value: ['free_shipping', 'free_gift'].includes(form.discountType)
+        ? null
+        : Number(form.discountValue),
       minimum_order_amount: this.optionalNumber(form.minimumOrderAmount) ?? 0,
+      gift_quantity: Math.max(1, Math.trunc(Number(form.giftQuantity))),
       applies_to: form.appliesTo,
       product_id: form.appliesTo === 'product' ? form.productId : null,
       category_id: form.appliesTo === 'category' ? form.categoryId : null,
@@ -765,6 +832,15 @@ export class DiscountsComponent implements OnInit {
       }
     }
 
+    if (form.discountType === 'free_gift') {
+      if (!Number.isInteger(Number(form.giftQuantity)) || Number(form.giftQuantity) < 1) {
+        return 'PROMOTIONS.ERRORS.GIFT_QUANTITY';
+      }
+      if (!form.eligibleGiftProductIds.length) {
+        return 'PROMOTIONS.ERRORS.GIFT_PRODUCTS_REQUIRED';
+      }
+    }
+
     if (form.appliesTo === 'product' && !form.productId) {
       return 'PROMOTIONS.ERRORS.PRODUCT_REQUIRED';
     }
@@ -789,6 +865,10 @@ export class DiscountsComponent implements OnInit {
       return 'pi pi-truck';
     }
 
+    if (discount.discount_type === 'free_gift') {
+  return 'pi pi-gift';
+}
+
     return 'pi pi-dollar';
   }
 
@@ -811,6 +891,10 @@ export class DiscountsComponent implements OnInit {
 
     if (discount.discount_type === 'percentage') {
       return `${discount.discount_value ?? 0}%`;
+    }
+
+    if (discount.discount_type === 'free_gift') {
+      return `${discount.gift_quantity} Free Gift${discount.gift_quantity === 1 ? '' : 's'}`;
     }
 
     return this.formatCurrency(discount.discount_value ?? 0, 0);

@@ -28,8 +28,7 @@ interface CustomerNavLink {
   path: string;
 }
 
-const DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT =
-  'FREE SHIPPING ON ORDERS OVER $75 · USE CODE: NESTORA10 FOR 10% OFF';
+// const DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT =
 const ANNOUNCEMENT_DURATION_MS = 3000;
 
 @Component({
@@ -76,9 +75,12 @@ export class CustomerNavbarComponent {
       ? announcements[this.activeAnnouncementIndex() % announcements.length]
       : null;
   });
-  readonly shippingDiscountAnnouncement = computed(
-    () => this.discountAnnouncements()[0]?.shippingText ?? DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT,
-  );
+  // readonly shippingDiscountAnnouncement = computed(
+  //   () => this.discountAnnouncements()[0]?.shippingText ?? DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT,
+  // );
+  readonly shippingDiscountAnnouncement = computed(() => {
+    return this.discountAnnouncements()[0]?.shippingText ?? '';
+  });
   readonly navLinks: CustomerNavLink[] = [
     { labelKey: 'CUSTOMER.PRODUCTS.ALL_PRODUCTS', path: '/shop/products' },
     { labelKey: 'CUSTOMER.PRODUCTS.NEW_ARRIVALS', path: '/shop/new-arrivals' },
@@ -214,18 +216,45 @@ export class CustomerNavbarComponent {
 
   private async loadPromotionalAnnouncements(): Promise<void> {
     this.announcementsLoading.set(true);
+
     try {
-      const [promotions, discounts] = await Promise.all([
+      const [promotionsResult, discountsResult] = await Promise.allSettled([
         this.promotionalBarService.getActivePromotionAnnouncements(),
         this.promotionalBarService.getActiveDiscountAnnouncements(),
       ]);
-      this.promotionalAnnouncements.set([...promotions, ...discounts]);
+
+      const promotions =
+        promotionsResult.status === 'fulfilled'
+          ? promotionsResult.value
+          : [];
+
+      const discounts =
+        discountsResult.status === 'fulfilled'
+          ? discountsResult.value
+          : [];
+
+      if (promotionsResult.status === 'rejected') {
+        console.error(
+          'Unable to load customer promotions:',
+          promotionsResult.reason,
+        );
+      }
+
+      if (discountsResult.status === 'rejected') {
+        console.error(
+          'Unable to load customer discounts:',
+          discountsResult.reason,
+        );
+      }
+
+      this.promotionalAnnouncements.set([
+        ...promotions,
+        ...discounts,
+      ]);
+
       this.discountAnnouncements.set(discounts);
       this.activeAnnouncementIndex.set(0);
       this.restartAnnouncementCycle();
-    } catch {
-      this.promotionalAnnouncements.set([]);
-      this.discountAnnouncements.set([]);
     } finally {
       this.announcementsLoading.set(false);
     }

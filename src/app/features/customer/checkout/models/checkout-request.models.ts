@@ -42,4 +42,5 @@ export interface PlaceCustomerOrderRpcArgs {
   p_customer_notes: string | null;
   p_redeem_product_ids: readonly string[];
   p_redeem_variant_ids: readonly string[];
+  p_free_gift_product_ids: readonly string[];
 }

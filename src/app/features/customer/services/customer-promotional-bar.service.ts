@@ -132,42 +132,61 @@ export class CustomerPromotionalBarService {
       }));
   }
 
-  private shippingDiscountAnnouncementText(discount: DiscountAnnouncementRecord): string {
+  private shippingDiscountAnnouncementText(
+    discount: DiscountAnnouncementRecord,
+  ): string {
     const code = discount.code.trim().toUpperCase();
     const value = this.toNumber(discount.discount_value) ?? 0;
     const minimumOrder = this.toNumber(discount.minimum_order_amount);
-    const minimumOrderText = minimumOrder && minimumOrder > 0
-      ? ` ON ORDERS OVER ${this.formatCurrency(minimumOrder)}`
-      : '';
+
+    const minimumOrderText =
+      minimumOrder && minimumOrder > 0
+        ? ` ON ORDERS OVER ${this.formatCurrency(minimumOrder)}`
+        : '';
 
     switch (discount.discount_type) {
       case 'percentage':
         return `USE CODE: ${code} FOR ${this.formatNumber(value)}% OFF${minimumOrderText}`;
+
       case 'fixed_amount':
         return `USE CODE: ${code} FOR ${this.formatCurrency(value)} OFF${minimumOrderText}`;
+
       case 'free_shipping':
         return `FREE SHIPPING${minimumOrderText} · USE CODE: ${code}`;
+
+      case 'free_gift':
+        return `FREE GIFT${minimumOrderText} · USE CODE: ${code}`;
     }
   }
 
-  private discountAnnouncementText(discount: DiscountAnnouncementRecord): string {
+  private discountAnnouncementText(
+    discount: DiscountAnnouncementRecord,
+  ): string {
     const code = discount.code.trim().toUpperCase();
     const value = this.toNumber(discount.discount_value) ?? 0;
+
     let text: string;
 
     switch (discount.discount_type) {
       case 'percentage':
         text = `Use code ${code} for ${this.formatNumber(value)}% off`;
         break;
+
       case 'fixed_amount':
         text = `Use code ${code} for ${this.formatCurrency(value)} off`;
         break;
+
       case 'free_shipping':
         text = `Free shipping — use code ${code}`;
+        break;
+
+      case 'free_gift':
+        text = `Free gift — use code ${code}`;
         break;
     }
 
     const minimumOrder = this.toNumber(discount.minimum_order_amount);
+
     return minimumOrder && minimumOrder > 0
       ? `${text} on orders over ${this.formatCurrency(minimumOrder)}`
       : text;
@@ -177,10 +196,15 @@ export class CustomerPromotionalBarService {
     switch (discountType) {
       case 'percentage':
         return 'pi pi-percentage';
+
       case 'fixed_amount':
         return 'pi pi-tag';
+
       case 'free_shipping':
         return 'pi pi-truck';
+
+      case 'free_gift':
+        return 'pi pi-gift';
     }
   }
 

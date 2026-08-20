@@ -1,4 +1,4 @@
-export type DiscountType = 'percentage' | 'fixed_amount' | 'free_shipping';
+export type DiscountType = 'percentage' | 'fixed_amount' | 'free_shipping' | 'free_gift';
 export type DiscountAppliesTo = 'all' | 'product' | 'category';
 export type DiscountStatus = 'active' | 'scheduled' | 'expired' | 'paused';
 export type DiscountStatusFilter = 'all' | DiscountStatus;
@@ -10,6 +10,7 @@ export interface Discount {
   discount_type: DiscountType;
   discount_value: number | null;
   minimum_order_amount: number | null;
+  gift_quantity: number;
   applies_to: DiscountAppliesTo;
   product_id: string | null;
   category_id: string | null;
@@ -23,6 +24,16 @@ export interface Discount {
   updated_at: string | null;
   products?: { name: string } | null;
   categories?: { name: string } | null;
+  eligibleGiftProducts?: DiscountGiftProduct[];
+}
+
+export interface DiscountGiftProduct {
+  id: string;
+  discountId: string;
+  productId: string;
+  sortOrder: number;
+  isActive: boolean;
+  product: import('./product.model').Product;
 }
 
 export interface DiscountMutationPayload {
@@ -31,6 +42,7 @@ export interface DiscountMutationPayload {
   discount_type: DiscountType;
   discount_value: number | null;
   minimum_order_amount: number | null;
+  gift_quantity: number;
   applies_to: DiscountAppliesTo;
   product_id: string | null;
   category_id: string | null;
@@ -58,6 +70,8 @@ export interface DiscountFormModel {
   discountType: DiscountType;
   discountValue: number | null;
   minimumOrderAmount: number | null;
+  giftQuantity: number;
+  eligibleGiftProductIds: string[];
   appliesTo: DiscountAppliesTo;
   productId: string | null;
   categoryId: string | null;

@@ -481,7 +481,8 @@
         "PERCENTAGE": "Percentage",
         "FIXED_AMOUNT": "Fixed Amount",
         "FREE_SHIPPING": "Free Shipping",
-        "FREE_SHIP": "Free Ship"
+        "FREE_SHIP": "Free Ship",
+        "FREE_GIFT": "Free Gift"
       },
       "APPLIES": {
         "ALL": "All Products",
@@ -496,6 +497,11 @@
         "VALIDITY_PERIOD": "Validity Period",
         "STATUS": "Status"
       },
+      "FREE_GIFT_SETTINGS": {
+        "TITLE": "Free Gift Settings",
+        "HELPER": "Choose how many complimentary products a customer may select and configure the eligible catalog items.",
+        "CHOOSE_PRODUCTS": "Choose eligible products"
+      },
       "FIELDS": {
         "NAME": "Discount Name",
         "CODE": "Discount Code",
@@ -503,6 +509,7 @@
         "DISCOUNT_TYPE": "Discount Type",
         "DISCOUNT_VALUE": "Discount Value",
         "MINIMUM_ORDER_AMOUNT": "Minimum Purchase",
+        "GIFT_QUANTITY": "Customer Can Choose (gifts)",
         "APPLIES_TO": "Applies To",
         "PRODUCT": "Product",
         "CATEGORY": "Category",
@@ -573,6 +580,8 @@
         "CATEGORY_REQUIRED": "Please select a category.",
         "END_BEFORE_START": "End date cannot be before start date.",
         "TITLE_REQUIRED": "Title is required."
+        ,"GIFT_QUANTITY": "Gift quantity must be a positive whole number.",
+        "GIFT_PRODUCTS_REQUIRED": "Select at least one eligible gift product."
       },
       "UNLIMITED": "Unlimited",
       "PER_CUSTOMER": "{{count}}x per customer",
@@ -1749,6 +1758,8 @@
         "QTY": "Qty",
         "POINTS": "points",
         "LOYALTY_REDEEMED": "Redeemed with points",
+        "FREE_GIFT": "FREE GIFT",
+        "ORIGINAL_VALUE": "Original value",
         "NO_ITEMS": "No order items were found.",
         "INVOICE_SUMMARY": "Invoice Summary",
         "DISCOUNT": "Discount",
@@ -2057,6 +2068,23 @@
         "TOTAL": "Total",
         "CHECKOUT": "Proceed to Checkout"
       },
+      "FREE_GIFT": {
+        "CHOOSE_TITLE": "Choose your free gift",
+        "CHOOSE_HELPER": "Select up to {{count}} complimentary item(s)",
+        "FREE": "FREE",
+        "SELECT": "Select",
+        "SELECTED": "Selected",
+        "VIEW_ALL": "View all gifts",
+        "LOADING": "Loading available gifts...",
+        "EMPTY": "No free gifts are currently available.",
+        "UNAVAILABLE": "This gift is no longer available. Please choose another free gift.",
+        "UNLOCKED": "Your free gift is unlocked!",
+        "UNLOCKED_BADGE": "Unlocked",
+        "REMAINING": "more to unlock your free gift",
+        "USE_CODE": "Use code:",
+        "CART_LABEL": "FREE GIFT",
+        "QUANTITY": "Qty {{count}}"
+      },
       "CHECKOUT": {
         "BREADCRUMB": "Home / Cart / Checkout",
         "STEPS": {
@@ -2335,8 +2363,8 @@
           "REVIEWS": "Customer reviews"
         },
         "BENEFITS": {
-          "SHIPPING": "Free Shipping",
-          "SHIPPING_TEXT": "On orders over $75",
+          "SHIPPING": "Flexible Shipping",
+          "SHIPPING_TEXT": "Choose your method at checkout",
           "RETURNS": "Easy Returns",
           "RETURNS_TEXT": "30-day hassle-free returns",
           "QUALITY": "Premium Quality",
@@ -2502,8 +2530,8 @@
         "TOGGLE_WISHLIST": "Toggle wishlist",
         "BENEFITS": {
           "ARIA": "Shopping benefits",
-          "FREE_DELIVERY": "Free Delivery",
-          "FREE_DELIVERY_DETAIL": "On orders over $75 · 2–5 business days",
+          "FREE_DELIVERY": "Delivery Options",
+          "FREE_DELIVERY_DETAIL": "Configured shipping and pickup choices",
           "RETURNS": "30-Day Returns",
           "RETURNS_DETAIL": "Hassle-free, no questions asked",
           "SECURE_CHECKOUT": "Secure Checkout",
@@ -2531,7 +2559,7 @@
         "QUANTITY": "Qty",
         "DECREASE_QUANTITY": "Decrease quantity",
         "INCREASE_QUANTITY": "Increase quantity",
-        "FREE_DELIVERY": "Free delivery over $75",
+        "FREE_DELIVERY": "Delivery options at checkout",
         "DELIVERY_TIME": "Est. 2–5 business days",
         "RETURNS": "30-day easy returns",
         "RETURNS_DETAIL": "No questions asked",
@@ -3193,7 +3221,8 @@
         "PERCENTAGE": "نسبة مئوية",
         "FIXED_AMOUNT": "مبلغ ثابت",
         "FREE_SHIPPING": "شحن مجاني",
-        "FREE_SHIP": "شحن مجاني"
+        "FREE_SHIP": "شحن مجاني",
+        "FREE_GIFT": "هدية مجانية"
       },
       "APPLIES": {
         "ALL": "كل المنتجات",
@@ -3208,6 +3237,11 @@
         "VALIDITY_PERIOD": "فترة الصلاحية",
         "STATUS": "الحالة"
       },
+      "FREE_GIFT_SETTINGS": {
+        "TITLE": "إعدادات الهدية المجانية",
+        "HELPER": "حدد عدد الهدايا التي يمكن للعميل اختيارها واختر المنتجات المؤهلة من الكتالوج.",
+        "CHOOSE_PRODUCTS": "اختيار المنتجات المؤهلة"
+      },
       "FIELDS": {
         "NAME": "اسم الخصم",
         "CODE": "رمز الخصم",
@@ -3215,6 +3249,7 @@
         "DISCOUNT_TYPE": "نوع الخصم",
         "DISCOUNT_VALUE": "قيمة الخصم",
         "MINIMUM_ORDER_AMOUNT": "الحد الأدنى للشراء",
+        "GIFT_QUANTITY": "عدد الهدايا التي يمكن اختيارها",
         "APPLIES_TO": "يطبق على",
         "PRODUCT": "المنتج",
         "CATEGORY": "الفئة",
@@ -3285,6 +3320,8 @@
         "CATEGORY_REQUIRED": "يرجى اختيار فئة.",
         "END_BEFORE_START": "لا يمكن أن يكون تاريخ النهاية قبل تاريخ البداية.",
         "TITLE_REQUIRED": "العنوان مطلوب."
+        ,"GIFT_QUANTITY": "يجب أن تكون كمية الهدايا عدداً صحيحاً موجباً.",
+        "GIFT_PRODUCTS_REQUIRED": "يرجى اختيار منتج هدية مؤهل واحد على الأقل."
       },
       "UNLIMITED": "غير محدود",
       "PER_CUSTOMER": "{{count}} مرة لكل عميل",
@@ -4413,6 +4450,8 @@
         "QTY": "الكمية",
         "POINTS": "نقطة",
         "LOYALTY_REDEEMED": "تم الاستبدال باستخدام النقاط",
+        "FREE_GIFT": "هدية مجانية",
+        "ORIGINAL_VALUE": "القيمة الأصلية",
         "NO_ITEMS": "لم يتم العثور على منتجات لهذا الطلب.",
         "INVOICE_SUMMARY": "ملخص الفاتورة",
         "DISCOUNT": "الخصم",
@@ -4769,6 +4808,23 @@
         "TOTAL": "الإجمالي",
         "CHECKOUT": "متابعة الدفع"
       },
+      "FREE_GIFT": {
+        "CHOOSE_TITLE": "اختر هديتك المجانية",
+        "CHOOSE_HELPER": "اختر حتى {{count}} منتج مجاني",
+        "FREE": "مجاني",
+        "SELECT": "اختيار",
+        "SELECTED": "تم الاختيار",
+        "VIEW_ALL": "عرض كل الهدايا",
+        "LOADING": "جارٍ تحميل الهدايا المتاحة...",
+        "EMPTY": "لا توجد هدايا مجانية متاحة حالياً.",
+        "UNAVAILABLE": "لم تعد هذه الهدية متاحة. يرجى اختيار هدية مجانية أخرى.",
+        "UNLOCKED": "تم فتح هديتك المجانية!",
+        "UNLOCKED_BADGE": "متاحة",
+        "REMAINING": "إضافية لفتح هديتك المجانية",
+        "USE_CODE": "استخدم الرمز:",
+        "CART_LABEL": "هدية مجانية",
+        "QUANTITY": "الكمية {{count}}"
+      },
       "PRODUCTS": {
         "HOME": "الرئيسية",
         "ALL_PRODUCTS": "كل المنتجات",
@@ -5047,8 +5103,8 @@
           "REVIEWS": "آراء العملاء"
         },
         "BENEFITS": {
-          "SHIPPING": "شحن مجاني",
-          "SHIPPING_TEXT": "للطلبات التي تتجاوز 75$",
+          "SHIPPING": "خيارات شحن مرنة",
+          "SHIPPING_TEXT": "اختر طريقة الشحن عند الدفع",
           "RETURNS": "إرجاع سهل",
           "RETURNS_TEXT": "إرجاع ميسر خلال 30 يوماً",
           "QUALITY": "جودة ممتازة",
@@ -5214,8 +5270,8 @@
         "TOGGLE_WISHLIST": "إضافة أو إزالة من المفضلة",
         "BENEFITS": {
           "ARIA": "مزايا التسوق",
-          "FREE_DELIVERY": "توصيل مجاني",
-          "FREE_DELIVERY_DETAIL": "للطلبات التي تتجاوز 75$ · خلال 2–5 أيام عمل",
+          "FREE_DELIVERY": "خيارات التوصيل",
+          "FREE_DELIVERY_DETAIL": "خيارات شحن واستلام مضبوطة مسبقاً",
           "RETURNS": "إرجاع خلال 30 يوماً",
           "RETURNS_DETAIL": "إرجاع سهل من دون تعقيدات",
           "SECURE_CHECKOUT": "دفع آمن",
@@ -5243,7 +5299,7 @@
         "QUANTITY": "الكمية",
         "DECREASE_QUANTITY": "تقليل الكمية",
         "INCREASE_QUANTITY": "زيادة الكمية",
-        "FREE_DELIVERY": "توصيل مجاني للطلبات فوق 75$",
+        "FREE_DELIVERY": "خيارات التوصيل عند الدفع",
         "DELIVERY_TIME": "التوصيل خلال 2–5 أيام عمل",
         "RETURNS": "إرجاع سهل خلال 30 يوماً",
         "RETURNS_DETAIL": "من دون أسئلة أو تعقيدات",

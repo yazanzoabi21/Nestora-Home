@@ -145,7 +145,7 @@
             [value]="discountForm().discountType" [options]="discountTypeOptions" optionLabel="label"
             optionValue="value" (valueChange)="updateDiscountForm('discountType', $any($event))" />
 
-          @if (discountForm().discountType !== 'free_shipping') {
+          @if (discountForm().discountType !== 'free_shipping' && discountForm().discountType !== 'free_gift') {
           <app-admin-form-field type="number" name="discountValue" label="PROMOTIONS.FIELDS.DISCOUNT_VALUE"
             [required]="true" [min]="discountForm().discountType === 'percentage' ? 1 : 0.01"
             [max]="discountForm().discountType === 'percentage' ? 100 : null"
@@ -154,6 +154,43 @@
           }
         </div>
       </section>
+
+      @if (discountForm().discountType === 'free_gift') {
+      <section class="rounded-2xl border border-[#cfd9c9] bg-[#f4f7f1] p-4">
+        <h3 class="mb-1 text-sm font-black uppercase tracking-[0.08em] text-[#5f6f43]">
+          {{ 'PROMOTIONS.FREE_GIFT_SETTINGS.TITLE' | translate }}
+        </h3>
+        <p class="mb-4 text-sm font-semibold text-[#8d877e]">
+          {{ 'PROMOTIONS.FREE_GIFT_SETTINGS.HELPER' | translate }}
+        </p>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <app-admin-form-field type="number" name="giftQuantity"
+            label="PROMOTIONS.FIELDS.GIFT_QUANTITY" [required]="true" [min]="1" [step]="1"
+            [value]="discountForm().giftQuantity"
+            (valueChange)="updateDiscountForm('giftQuantity', $any($event))" />
+          <div class="flex items-end">
+            <button type="button"
+              class="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#718369] bg-white px-4 text-sm font-extrabold text-[#5f6f43] transition hover:bg-[#eef4e8]"
+              (click)="isGiftProductPickerOpen.set(true)">
+              <i class="pi pi-gift"></i>
+              {{ 'PROMOTIONS.FREE_GIFT_SETTINGS.CHOOSE_PRODUCTS' | translate }}
+              <span class="rounded-full bg-[#718369] px-2 py-0.5 text-xs text-white">
+                {{ discountForm().eligibleGiftProductIds.length }}
+              </span>
+            </button>
+          </div>
+        </div>
+        @if (selectedGiftProducts().length) {
+        <div class="mt-4 flex flex-wrap gap-2">
+          @for (product of selectedGiftProducts(); track product.id) {
+          <span class="inline-flex items-center gap-2 rounded-full border border-[#d9e2d2] bg-white px-3 py-2 text-xs font-bold text-[#4f5f48]">
+            <i class="pi pi-check-circle text-[#718369]"></i>{{ product.name }}
+          </span>
+          }
+        </div>
+        }
+      </section>
+      }
 
       <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4">
         <h3 class="mb-4 text-sm font-black uppercase tracking-[0.08em] text-[#8d877e]">
@@ -238,6 +275,10 @@
       </section>
     </form>
   </app-admin-form-modal>
+
+  <app-promotion-product-picker [isOpen]="isGiftProductPickerOpen()" [products]="giftPickerProducts()"
+    [selectedProductIds]="discountForm().eligibleGiftProductIds"
+    (dismissed)="isGiftProductPickerOpen.set(false)" (applied)="setGiftProductSelection($event)" />
 
   <app-admin-form-modal [isOpen]="isDeleteModalOpen()" variant="delete" title="PROMOTIONS.DELETE_TITLE"
     subtitle="PROMOTIONS.DELETE_SUBTITLE" [message]="deleteDiscountMessage()" submitLabel="COMMON.DELETE"

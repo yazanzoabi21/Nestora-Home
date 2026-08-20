@@ -1,0 +1,67 @@
+<section class="gift-selector" [attr.aria-label]="'CUSTOMER.FREE_GIFT.CHOOSE_TITLE' | translate">
+  <div class="gift-selector__header">
+    <div>
+      <h2>{{ 'CUSTOMER.FREE_GIFT.CHOOSE_TITLE' | translate }}</h2>
+      <p>{{ 'CUSTOMER.FREE_GIFT.CHOOSE_HELPER' | translate: { count: allowedQuantity() } }}</p>
+    </div>
+    <span class="gift-selector__badge"><i class="pi pi-gift"></i>{{ 'CUSTOMER.FREE_GIFT.FREE' | translate }}</span>
+  </div>
+
+  @if (loading()) {
+  <p class="gift-selector__state"><i class="pi pi-spin pi-spinner"></i>{{ 'CUSTOMER.FREE_GIFT.LOADING' | translate }}</p>
+  } @else if (!gifts().length) {
+  <p class="gift-selector__state">{{ 'CUSTOMER.FREE_GIFT.EMPTY' | translate }}</p>
+  } @else {
+  <div class="gift-selector__grid">
+    @for (gift of previewGifts(); track gift.productId) {
+    <ng-container [ngTemplateOutlet]="giftCard" [ngTemplateOutletContext]="{ gift: gift }" />
+    }
+  </div>
+  @if (hasMore()) {
+  <button type="button" class="gift-selector__view-all" (click)="allGiftsOpen.set(true)">
+    {{ 'CUSTOMER.FREE_GIFT.VIEW_ALL' | translate }} <i class="pi pi-arrow-right rtl:rotate-180"></i>
+  </button>
+  }
+  }
+</section>
+
+<ng-template #giftCard let-gift="gift">
+  <article class="gift-card" [class.gift-card--selected]="isSelected(gift.productId)">
+    <img [src]="gift.product.image_url || 'assets/images/product-placeholder.png'" [alt]="gift.product.name" />
+    <div class="gift-card__body">
+      <h3>{{ gift.product.name }}</h3>
+      <span class="gift-card__price">{{ displayPrice(gift) | currency: 'USD' }}</span>
+      <strong>{{ 'CUSTOMER.FREE_GIFT.FREE' | translate }}</strong>
+      <button type="button" [class.gift-card__button--selected]="isSelected(gift.productId)"
+        [disabled]="selectingProductId() !== null" (click)="select(gift.productId)">
+        @if (selectingProductId() === gift.productId) {
+        <i class="pi pi-spin pi-spinner"></i>
+        } @else if (isSelected(gift.productId)) {
+        <i class="pi pi-check"></i>{{ 'CUSTOMER.FREE_GIFT.SELECTED' | translate }}
+        } @else {
+        {{ 'CUSTOMER.FREE_GIFT.SELECT' | translate }}
+        }
+      </button>
+    </div>
+  </article>
+</ng-template>
+
+@if (allGiftsOpen()) {
+<div class="gift-dialog" role="presentation" tabindex="-1" (click)="onBackdrop($event)" (keydown.escape)="closeAll()">
+  <section class="gift-dialog__panel" role="dialog" aria-modal="true"
+    [attr.aria-label]="'CUSTOMER.FREE_GIFT.CHOOSE_TITLE' | translate">
+    <header>
+      <div>
+        <h2>{{ 'CUSTOMER.FREE_GIFT.CHOOSE_TITLE' | translate }}</h2>
+        <p>{{ 'CUSTOMER.FREE_GIFT.CHOOSE_HELPER' | translate: { count: allowedQuantity() } }}</p>
+      </div>
+      <button type="button" [attr.aria-label]="'COMMON.CLOSE' | translate" (click)="closeAll()"><i class="pi pi-times"></i></button>
+    </header>
+    <div class="gift-dialog__grid">
+      @for (gift of gifts(); track gift.productId) {
+      <ng-container [ngTemplateOutlet]="giftCard" [ngTemplateOutletContext]="{ gift: gift }" />
+      }
+    </div>
+  </section>
+</div>
+}

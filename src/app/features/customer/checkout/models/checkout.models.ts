@@ -36,7 +36,6 @@ export interface CheckoutShippingMethod {
   description: string | null;
   icon: string | null;
   baseCost: number;
-  freeShippingMinAmount: number | null;
   etaMinDays: number | null;
   etaMaxDays: number | null;
   etaLabel: string | null;
@@ -77,7 +76,10 @@ export interface CheckoutOrderItem {
   productImageUrl: string | null;
   quantity: number;
   unitPrice: number;
+  originalUnitPrice: number;
   lineTotal: number;
+  isFreeGift: boolean;
+  appliedDiscountCode: string | null;
   redeemWithPoints: boolean;
   loyaltyPointsCost: number;
 }

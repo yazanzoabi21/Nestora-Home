@@ -7,14 +7,18 @@
   <div class="flex h-[72px] items-center justify-between border-b border-[#2f352c] px-4 lg:h-[88px] lg:px-5"
     [class.lg:justify-center]="isCollapsedView()">
     <div class="flex items-center gap-3">
-      <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#5f6f43] text-white">
+      <!-- <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#5f6f43] text-white">
         <i class="pi pi-leaf text-lg"></i>
+      </span> -->
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#5f6f43]">
+        <img src="/images/Logo.png" alt="Nestora Home" class="h-full w-full object-cover" />
       </span>
       @if (!isCollapsedView()) {
       <span>
         <span class="block text-lg font-bold leading-5 text-white">{{ 'SIDEBAR.BRAND' | translate }}</span>
-        <span class="mt-1 block text-xs font-semibold uppercase tracking-[0.24em] text-[#9da694]">{{
-          'SIDEBAR.ADMIN_PANEL' | translate }}</span>
+        <span class="mt-1 block text-xs font-semibold uppercase tracking-[0.24em] text-[#9da694]">
+          {{ 'SIDEBAR.ADMIN_PANEL' | translate }}
+        </span>
       </span>
       }
     </div>
@@ -29,7 +33,7 @@
   <nav class="sidebar-scroll flex-1 overflow-y-auto px-3 py-5 lg:px-4">
     @for (section of sections; track section.key) {
     <div class="mb-3">
-      <button type="button"
+      <!-- <button type="button"
         class="section-header flex h-10 w-full items-center rounded-xl text-start transition duration-200 hover:bg-[#2b3128]"
         [class.justify-center]="isCollapsedView()" [class.justify-between]="!isCollapsedView()"
         [class.px-4]="!isCollapsedView()" [class.is-open]="isSectionOpen(section.key) && !isCollapsedView()"
@@ -44,12 +48,27 @@
         <i class="pi text-xs text-[#8d877e]" [class.pi-chevron-down]="isSectionOpen(section.key)"
           [class.pi-chevron-right]="!isSectionOpen(section.key)"></i>
         }
+      </button> -->
+
+      @if (!isCollapsedView()) {
+      <button type="button"
+        class="section-header flex h-10 w-full items-center justify-between rounded-xl px-4 text-start transition duration-200 hover:bg-[#2b3128]"
+        [class.is-open]="isSectionOpen(section.key)" (click)="toggleSection(section.key)">
+        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#8d877e]">
+          {{ section.labelKey | translate }}
+        </span>
+
+        <i class="pi text-[10px] text-[#8d877e] transition-transform duration-200"
+          [class.pi-chevron-down]="isSectionOpen(section.key)"
+          [class.pi-chevron-right]="!isSectionOpen(section.key)"></i>
       </button>
+      }
 
       <div class="section-panel overflow-hidden transition-[max-height,opacity,transform] duration-300 ease-out"
-        [class.max-h-0]="!isSectionOpen(section.key)" [class.opacity-0]="!isSectionOpen(section.key)"
-        [class.-translate-y-1]="!isSectionOpen(section.key)" [class.max-h-[360px]]="isSectionOpen(section.key)"
-        [class.opacity-100]="isSectionOpen(section.key)" [class.translate-y-0]="isSectionOpen(section.key)">
+        [class.max-h-0]="!isSectionPanelOpen(section.key)" [class.opacity-0]="!isSectionPanelOpen(section.key)"
+        [class.-translate-y-1]="!isSectionPanelOpen(section.key)"
+        [class.max-h-[360px]]="isSectionPanelOpen(section.key)" [class.opacity-100]="isSectionPanelOpen(section.key)"
+        [class.translate-y-0]="isSectionPanelOpen(section.key)">
         <div class="space-y-1 py-1">
           @for (item of section.items; track item.label) {
           <a [routerLink]="item.route" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }"
@@ -84,7 +103,7 @@
     }
 
     <div class="mt-6">
-      <a href="#"
+      <a href="#" target="_blank"
         class="flex items-center rounded-2xl border border-[#343b31] bg-[#272d25] transition duration-200 hover:bg-[#2b3128]"
         [class.justify-center]="isCollapsedView()" [class.h-12]="isCollapsedView()" [class.p-4]="!isCollapsedView()"
         [title]="isCollapsedView() ? ('SIDEBAR.VIEW_STORE' | translate) : ''" (click)="closeMobile()">
@@ -103,7 +122,7 @@
 
   <div class="hidden border-t border-[#2f352c] p-5 lg:block">
     <button type="button"
-      class="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-[#3b4238] bg-[#272d25] text-[#cbd3c4] transition hover:bg-[#2f372b] hover:text-white"
+      class="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-[#3b4238] bg-[#272d25] text-[#cbd3c4] transition hover:bg-[#2f372b] hover:text-white cursor-pointer"
       [attr.aria-label]="'SIDEBAR.TOGGLE_SIDEBAR' | translate" (click)="toggleCollapsed()">
       <i class="sidebar-collapse-icon pi text-sm transition" [class.pi-angle-left]="!collapsed"
         [class.pi-angle-right]="collapsed"></i>

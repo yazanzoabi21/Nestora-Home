@@ -455,11 +455,20 @@
                           {{ item.sku }}
                         </p>
                       }
+                      @if (item.isFreeGift) {
+                      <p class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#e8efe3] px-3 py-1 text-[10px] font-black text-[#58704e]">
+                        <i class="pi pi-gift"></i>{{ 'ORDERS.DETAILS.FREE_GIFT' | translate }}
+                        @if (item.appliedDiscountCode) { · {{ item.appliedDiscountCode }} }
+                      </p>
+                      }
                     </div>
 
                     <p
                       class="shrink-0 text-base font-black text-[#4f643e]"
                     >
+                      @if (item.isFreeGift) {
+                      <span class="text-[#58704e]">{{ 'CUSTOMER.FREE_GIFT.FREE' | translate }}</span>
+                      } @else {
                       {{
                         item.total
                           | currency
@@ -467,6 +476,7 @@
                             : 'symbol'
                             : '1.2-2'
                       }}
+                      }
                     </p>
                   </div>
 
@@ -479,6 +489,12 @@
                       {{ 'ORDERS.DETAILS.QTY' | translate }}
                       {{ item.quantity }}
                     </span>
+                    @if (item.isFreeGift && item.originalUnitPrice !== null) {
+                    <span class="text-xs font-semibold text-[#8d877e]">
+                      {{ 'ORDERS.DETAILS.ORIGINAL_VALUE' | translate }}:
+                      {{ item.originalUnitPrice | currency: 'USD' : 'symbol' : '1.2-2' }}
+                    </span>
+                    }
 
                     <span
                       class="text-xs font-semibold text-[#8d877e]"

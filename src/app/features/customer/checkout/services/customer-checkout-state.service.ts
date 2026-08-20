@@ -56,12 +56,20 @@ export class CustomerCheckoutStateService {
   readonly selectedAddressId = this._selectedAddressId.asReadonly();
   readonly saveAddressForFuture = this._saveAddressForFuture.asReadonly();
   readonly newAddressLabel = this._newAddressLabel.asReadonly();
-  readonly selectedShippingMethod = this._selectedShippingMethod.asReadonly();
+  readonly shippingMethods = computed<readonly CheckoutShippingMethod[]>(() =>
+    this._shippingMethods().map((method) => ({
+      ...method,
+      calculatedCost: this.calculateShippingCost(method),
+    })),
+  );
+  readonly selectedShippingMethod = computed(() => {
+    const selectedId = this._selectedShippingMethod()?.id;
+    return this.shippingMethods().find((method) => method.id === selectedId) ?? null;
+  });
   readonly selectedPaymentMethod = this._selectedPaymentMethod.asReadonly();
   readonly isPlacingOrder = this._isPlacingOrder.asReadonly();
   readonly placeOrderError = this._placeOrderError.asReadonly();
   readonly placedOrder = this._placedOrder.asReadonly();
-  readonly shippingMethods = this._shippingMethods.asReadonly();
   readonly paymentMethods = this._paymentMethods.asReadonly();
   readonly loadingShippingMethods = this._loadingShippingMethods.asReadonly();
   readonly loadingPaymentMethods = this._loadingPaymentMethods.asReadonly();
@@ -86,7 +94,7 @@ export class CustomerCheckoutStateService {
       !this._isPlacingOrder(),
   );
   readonly subtotal = computed(() => {
-    return this.shopping.cart().reduce(
+    return this.shopping.paidCart().reduce(
       (total, line) => this.loyalty.isRedemptionRequested(
         line.product.id,
         line.product.variantId,
@@ -97,12 +105,12 @@ export class CustomerCheckoutStateService {
     );
   });
   readonly shippingCost = computed(
-    () => this._selectedShippingMethod()?.calculatedCost ?? 0,
+    () => this.selectedShippingMethod()?.calculatedCost ?? 0,
   );
   readonly paymentFee = computed(() => this._selectedPaymentMethod()?.calculatedFee ?? 0);
   readonly checkoutSelection = computed<CheckoutSelection>(() => ({
     shippingInformation: this._shippingInformation(),
-    shippingMethod: this._selectedShippingMethod(),
+    shippingMethod: this.selectedShippingMethod(),
     paymentMethod: this._selectedPaymentMethod(),
   }));
   readonly checkoutItems = computed<readonly CheckoutOrderItem[]>(() => {
@@ -113,9 +121,12 @@ export class CustomerCheckoutStateService {
       productName: line.product.name,
       productImageUrl: line.product.imageUrl || null,
       quantity: line.quantity,
-      unitPrice: line.product.price,
-      lineTotal: line.product.price * line.quantity,
-      redeemWithPoints: this.loyalty.isRedemptionRequested(
+      unitPrice: line.isFreeGift ? 0 : line.product.price,
+      originalUnitPrice: line.product.price,
+      lineTotal: line.isFreeGift ? 0 : line.product.price * line.quantity,
+      isFreeGift: line.isFreeGift,
+      appliedDiscountCode: line.appliedDiscountCode,
+      redeemWithPoints: !line.isFreeGift && this.loyalty.isRedemptionRequested(
         line.product.id,
         line.product.variantId,
       ),
@@ -179,7 +190,7 @@ export class CustomerCheckoutStateService {
     this._loadingShippingMethods.set(true);
     this._shippingMethodsError.set(null);
     try {
-      const methods = await this.data.getShippingMethods(this.subtotal());
+      const methods = await this.data.getShippingMethods();
       this._shippingMethods.set(methods);
       const selectedId = this._selectedShippingMethod()?.id;
       this._selectedShippingMethod.set(
@@ -419,5 +430,13 @@ export class CustomerCheckoutStateService {
 
   private errorMessage(error: unknown, fallback: string): string {
     return error instanceof Error ? error.message : fallback;
+  }
+
+  private calculateShippingCost(method: CheckoutShippingMethod): number {
+    const discount = this.shopping.appliedDiscount();
+    const hasApplicableFreeShipping =
+      discount?.discount_type === 'free_shipping' &&
+      this.subtotal() >= (discount.minimum_order_amount ?? 0);
+    return hasApplicableFreeShipping ? 0 : method.baseCost;
   }
 }

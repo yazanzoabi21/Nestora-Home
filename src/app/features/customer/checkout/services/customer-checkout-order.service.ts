@@ -50,6 +50,12 @@ export class CustomerCheckoutOrderService {
       throw new Error('A customer cart is required for signed-in checkout.');
     }
     if (!items.length) throw new Error('Your cart is empty.');
+    if (
+      appliedDiscount?.discount_type === 'free_gift' &&
+      !items.some((item) => item.isFreeGift && item.appliedDiscountCode === appliedDiscount.code)
+    ) {
+      throw new Error('Please choose your free gift before placing the order.');
+    }
     if (items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1)) {
       throw new Error('Every order quantity must be a positive integer.');
     }
@@ -97,18 +103,21 @@ export class CustomerCheckoutOrderService {
           shippingInformation.deliveryInstructions?.trim() ||
           null,
       },
-      p_items: items.map((item) => ({
+      p_items: items.filter((item) => !item.isFreeGift).map((item) => ({
         product_id: item.productId,
         variant_id: item.variantId,
         quantity: item.quantity,
       })),
       p_customer_notes: customerNotes?.trim() || null,
       p_redeem_product_ids: items
-        .filter((item) => item.redeemWithPoints && item.variantId === null)
+        .filter((item) => !item.isFreeGift && item.redeemWithPoints && item.variantId === null)
         .map((item) => item.productId),
       p_redeem_variant_ids: items
-        .filter((item) => item.redeemWithPoints && item.variantId !== null)
+        .filter((item) => !item.isFreeGift && item.redeemWithPoints && item.variantId !== null)
         .map((item) => item.variantId!),
+      p_free_gift_product_ids: items
+        .filter((item) => item.isFreeGift)
+        .map((item) => item.productId),
     };
 
     this.state.setPlacingOrder(true);

@@ -16,7 +16,6 @@ const SHIPPING_METHOD_SELECT = `
   description,
   icon,
   base_cost,
-  free_shipping_min_amount,
   eta_min_days,
   eta_max_days,
   eta_label,
@@ -51,7 +50,7 @@ const PAYMENT_METHOD_SELECT = `
 export class CustomerCheckoutDataService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
 
-  async getShippingMethods(subtotal: number): Promise<readonly CheckoutShippingMethod[]> {
+  async getShippingMethods(): Promise<readonly CheckoutShippingMethod[]> {
     const { data, error } = await this.supabase
       .from('shipping_methods')
       .select(SHIPPING_METHOD_SELECT)
@@ -64,7 +63,7 @@ export class CustomerCheckoutDataService {
     }
 
     return ((data ?? []) as unknown as ShippingMethodRow[]).map((row) =>
-      this.mapShippingMethod(row, subtotal),
+      this.mapShippingMethod(row),
     );
   }
 
@@ -89,12 +88,8 @@ export class CustomerCheckoutDataService {
       );
   }
 
-  private mapShippingMethod(
-    row: ShippingMethodRow,
-    subtotal: number,
-  ): CheckoutShippingMethod {
+  private mapShippingMethod(row: ShippingMethodRow): CheckoutShippingMethod {
     const baseCost = this.toNumber(row.base_cost);
-    const freeShippingMinAmount = this.toNullableNumber(row.free_shipping_min_amount);
     return {
       id: row.id,
       code: row.code,
@@ -103,12 +98,10 @@ export class CustomerCheckoutDataService {
       description: row.description,
       icon: row.icon,
       baseCost,
-      freeShippingMinAmount,
       etaMinDays: row.eta_min_days,
       etaMaxDays: row.eta_max_days,
       etaLabel: row.eta_label,
-      calculatedCost:
-        freeShippingMinAmount !== null && subtotal >= freeShippingMinAmount ? 0 : baseCost,
+      calculatedCost: baseCost,
     };
   }
 

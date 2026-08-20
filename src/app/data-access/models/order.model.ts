@@ -43,6 +43,10 @@ export interface AdminOrderItem {
   unitPrice: number;
   total: number;
 
+  isFreeGift: boolean;
+  originalUnitPrice: number | null;
+  appliedDiscountCode: string | null;
+
   loyaltyRedeemed: boolean;
   loyaltyPointsCost: number;
   loyaltyPointsEarned: number;

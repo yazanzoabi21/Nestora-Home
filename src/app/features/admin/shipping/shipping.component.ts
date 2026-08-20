@@ -188,7 +188,6 @@ export class ShippingComponent implements OnInit {
     { key: 'shippingMethod', label: 'SHIPPING.TABLE.SHIPPING_METHOD', type: 'text' },
     { key: 'deliveryZone', label: 'SHIPPING.TABLE.DELIVERY_ZONE', type: 'text' },
     { key: 'costOverride', label: 'SHIPPING.TABLE.COST_OVERRIDE', type: 'text' },
-    { key: 'freeShippingOverride', label: 'SHIPPING.TABLE.FREE_SHIPPING_OVERRIDE', type: 'text' },
     { key: 'etaOverride', label: 'SHIPPING.TABLE.ETA_OVERRIDE', type: 'text' },
     { key: 'status', label: 'SHIPPING.TABLE.STATUS', type: 'status' },
     { key: 'actions', label: 'SHIPPING.TABLE.ACTIONS', type: 'actions' },
@@ -263,7 +262,6 @@ export class ShippingComponent implements OnInit {
         item.delivery_zone?.name || this.zoneName(item.delivery_zone_id),
         item.eta_label_override,
         this.formatMoney(item.cost_override),
-        this.formatMoney(item.free_shipping_min_amount_override),
       ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(query))
@@ -290,7 +288,6 @@ export class ShippingComponent implements OnInit {
       shippingMethod: item.shipping_method?.name || this.methodName(item.shipping_method_id),
       deliveryZone: item.delivery_zone?.name || this.zoneName(item.delivery_zone_id),
       costOverride: this.formatCurrency(item.cost_override),
-      freeShippingOverride: this.formatCurrency(item.free_shipping_min_amount_override),
       etaOverride: this.formatMethodZoneEta(item),
       status: {
         labelKey: item.is_active ? 'SHIPPING.STATUS.ACTIVE' : 'SHIPPING.STATUS.INACTIVE',
@@ -474,7 +471,7 @@ export class ShippingComponent implements OnInit {
         description: form.description || null,
         icon: form.icon || null,
         base_cost: Number(form.base_cost ?? 0),
-        free_shipping_min_amount: form.free_shipping_min_amount,
+        free_shipping_min_amount: null,
         eta_min_days: form.eta_min_days,
         eta_max_days: form.eta_max_days,
         eta_label: form.eta_label || null,
@@ -538,7 +535,7 @@ export class ShippingComponent implements OnInit {
         shipping_method_id: shippingMethodId,
         delivery_zone_id: deliveryZoneId,
         cost_override: form.cost_override,
-        free_shipping_min_amount_override: form.free_shipping_min_amount_override,
+        free_shipping_min_amount_override: null,
         eta_min_days_override: form.eta_min_days_override,
         eta_max_days_override: form.eta_max_days_override,
         eta_label_override: form.eta_label_override || null,

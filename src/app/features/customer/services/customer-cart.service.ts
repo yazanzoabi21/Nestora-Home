@@ -11,6 +11,9 @@ interface CartRecord {
 interface CartItemRecord {
   id: string;
   quantity: number;
+  is_free_gift: boolean;
+  applied_discount_id: string | null;
+  discounts: { code: string } | { code: string }[] | null;
   products: Product | Product[] | null;
 }
 
@@ -45,15 +48,23 @@ export class CustomerCartService {
     this.requireAuthenticatedCustomer();
     const { data, error } = await this.supabase
       .from('cart_items')
-      .select('id,quantity,products:product_id(*,categories(name))')
+      .select('id,quantity,is_free_gift,applied_discount_id,discounts:applied_discount_id(code),products:product_id(*,categories(name))')
       .eq('cart_id', cartId)
       .order('created_at');
     if (error) throw new Error('Unable to load cart items.');
     return (data ?? []).flatMap((item) => {
       const record = item as unknown as CartItemRecord;
       const product = Array.isArray(record.products) ? record.products[0] : record.products;
+      const discount = Array.isArray(record.discounts) ? record.discounts[0] : record.discounts;
       return product
-        ? [{ id: record.id, quantity: record.quantity, product: this.toCustomerProduct(product) }]
+        ? [{
+            id: record.id,
+            quantity: record.quantity,
+            product: this.toCustomerProduct(product),
+            isFreeGift: record.is_free_gift === true,
+            appliedDiscountId: record.applied_discount_id,
+            appliedDiscountCode: discount?.code ?? null,
+          }]
         : [];
     });
   }
@@ -77,7 +88,8 @@ export class CustomerCartService {
         .from('cart_items')
         .select('id')
         .eq('cart_id', cartId)
-        .eq('product_id', productId);
+        .eq('product_id', productId)
+        .eq('is_free_gift', false);
       const existing = await existingQuery.maybeSingle();
       if (existing.error) throw new Error('Unable to check your cart.');
       itemId = existing.data?.id as string | undefined;
@@ -86,7 +98,7 @@ export class CustomerCartService {
     if (itemId) {
       const { data, error } = await this.supabase
         .from('cart_items')
-        .update({ quantity })
+        .update({ quantity, is_free_gift: false, applied_discount_id: null })
         .eq('id', itemId)
         .eq('cart_id', cartId)
         .select('id')
@@ -97,21 +109,45 @@ export class CustomerCartService {
 
     const { data, error } = await this.supabase
       .from('cart_items')
-      .insert({ cart_id: cartId, product_id: productId, quantity })
+      .insert({ cart_id: cartId, product_id: productId, quantity, is_free_gift: false })
       .select('id')
       .single();
     if (error || !data) throw new Error('Unable to update your cart.');
     return data.id as string;
   }
 
-  async removeItem(cartId: string, productId: string, variantId: string | null = null): Promise<void> {
+  async replaceFreeGifts(
+    cartId: string,
+    discountId: string,
+    productIds: readonly string[],
+  ): Promise<readonly string[]> {
+    this.requireAuthenticatedCustomer();
+    const { data, error } = await this.supabase.rpc('replace_cart_free_gifts', {
+      p_cart_id: cartId,
+      p_discount_id: discountId,
+      p_product_ids: [...new Set(productIds)],
+    });
+    if (error) throw new Error('Unable to save your free gift.');
+    return Array.isArray(data) ? data.filter((id): id is string => typeof id === 'string') : [];
+  }
+
+  async removeItem(
+    cartId: string,
+    productId: string,
+    variantId: string | null = null,
+    isFreeGift = false,
+    appliedDiscountId: string | null = null,
+  ): Promise<void> {
     this.requireAuthenticatedCustomer();
     void variantId;
-    const { error } = await this.supabase
+    let query = this.supabase
       .from('cart_items')
       .delete()
       .eq('cart_id', cartId)
-      .eq('product_id', productId);
+      .eq('product_id', productId)
+      .eq('is_free_gift', isFreeGift);
+    if (isFreeGift && appliedDiscountId) query = query.eq('applied_discount_id', appliedDiscountId);
+    const { error } = await query;
     if (error) throw new Error('Unable to remove this item.');
   }
 
@@ -134,6 +170,9 @@ export class CustomerCartService {
             return {
               product: this.toCustomerProduct(product),
               quantity: stored.quantity,
+              isFreeGift: stored.isFreeGift === true,
+              appliedDiscountId: stored.appliedDiscountId ?? null,
+              appliedDiscountCode: stored.appliedDiscountCode ?? null,
             };
           });
       })

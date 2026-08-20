@@ -58,6 +58,9 @@ interface SupabaseOrderItem {
   loyalty_points_cost: number | null;
   loyalty_points_earned: number | null;
   loyalty_effective_unit_price: number | null;
+  is_free_gift: boolean | null;
+  original_unit_price: number | null;
+  discounts: { code: string } | { code: string }[] | null;
 }
 
 interface SupabaseOrderProduct {
@@ -368,6 +371,9 @@ export class OrdersService {
         loyalty_points_cost,
         loyalty_points_earned,
         loyalty_effective_unit_price
+        ,is_free_gift,
+        original_unit_price,
+        discounts:applied_discount_id(code)
       `)
       .in('order_id', orderIds);
 
@@ -453,6 +459,14 @@ export class OrdersService {
         quantity,
         unitPrice,
         total: lineTotal,
+
+        isFreeGift: item.is_free_gift === true,
+        originalUnitPrice: item.original_unit_price === null
+          ? null
+          : Number(item.original_unit_price),
+        appliedDiscountCode: (
+          Array.isArray(item.discounts) ? item.discounts[0] : item.discounts
+        )?.code ?? null,
 
         loyaltyRedeemed:
           item.loyalty_redeemed === true,

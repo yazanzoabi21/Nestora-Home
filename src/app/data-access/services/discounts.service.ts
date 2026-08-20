@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from '../../core/services/supabase';
 import {
   Discount,
+  DiscountGiftProduct,
   DiscountMutationPayload,
   DiscountStats,
   DiscountStatus,
@@ -15,6 +16,7 @@ const DISCOUNT_SELECT = `
   discount_type,
   discount_value,
   minimum_order_amount,
+  gift_quantity,
   applies_to,
   product_id,
   category_id,
@@ -75,6 +77,50 @@ export class DiscountsService {
     }
 
     return this.mapDiscount(data as unknown as Discount);
+  }
+
+  async getGiftProductsForDiscount(discountId: string): Promise<DiscountGiftProduct[]> {
+    const { data, error } = await this.supabase
+      .from('discount_gift_products')
+      .select('id,discount_id,product_id,sort_order,is_active,products:product_id(*)')
+      .eq('discount_id', discountId)
+      .eq('is_active', true)
+      .order('sort_order');
+
+    if (error) throw new Error(error.message);
+
+    return (data ?? []).flatMap((value) => {
+      const row = value as unknown as {
+        id: string;
+        discount_id: string;
+        product_id: string;
+        sort_order: number;
+        is_active: boolean;
+        products: import('../models').Product | import('../models').Product[] | null;
+      };
+      const product = Array.isArray(row.products) ? row.products[0] : row.products;
+      return product
+        ? [{
+            id: row.id,
+            discountId: row.discount_id,
+            productId: row.product_id,
+            sortOrder: Number(row.sort_order),
+            isActive: row.is_active !== false,
+            product,
+          }]
+        : [];
+    });
+  }
+
+  async setGiftProductsForDiscount(
+    discountId: string,
+    productIds: readonly string[],
+  ): Promise<void> {
+    const { error } = await this.supabase.rpc('replace_discount_gift_products', {
+      p_discount_id: discountId,
+      p_product_ids: [...new Set(productIds)],
+    });
+    if (error) throw new Error(error.message);
   }
 
   async updateDiscount(id: string, payload: Partial<DiscountMutationPayload>): Promise<Discount> {
@@ -164,6 +210,7 @@ export class DiscountsService {
       code: discount.code.trim().toUpperCase(),
       discount_value: this.toNumberOrNull(discount.discount_value),
       minimum_order_amount: this.toNumberOrNull(discount.minimum_order_amount),
+      gift_quantity: Math.max(1, Math.trunc(Number(discount.gift_quantity ?? 1))),
       product_id: discount.product_id ?? null,
       category_id: discount.category_id ?? null,
       usage_limit: this.toNumberOrNull(discount.usage_limit),
@@ -200,6 +247,10 @@ export class DiscountsService {
 
     if (payload.minimum_order_amount !== undefined) {
       record.minimum_order_amount = this.toNumberOrNull(payload.minimum_order_amount) ?? 0;
+    }
+
+    if (payload.gift_quantity !== undefined) {
+      record.gift_quantity = Math.max(1, Math.trunc(Number(payload.gift_quantity)));
     }
 
     if (payload.applies_to !== undefined) {
@@ -263,54 +314,57 @@ export class DiscountsService {
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
-  async getAutomaticFreeShippingDiscount(): Promise<Discount | null> {
-  const { data, error } = await this.supabase
-    .from('discounts')
-    .select(DISCOUNT_SELECT)
-    .eq('discount_type', 'free_shipping')
-    .eq('applies_to', 'all')
-    .eq('is_active', true)
-    .order('minimum_order_amount', { ascending: true });
+  async getAutomaticFreeGiftDiscount(): Promise<Discount | null> {
+    const now = new Date().toISOString();
 
-  if (error) {
-    throw new Error(error.message);
+    const { data, error } = await this.supabase
+      .from('discounts')
+      .select(DISCOUNT_SELECT)
+      .eq('discount_type', 'free_gift')
+      .eq('is_active', true)
+      .or(`start_date.is.null,start_date.lte.${now}`)
+      .or(`end_date.is.null,end_date.gte.${now}`)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(
+        `Unable to load free gift discount: ${error.message}`,
+      );
+    }
+
+    return data ? this.mapDiscount(data as unknown as Discount) : null;
   }
 
-  const discounts = (data ?? []).map((discount) =>
-    this.mapDiscount(discount as unknown as Discount),
-  );
+  async getDiscountByCode(code: string): Promise<Discount | null> {
+    const normalizedCode = code.trim().toUpperCase();
 
-  return discounts.find((discount) => this.isDiscountAvailable(discount)) ?? null;
-}
+    if (!normalizedCode) {
+      return null;
+    }
 
-async getDiscountByCode(code: string): Promise<Discount | null> {
-  const normalizedCode = code.trim().toUpperCase();
+    const { data, error } = await this.supabase
+      .from('discounts')
+      .select(DISCOUNT_SELECT)
+      .eq('code', normalizedCode)
+      .maybeSingle();
 
-  if (!normalizedCode) {
-    return null;
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data ? this.mapDiscount(data as unknown as Discount) : null;
   }
 
-  const { data, error } = await this.supabase
-    .from('discounts')
-    .select(DISCOUNT_SELECT)
-    .eq('code', normalizedCode)
-    .maybeSingle();
+  isDiscountAvailable(discount: Discount): boolean {
+    const usageLimitReached =
+      discount.usage_limit !== null &&
+      discount.usage_count >= discount.usage_limit;
 
-  if (error) {
-    throw new Error(error.message);
+    return (
+      this.getDiscountStatus(discount) === 'active' &&
+      !usageLimitReached
+    );
   }
-
-  return data ? this.mapDiscount(data as unknown as Discount) : null;
-}
-
-isDiscountAvailable(discount: Discount): boolean {
-  const usageLimitReached =
-    discount.usage_limit !== null &&
-    discount.usage_count >= discount.usage_limit;
-
-  return (
-    this.getDiscountStatus(discount) === 'active' &&
-    !usageLimitReached
-  );
-}
 }

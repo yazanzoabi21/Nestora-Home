@@ -8,7 +8,6 @@ export interface ShippingMethodRow {
   description: string | null;
   icon: string | null;
   base_cost: number | string;
-  free_shipping_min_amount: number | string | null;
   eta_min_days: number | null;
   eta_max_days: number | null;
   eta_label: string | null;

@@ -22,7 +22,10 @@
       </p>
 
       <strong class="order-summary__price">
-        @if (item.redeemWithPoints) {
+        @if (item.isFreeGift) {
+        <span class="block text-xs font-medium text-[#aaa] line-through">{{ item.originalUnitPrice | currency: 'USD' }}</span>
+        <span class="text-[#58704e]">{{ 'CUSTOMER.FREE_GIFT.FREE' | translate }}</span>
+        } @else if (item.redeemWithPoints) {
         {{ 'CUSTOMER.LOYALTY.FREE_WITH' | translate: { points: item.loyaltyPointsCost } }}
         } @else {
         {{ item.lineTotal | currency: 'USD' }}
@@ -66,13 +69,11 @@
         {{ 'CUSTOMER.CHECKOUT.SUMMARY.DELIVERY' | translate }}
       </dt>
 
-      <dd [class.order-summary__row--green]="
-          !totals().shippingCost
-        ">
-        @if (totals().shippingCost) {
-        {{ totals().shippingCost | currency: 'USD' }}
-        } @else {
+      <dd [class.order-summary__row--green]="totals().shippingCost === 0">
+        @if (totals().shippingCost === 0) {
         {{ 'CUSTOMER.CHECKOUT.SUMMARY.FREE' | translate }}
+        } @else {
+        {{ totals().shippingCost | currency: 'USD' }}
         }
       </dd>
     </div>

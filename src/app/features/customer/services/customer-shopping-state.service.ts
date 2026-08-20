@@ -37,8 +37,10 @@ export class CustomerShoppingStateService {
   readonly wishlistPendingProductIds = signal<Set<string>>(new Set());
   readonly wishlistCount = computed(() => this.wishlistIds().size);
   readonly cartQuantity = computed(() => this.cart().reduce((sum, line) => sum + line.quantity, 0));
+  readonly paidCart = computed(() => this.cart().filter((line) => !line.isFreeGift));
+  readonly freeGiftLines = computed(() => this.cart().filter((line) => line.isFreeGift));
   readonly subtotal = computed(() =>
-    this.cart().reduce((sum, line) => sum + line.product.price * line.quantity, 0),
+    this.paidCart().reduce((sum, line) => sum + line.product.price * line.quantity, 0),
   );
   readonly stockConflicts = computed(() =>
     this.cart().filter(
@@ -61,7 +63,7 @@ export class CustomerShoppingStateService {
       return 0;
     }
 
-    const eligibleSubtotal = this.cart()
+    const eligibleSubtotal = this.paidCart()
       .filter((line) => {
         if (discount.applies_to === 'all') {
           return true;
@@ -230,7 +232,7 @@ export class CustomerShoppingStateService {
     await this.ensureCurrentCartMode();
     const key = this.lineKey(product.id, product.variantId);
     const existing = this.cart().find(
-      (line) => this.lineKey(line.product.id, line.product.variantId) === key,
+      (line) => !line.isFreeGift && this.lineKey(line.product.id, line.product.variantId) === key,
     );
     const quantity = (existing?.quantity ?? 0) + requestedQuantity;
     if (!this.canUseQuantity(product, quantity)) {
@@ -256,7 +258,14 @@ export class CustomerShoppingStateService {
               ? { ...line, id: id ?? line.id, quantity }
               : line,
           )
-          : [...lines, { id, product, quantity }],
+          : [...lines, {
+              id,
+              product,
+              quantity,
+              isFreeGift: false,
+              appliedDiscountId: null,
+              appliedDiscountCode: null,
+            }],
       );
       this.persistGuest();
       this.toast.productAdded(product.name, product.imageUrl);
@@ -275,7 +284,7 @@ export class CustomerShoppingStateService {
     await this.ensureCurrentCartMode();
     const key = this.lineKey(productId, variantId);
     const line = this.cart().find(
-      (item) => this.lineKey(item.product.id, item.product.variantId) === key,
+      (item) => !item.isFreeGift && this.lineKey(item.product.id, item.product.variantId) === key,
     );
     if (!line || this.pendingProductIds().has(productId)) return;
     const requestedQuantity = Number(requested);
@@ -306,16 +315,27 @@ export class CustomerShoppingStateService {
     }
   }
 
-  async removeFromCart(productId: string, variantId: string | null = null): Promise<void> {
+  async removeFromCart(
+    productId: string,
+    variantId: string | null = null,
+    isFreeGift = false,
+    appliedDiscountId: string | null = null,
+  ): Promise<void> {
     await this.ensureCurrentCartMode();
     if (this.pendingProductIds().has(productId)) return;
     this.setPending(productId, true);
     try {
       const cartId = this.currentServerCartId();
-      if (cartId) await this.carts.removeItem(cartId, productId, variantId);
+      if (cartId) {
+        await this.carts.removeItem(cartId, productId, variantId, isFreeGift, appliedDiscountId);
+      }
       const key = this.lineKey(productId, variantId);
       this.cart.update((lines) =>
-        lines.filter((line) => this.lineKey(line.product.id, line.product.variantId) !== key),
+        lines.filter((line) => !(
+          line.isFreeGift === isFreeGift &&
+          line.appliedDiscountId === appliedDiscountId &&
+          this.lineKey(line.product.id, line.product.variantId) === key
+        )),
       );
       this.persistGuest();
       // this.toast.success('Item removed');
@@ -328,7 +348,7 @@ export class CustomerShoppingStateService {
   }
 
   getEligibleSubtotal(discount: Discount): number {
-    return this.cart()
+    return this.paidCart()
       .filter((line) => {
         if (discount.applies_to === 'all') {
           return true;
@@ -353,6 +373,50 @@ export class CustomerShoppingStateService {
 
   clearAppliedDiscount(): void {
     this._appliedDiscount.set(null);
+  }
+
+  async selectFreeGift(discount: Discount, productId: string): Promise<void> {
+    if (discount.discount_type !== 'free_gift') return;
+    const product = (await this.carts.loadProducts([productId]))[0];
+    if (!product?.isActive || !product.inStock) {
+      throw new Error(this.translate.instant('CUSTOMER.FREE_GIFT.UNAVAILABLE'));
+    }
+
+    const current = this.freeGiftLines().filter(
+      (line) => line.appliedDiscountId === discount.id,
+    );
+    const alreadySelected = current.some((line) => line.product.id === productId);
+    const nextProducts = alreadySelected
+      ? current.filter((line) => line.product.id !== productId).map((line) => line.product)
+      : discount.gift_quantity === 1
+        ? [product]
+        : [...current.map((line) => line.product), product].slice(-discount.gift_quantity);
+
+    const cartId = this.currentServerCartId();
+    const itemIds = cartId
+      ? await this.carts.replaceFreeGifts(cartId, discount.id, nextProducts.map((item) => item.id))
+      : [];
+    this.cart.update((lines) => [
+      ...lines.filter((line) => !(line.isFreeGift && line.appliedDiscountId === discount.id)),
+      ...nextProducts.map((item, index) => ({
+        id: itemIds[index],
+        product: item,
+        quantity: 1,
+        isFreeGift: true,
+        appliedDiscountId: discount.id,
+        appliedDiscountCode: discount.code,
+      })),
+    ]);
+    this.persistGuest();
+  }
+
+  async clearFreeGiftSelection(discountId: string): Promise<void> {
+    const cartId = this.currentServerCartId();
+    if (cartId) await this.carts.replaceFreeGifts(cartId, discountId, []);
+    this.cart.update((lines) =>
+      lines.filter((line) => !(line.isFreeGift && line.appliedDiscountId === discountId)),
+    );
+    this.persistGuest();
   }
 
   isInWishlist(productId: string): boolean {
@@ -462,7 +526,7 @@ export class CustomerShoppingStateService {
     const key = this.lineKey(productId, variantId);
     return (
       this.cart().find(
-        (line) => this.lineKey(line.product.id, line.product.variantId) === key,
+        (line) => !line.isFreeGift && this.lineKey(line.product.id, line.product.variantId) === key,
       )?.quantity ?? 0
     );
   }
@@ -485,6 +549,9 @@ export class CustomerShoppingStateService {
         productId: line.product.id,
         variantId: line.product.variantId,
         quantity: line.quantity,
+        isFreeGift: line.isFreeGift,
+        appliedDiscountId: line.appliedDiscountId,
+        appliedDiscountCode: line.appliedDiscountCode,
       })),
     );
     const latestByKey = new Map(
@@ -585,6 +652,9 @@ export class CustomerShoppingStateService {
   lineKey(productId: string, variantId?: string | null): string {
     return `${productId}:${variantId ?? 'base'}`;
   }
+  cartLineKey(line: CustomerCartLine): string {
+    return `${this.lineKey(line.product.id, line.product.variantId)}:${line.isFreeGift ? line.appliedDiscountId : 'paid'}`;
+  }
   private async ensureCurrentCartMode(): Promise<void> {
     const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
     await this.synchronizeCartForUser(userId);
@@ -602,6 +672,9 @@ export class CustomerShoppingStateService {
             productId: line.product.id,
             variantId: line.product.variantId ?? null,
             quantity: line.quantity,
+            isFreeGift: line.isFreeGift,
+            appliedDiscountId: line.appliedDiscountId,
+            appliedDiscountCode: line.appliedDiscountCode,
           })),
         ),
       );

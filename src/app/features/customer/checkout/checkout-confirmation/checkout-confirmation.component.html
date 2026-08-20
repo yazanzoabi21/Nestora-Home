@@ -105,14 +105,14 @@
       | translate
       }}
     </a>
-    }
-
-    <a class="confirmation__secondary" routerLink="/shop">
+    } @else {
+    <a class="confirmation__primary" routerLink="/shop">
       {{
       'CUSTOMER.CHECKOUT.CONFIRMATION.BACK_HOME'
       | translate
       }}
     </a>
+    }
   </div>
 </section>
 }

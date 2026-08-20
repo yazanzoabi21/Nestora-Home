@@ -145,4 +145,8 @@ export class SidebarComponent implements OnInit {
   private urlMatchesRoute(url: string, route: string): boolean {
     return url === route || url.startsWith(`${route}/`);
   }
+
+  isSectionPanelOpen(sectionKey: string): boolean {
+  return this.isCollapsedView() || this.isSectionOpen(sectionKey);
+}
 }

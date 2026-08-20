@@ -169,19 +169,19 @@ export const ADMIN_NAVIGATION_SECTIONS: AdminNavigationSection[] = [
     label: 'SYSTEM',
     labelKey: 'SIDEBAR.SYSTEM',
     items: [
-      {
-        label: 'Activity Logs',
-        labelKey: 'SIDEBAR.ACTIVITY_LOGS',
-        route: '/admin/activity-logs',
-        icon: 'pi pi-clipboard',
-      },
-      {
-        label: 'Notifications',
-        labelKey: 'SIDEBAR.NOTIFICATIONS',
-        route: '/admin/notifications',
-        icon: 'pi pi-bell',
-        badge: '5',
-      },
+      // {
+      //   label: 'Activity Logs',
+      //   labelKey: 'SIDEBAR.ACTIVITY_LOGS',
+      //   route: '/admin/activity-logs',
+      //   icon: 'pi pi-clipboard',
+      // },
+      // {
+      //   label: 'Notifications',
+      //   labelKey: 'SIDEBAR.NOTIFICATIONS',
+      //   route: '/admin/notifications',
+      //   icon: 'pi pi-bell',
+      //   badge: '5',
+      // },
       {
         label: 'Media Library',
         labelKey: 'SIDEBAR.MEDIA_LIBRARY',

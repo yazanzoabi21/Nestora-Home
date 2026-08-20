@@ -1,0 +1,24 @@
+:host { display: block; }
+.gift-selector { margin-bottom: 1.75rem; border: 1px solid #d9e2d2; border-radius: 20px; background: #fff; padding: 1.25rem; box-shadow: 0 8px 26px rgba(52,47,41,.06); }
+.gift-selector__header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+.gift-selector__header h2,.gift-dialog h2 { font-size:1.05rem; font-weight:800; color:#1f2a1f; }
+.gift-selector__header p,.gift-dialog p { margin-top:.2rem; font-size:.82rem; color:#7b786f; }
+.gift-selector__badge { display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; background:#e8efe3; padding:.4rem .7rem; color:#58704e; font-size:.72rem; font-weight:800; }
+.gift-selector__grid,.gift-dialog__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; }
+.gift-card { min-width:0; overflow:hidden; border:1px solid #e5ded2; border-radius:16px; background:#faf8f5; }
+.gift-card--selected { border-color:#718369; box-shadow:0 0 0 2px rgba(113,131,105,.14); }
+.gift-card img { width:100%; aspect-ratio:1.35; object-fit:cover; background:#eee8df; }
+.gift-card__body { display:flex; min-width:0; flex-direction:column; padding:.8rem; }
+.gift-card h3 { min-height:2.4rem; overflow:hidden; font-size:.82rem; font-weight:800; color:#1f2a1f; }
+.gift-card__price { margin-top:.45rem; color:#999; font-size:.75rem; text-decoration:line-through; }
+.gift-card strong { color:#58704e; font-size:.85rem; }
+.gift-card button { margin-top:.7rem; min-height:2.5rem; border-radius:11px; background:#718369; color:white; font-size:.78rem; font-weight:800; }
+.gift-card button:disabled { opacity:.65; }
+.gift-card .gift-card__button--selected { background:#e8efe3; color:#58704e; }
+.gift-selector__view-all { margin-top:1rem; display:flex; min-height:2.75rem; align-items:center; gap:.5rem; color:#58704e; font-size:.82rem; font-weight:800; }
+.gift-selector__state { display:flex; min-height:6rem; align-items:center; justify-content:center; gap:.6rem; color:#777; font-size:.85rem; }
+.gift-dialog { position:fixed; inset:0; z-index:12000; display:flex; align-items:flex-end; background:rgba(0,0,0,.5); }
+.gift-dialog__panel { max-height:88dvh; width:100%; overflow:auto; overscroll-behavior:contain; border-radius:24px 24px 0 0; background:#faf8f5; padding:1rem max(1rem,env(safe-area-inset-right)) max(1rem,env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left)); }
+.gift-dialog header { position:sticky; top:-1rem; z-index:1; display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin:-1rem -1rem 1rem; padding:1rem; border-bottom:1px solid #e5ded2; background:white; }
+.gift-dialog header button { display:grid; width:2.5rem; height:2.5rem; place-items:center; border:1px solid #e5ded2; border-radius:12px; }
+@media (min-width:768px) { .gift-selector__grid,.gift-dialog__grid { grid-template-columns:repeat(4,minmax(0,1fr)); } .gift-dialog { align-items:center; justify-content:center; padding:1.5rem; } .gift-dialog__panel { max-width:1040px; border-radius:24px; } }

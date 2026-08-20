@@ -59,15 +59,15 @@
 
       <strong class="text-[0.95rem] text-[#1f2a1f]
                    max-[560px]:col-start-3">
-        @if (option.calculatedCost) {
-        {{
-        option.calculatedCost
-        | currency: 'USD'
-        }}
-        } @else {
+        @if (option.calculatedCost === 0) {
         {{
         'CUSTOMER.CHECKOUT.DELIVERY.FREE'
         | translate
+        }}
+        } @else {
+        {{
+        option.calculatedCost
+        | currency: 'USD'
         }}
         }
       </strong>

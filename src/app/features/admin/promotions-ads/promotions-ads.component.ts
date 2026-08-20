@@ -358,8 +358,6 @@ export class PromotionsAdsComponent implements OnInit {
   readonly kpiCards = computed<KpiCardData[]>(() => {
     const promotions = this.promotions();
     const statusCounts = this.statusCounts();
-    const typeBreakdown = this.typeBreakdown();
-    const displayTypeCount = Object.values(typeBreakdown).filter((count) => count > 0).length;
 
     return [
       {
@@ -396,24 +394,6 @@ export class PromotionsAdsComponent implements OnInit {
         icon: 'pi pi-pause',
         iconColor: '#8d877e',
         iconBg: '#f0ebe4',
-        showChart: false,
-      },
-      {
-        title: 'Expired',
-        titleKey: 'PROMOTIONS_ADS.KPI.EXPIRED',
-        value: statusCounts.expired.toString(),
-        icon: 'pi pi-clock',
-        iconColor: '#b42318',
-        iconBg: '#fff1f0',
-        showChart: false,
-      },
-      {
-        title: 'Display Types',
-        titleKey: 'PROMOTIONS_ADS.KPI.DISPLAY_TYPES',
-        value: displayTypeCount.toString(),
-        icon: 'pi pi-th-large',
-        iconColor: '#d98916',
-        iconBg: '#fff6e7',
         showChart: false,
       },
     ];
