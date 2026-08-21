@@ -46,6 +46,7 @@ export class CustomerWishlistComponent {
       const safePage = this.safeCurrentPage();
       if (this.currentPage() !== safePage) this.currentPage.set(safePage);
     });
+    void this.shopping.ensureWishlistProducts();
   }
 
   async toggleWishlist(product: CustomerProduct): Promise<void> {

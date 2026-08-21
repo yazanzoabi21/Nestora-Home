@@ -23,7 +23,10 @@
   <div class="customer-page-container grid min-w-0 max-w-full grid-cols-1 gap-8 py-10 [&>div]:min-w-0 min-[361px]:gap-10 min-[361px]:py-12 md:grid-cols-2 lg:grid-cols-4">
     <div class="min-w-0">
       <a routerLink="/shop" class="inline-flex items-center gap-3 text-white">
-        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#7d8f70] text-sm font-black">N</span>
+        <!-- bg-[#7d8f70]  -->
+        <span class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-black">
+          <img src="images/logo-bg.png" alt="Nestora Home Logo" class="h-full w-full object-contain" />
+        </span>
         <span class="text-xl font-black">Nestora <span class="text-[#7d8f70]">Home</span></span>
       </a>
       <p class="mt-5 max-w-xs text-sm font-semibold leading-6 text-[#a9aca5]">{{ 'CUSTOMERS.FOOTER.BRAND_DESCRIPTION' | translate }}</p>

@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
-import { CustomerProduct } from '../models';
-import { CustomerCartService } from './customer-cart.service';
 
 interface WishlistRecord {
   product_id: string;
@@ -17,9 +15,8 @@ interface SupabaseErrorDetails {
 @Injectable({ providedIn: 'root' })
 export class CustomerWishlistService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
-  private readonly products = inject(CustomerCartService);
 
-  async load(userId: string): Promise<CustomerProduct[]> {
+  async loadProductIds(userId: string): Promise<string[]> {
     const { data, error } = await this.supabase
       .from('wishlist')
       .select('product_id')
@@ -30,31 +27,12 @@ export class CustomerWishlistService {
       this.throwSupabaseError(error, 'Unable to load your wishlist.');
     }
 
-    const records = data as WishlistRecord[] | null ?? [];
-    const lines = await this.products.productsForGuest(
-      records.map((item) => ({
-        productId: item.product_id,
-        variantId: null,
-        quantity: 1,
-      })),
-    );
-    return lines.map((line) => line.product);
+    const records = (data as WishlistRecord[] | null) ?? [];
+    return [...new Set(records.map((item) => item.product_id))];
   }
 
   async add(userId: string, productId: string, variantId: string | null = null): Promise<void> {
     void variantId;
-    const existing = await this.supabase
-      .from('wishlist')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('product_id', productId)
-      .limit(1);
-
-    if (existing.error) {
-      this.throwSupabaseError(existing.error, 'Unable to check this product.');
-    }
-    if (existing.data?.length) return;
-
     const { error } = await this.supabase
       .from('wishlist')
       .insert({ user_id: userId, product_id: productId });

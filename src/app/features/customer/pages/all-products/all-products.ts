@@ -15,7 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { CustomerProductCardComponent } from '../../components/customer-product-card';
 import { CustomerProductFiltersComponent } from '../../components/customer-product-filters';
 import { CustomerProductQuickViewComponent } from '../../components/customer-product-quick-view';
-import { NewArrivalsService } from '../../services';
+import { CustomerCatalogService } from '../../services';
 import { ProductBrowserPage } from '../product-browser-page';
 import { CustomerProductCardSkeleton } from '../../components/customer-product-card-skeleton/customer-product-card-skeleton';
 import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination';
@@ -50,7 +50,7 @@ export class AllProducts extends ProductBrowserPage {
       ? selected[0]
       : this.titleKey;
   });
-  private readonly catalog = inject(NewArrivalsService);
+  private readonly catalog = inject(CustomerCatalogService);
   private readonly route = inject(ActivatedRoute);
   private readonly routeNavigator = inject(Router);
   private readonly requestedCategorySlug = signal<string | null>(null);

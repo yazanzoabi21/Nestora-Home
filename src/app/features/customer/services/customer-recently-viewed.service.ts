@@ -2,7 +2,7 @@ import { Injectable, effect, inject, signal } from '@angular/core';
 import { CustomerAuthService } from '../../../core/services/auth';
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 import { CustomerProduct } from '../models';
-import { NewArrivalsService } from './new-arrivals.service';
+import { CustomerCatalogService } from './customer-catalog.service';
 
 interface ProductHistoryRow {
   product_id: string;
@@ -23,7 +23,7 @@ const MAX_HOMEPAGE_PRODUCTS = 10;
 export class CustomerRecentlyViewedService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
   private readonly auth = inject(CustomerAuthService);
-  private readonly productsService = inject(NewArrivalsService);
+  private readonly productsService = inject(CustomerCatalogService);
   private readonly revisionSignal = signal(0);
 
   readonly revision = this.revisionSignal.asReadonly();

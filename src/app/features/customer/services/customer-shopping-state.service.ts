@@ -6,6 +6,7 @@ import { ToastService } from '../../../core/services';
 import { CustomerCartLine, CustomerProduct, GuestCartItem } from '../models';
 import { CustomerCartService } from './customer-cart.service';
 import { CustomerWishlistService } from './customer-wishlist.service';
+import { CustomerCatalogService } from './customer-catalog.service';
 import { Discount } from '../../../data-access';
 
 const GUEST_CART_KEY = 'nestora_guest_cart_v1';
@@ -16,6 +17,7 @@ export class CustomerShoppingStateService {
   private readonly auth = inject(CustomerAuthService);
   private readonly toast = inject(ToastService);
   private readonly wishlistRepository = inject(CustomerWishlistService);
+  private readonly catalog = inject(CustomerCatalogService);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private serverCartId: string | null = null;
@@ -24,6 +26,17 @@ export class CustomerShoppingStateService {
   private cartLoadSequence = 0;
   private lastLoadedCartUserId: string | null | undefined;
   private activeCartLoad: { userId: string | null; promise: Promise<void> } | null = null;
+  private lastLoadedWishlistUserId: string | null | undefined;
+  private activeWishlistLoad: { userId: string | null; promise: Promise<void> } | null = null;
+  private activeWishlistProductsLoad: {
+    userId: string;
+    revision: number;
+    promise: Promise<void>;
+  } | null = null;
+  private wishlistProductIdsInOrder: string[] = [];
+  private wishlistRevision = 0;
+  private hydratedWishlistUserId: string | null = null;
+  private hydratedWishlistRevision = -1;
   private readonly _checkoutCartId = signal<string | null>(null);
   readonly checkoutCartId = this._checkoutCartId.asReadonly();
   readonly cart = signal<CustomerCartLine[]>([]);
@@ -104,7 +117,7 @@ export class CustomerShoppingStateService {
       const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
       if (!authLoading) {
         void this.synchronizeCartForUser(userId);
-        void this.loadWishlistForUser(userId);
+        void this.synchronizeWishlistForUser(userId);
       }
     });
   }
@@ -112,7 +125,10 @@ export class CustomerShoppingStateService {
   async initialize(): Promise<void> {
     await this.auth.initialize();
     const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
-    await this.synchronizeCartForUser(userId, true);
+    await Promise.all([
+      this.synchronizeCartForUser(userId, true),
+      this.synchronizeWishlistForUser(userId),
+    ]);
   }
 
   private async synchronizeCartForUser(userId: string | null, force = false): Promise<void> {
@@ -424,7 +440,48 @@ export class CustomerShoppingStateService {
   }
 
   async loadWishlist(): Promise<void> {
-    await this.loadWishlistForUser(await this.auth.getCurrentUserId());
+    await this.synchronizeWishlistForUser(await this.auth.getCurrentUserId());
+  }
+
+  async refreshWishlist(): Promise<void> {
+    await this.synchronizeWishlistForUser(await this.auth.getCurrentUserId(), true);
+  }
+
+  async ensureWishlistProducts(): Promise<void> {
+    const userId = await this.auth.getCurrentUserId();
+    await this.synchronizeWishlistForUser(userId);
+
+    if (!userId || this.wishlistProductIdsInOrder.length === 0) {
+      this.wishlistProducts.set([]);
+      return;
+    }
+
+    const revision = this.wishlistRevision;
+    if (
+      this.hydratedWishlistUserId === userId &&
+      this.hydratedWishlistRevision === revision
+    ) {
+      return;
+    }
+
+    if (
+      this.activeWishlistProductsLoad?.userId === userId &&
+      this.activeWishlistProductsLoad.revision === revision
+    ) {
+      await this.activeWishlistProductsLoad.promise;
+      return;
+    }
+
+    const promise = this.loadWishlistProductsFromCatalog(userId, revision);
+    this.activeWishlistProductsLoad = { userId, revision, promise };
+
+    try {
+      await promise;
+    } finally {
+      if (this.activeWishlistProductsLoad?.promise === promise) {
+        this.activeWishlistProductsLoad = null;
+      }
+    }
   }
 
   async toggleWishlist(product: CustomerProduct): Promise<void> {
@@ -444,8 +501,14 @@ export class CustomerShoppingStateService {
     const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
     if (!userId || this.isInWishlist(product.id) || this.wishlistPendingProductIds().has(product.id)) return;
     this.setWishlistPending(product.id, true);
+    const productsWereHydrated = this.hasHydratedWishlistProducts(userId);
     this.wishlistIds.update((ids) => new Set(ids).add(product.id));
+    this.wishlistProductIdsInOrder = [
+      product.id,
+      ...this.wishlistProductIdsInOrder.filter((id) => id !== product.id),
+    ];
     this.wishlistProducts.update((products) => [product, ...products.filter((item) => item.id !== product.id)]);
+    this.advanceWishlistRevision(userId, productsWereHydrated);
     try {
       await this.wishlistRepository.add(userId, product.id, product.variantId);
       this.toast.wishlist(this.translate.instant('CUSTOMER.WISHLIST.SAVED'));
@@ -456,6 +519,10 @@ export class CustomerShoppingStateService {
         return next;
       });
       this.wishlistProducts.update((products) => products.filter((item) => item.id !== product.id));
+      this.wishlistProductIdsInOrder = this.wishlistProductIdsInOrder.filter(
+        (id) => id !== product.id,
+      );
+      this.advanceWishlistRevision(userId, productsWereHydrated);
       this.showWishlistError(error);
     } finally {
       this.setWishlistPending(product.id, false);
@@ -466,6 +533,8 @@ export class CustomerShoppingStateService {
     const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;
     if (!userId || !this.isInWishlist(productId) || this.wishlistPendingProductIds().has(productId)) return;
     const previousProducts = this.wishlistProducts();
+    const previousProductIdsInOrder = this.wishlistProductIdsInOrder;
+    const productsWereHydrated = this.hasHydratedWishlistProducts(userId);
     this.setWishlistPending(productId, true);
     this.wishlistIds.update((ids) => {
       const next = new Set(ids);
@@ -473,12 +542,18 @@ export class CustomerShoppingStateService {
       return next;
     });
     this.wishlistProducts.update((products) => products.filter((item) => item.id !== productId));
+    this.wishlistProductIdsInOrder = this.wishlistProductIdsInOrder.filter(
+      (id) => id !== productId,
+    );
+    this.advanceWishlistRevision(userId, productsWereHydrated);
     try {
       await this.wishlistRepository.remove(userId, productId);
       this.toast.wishlist(this.translate.instant('CUSTOMER.WISHLIST.REMOVED'));
     } catch (error) {
       this.wishlistIds.update((ids) => new Set(ids).add(productId));
       this.wishlistProducts.set(previousProducts);
+      this.wishlistProductIdsInOrder = previousProductIdsInOrder;
+      this.advanceWishlistRevision(userId, productsWereHydrated);
       this.showWishlistError(error);
     } finally {
       this.setWishlistPending(productId, false);
@@ -600,27 +675,65 @@ export class CustomerShoppingStateService {
 
   private wishlistLoadSequence = 0;
 
+  private async synchronizeWishlistForUser(
+    userId: string | null,
+    force = false,
+  ): Promise<void> {
+    if (this.activeWishlistLoad?.userId === userId) {
+      await this.activeWishlistLoad.promise;
+      return;
+    }
+
+    if (!force && this.lastLoadedWishlistUserId === userId) return;
+
+    const promise = this.loadWishlistForUser(userId);
+    this.activeWishlistLoad = { userId, promise };
+
+    try {
+      await promise;
+    } finally {
+      if (this.activeWishlistLoad?.promise === promise) {
+        this.activeWishlistLoad = null;
+      }
+    }
+  }
+
   private async loadWishlistForUser(userId: string | null): Promise<void> {
     const sequence = ++this.wishlistLoadSequence;
 
-    this.wishlistLoading.set(true); // Set this FIRST
+    this.wishlistLoading.set(true);
     this.wishlistError.set(null);
     this.wishlistPendingProductIds.set(new Set());
 
     if (!userId) {
-      this.wishlistProducts.set([]);
-      this.wishlistIds.set(new Set());
+      this.clearWishlistState();
+      this.lastLoadedWishlistUserId = null;
       this.wishlistLoading.set(false);
       return;
     }
 
+    if (this.lastLoadedWishlistUserId !== userId) {
+      this.clearWishlistState();
+    }
+
     try {
-      const products = await this.wishlistRepository.load(userId);
+      const productIds = await this.wishlistRepository.loadProductIds(userId);
 
       if (sequence !== this.wishlistLoadSequence) return;
 
-      this.wishlistProducts.set(products);
-      this.wishlistIds.set(new Set(products.map((product) => product.id)));
+      this.wishlistProductIdsInOrder = productIds;
+      this.wishlistIds.set(new Set(productIds));
+      this.wishlistProducts.update((products) => {
+        const productsById = new Map(products.map((product) => [product.id, product]));
+        return productIds.flatMap((id) => {
+          const product = productsById.get(id);
+          return product ? [product] : [];
+        });
+      });
+      this.wishlistRevision += 1;
+      this.hydratedWishlistUserId = null;
+      this.hydratedWishlistRevision = -1;
+      this.lastLoadedWishlistUserId = userId;
     } catch (error) {
       if (sequence !== this.wishlistLoadSequence) return;
 
@@ -632,6 +745,67 @@ export class CustomerShoppingStateService {
       if (sequence === this.wishlistLoadSequence) {
         this.wishlistLoading.set(false);
       }
+    }
+  }
+
+  private async loadWishlistProductsFromCatalog(
+    userId: string,
+    revision: number,
+  ): Promise<void> {
+    this.wishlistLoading.set(true);
+    this.wishlistError.set(null);
+
+    try {
+      const products = await this.catalog.getProducts();
+      if (
+        this.lastLoadedWishlistUserId !== userId ||
+        this.wishlistRevision !== revision
+      ) {
+        return;
+      }
+
+      const productsById = new Map(products.map((product) => [product.id, product]));
+      this.wishlistProducts.set(
+        this.wishlistProductIdsInOrder.flatMap((id) => {
+          const product = productsById.get(id);
+          return product ? [product] : [];
+        }),
+      );
+      this.hydratedWishlistUserId = userId;
+      this.hydratedWishlistRevision = revision;
+    } catch (error) {
+      this.wishlistError.set(
+        error instanceof Error ? error.message : 'Unable to load your wishlist.',
+      );
+      this.showWishlistError(error);
+    } finally {
+      if (this.lastLoadedWishlistUserId === userId) {
+        this.wishlistLoading.set(false);
+      }
+    }
+  }
+
+  private clearWishlistState(): void {
+    this.wishlistProducts.set([]);
+    this.wishlistIds.set(new Set());
+    this.wishlistProductIdsInOrder = [];
+    this.wishlistRevision += 1;
+    this.hydratedWishlistUserId = null;
+    this.hydratedWishlistRevision = -1;
+  }
+
+  private hasHydratedWishlistProducts(userId: string): boolean {
+    return (
+      this.hydratedWishlistUserId === userId &&
+      this.hydratedWishlistRevision === this.wishlistRevision
+    );
+  }
+
+  private advanceWishlistRevision(userId: string, productsRemainHydrated: boolean): void {
+    this.wishlistRevision += 1;
+    if (productsRemainHydrated) {
+      this.hydratedWishlistUserId = userId;
+      this.hydratedWishlistRevision = this.wishlistRevision;
     }
   }
 

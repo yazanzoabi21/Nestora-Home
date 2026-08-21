@@ -9,7 +9,7 @@ import {
 } from '../../components';
 import { CustomerProductAddRequest } from '../../components/customer-product-quick-view';
 import { CustomerProduct } from '../../models';
-import { CustomerShoppingStateService, NewArrivalsService } from '../../services';
+import { CustomerCatalogService, CustomerShoppingStateService } from '../../services';
 
 @Component({
   selector: 'app-best-sellers',
@@ -28,7 +28,7 @@ import { CustomerShoppingStateService, NewArrivalsService } from '../../services
 export class BestSellersPage {
   readonly shopping = inject(CustomerShoppingStateService);
 
-  private readonly catalog = inject(NewArrivalsService);
+  private readonly catalog = inject(CustomerCatalogService);
 
   readonly products = signal<CustomerProduct[]>([]);
   readonly loading = signal(true);

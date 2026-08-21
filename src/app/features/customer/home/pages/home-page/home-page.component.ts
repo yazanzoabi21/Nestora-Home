@@ -31,7 +31,7 @@ import {
   CustomerShoppingStateService,
   CustomerRecentlyViewedService,
   CustomerReviewsService,
-  NewArrivalsService,
+  CustomerCatalogService,
 } from '../../../services';
 import { CustomerFlashDeals } from '../components/customer-flash-deals/customer-flash-deals/customer-flash-deals';
 
@@ -62,7 +62,7 @@ type RecentlyViewedStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
 export class HomePageComponent {
   readonly shopping = inject(CustomerShoppingStateService);
 
-  private readonly productsService = inject(NewArrivalsService);
+  private readonly productsService = inject(CustomerCatalogService);
   private readonly categoriesService = inject(CategoriesService);
   private readonly promotionsService = inject(PromotionsService);
   private readonly reviewsService = inject(CustomerReviewsService);

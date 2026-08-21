@@ -17,7 +17,7 @@ import {
   CustomerRecentlyViewedService,
   CustomerShoppingStateService,
   LoyaltyPointsCalculatorService,
-  NewArrivalsService,
+  CustomerCatalogService,
 } from '../services';
 
 type DetailsTab = 'description' | 'features' | 'reviews';
@@ -43,7 +43,7 @@ type DetailsTab = 'description' | 'features' | 'reviews';
 export class ProductDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly catalog = inject(NewArrivalsService);
+  private readonly catalog = inject(CustomerCatalogService);
   private readonly recentlyViewed = inject(CustomerRecentlyViewedService);
   private readonly translate = inject(TranslateService);
 

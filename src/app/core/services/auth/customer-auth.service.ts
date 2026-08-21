@@ -77,12 +77,20 @@ export class CustomerAuthService {
   readonly initials = computed(() => this.displayName().split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]?.toUpperCase()).join('') || 'C');
 
   private initialized: Promise<void> | null = null;
+  private lastLoadedProfileUserId: string | null | undefined;
+  private activeProfileLoad: { userId: string | null; promise: Promise<void> } | null = null;
+  private profileLoadSequence = 0;
 
   constructor() {
     void this.initialize();
     const { data } = this.supabase.auth.onAuthStateChange((_event, session) => {
       this.session.set(session);
-      void this.restoreProfile(session);
+      if (this.currentCustomerProfile()?.id !== session?.user.id) {
+        this.currentCustomerProfile.set(null);
+      }
+      void this.synchronizeProfileForSession(session).catch(() => {
+        // Consumers that require authentication surface initialization failures.
+      });
     });
     this.destroyRef.onDestroy(() => data.subscription.unsubscribe());
   }
@@ -104,7 +112,8 @@ export class CustomerAuthService {
     const userId = data.user?.id;
     if (!userId) throw new Error('User not found.');
 
-    const profile = await this.getCustomerProfileById(userId);
+    await this.synchronizeProfileForSession(data.session);
+    const profile = this.currentCustomerProfile();
     if (!profile) {
       await this.logout(false);
       throw new Error('Customer profile not found.');
@@ -183,7 +192,7 @@ export class CustomerAuthService {
   }
 
   this.session.set(data.session);
-  await this.restoreProfile(data.session);
+  await this.synchronizeProfileForSession(data.session);
 
   const profile = this.currentCustomerProfile();
 
@@ -204,14 +213,22 @@ export class CustomerAuthService {
 
     this.currentCustomerProfile.set(null);
     this.session.set(null);
+    this.lastLoadedProfileUserId = null;
+    this.profileLoadSequence += 1;
+    this.activeProfileLoad = null;
     if (navigate) await this.router.navigate(['/shop'], { replaceUrl: true });
   }
 
   async getCurrentCustomerProfile(): Promise<AuthenticatedUserProfile | null> {
     await this.initialize();
-    const profile = await this.getCurrentCustomerProfileFromSession();
-    this.currentCustomerProfile.set(profile);
-    return profile;
+    await this.synchronizeProfileForSession(this.session());
+    return this.currentCustomerProfile();
+  }
+
+  async refreshCurrentCustomerProfile(): Promise<AuthenticatedUserProfile | null> {
+    await this.initialize();
+    await this.synchronizeProfileForSession(this.session(), true);
+    return this.currentCustomerProfile();
   }
 
   async getCurrentUserId(): Promise<string | null> {
@@ -248,37 +265,60 @@ export class CustomerAuthService {
     )
   `;
 
-  private async getCurrentCustomerProfileFromSession(): Promise<AuthenticatedUserProfile | null> {
-    const { data, error } = await this.supabase.auth.getSession();
-    if (error) throw new Error(error.message);
-
-    const userId = data.session?.user.id;
-    if (!userId) return null;
-    return this.getCustomerProfileById(userId);
-  }
-
   private async restoreSession(): Promise<void> {
     try {
       const { data, error } = await this.supabase.auth.getSession();
       if (error) throw new Error(error.message);
       this.session.set(data.session);
-      await this.restoreProfile(data.session);
+      if (this.currentCustomerProfile()?.id !== data.session?.user.id) {
+        this.currentCustomerProfile.set(null);
+      }
+      await this.synchronizeProfileForSession(data.session);
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  private async restoreProfile(session: Session | null): Promise<void> {
-    if (!session) {
-      this.currentCustomerProfile.set(null);
-      this.isLoading.set(false);
+  private async synchronizeProfileForSession(
+    session: Session | null,
+    force = false,
+  ): Promise<void> {
+    const userId = session?.user.id ?? null;
+
+    if (this.activeProfileLoad?.userId === userId) {
+      await this.activeProfileLoad.promise;
       return;
     }
+
+    if (!force && this.lastLoadedProfileUserId === userId) return;
+
+    const promise = this.loadProfileForSession(session);
+    this.activeProfileLoad = { userId, promise };
+
     try {
-      this.currentCustomerProfile.set(await this.getCustomerProfileById(session.user.id));
+      await promise;
     } finally {
-      this.isLoading.set(false);
+      if (this.activeProfileLoad?.promise === promise) {
+        this.activeProfileLoad = null;
+      }
     }
+  }
+
+  private async loadProfileForSession(session: Session | null): Promise<void> {
+    const sequence = ++this.profileLoadSequence;
+    const userId = session?.user.id ?? null;
+
+    if (!userId) {
+      this.currentCustomerProfile.set(null);
+      this.lastLoadedProfileUserId = null;
+      return;
+    }
+
+    const profile = await this.getCustomerProfileById(userId);
+    if (sequence !== this.profileLoadSequence || this.session()?.user.id !== userId) return;
+
+    this.currentCustomerProfile.set(profile);
+    this.lastLoadedProfileUserId = userId;
   }
 
   private async getCustomerProfileById(userId: string): Promise<AuthenticatedUserProfile | null> {

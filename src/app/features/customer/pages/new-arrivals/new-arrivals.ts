@@ -10,7 +10,7 @@ import {
   CustomerProductFiltersComponent,
   CustomerProductQuickViewComponent,
 } from '../../components';
-import { NewArrivalsService } from '../../services';
+import { CustomerCatalogService } from '../../services';
 import { ProductBrowserPage } from '../product-browser-page';
 import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination';
 
@@ -38,7 +38,7 @@ import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination
 export class NewArrivalsComponent extends ProductBrowserPage {
   override readonly titleKey = 'CUSTOMER.PRODUCTS.NEW_ARRIVALS';
 
-  private readonly catalog = inject(NewArrivalsService);
+  private readonly catalog = inject(CustomerCatalogService);
 
   constructor() {
     super();
