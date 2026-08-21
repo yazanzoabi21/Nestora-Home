@@ -1,7 +1,11 @@
 <section class="relative isolate overflow-hidden bg-[#263326]">
   <img
-    src="https://images.unsplash.com/photo-1672860044506-e3ec09653e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1600"
-    alt="Nestora Home lifestyle" class="absolute inset-0 h-full w-full object-cover" />
+  src="https://images.unsplash.com/photo-1672860044506-e3ec09653e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1600"
+  alt="Nestora Home lifestyle"
+  fetchpriority="high"
+  decoding="async"
+  class="absolute inset-0 h-full w-full object-cover"
+/>
   <div class="absolute inset-0 bg-gradient-to-r from-[#172117]/90 via-[#172117]/60 to-[#172117]/15"></div>
   <div
     class="customer-page-container relative flex min-h-[36rem] items-center py-16 sm:min-h-[44rem] lg:min-h-[calc(100svh-8.75rem)]">
@@ -357,7 +361,7 @@
       [clearing]="recentlyViewedClearing()" (clearHistory)="clearRecentlyViewed()" />
   </div>
   } @else {
-  <div class="h-8 bg-[#faf8f5] sm:h-10" aria-hidden="true"></div>
+  <div class="min-h-[17rem] bg-[#faf8f5] sm:min-h-[18rem]" aria-hidden="true"></div>
   }
 
   <!--

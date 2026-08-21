@@ -27,13 +27,14 @@
       <i class="pi pi-arrow-left text-sm rtl:rotate-180" aria-hidden="true"></i>
     </button>
 
-    <div #track class="flex gap-3 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    <div #track
+      class="flex min-h-[6.75rem] gap-3 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       tabindex="0" [attr.aria-label]="'CUSTOMER.HOME.RECENTLY_VIEWED.CAROUSEL_ARIA' | translate" (scroll)="onScroll()">
       @for (product of items(); track product.id) {
       <a data-carousel-card [routerLink]="['/shop/products', product.slug || product.id]"
         class="group flex h-[6.25rem] w-[68vw] min-w-[13.75rem] max-w-[17.5rem] shrink-0 snap-start items-center gap-3 rounded-lg border border-[#ded8d0] bg-white/75 p-2 no-underline shadow-[0_2px_8px_rgba(31,42,31,0.025)] transition hover:border-[#aeb9a5] hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#718369]/25 sm:w-[calc((100%_-_1.5rem)/3)] sm:min-w-[calc((100%_-_1.5rem)/3)] sm:max-w-none lg:w-[calc((100%_-_3rem)/5)] lg:min-w-[calc((100%_-_3rem)/5)]"
         [attr.aria-label]="'CUSTOMER.HOME.RECENTLY_VIEWED.VIEW_PRODUCT' | translate: { name: product.name }">
-        <img [src]="product.imageUrl" [alt]="product.name"
+        <img [src]="product.imageUrl" [alt]="product.name" width="80" height="80" loading="lazy" decoding="async"
           class="size-20 shrink-0 rounded-md bg-[#f0ece6] object-cover" />
 
         <span class="flex min-w-0 flex-1 flex-col self-stretch py-1">
