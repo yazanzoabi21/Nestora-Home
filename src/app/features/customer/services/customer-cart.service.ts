@@ -17,6 +17,30 @@ interface CartItemRecord {
   products: Product | Product[] | null;
 }
 
+const CUSTOMER_CART_PRODUCT_SELECT = `
+  id,
+  category_id,
+  name,
+  slug,
+  description,
+  short_description,
+  sku,
+  image_url,
+  gallery,
+  features,
+  price,
+  sale_price,
+  stock,
+  sold_count,
+  is_featured,
+  is_new,
+  is_active,
+  is_loyalty_eligible,
+  rating,
+  created_at,
+  categories(name)
+`;
+
 @Injectable({ providedIn: 'root' })
 export class CustomerCartService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
@@ -48,7 +72,7 @@ export class CustomerCartService {
     this.requireAuthenticatedCustomer();
     const { data, error } = await this.supabase
       .from('cart_items')
-      .select('id,quantity,is_free_gift,applied_discount_id,discounts:applied_discount_id(code),products:product_id(*,categories(name))')
+      .select(`id,quantity,is_free_gift,applied_discount_id,discounts:applied_discount_id(code),products:product_id(${CUSTOMER_CART_PRODUCT_SELECT})`)
       .eq('cart_id', cartId)
       .order('created_at');
     if (error) throw new Error('Unable to load cart items.');
@@ -155,7 +179,7 @@ export class CustomerCartService {
     if (!items.length) return [];
     const { data, error } = await this.supabase
       .from('products')
-      .select('*,categories(name)')
+      .select(CUSTOMER_CART_PRODUCT_SELECT)
       .in(
         'id',
         items.map((item) => item.productId),
@@ -185,7 +209,7 @@ export class CustomerCartService {
 
     const { data, error } = await this.supabase
       .from('products')
-      .select('*,categories(name)')
+      .select(CUSTOMER_CART_PRODUCT_SELECT)
       .in('id', [...new Set(productIds)]);
 
     if (error) throw new Error('Unable to refresh product availability.');

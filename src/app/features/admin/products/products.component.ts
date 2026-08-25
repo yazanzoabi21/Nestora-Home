@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -62,6 +70,7 @@ const EMPTY_PRODUCT_FORM: ProductFormModel = {
   mediaId: null,
   price: null,
   salePrice: null,
+  costPrice: null,
   stock: null,
   soldCount: null,
   rating: null,
@@ -138,10 +147,13 @@ export class ProductsComponent implements OnInit {
   readonly productModalMode = signal<ProductModalMode>('add');
   readonly selectedProduct = signal<Product | null>(null);
   readonly productForm = signal<ProductFormModel>({ ...EMPTY_PRODUCT_FORM });
-  readonly loyaltyPreview = computed(() => this.loyalty.preview(
-    this.productForm().price,
-    this.productForm().salePrice,
-  ));
+  readonly costPriceError = computed(() => {
+    const costPrice = this.productForm().costPrice;
+    return costPrice !== null && costPrice < 0 ? 'PRODUCTS.COST_PRICE_NONNEGATIVE' : null;
+  });
+  readonly loyaltyPreview = computed(() =>
+    this.loyalty.preview(this.productForm().price, this.productForm().salePrice),
+  );
   readonly productImages = signal<ProductImageItem[]>([]);
   readonly productVariants = signal<ProductVariantFormModel[]>([]);
   readonly variantError = signal<string | null>(null);
@@ -158,6 +170,9 @@ export class ProductsComponent implements OnInit {
     { key: 'salePrice', label: 'PRODUCTS.TABLE.SALE_PRICE', type: 'text' },
     { key: 'stock', label: 'PRODUCTS.TABLE.STOCK', type: 'stock' },
     { key: 'sold', label: 'PRODUCTS.TABLE.SOLD', type: 'number' },
+    { key: 'costPrice', label: 'PRODUCTS.TABLE.COST_PRICE', type: 'text' },
+    { key: 'totalPrice', label: 'PRODUCTS.TABLE.TOTAL_PRICE', type: 'text' },
+    { key: 'totalCostPrice', label: 'PRODUCTS.TABLE.TOTAL_COST_PRICE', type: 'text' },
     { key: 'rating', label: 'PRODUCTS.TABLE.RATING', type: 'text' },
     { key: 'featured', label: 'PRODUCTS.TABLE.FEATURED', type: 'badge' },
     { key: 'newProduct', label: 'PRODUCTS.TABLE.NEW', type: 'badge' },
@@ -288,6 +303,16 @@ export class ProductsComponent implements OnInit {
   readonly tableRows = computed<ProductTableRow[]>(() =>
     this.filteredProducts().map((product) => this.toTableRow(product)),
   );
+  readonly filteredProductTotals = computed(() =>
+    this.filteredProducts().reduce(
+      (totals, product) => ({
+        totalPrice: totals.totalPrice + this.productTotalPrice(product),
+        totalCostPrice:
+          totals.totalCostPrice + (this.productTotalCostPrice(product) ?? 0),
+      }),
+      { totalPrice: 0, totalCostPrice: 0 },
+    ),
+  );
   readonly paginatedGridProducts = computed(() => {
     const products = this.filteredProducts();
     const pageSize = this.gridPageSize();
@@ -335,6 +360,7 @@ export class ProductsComponent implements OnInit {
             'Sale Price',
             'Stock',
             'Sold',
+            'Cost Price',
             'Status',
             'Active',
             'Featured',
@@ -363,6 +389,7 @@ export class ProductsComponent implements OnInit {
             'Sale Price': 22,
             Stock: 16,
             Sold: 16,
+            'Cost Price': 22,
             Status: 26,
             Active: 18,
             Featured: 20,
@@ -376,6 +403,7 @@ export class ProductsComponent implements OnInit {
             product.sale_price === null ? '-' : this.formatCurrency(product.sale_price),
             product.stock ?? 0,
             product.sold_count ?? 0,
+            product.cost_price === null ? '-' : this.formatCurrency(product.cost_price),
             this.productStatus(product).replaceAll('_', ' '),
             this.yesNo(product.is_active),
             this.yesNo(product.is_featured),
@@ -511,6 +539,7 @@ export class ProductsComponent implements OnInit {
       mediaId: product.media_id ?? null,
       price: product.price,
       salePrice: product.sale_price,
+      costPrice: product.cost_price,
       stock: product.stock,
       soldCount: product.sold_count,
       rating: product.rating,
@@ -659,6 +688,11 @@ export class ProductsComponent implements OnInit {
     const variantUploadedUrls: string[] = [];
 
     try {
+      const costPriceError = this.costPriceError();
+      if (costPriceError) {
+        throw new Error(costPriceError);
+      }
+
       const variantValidationError = this.validateVariants();
       if (variantValidationError) {
         this.variantError.set(variantValidationError);
@@ -688,35 +722,39 @@ export class ProductsComponent implements OnInit {
         .filter((image) => image.id !== cover?.id)
         .map((image) => image.url);
       const payload = this.buildProductPayload(cover?.url ?? null, gallery, cover?.mediaId ?? null);
-      const resolvedVariants = this.productForm().hasVariants ? await Promise.all(
-        this.productVariants().map(async (variant, index): Promise<ProductVariantMutationPayload> => {
-          const assignedGalleryIndex = this.productImages().findIndex(
-            (image) => image.url === variant.imageUrl,
-          );
-          let imageUrl =
-            assignedGalleryIndex >= 0
-              ? resolvedImages[assignedGalleryIndex]?.url ?? null
-              : variant.imageUrl.trim() || null;
-          if (variant.imageFile) {
-            imageUrl = await this.uploadService.uploadProductImage(variant.imageFile);
-            variantUploadedUrls.push(imageUrl);
-          }
-          return {
-            option_name: variant.optionName.trim(),
-            option_value: variant.optionValue.trim(),
-            name: variant.name.trim() || null,
-            sku: variant.sku.trim() || null,
-            price: variant.price,
-            sale_price: variant.salePrice,
-            stock: variant.stock,
-            attributes: this.parseVariantAttributes(variant.attributesText),
-            media_id: variant.mediaId,
-            image_url: imageUrl,
-            is_active: variant.isActive,
-            sort_order: index,
-          };
-        }),
-      ) : [];
+      const resolvedVariants = this.productForm().hasVariants
+        ? await Promise.all(
+            this.productVariants().map(
+              async (variant, index): Promise<ProductVariantMutationPayload> => {
+                const assignedGalleryIndex = this.productImages().findIndex(
+                  (image) => image.url === variant.imageUrl,
+                );
+                let imageUrl =
+                  assignedGalleryIndex >= 0
+                    ? (resolvedImages[assignedGalleryIndex]?.url ?? null)
+                    : variant.imageUrl.trim() || null;
+                if (variant.imageFile) {
+                  imageUrl = await this.uploadService.uploadProductImage(variant.imageFile);
+                  variantUploadedUrls.push(imageUrl);
+                }
+                return {
+                  option_name: variant.optionName.trim(),
+                  option_value: variant.optionValue.trim(),
+                  name: variant.name.trim() || null,
+                  sku: variant.sku.trim() || null,
+                  price: variant.price,
+                  sale_price: variant.salePrice,
+                  stock: variant.stock,
+                  attributes: this.parseVariantAttributes(variant.attributesText),
+                  media_id: variant.mediaId,
+                  image_url: imageUrl,
+                  is_active: variant.isActive,
+                  sort_order: index,
+                };
+              },
+            ),
+          )
+        : [];
       const selectedProduct = this.selectedProduct();
       const isEdit = this.productModalMode() === 'edit' && !!selectedProduct;
       let savedProduct: Product;
@@ -767,6 +805,10 @@ export class ProductsComponent implements OnInit {
       ...form,
       [key]: value,
     }));
+  }
+
+  updateCostPrice(value: unknown): void {
+    this.updateProductForm('costPrice', this.optionalNumber(value));
   }
 
   toggleProductVariants(enabled: boolean): void {
@@ -959,6 +1001,21 @@ export class ProductsComponent implements OnInit {
     }).format(value);
   }
 
+  productTotalPrice(product: Product): number {
+    return Number(product.price ?? 0) * Number(product.sold_count ?? 0);
+  }
+
+  productTotalCostPrice(product: Product): number | null {
+    if (product.cost_price === null) {
+      return null;
+    }
+
+    return (
+      Number(product.cost_price) *
+      (Number(product.sold_count ?? 0) + Number(product.stock ?? 0))
+    );
+  }
+
   formatDate(value: string | null): string {
     if (!value) {
       return '-';
@@ -1037,7 +1094,11 @@ export class ProductsComponent implements OnInit {
 
   private toTableRow(product: Product): ProductTableRow {
     const status = this.productStatus(product);
-    const salePrice = product.sale_price ?? null;
+    const regularPrice = Number(product.price);
+    const salePrice = product.sale_price === null ? null : Number(product.sale_price);
+    const hasSalePrice = salePrice !== null && salePrice > 0 && salePrice < regularPrice;
+    const totalPrice = this.productTotalPrice(product);
+    const totalCostPrice = this.productTotalCostPrice(product);
 
     return {
       id: product.id,
@@ -1053,15 +1114,19 @@ export class ProductsComponent implements OnInit {
       sku: product.sku || '-',
       category: this.categoryLabel(product),
       price: {
-        value: this.formatCurrency(salePrice ?? product.price),
-        originalValue: salePrice ? this.formatCurrency(product.price) : null,
+        value: this.formatCurrency(hasSalePrice ? salePrice : regularPrice),
+        originalValue: hasSalePrice ? this.formatCurrency(regularPrice) : null,
       },
-      salePrice: salePrice === null ? '-' : this.formatCurrency(salePrice),
+      salePrice: hasSalePrice ? this.formatCurrency(salePrice) : '-',
       stock: {
         value: product.stock ?? 0,
         status,
       },
       sold: product.sold_count ?? 0,
+      costPrice: product.cost_price === null ? '-' : this.formatCurrency(product.cost_price),
+      totalPrice: this.formatCurrency(totalPrice),
+      totalCostPrice:
+        totalCostPrice === null ? '-' : this.formatCurrency(totalCostPrice),
       rating: product.rating === null ? '-' : product.rating.toFixed(1),
       featured: this.booleanBadge(product.is_featured),
       newProduct: this.booleanBadge(product.is_new),
@@ -1207,9 +1272,16 @@ export class ProductsComponent implements OnInit {
       price: Number(form.price ?? 0),
       sale_price:
         form.salePrice === null || form.salePrice === undefined ? null : Number(form.salePrice),
+      cost_price: this.optionalNumber(form.costPrice),
       stock: form.stock === null || form.stock === undefined ? null : Number(form.stock),
-      sold_count:
-        form.soldCount === null || form.soldCount === undefined ? null : Number(form.soldCount),
+      ...(this.productModalMode() === 'edit'
+        ? {
+            sold_count:
+              form.soldCount === null || form.soldCount === undefined
+                ? null
+                : Number(form.soldCount),
+          }
+        : {}),
       rating: form.rating === null || form.rating === undefined ? null : Number(form.rating),
       short_description: form.shortDescription.trim() || null,
       description: form.description.trim() || null,
@@ -1226,6 +1298,15 @@ export class ProductsComponent implements OnInit {
   private normalizeFeatures(features: string[] | null | undefined): string[] {
     if (!Array.isArray(features)) return [];
     return features.filter((feature): feature is string => typeof feature === 'string');
+  }
+
+  private optionalNumber(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : null;
   }
 
   clearSelectedProducts(): void {
@@ -1403,7 +1484,10 @@ export class ProductsComponent implements OnInit {
       const sku = variant.sku.trim().toLocaleLowerCase();
       if (sku && skus.has(sku)) return 'Variant SKUs must be unique.';
       if (sku) skus.add(sku);
-      if (variant.price !== null && (!Number.isFinite(Number(variant.price)) || Number(variant.price) <= 0)) {
+      if (
+        variant.price !== null &&
+        (!Number.isFinite(Number(variant.price)) || Number(variant.price) <= 0)
+      ) {
         return 'Variant prices must be greater than zero.';
       }
       if (variant.salePrice !== null) {
@@ -1412,7 +1496,10 @@ export class ProductsComponent implements OnInit {
           return 'Variant sale price must be lower than its effective regular price.';
         }
       }
-      if (variant.stock !== null && (!Number.isInteger(Number(variant.stock)) || Number(variant.stock) < 0)) {
+      if (
+        variant.stock !== null &&
+        (!Number.isInteger(Number(variant.stock)) || Number(variant.stock) < 0)
+      ) {
         return 'Variant stock must be a non-negative whole number.';
       }
     }
@@ -1448,11 +1535,9 @@ export class ProductsComponent implements OnInit {
   }
 
   private watchQuerySearch(): void {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        this.searchTerm.set(params.get('q') ?? '');
-        this.gridCurrentPage.set(1);
-      });
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      this.searchTerm.set(params.get('q') ?? '');
+      this.gridCurrentPage.set(1);
+    });
   }
 }

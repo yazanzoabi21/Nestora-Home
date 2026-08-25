@@ -32,6 +32,7 @@ const PRODUCT: Product = {
   features: ['Linen cover'],
   price: 40,
   sale_price: 35,
+  cost_price: null,
   stock: 8,
   sold_count: 5,
   is_featured: true,

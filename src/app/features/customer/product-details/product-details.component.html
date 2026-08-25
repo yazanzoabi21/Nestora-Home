@@ -304,6 +304,33 @@
           </div>
         </div>
 
+        @let stock = availableQuantity();
+        <p
+          class="mt-3 flex items-center gap-2 text-sm font-bold"
+          [class.text-red-700]="stock === 0"
+          [class.text-[#b56b0c]]="stock > 0 && stock <= 5"
+          [class.text-[#4f8a4b]]="stock > 5"
+          aria-live="polite"
+        >
+          <span
+            class="h-2 w-2 shrink-0 rounded-full"
+            [class.bg-red-500]="stock === 0"
+            [class.bg-[#d98916]]="stock > 0 && stock <= 5"
+            [class.bg-[#6b7d5e]]="stock > 5"
+            aria-hidden="true"
+          ></span>
+
+          @if (stock === 0) {
+            {{ 'CUSTOMER.PRODUCT_DETAILS.OUT_OF_STOCK' | translate }}
+          } @else if (stock === 1) {
+            {{ 'CUSTOMER.PRODUCT_DETAILS.ONLY_ONE_LEFT' | translate }}
+          } @else if (stock <= 5) {
+            {{ 'CUSTOMER.PRODUCT_DETAILS.ONLY_ITEMS_LEFT' | translate: { count: stock } }}
+          } @else {
+            {{ 'CUSTOMER.PRODUCT_DETAILS.ITEMS_IN_STOCK' | translate: { count: stock } }}
+          }
+        </p>
+
         <div class="mt-8 flex items-stretch gap-3">
           @if (cartQuantity() > 0) {
           <div class="inline-flex h-14 flex-1 items-center overflow-hidden rounded-2xl bg-[#6b7d5e] text-white"

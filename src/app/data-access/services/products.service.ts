@@ -27,6 +27,7 @@ const PRODUCT_SELECT = `
   features,
   price,
   sale_price,
+  cost_price,
   stock,
   sold_count,
   is_featured,
@@ -230,6 +231,10 @@ export class ProductsService {
       sku: product.sku ?? null,
       media_id: product.media_id ?? null,
       stock: product.stock ?? null,
+      cost_price:
+        product.cost_price === null || product.cost_price === undefined
+          ? null
+          : Number(product.cost_price),
       sold_count: product.sold_count ?? null,
       is_featured: product.is_featured ?? null,
       is_new: product.is_new ?? null,
@@ -269,7 +274,7 @@ export class ProductsService {
     const name = payload.name.trim();
     const slug = payload.slug?.trim() || this.createSlug(name);
 
-    return {
+    const record: ProductMutationPayload = {
       category_id: payload.category_id ?? null,
       media_id: payload.media_id ?? null,
       name,
@@ -285,11 +290,11 @@ export class ProductsService {
         payload.sale_price === null || payload.sale_price === undefined
           ? null
           : Number(payload.sale_price),
-      stock: payload.stock === null || payload.stock === undefined ? null : Number(payload.stock),
-      sold_count:
-        payload.sold_count === null || payload.sold_count === undefined
+      cost_price:
+        payload.cost_price === null || payload.cost_price === undefined
           ? null
-          : Number(payload.sold_count),
+          : Number(payload.cost_price),
+      stock: payload.stock === null || payload.stock === undefined ? null : Number(payload.stock),
       is_featured: payload.is_featured ?? null,
       is_new: payload.is_new ?? null,
       is_active: payload.is_active ?? null,
@@ -297,6 +302,15 @@ export class ProductsService {
       rating:
         payload.rating === null || payload.rating === undefined ? null : Number(payload.rating),
     };
+
+    if ('sold_count' in payload) {
+      record.sold_count =
+        payload.sold_count === null || payload.sold_count === undefined
+          ? null
+          : Number(payload.sold_count);
+    }
+
+    return record;
   }
 
   private createSlug(value: string): string {

@@ -84,6 +84,7 @@ export interface Product {
   features: string[];
   price: number;
   sale_price: number | null;
+  cost_price: number | null;
   stock: number | null;
   sold_count: number | null;
   is_featured: boolean | null;
@@ -121,6 +122,7 @@ export interface ProductMutationPayload {
   features?: string[];
   price: number;
   sale_price?: number | null;
+  cost_price?: number | null;
   stock?: number | null;
   sold_count?: number | null;
   is_featured?: boolean | null;
@@ -138,6 +140,7 @@ export interface ProductFormModel {
   mediaId: string | null;
   price: number | null;
   salePrice: number | null;
+  costPrice: number | null;
   stock: number | null;
   soldCount: number | null;
   rating: number | null;
@@ -181,6 +184,9 @@ export interface ProductTableRowData {
     status: ProductStatus;
   };
   sold: number;
+  costPrice: string;
+  totalPrice: string;
+  totalCostPrice: string;
   rating: string;
   featured: ProductTableBadgeData;
   newProduct: ProductTableBadgeData;
