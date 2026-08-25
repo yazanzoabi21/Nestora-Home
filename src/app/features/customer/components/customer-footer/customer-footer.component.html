@@ -1,9 +1,12 @@
 <footer class="bg-[#2b2d2b] text-[#d8d1c8]">
   <section class="border-b border-white/10 py-9">
-    <div class="customer-page-container flex min-w-0 max-w-full flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    <div
+      class="customer-page-container flex min-w-0 max-w-full flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
       <div class="min-w-0">
-        <h2 class="break-words text-lg font-black text-white min-[361px]:text-xl">{{ 'CUSTOMERS.FOOTER.NEWSLETTER.TITLE' | translate }}</h2>
-        <p class="mt-2 break-words text-xs font-semibold leading-5 text-[#a9aca5] min-[361px]:text-sm">{{ 'CUSTOMERS.FOOTER.NEWSLETTER.DESCRIPTION' | translate }}</p>
+        <h2 class="break-words text-lg font-black text-white min-[361px]:text-xl">{{ 'CUSTOMERS.FOOTER.NEWSLETTER.TITLE'
+          | translate }}</h2>
+        <p class="mt-2 break-words text-xs font-semibold leading-5 text-[#a9aca5] min-[361px]:text-sm">{{
+          'CUSTOMERS.FOOTER.NEWSLETTER.DESCRIPTION' | translate }}</p>
       </div>
       <form class="flex w-full min-w-0 max-w-md flex-col gap-3 sm:flex-row">
         <label class="relative min-w-0 flex-1">
@@ -12,7 +15,8 @@
           <input type="email" [placeholder]="'CUSTOMERS.FOOTER.NEWSLETTER.EMAIL_PLACEHOLDER' | translate"
             class="h-12 w-full min-w-0 max-w-full rounded-2xl border border-white/15 bg-white/5 ps-11 pe-4 text-sm font-semibold text-white outline-none placeholder:text-[#8f928d] focus:border-[#7d8f70]" />
         </label>
-        <button type="button" class="inline-flex h-12 w-full max-w-full items-center justify-center gap-2 rounded-2xl bg-[#7d8f70] px-5 text-sm font-black text-white transition hover:bg-[#6b7d5e] sm:w-auto sm:px-6">
+        <button type="button"
+          class="inline-flex h-12 w-full max-w-full items-center justify-center gap-2 rounded-2xl bg-[#7d8f70] px-5 text-sm font-black text-white transition hover:bg-[#6b7d5e] sm:w-auto sm:px-6">
           {{ 'CUSTOMERS.FOOTER.NEWSLETTER.SUBSCRIBE' | translate }}
           <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i>
         </button>
@@ -20,7 +24,8 @@
     </div>
   </section>
 
-  <div class="customer-page-container grid min-w-0 max-w-full grid-cols-1 gap-8 py-10 [&>div]:min-w-0 min-[361px]:gap-10 min-[361px]:py-12 md:grid-cols-2 lg:grid-cols-4">
+  <div
+    class="customer-page-container grid min-w-0 max-w-full grid-cols-1 gap-8 py-10 [&>div]:min-w-0 min-[361px]:gap-10 min-[361px]:py-12 md:grid-cols-2 lg:grid-cols-4">
     <div class="min-w-0">
       <a routerLink="/shop" class="inline-flex items-center gap-3 text-white">
         <!-- bg-[#7d8f70]  -->
@@ -29,10 +34,12 @@
         </span>
         <span class="text-xl font-black">Nestora <span class="text-[#7d8f70]">Home</span></span>
       </a>
-      <p class="mt-5 max-w-xs text-sm font-semibold leading-6 text-[#a9aca5]">{{ 'CUSTOMERS.FOOTER.BRAND_DESCRIPTION' | translate }}</p>
+      <p class="mt-5 max-w-xs text-sm font-semibold leading-6 text-[#a9aca5]">{{ 'CUSTOMERS.FOOTER.BRAND_DESCRIPTION' |
+        translate }}</p>
       <div class="mt-6 flex items-center gap-4 text-[#a9aca5]">
         @for (social of socialLinks; track social.id) {
-        <a [href]="social.url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="social.labelKey | translate" class="transition hover:text-white">
+        <a [href]="social.url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="social.labelKey | translate"
+          class="transition hover:text-white">
           <i [class]="social.iconClass"></i>
         </a>
         }
@@ -40,30 +47,44 @@
     </div>
 
     <div>
-      <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">{{ 'CUSTOMERS.FOOTER.SHOP.TITLE' | translate }}</h3>
+      <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">{{ 'CUSTOMERS.FOOTER.SHOP.TITLE' |
+        translate }}</h3>
       <div class="mt-5 grid gap-3 text-sm font-semibold text-[#a9aca5]">
-        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.KITCHEN_TOOLS' | translate }}</a>
-        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.COOKWARE' | translate }}</a>
-        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.CLEANING' | translate }}</a>
-        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.SMART_TOOLS' | translate }}</a>
-        <a routerLink="/shop/new-arrivals" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.NEW_ARRIVALS' | translate }}</a>
-        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.BEST_SELLERS' | translate }}</a>
+        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.KITCHEN_TOOLS' |
+          translate }}</a>
+        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.COOKWARE' |
+          translate }}</a>
+        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.CLEANING' |
+          translate }}</a>
+        <a routerLink="/shop/products" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.SMART_TOOLS' |
+          translate }}</a>
+        <a routerLink="/shop/new-arrivals" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.NEW_ARRIVALS' |
+          translate }}</a>
+        <a routerLink="/shop/best-sellers" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.SHOP.BEST_SELLERS' |
+          translate }}</a>
       </div>
     </div>
 
     <div>
-      <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">{{ 'CUSTOMERS.FOOTER.ACCOUNT.TITLE' | translate }}</h3>
+      <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">{{ 'CUSTOMERS.FOOTER.ACCOUNT.TITLE' |
+        translate }}</h3>
       <div class="mt-5 grid gap-3 text-sm font-semibold text-[#a9aca5]">
-        <a routerLink="/shop/customer-account/profile" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.ACCOUNT.MY_PROFILE' | translate }}</a>
-        <a routerLink="/shop/customer-account/orders" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.ACCOUNT.ORDERS' | translate }}</a>
-        <a routerLink="/shop/customer-account/wishlist" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.ACCOUNT.WISHLIST' | translate }}</a>
-        <a routerLink="/shop/customer-account/addresses" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.ACCOUNT.ADDRESSES' | translate }}</a>
-        <a routerLink="/shop/customer-account/settings" class="transition hover:text-white">{{ 'CUSTOMERS.FOOTER.ACCOUNT.SETTINGS' | translate }}</a>
+        <a routerLink="/shop/customer-account/profile" class="transition hover:text-white">{{
+          'CUSTOMERS.FOOTER.ACCOUNT.MY_PROFILE' | translate }}</a>
+        <a routerLink="/shop/customer-account/orders" class="transition hover:text-white">{{
+          'CUSTOMERS.FOOTER.ACCOUNT.ORDERS' | translate }}</a>
+        <a routerLink="/shop/customer-account/wishlist" class="transition hover:text-white">{{
+          'CUSTOMERS.FOOTER.ACCOUNT.WISHLIST' | translate }}</a>
+        <a routerLink="/shop/customer-account/addresses" class="transition hover:text-white">{{
+          'CUSTOMERS.FOOTER.ACCOUNT.ADDRESSES' | translate }}</a>
+        <a routerLink="/shop/customer-account/settings" class="transition hover:text-white">{{
+          'CUSTOMERS.FOOTER.ACCOUNT.SETTINGS' | translate }}</a>
       </div>
     </div>
 
     <div>
-      <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">{{ 'CUSTOMERS.FOOTER.HELP.TITLE' | translate }}</h3>
+      <h3 class="text-sm font-black uppercase tracking-[0.18em] text-[#d8d1c8]">{{ 'CUSTOMERS.FOOTER.HELP.TITLE' |
+        translate }}</h3>
       <div class="mt-5 grid gap-3 text-sm font-semibold text-[#a9aca5]">
         @for (link of helpLinks; track link.route) {
         <a [routerLink]="link.route" class="transition hover:text-white">{{ link.labelKey | translate }}</a>
@@ -72,10 +93,42 @@
     </div>
   </div>
 
-  <div class="border-t border-white/10 py-6">
+  <!-- <div class="border-t border-white/10 py-6">
     <div class="customer-page-container flex flex-col gap-4 text-xs font-semibold text-[#8f928d] sm:flex-row sm:items-center sm:justify-between">
       <p>{{ 'CUSTOMERS.FOOTER.BOTTOM.COPYRIGHT' | translate }}</p>
       <p><i class="pi pi-wallet"></i> {{ 'CUSTOMERS.FOOTER.BOTTOM.PAYMENT_METHODS' | translate }}</p>
+    </div>
+  </div> -->
+
+  <div class="border-t border-white/10 py-6">
+    <div
+      class="customer-page-container flex flex-col gap-4 text-xs font-semibold text-[#8f928d] sm:flex-row sm:items-center sm:justify-between">
+      <!-- Copyright + Developer -->
+      <div class="flex flex-col gap-1">
+        <p>
+          {{ 'CUSTOMERS.FOOTER.BOTTOM.COPYRIGHT' | translate }}
+        </p>
+
+        <div class="flex items-start gap-2">
+          <span class="text-[#a9aca5]">
+            Developed by
+          </span>
+
+          <div class="flex flex-col font-bold text-[#7d8f70]">
+            <span>Yazan Zoabi & Razan Tarabishi</span>
+            <a href="https://wa.me/96176557980" target="_blank" rel="noopener noreferrer"
+              class="transition hover:text-[#7d8f70]">
+              For more information, contact us at +961 76 55 79 80
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <p>
+        <i class="pi pi-wallet"></i>
+        {{ 'CUSTOMERS.FOOTER.BOTTOM.PAYMENT_METHODS' | translate }}
+      </p>
     </div>
   </div>
 </footer>
