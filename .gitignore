@@ -1,15 +1,37 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+# Dependencies
+/node_modules/
 
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
+# Angular build and generated output
+/dist/
+/out-tsc/
+/bazel-out/
+/.angular/
+*.tsbuildinfo
+/typings/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Supabase local state
+/supabase/.branches/
+/supabase/.temp/
+/.supabase/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing and coverage
+/coverage/
+/__screenshots__/
 
 # IDEs and editors
 .idea/
@@ -19,6 +41,10 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
+*.swp
+*.swo
+*~
+.history/
 
 # Visual Studio Code
 .vscode/*
@@ -27,18 +53,30 @@ yarn-error.log
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/mcp.json
-.history/*
 
-# Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
-__screenshots__/
-
-# System files
+# Operating system
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Temporary files and caches
+/.cache/
+/.tmp/
+/tmp/
+/temp/
+.sass-cache/
+*.tmp
+*.temp
+*.bak
+*.backup
+/connect.lock
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
