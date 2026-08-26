@@ -15,10 +15,10 @@ interface SupabaseOrder {
   status: string | null;
   payment_status: string | null;
 
-  subtotal: number | null;
-  discount_amount: number | null;
-  shipping: number | null;
-  total: number | null;
+  subtotal: number | string | null;
+  discount_amount: number | string | null;
+  shipping: number | string | null;
+  total: number | string | null;
 
   address: string | null;
   city: string | null;
@@ -576,6 +576,18 @@ export class OrdersService {
     orderItems: AdminOrderItem[],
     loyaltyProcessed: boolean,
   ): AdminOrder {
+    const totalWithDeliveryAmount =
+      Math.max(0, this.moneyValue(order.total));
+
+    const shippingAmount =
+      Math.max(0, this.moneyValue(order.shipping));
+
+    const totalWithoutDeliveryAmount =
+      Math.max(
+        0,
+        totalWithDeliveryAmount - shippingAmount,
+      );
+
     const orderId =
       order.order_number?.trim() ||
       this.getShortOrderId(order.id);
@@ -673,12 +685,18 @@ export class OrdersService {
       ),
 
       shipping: this.formatCurrency(
-        order.shipping,
+        shippingAmount,
       ),
 
       total: this.formatCurrency(
-        order.total,
+        totalWithDeliveryAmount,
       ),
+
+      totalWithDelivery:
+        totalWithDeliveryAmount,
+
+      totalWithoutDelivery:
+        totalWithoutDeliveryAmount,
 
       payment: this.normalizeStatus(
         order.payment_status,
@@ -789,11 +807,19 @@ export class OrdersService {
   }
 
   private formatCurrency(
-    amount: number | null | undefined,
+    amount: number | string | null | undefined,
   ): string {
-    return `$${Number(
-      amount ?? 0,
-    ).toFixed(2)}`;
+    return `$${this.moneyValue(amount).toFixed(2)}`;
+  }
+
+  private moneyValue(
+    amount: number | string | null | undefined,
+  ): number {
+    const value = Number(amount ?? 0);
+
+    return Number.isFinite(value)
+      ? value
+      : 0;
   }
 
   private formatDate(

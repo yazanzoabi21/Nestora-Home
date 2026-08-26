@@ -1699,6 +1699,9 @@
         "DATE": "Date",
         "ITEMS": "Items",
         "TOTAL": "Total",
+        "WITHOUT_DELIVERY": "Without delivery",
+        "TOTAL_WITH_DELIVERY": "Total with delivery",
+        "TOTAL_WITHOUT_DELIVERY": "Total without delivery",
         "PAYMENT": "Payment",
         "DELIVERY": "Delivery",
         "ACTION": "Action"
@@ -4504,6 +4507,9 @@
         "DATE": "التاريخ",
         "ITEMS": "العناصر",
         "TOTAL": "الإجمالي",
+        "WITHOUT_DELIVERY": "بدون التوصيل",
+        "TOTAL_WITH_DELIVERY": "الإجمالي مع التوصيل",
+        "TOTAL_WITHOUT_DELIVERY": "الإجمالي بدون التوصيل",
         "PAYMENT": "الدفع",
         "DELIVERY": "التوصيل",
         "ACTION": "الإجراء"

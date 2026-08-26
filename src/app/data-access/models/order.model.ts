@@ -89,6 +89,8 @@ export interface AdminOrder {
   discount?: string;
   shipping?: string;
   total: string;
+  totalWithDelivery: number;
+  totalWithoutDelivery: number;
 
   payment: OrderPaymentStatus;
   delivery: OrderDeliveryStatus;

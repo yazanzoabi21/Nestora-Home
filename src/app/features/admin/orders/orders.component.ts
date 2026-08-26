@@ -751,6 +751,28 @@ export class OrdersComponent
       },
     );
 
+  readonly filteredOrderTotals =
+    computed(() =>
+      this.filteredOrders().reduce(
+        (totals, order) => ({
+          totalWithDelivery:
+            totals.totalWithDelivery +
+            this.finiteNumber(
+              order.totalWithDelivery,
+            ),
+          totalWithoutDelivery:
+            totals.totalWithoutDelivery +
+            this.finiteNumber(
+              order.totalWithoutDelivery,
+            ),
+        }),
+        {
+          totalWithDelivery: 0,
+          totalWithoutDelivery: 0,
+        },
+      ),
+    );
+
   constructor() {
     this.translate.onLangChange
       .pipe(
@@ -1149,7 +1171,11 @@ export class OrdersComponent
           'bg-[#f0ebe4] text-[#675f55]',
       },
 
-      total: order.total,
+      total: {
+        value: order.total,
+        withoutDelivery:
+          order.totalWithoutDelivery,
+      },
 
       payment: {
         label:
@@ -1246,6 +1272,18 @@ export class OrdersComponent
     }
 
     return true;
+  }
+
+  private finiteNumber(
+    value: number | null | undefined,
+  ): number {
+    const numericValue = Number(
+      value ?? 0,
+    );
+
+    return Number.isFinite(numericValue)
+      ? numericValue
+      : 0;
   }
 
   private parseOrderDate(
