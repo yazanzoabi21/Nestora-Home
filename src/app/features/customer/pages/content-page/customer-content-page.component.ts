@@ -71,7 +71,7 @@ export class CustomerContentPageComponent {
       this.page.set(page);
       this.status.set(page ? 'ready' : 'not-found');
     } catch (error) {
-      console.error('Unable to load customer content page.', error);
+
       this.status.set('error');
     }
   }

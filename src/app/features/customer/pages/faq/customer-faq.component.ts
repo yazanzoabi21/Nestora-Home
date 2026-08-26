@@ -92,7 +92,7 @@ export class CustomerFaqComponent {
       this.faqs.set(await this.contentService.getFaqs());
       this.status.set('ready');
     } catch (error) {
-      console.error('Unable to load customer FAQs.', error);
+
       this.status.set('error');
     }
   }

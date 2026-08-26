@@ -63,7 +63,7 @@ export class AnalyticsComponent implements OnInit {
       const data = await this.analyticsService.refreshAnalyticsByPeriod(this.selectedPeriod());
       this.analytics.set(data);
     } catch (error) {
-      console.error('Failed to load analytics:', error);
+
       this.analytics.set(null);
       this.error.set(this.t('ANALYTICS.TOAST.LOAD_FAILED_DETAIL'));
     } finally {

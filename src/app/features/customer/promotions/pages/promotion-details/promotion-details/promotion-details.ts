@@ -67,7 +67,7 @@ export class PromotionDetails {
 
       this.promotion.set(promotion);
     } catch (error) {
-      console.error('Unable to load promotion.', error);
+
       this.unavailable.set(true);
     } finally {
       this.loading.set(false);

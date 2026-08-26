@@ -314,7 +314,7 @@ export class HomePageComponent {
       this.recentlyViewedProducts.set([]);
       this.recentlyViewedStatus.set('empty');
     } catch (error) {
-      console.warn('Unable to clear recently viewed history.', error);
+
       this.toast.error(this.translate.instant('CUSTOMER.HOME.RECENTLY_VIEWED.CLEAR_FAILED'));
     } finally {
       this.recentlyViewedClearing.set(false);
@@ -405,7 +405,7 @@ export class HomePageComponent {
       this.reviews.set(reviews);
       this.offers.set(offers);
     } catch (error) {
-      console.error('Unable to load customer home data.', error);
+
       this.loadError.set(true);
     } finally {
       this.loading.set(false);
@@ -425,7 +425,7 @@ export class HomePageComponent {
           .length,
       );
     } catch (error) {
-      console.warn('Unable to determine completed customer orders for offer targeting.', error);
+
       this.completedOrderCount.set(null);
     }
   }
@@ -454,7 +454,7 @@ export class HomePageComponent {
         this.recentlyViewedStatus.set(snapshot.products.length > 0 ? 'ready' : 'empty');
       }
     } catch (error) {
-      console.warn('Unable to load recently viewed products.', error);
+
       if (requestId === this.recentlyViewedRequestId) {
         this.recentlyViewedProducts.set([]);
         this.recentlyViewedStatus.set('error');

@@ -168,7 +168,7 @@ export class AdminSidebarBadgesService {
         const { count, error } = await query;
 
         if (error) {
-            console.error(`Failed to load sidebar badge count for ${table}:`, error);
+
             return null;
         }
 

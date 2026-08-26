@@ -40,7 +40,7 @@ export class FlashDealsPage {
     try {
       this.promotions.set(await this.promotionsService.getFlashDealPromotions());
     } catch (error) {
-      console.error('Unable to load Flash Deal promotions.', error);
+
       this.promotions.set([]);
       this.loadError.set(true);
     } finally {

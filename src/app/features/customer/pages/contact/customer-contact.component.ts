@@ -108,7 +108,7 @@ export class CustomerContactComponent {
       this.submitted = false;
       this.feedback.set('success');
     } catch (error) {
-      console.error('Unable to submit customer contact message.', error);
+
       this.feedback.set('error');
     } finally {
       this.sending.set(false);

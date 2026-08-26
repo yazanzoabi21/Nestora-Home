@@ -281,7 +281,7 @@ export class CustomerGlobalSearchComponent {
       this.error.set(false);
     } catch (error) {
       if (requestVersion !== this.requestVersion) return;
-      console.error('Customer global search failed.', error);
+
       this.results.set([]);
       this.error.set(true);
     } finally {

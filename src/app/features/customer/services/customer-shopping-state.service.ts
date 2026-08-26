@@ -833,7 +833,7 @@ export class CustomerShoppingStateService {
   }
 
   private showWishlistError(error: unknown): void {
-    console.error('Wishlist request failed', error);
+
     this.toast.failed(this.translate.instant('CUSTOMER.WISHLIST.UPDATE_FAILED'));
   }
 

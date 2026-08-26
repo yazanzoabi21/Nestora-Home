@@ -272,7 +272,7 @@ export class CustomerCatalogService {
         this.refreshErrorState.set(message);
 
         if (fallback) {
-          console.warn('Unable to refresh the customer product catalog; using stale cache.', error);
+
           return fallback;
         }
 
@@ -309,7 +309,7 @@ export class CustomerCatalogService {
 
       if (!this.cacheStale) this.publishRealtimeChange();
     } catch (error) {
-      console.warn('Unable to refresh catalog after realtime change.', error);
+
     } finally {
       this.reuseCachedReviewStats = false;
     }
@@ -332,7 +332,7 @@ export class CustomerCatalogService {
       this.backgroundRefreshTimer = null;
       this.lastBackgroundRevalidationAt = Date.now();
       void this.refreshProducts().catch((error) => {
-        console.warn('Unable to revalidate the customer product catalog.', error);
+
       });
     }, 0);
   }

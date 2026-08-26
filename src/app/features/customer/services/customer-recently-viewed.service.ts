@@ -37,7 +37,7 @@ export class CustomerRecentlyViewedService {
 
       if (!authLoading && userId) {
         void this.mergeGuestHistory().catch((error: unknown) => {
-          console.warn('Unable to merge guest recently viewed history.', error);
+
         });
       }
     });
@@ -51,11 +51,11 @@ export class CustomerRecentlyViewedService {
       const userId = await this.getCurrentCustomerUserId();
 
       if (userId) {
-        console.log('CUSTOMER SESSION USER ID:', userId, '(record_product_view)');
+
         try {
           await this.mergeGuestHistory();
         } catch (error) {
-          console.warn('Unable to merge guest history before recording a product view.', error);
+
         }
         await this.recordAuthenticatedView(normalizedProductId);
       } else {
@@ -95,12 +95,12 @@ export class CustomerRecentlyViewedService {
       };
     }
 
-    console.log('CUSTOMER SESSION USER ID:', userId, '(customer_product_history SELECT)');
+
 
     try {
       await this.mergeGuestHistory();
     } catch (error) {
-      console.warn('Unable to merge guest history before loading recently viewed products.', error);
+
     }
 
     const { data, error } = await this.supabase

@@ -574,7 +574,7 @@ export class ProductDetailsComponent {
       this.preloadGalleryImages();
     } catch (error) {
       if (preserveState) {
-        console.warn('Unable to refresh the open product details.', error);
+
       } else {
         this.error.set(true);
         this.product.set(null);

@@ -82,7 +82,7 @@ export class BestSellersPage {
     try {
       this.replaceProducts(await this.catalog.getBestSellers());
     } catch (error) {
-      console.error('Unable to load best sellers.', error);
+
       this.loadError.set(true);
     } finally {
       this.loading.set(false);

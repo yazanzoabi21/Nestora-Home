@@ -55,7 +55,7 @@ export class CustomerWishlistService {
   }
 
   private throwSupabaseError(error: SupabaseErrorDetails, fallback: string): never {
-    console.error('Wishlist Supabase error:', error);
+
     const context = [error.message, error.details, error.hint].filter(Boolean).join(' ');
     throw new Error(context || fallback);
   }

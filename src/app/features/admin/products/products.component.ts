@@ -788,7 +788,7 @@ export class ProductsComponent implements OnInit {
           this.uploadService.deleteProductImage(url),
         ),
       );
-      console.error('Product save failed.', error);
+
       const message =
         error instanceof Error && error.message.startsWith('PRODUCTS.')
           ? error.message
@@ -948,7 +948,7 @@ export class ProductsComponent implements OnInit {
   }
 
   viewProduct(row: AdminTableRow): void {
-    console.log('TODO: view product', row);
+
   }
 
   async deleteProductRow(row: AdminTableRow): Promise<void> {

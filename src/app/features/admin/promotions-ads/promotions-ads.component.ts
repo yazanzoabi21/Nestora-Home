@@ -477,7 +477,7 @@ export class PromotionsAdsComponent implements OnInit {
 
       this.availableProducts.set(products);
     } catch (error) {
-      console.error('Unable to load selectable promotion products.', error);
+
 
       this.availableProducts.set([]);
       this.promotionProductsError.set('PROMOTIONS_ADS.PRODUCTS.LOAD_FAILED');
@@ -502,7 +502,7 @@ export class PromotionsAdsComponent implements OnInit {
         this.selectedProductIds.set(productIds);
       }
     } catch (error) {
-      console.error('Unable to load products assigned to this promotion.', error);
+
 
       if (this.selectedPromotion()?.id === promotionId && this.isPromotionModalOpen()) {
         this.promotionProductsError.set('PROMOTIONS_ADS.PRODUCTS.LOAD_FAILED');

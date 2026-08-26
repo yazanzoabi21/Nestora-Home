@@ -58,7 +58,7 @@ export class AdminNotificationsService {
       this.notifications.set(notifications);
       this.loaded = true;
     } catch (error) {
-      console.error('Failed to load admin notifications:', error);
+
       this.error.set('Unable to load notifications.');
     } finally {
       this.loading.set(false);
@@ -77,7 +77,7 @@ export class AdminNotificationsService {
       .eq('id', id);
 
     if (error) {
-      console.error('Failed to mark notification as read:', error);
+
       this.error.set('Unable to update the notification.');
       return false;
     }
@@ -104,7 +104,7 @@ export class AdminNotificationsService {
       .eq('is_read', false);
 
     if (error) {
-      console.error('Failed to mark all notifications as read:', error);
+
       this.error.set('Unable to update notifications.');
       return false;
     }

@@ -546,7 +546,7 @@ export class Dashboard implements OnInit {
         return;
       }
 
-      console.error('Failed to load dashboard statistics:', error);
+
       this.errorMessage.set(this.t('DASHBOARD.LOAD_FAILED_DETAIL'));
     } finally {
       if (requestId === this.dashboardRequestId) {
