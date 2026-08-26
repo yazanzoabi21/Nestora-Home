@@ -6,3 +6,4 @@ export * from './customer-product-card-skeleton/customer-product-card-skeleton';
 export * from './customer-recently-viewed';
 export * from './customer-settings/customer-settings';
 export * from './whatsapp-contact/whatsapp-contact.component';
+export * from './customer-scroll-to-top/customer-scroll-to-top.component';

@@ -60,6 +60,15 @@ interface ProductCacheEntry {
   readonly stale?: boolean;
 }
 
+type CatalogRealtimeTable = 'products' | 'product_variants' | 'categories';
+
+export interface CustomerCatalogRealtimeChange {
+  readonly revision: number;
+  readonly productIds: readonly string[];
+  readonly categoryIds: readonly string[];
+  readonly affectsAllProducts: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CustomerCatalogService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
@@ -69,6 +78,8 @@ export class CustomerCatalogService {
 
   private readonly cacheKey = 'nestora_customer_products_v1';
   private readonly cacheTtlMs = 5 * 60 * 1000;
+  private readonly backgroundRevalidationIntervalMs = 60 * 1000;
+  private readonly realtimeDebounceMs = 200;
   private readonly realtimeChannelName = 'customer-products-cache-invalidation';
 
   private memoryCache: CustomerProduct[] | null = null;
@@ -76,10 +87,31 @@ export class CustomerCatalogService {
   private cacheStale = false;
   private invalidationRevision = 0;
   private pendingRequest: Promise<CustomerProduct[]> | null = null;
+  private reuseCachedReviewStats = false;
   private realtimeChannel: RealtimeChannel | null = null;
+  private backgroundRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+  private realtimeRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastBackgroundRevalidationAt = 0;
+  private pendingRealtimeAffectsAllProducts = false;
+  private readonly pendingRealtimeProductIds = new Set<string>();
+  private readonly pendingRealtimeCategoryIds = new Set<string>();
 
   private readonly refreshErrorState = signal<string | null>(null);
   readonly refreshError = this.refreshErrorState.asReadonly();
+
+  private readonly productsState =
+    signal<CustomerProduct[] | null>(null);
+
+  readonly productsSnapshot =
+    this.productsState.asReadonly();
+
+  private readonly realtimeChangeState = signal<CustomerCatalogRealtimeChange>({
+    revision: 0,
+    productIds: [],
+    categoryIds: [],
+    affectsAllProducts: false,
+  });
+  readonly realtimeChange = this.realtimeChangeState.asReadonly();
 
   constructor() {
     this.startProductRealtime();
@@ -88,6 +120,8 @@ export class CustomerCatalogService {
 
   async getProducts(forceRefresh = false): Promise<CustomerProduct[]> {
     if (!forceRefresh && this.hasFreshMemoryCache()) {
+      this.publishProducts(this.memoryCache!);
+      this.scheduleAgeBasedRevalidation(this.memoryCacheTimestamp);
       return [...this.memoryCache!];
     }
 
@@ -96,6 +130,21 @@ export class CustomerCatalogService {
       this.memoryCache = persistentCache.data;
       this.memoryCacheTimestamp = persistentCache.timestamp;
       this.cacheStale ||= persistentCache.stale === true;
+      this.publishProducts(persistentCache.data);
+    }
+
+    if (!forceRefresh && this.memoryCache) {
+      if (!this.isUsable({
+        data: this.memoryCache,
+        timestamp: this.memoryCacheTimestamp,
+        stale: this.cacheStale,
+      })) {
+        this.scheduleBackgroundRefresh();
+      } else {
+        this.scheduleAgeBasedRevalidation(this.memoryCacheTimestamp);
+      }
+
+      return [...this.memoryCache];
     }
 
     if (!forceRefresh && persistentCache && this.isUsable(persistentCache)) {
@@ -179,8 +228,8 @@ export class CustomerCatalogService {
         .sort((left, right) => left.sortOrder - right.sortOrder),
       features: Array.isArray(product.features)
         ? product.features.filter(
-            (feature): feature is string => typeof feature === 'string' && !!feature.trim(),
-          )
+          (feature): feature is string => typeof feature === 'string' && !!feature.trim(),
+        )
         : [],
     };
   }
@@ -212,6 +261,7 @@ export class CustomerCatalogService {
 
         this.memoryCache = products;
         this.memoryCacheTimestamp = timestamp;
+        this.publishProducts(products);
         this.cacheStale = invalidatedDuringRequest;
         this.refreshErrorState.set(null);
         this.writePersistentCache({ data: products, timestamp, stale: invalidatedDuringRequest });
@@ -235,6 +285,72 @@ export class CustomerCatalogService {
     } finally {
       this.pendingRequest = null;
     }
+  }
+
+  private handleCatalogRealtimeChange(table: CatalogRealtimeTable, payload: unknown): void {
+    this.collectRealtimeTargets(table, payload);
+    this.invalidateProductsCache();
+
+    if (this.realtimeRefreshTimer) clearTimeout(this.realtimeRefreshTimer);
+    this.realtimeRefreshTimer = setTimeout(() => {
+      this.realtimeRefreshTimer = null;
+      void this.refreshAfterRealtimeChange();
+    }, this.realtimeDebounceMs);
+  }
+
+  private async refreshAfterRealtimeChange(): Promise<void> {
+    this.reuseCachedReviewStats = true;
+    try {
+      await this.refreshProducts();
+      if (this.cacheStale) {
+        await Promise.resolve();
+        await this.refreshProducts();
+      }
+
+      if (!this.cacheStale) this.publishRealtimeChange();
+    } catch (error) {
+      console.warn('Unable to refresh catalog after realtime change.', error);
+    } finally {
+      this.reuseCachedReviewStats = false;
+    }
+  }
+
+  private scheduleAgeBasedRevalidation(timestamp: number): void {
+    const now = Date.now();
+    if (
+      now - timestamp >= this.backgroundRevalidationIntervalMs &&
+      now - this.lastBackgroundRevalidationAt >= this.backgroundRevalidationIntervalMs
+    ) {
+      this.scheduleBackgroundRefresh();
+    }
+  }
+
+  private scheduleBackgroundRefresh(): void {
+    if (this.backgroundRefreshTimer || this.pendingRequest) return;
+
+    this.backgroundRefreshTimer = setTimeout(() => {
+      this.backgroundRefreshTimer = null;
+      this.lastBackgroundRevalidationAt = Date.now();
+      void this.refreshProducts().catch((error) => {
+        console.warn('Unable to revalidate the customer product catalog.', error);
+      });
+    }, 0);
+  }
+
+  private publishProducts(products: readonly CustomerProduct[]): void {
+    const snapshot = [...products];
+    if (!this.sameProducts(this.productsState(), snapshot)) {
+      this.productsState.set(snapshot);
+    }
+  }
+
+  private sameProducts(
+    current: readonly CustomerProduct[] | null,
+    incoming: readonly CustomerProduct[],
+  ): boolean {
+    if (!current || current.length !== incoming.length) return false;
+    if (current.every((product, index) => product === incoming[index])) return true;
+    return JSON.stringify(current) === JSON.stringify(incoming);
   }
 
   private hasFreshMemoryCache(): boolean {
@@ -341,15 +457,45 @@ export class CustomerCatalogService {
 
     this.realtimeChannel = this.supabase
       .channel(this.realtimeChannelName)
+
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'products' },
-        () => this.invalidateProductsCache(),
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products',
+        },
+        (payload) => this.handleCatalogRealtimeChange('products', payload),
       )
+
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'product_variants',
+        },
+        (payload) => this.handleCatalogRealtimeChange('product_variants', payload),
+      )
+
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'categories',
+        },
+        (payload) => this.handleCatalogRealtimeChange('categories', payload),
+      )
+
       .subscribe();
   }
 
   private stopProductRealtime(): void {
+    if (this.backgroundRefreshTimer) clearTimeout(this.backgroundRefreshTimer);
+    if (this.realtimeRefreshTimer) clearTimeout(this.realtimeRefreshTimer);
+    this.backgroundRefreshTimer = null;
+    this.realtimeRefreshTimer = null;
     if (!this.realtimeChannel) return;
     const channel = this.realtimeChannel;
     this.realtimeChannel = null;
@@ -373,8 +519,8 @@ export class CustomerCatalogService {
   private toCustomerProduct(product: Product, useDefaultVariant = true): CustomerProduct {
     const defaultVariant = useDefaultVariant
       ? (product.product_variants ?? [])
-          .filter((variant) => variant.is_active !== false)
-          .sort((left, right) => Number(left.sort_order) - Number(right.sort_order))[0]
+        .filter((variant) => variant.is_active !== false)
+        .sort((left, right) => Number(left.sort_order) - Number(right.sort_order))[0]
       : undefined;
     const regularPrice = Number(defaultVariant?.price ?? product.price ?? 0);
     const salePrice =
@@ -392,6 +538,7 @@ export class CustomerCatalogService {
       name: product.name,
       brand: 'Nestora',
       category: product.categoryName || 'Uncategorized',
+      categoryId: product.category_id ?? null,
       imageUrl:
         defaultVariant?.image_url || product.image_url || 'assets/images/product-placeholder.png',
       description: product.short_description || product.description || undefined,
@@ -424,14 +571,59 @@ export class CustomerCatalogService {
   }
 
   private mapCustomerProducts(products: Product[]): Promise<CustomerProduct[]> {
+    const cachedById = this.reuseCachedReviewStats
+      ? new Map((this.memoryCache ?? []).map((product) => [product.id, product]))
+      : new Map<string, CustomerProduct>();
     return Promise.all(
-      products.map(async (product) =>
-        this.withPublishedReviewStats(
-          this.toCustomerProduct(product),
+      products.map(async (product) => {
+        const mapped = this.toCustomerProduct(product);
+        const cached = cachedById.get(product.id);
+        if (cached) {
+          return { ...mapped, rating: cached.rating, reviewCount: cached.reviewCount };
+        }
+
+        return this.withPublishedReviewStats(
+          mapped,
           await this.reviewsService.getPublishedReviewsByProduct(product.id),
-        ),
-      ),
+        );
+      }),
     );
+  }
+
+  private collectRealtimeTargets(table: CatalogRealtimeTable, payload: unknown): void {
+    if (!this.isRecord(payload)) {
+      this.pendingRealtimeAffectsAllProducts = true;
+      return;
+    }
+    const records = [payload['new'], payload['old']].filter((value) => this.isRecord(value));
+    let targetFound = false;
+
+    for (const record of records) {
+      if (table === 'products' && typeof record['id'] === 'string') {
+        this.pendingRealtimeProductIds.add(record['id']);
+        targetFound = true;
+      } else if (table === 'product_variants' && typeof record['product_id'] === 'string') {
+        this.pendingRealtimeProductIds.add(record['product_id']);
+        targetFound = true;
+      } else if (table === 'categories' && typeof record['id'] === 'string') {
+        this.pendingRealtimeCategoryIds.add(record['id']);
+        targetFound = true;
+      }
+    }
+
+    if (!targetFound) this.pendingRealtimeAffectsAllProducts = true;
+  }
+
+  private publishRealtimeChange(): void {
+    this.realtimeChangeState.update((change) => ({
+      revision: change.revision + 1,
+      productIds: [...this.pendingRealtimeProductIds],
+      categoryIds: [...this.pendingRealtimeCategoryIds],
+      affectsAllProducts: this.pendingRealtimeAffectsAllProducts,
+    }));
+    this.pendingRealtimeProductIds.clear();
+    this.pendingRealtimeCategoryIds.clear();
+    this.pendingRealtimeAffectsAllProducts = false;
   }
 
   private galleryUrls(product: Product): string[] {

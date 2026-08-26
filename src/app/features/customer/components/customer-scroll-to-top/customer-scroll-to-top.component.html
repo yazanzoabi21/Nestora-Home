@@ -1,0 +1,23 @@
+<button
+  type="button"
+  class="scroll-to-top"
+  [class.scroll-to-top--visible]="visible()"
+  [attr.aria-hidden]="visible() ? null : 'true'"
+  [tabIndex]="visible() ? 0 : -1"
+  aria-label="Back to top"
+  title="Back to top"
+  (click)="scrollToTop()"
+>
+  <svg class="scroll-to-top__progress" viewBox="0 0 48 48" aria-hidden="true">
+    <circle class="scroll-to-top__track" cx="24" cy="24" [attr.r]="circleRadius" />
+    <circle
+      class="scroll-to-top__indicator"
+      cx="24"
+      cy="24"
+      [attr.r]="circleRadius"
+      [attr.stroke-dasharray]="circumference"
+      [attr.stroke-dashoffset]="progressOffset()"
+    />
+  </svg>
+  <i class="pi pi-chevron-up" aria-hidden="true"></i>
+</button>

@@ -1,27 +1,32 @@
 <article class="order-card" [class.order-card--expanded]="expanded()">
-  <button
-    type="button"
-    class="order-card__toggle"
-    [attr.aria-expanded]="expanded()"
-    [attr.aria-controls]="detailsId()"
+  <button type="button" class="order-card__toggle" [attr.aria-expanded]="expanded()" [attr.aria-controls]="detailsId()"
     [attr.aria-label]="
       (expanded()
         ? 'CUSTOMER.ACCOUNT.ORDERS.COLLAPSE_ORDER'
         : 'CUSTOMER.ACCOUNT.ORDERS.EXPAND_ORDER') | translate: { orderNumber: order().orderNumber }
-    "
-    (click)="requestToggle()"
-  >
+    " (click)="requestToggle()">
     <span class="order-card__package" aria-hidden="true">
       <i class="pi pi-box"></i>
     </span>
 
     <span class="order-card__identity">
-      <strong>{{ order().orderNumber }}</strong>
+      <span class="flex min-w-0 items-center gap-2">
+        <strong class="min-w-0 break-all sm:break-normal">
+          {{ order().orderNumber }}
+        </strong>
+
+        <button type="button"
+          class="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-[#dfe5da] bg-[#f7f8f5] text-[#718369] transition hover:bg-[#eef3ea] cursor-pointer"
+          title="Copy Order ID" aria-label="Copy Order ID" (click)="copyOrderId($event)">
+          <i class="pi pi-copy text-xs" aria-hidden="true"></i>
+        </button>
+      </span>
+
       <span>
         @if (order().createdAt) {
-          {{ order().createdAt | date: 'mediumDate' }}
+        {{ order().createdAt | date: 'mediumDate' }}
         } @else {
-          {{ 'CUSTOMER.ACCOUNT.ORDERS.DATE_UNAVAILABLE' | translate }}
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.DATE_UNAVAILABLE' | translate }}
         }
       </span>
     </span>
@@ -33,18 +38,18 @@
         [class.!bg-[#dcefe0]]="state === 'credited'" [class.!text-[#28723a]]="state === 'credited'">
         <i class="pi pi-star-fill" aria-hidden="true"></i>
         {{
-          (state === 'credited'
-            ? 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_CREDITED'
-            : 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_PENDING')
-          | translate: { points: order().loyaltyPointsEarned }
+        (state === 'credited'
+        ? 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_CREDITED'
+        : 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_PENDING')
+        | translate: { points: order().loyaltyPointsEarned }
         }}
       </span>
       }
       <span class="status-badge" [attr.data-tone]="statusTone()">
         @if (statusTranslationKey(order().status); as translationKey) {
-          {{ translationKey | translate }}
+        {{ translationKey | translate }}
         } @else {
-          {{ readableStatus(order().status) | titlecase }}
+        {{ readableStatus(order().status) | titlecase }}
         }
       </span>
       <strong>{{ order().total | currency: 'USD' : 'symbol' : '1.2-2' }}</strong>
@@ -53,92 +58,92 @@
   </button>
 
   @if (expanded()) {
-    <div class="order-card__details" [id]="detailsId()">
-      <section class="order-card__items" [attr.aria-label]="'CUSTOMER.ACCOUNT.ORDERS.ITEMS_ARIA' | translate">
-        <h3>
-          {{ 'CUSTOMER.ACCOUNT.ORDERS.ITEMS' | translate }}
-          <span>{{ itemCount() }}</span>
-        </h3>
+  <div class="order-card__details" [id]="detailsId()">
+    <section class="order-card__items" [attr.aria-label]="'CUSTOMER.ACCOUNT.ORDERS.ITEMS_ARIA' | translate">
+      <h3>
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.ITEMS' | translate }}
+        <span>{{ itemCount() }}</span>
+      </h3>
 
-        @if (order().items.length) {
-          <div class="order-card__item-list">
-            @for (item of order().items; track item.id) {
-              <app-customer-order-item [item]="item" />
-            }
-          </div>
-        } @else {
-          <p class="order-card__missing-items">
-            {{ 'CUSTOMER.ACCOUNT.ORDERS.ITEMS_UNAVAILABLE' | translate }}
-          </p>
+      @if (order().items.length) {
+      <div class="order-card__item-list">
+        @for (item of order().items; track item.id) {
+        <app-customer-order-item [item]="item" />
         }
-      </section>
+      </div>
+      } @else {
+      <p class="order-card__missing-items">
+        {{ 'CUSTOMER.ACCOUNT.ORDERS.ITEMS_UNAVAILABLE' | translate }}
+      </p>
+      }
+    </section>
 
-      <aside class="order-card__meta">
-        <dl class="order-card__totals">
-          <div>
-            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.SUBTOTAL' | translate }}</dt>
-            <dd>{{ order().subtotal | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
-          </div>
-          @if (order().discountAmount > 0) {
-            <div class="order-card__discount">
-              <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DISCOUNT' | translate }}</dt>
-              <dd>−{{ order().discountAmount | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
-            </div>
-          }
-          <div>
-            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.SHIPPING' | translate }}</dt>
-            <dd>{{ order().shipping | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
-          </div>
-          @if (order().paymentFee > 0) {
-            <div>
-              <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.PAYMENT_FEE' | translate }}</dt>
-              <dd>{{ order().paymentFee | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
-            </div>
-          }
-          <div class="order-card__grand-total">
-            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.TOTAL' | translate }}</dt>
-            <dd>{{ order().total | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
-          </div>
-        </dl>
+    <aside class="order-card__meta">
+      <dl class="order-card__totals">
+        <div>
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.SUBTOTAL' | translate }}</dt>
+          <dd>{{ order().subtotal | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        @if (order().discountAmount > 0) {
+        <div class="order-card__discount">
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DISCOUNT' | translate }}</dt>
+          <dd>−{{ order().discountAmount | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        }
+        <div>
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.SHIPPING' | translate }}</dt>
+          <dd>{{ order().shipping | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        @if (order().paymentFee > 0) {
+        <div>
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.PAYMENT_FEE' | translate }}</dt>
+          <dd>{{ order().paymentFee | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        }
+        <div class="order-card__grand-total">
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.TOTAL' | translate }}</dt>
+          <dd>{{ order().total | currency: 'USD' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+      </dl>
 
-        <dl class="order-card__information">
-          @if (loyaltyState(); as state) {
-          <div>
-            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_LABEL' | translate }}</dt>
-            <dd [class.!text-[#795f2f]]="state === 'pending'" [class.!text-[#28723a]]="state === 'credited'">
-              {{
-                (state === 'credited'
-                  ? 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_CREDITED_DETAIL'
-                  : 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_PENDING_DETAIL')
-                | translate: { points: order().loyaltyPointsEarned }
-              }}
-            </dd>
-          </div>
-          }
-          <div>
-            <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.PAYMENT_STATUS_LABEL' | translate }}</dt>
-            <dd>
-              @if (paymentStatusTranslationKey(order().paymentStatus); as translationKey) {
-                {{ translationKey | translate }}
-              } @else {
-                {{ readableStatus(order().paymentStatus) | titlecase }}
-              }
-            </dd>
-          </div>
-          @if (deliveryAddress()) {
-            <div>
-              <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DELIVERY_ADDRESS' | translate }}</dt>
-              <dd>{{ deliveryAddress() }}</dd>
-            </div>
-          }
-          @if (order().discountCode) {
-            <div>
-              <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DISCOUNT_CODE' | translate }}</dt>
-              <dd>{{ order().discountCode }}</dd>
-            </div>
-          }
-        </dl>
-      </aside>
-    </div>
+      <dl class="order-card__information">
+        @if (loyaltyState(); as state) {
+        <div>
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_LABEL' | translate }}</dt>
+          <dd [class.!text-[#795f2f]]="state === 'pending'" [class.!text-[#28723a]]="state === 'credited'">
+            {{
+            (state === 'credited'
+            ? 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_CREDITED_DETAIL'
+            : 'CUSTOMER.ACCOUNT.ORDERS.LOYALTY_PENDING_DETAIL')
+            | translate: { points: order().loyaltyPointsEarned }
+            }}
+          </dd>
+        </div>
+        }
+        <div>
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.PAYMENT_STATUS_LABEL' | translate }}</dt>
+          <dd>
+            @if (paymentStatusTranslationKey(order().paymentStatus); as translationKey) {
+            {{ translationKey | translate }}
+            } @else {
+            {{ readableStatus(order().paymentStatus) | titlecase }}
+            }
+          </dd>
+        </div>
+        @if (deliveryAddress()) {
+        <div>
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DELIVERY_ADDRESS' | translate }}</dt>
+          <dd>{{ deliveryAddress() }}</dd>
+        </div>
+        }
+        @if (order().discountCode) {
+        <div>
+          <dt>{{ 'CUSTOMER.ACCOUNT.ORDERS.DISCOUNT_CODE' | translate }}</dt>
+          <dd>{{ order().discountCode }}</dd>
+        </div>
+        }
+      </dl>
+    </aside>
+  </div>
   }
 </article>

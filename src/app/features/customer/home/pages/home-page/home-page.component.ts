@@ -216,6 +216,26 @@ export class HomePageComponent {
 
   constructor() {
     effect(() => {
+      const products = this.productsService.productsSnapshot();
+      if (!products) return;
+
+      untracked(() => {
+        this.products.set([...products]);
+        const productsById = new Map(products.map((product) => [product.id, product]));
+        this.recentlyViewedProducts.update((recent) =>
+          recent.flatMap((product) => {
+            const updated = productsById.get(product.id);
+            return updated ? [updated] : [];
+          }),
+        );
+
+        const selectedProductId = this.selectedProduct()?.id;
+        if (selectedProductId) {
+          this.selectedProduct.set(productsById.get(selectedProductId) ?? null);
+        }
+      });
+    });
+    effect(() => {
       const authLoading = this.auth.isLoading();
       const isAuthenticated = this.auth.isAuthenticated();
       if (!authLoading) void this.loadCompletedOrderCount(isAuthenticated);

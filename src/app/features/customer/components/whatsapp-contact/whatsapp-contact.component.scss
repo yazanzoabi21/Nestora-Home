@@ -1,30 +1,26 @@
 :host {
-  position: fixed;
-  inset-inline-end: max(1rem, env(safe-area-inset-right));
-  inset-block-end: max(1rem, env(safe-area-inset-bottom));
-  z-index: 40;
   display: block;
-  max-width: calc(100vw - 2rem);
 }
 
 .whatsapp-contact {
   display: inline-flex;
-  min-height: 3.25rem;
-  max-width: 100%;
+  width: 3.25rem;
+  height: 3.25rem;
   align-items: center;
-  gap: 0.65rem;
-  padding-block: 0.35rem;
-  padding-inline: 0.35rem 1rem;
+  justify-content: center;
+
+  padding: 0.35rem;
+
   border: 1px solid rgb(107 125 94 / 22%);
   border-radius: 9999px;
+
   background: rgb(250 248 245 / 96%);
-  color: #1f2a1f;
+
   box-shadow: 0 10px 28px rgb(31 42 31 / 16%);
-  font-size: 0.875rem;
-  font-weight: 800;
-  line-height: 1;
+
   text-decoration: none;
   backdrop-filter: blur(8px);
+
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -46,58 +42,18 @@
   display: inline-flex;
   width: 2.5rem;
   height: 2.5rem;
-  flex: 0 0 auto;
+
   align-items: center;
   justify-content: center;
+
   border-radius: 9999px;
+
   background: #25d366;
   color: #fff;
+
   font-size: 1.25rem;
+
   box-shadow: 0 5px 14px rgb(37 211 102 / 28%);
-}
-
-.whatsapp-contact__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@media (min-width: 768px) {
-  :host {
-    inset-inline-end: max(1.75rem, env(safe-area-inset-right));
-    inset-block-end: max(1.75rem, env(safe-area-inset-bottom));
-  }
-}
-
-:host-context([dir='rtl']) {
-  inset-inline-end: max(1rem, env(safe-area-inset-left));
-}
-
-@media (min-width: 768px) {
-  :host-context([dir='rtl']) {
-    inset-inline-end: max(1.75rem, env(safe-area-inset-left));
-  }
-}
-
-@media (max-width: 479px) {
-  :host {
-    inset-block-end: max(4rem, calc(1rem + env(safe-area-inset-bottom)));
-  }
-
-  .whatsapp-contact {
-    width: 3.25rem;
-    padding: 0.35rem;
-  }
-
-  .whatsapp-contact__label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    clip-path: inset(50%);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

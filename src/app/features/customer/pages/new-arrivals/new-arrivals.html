@@ -223,8 +223,8 @@
         <div [class]="
               viewMode() === 'grid'
                 ? selectedProduct()
-                  ? 'grid grid-cols-1 gap-4 min-[340px]:grid-cols-2 sm:gap-6'
-                  : 'grid grid-cols-1 gap-4 min-[340px]:grid-cols-2 sm:gap-6 xl:grid-cols-3'
+                  ? 'mx-auto grid w-full max-w-[704px] grid-cols-1 gap-4 min-[340px]:grid-cols-2 sm:gap-6'
+                  : 'grid grid-cols-1 gap-4 min-[340px]:grid-cols-2 sm:gap-6 xl:mx-auto xl:w-full xl:max-w-[1068px] xl:grid-cols-3'
                 : 'grid grid-cols-1 gap-6'
             ">
           @for (product of paginatedProducts(); track product.id) {

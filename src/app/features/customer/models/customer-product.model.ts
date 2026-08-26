@@ -3,6 +3,7 @@ export interface CustomerProduct {
   name: string;
   brand: string;
   category: string;
+  categoryId?: string | null;
   imageUrl: string;
   description?: string;
   price: number;

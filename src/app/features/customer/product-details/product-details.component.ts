@@ -3,8 +3,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -56,6 +58,7 @@ export class ProductDetailsComponent {
 
   private touchStartX: number | null = null;
   private touchStartY: number | null = null;
+  private lastHandledRealtimeRevision = 0;
 
   readonly product = signal<CustomerProductDetails | null>(null);
   readonly loading = signal(true);
@@ -218,6 +221,27 @@ export class ProductDetailsComponent {
   });
 
   constructor() {
+    effect(() => {
+      const change = this.catalog.realtimeChange();
+      const currentProduct = this.product();
+      if (
+        !currentProduct ||
+        change.revision === 0 ||
+        change.revision === this.lastHandledRealtimeRevision
+      ) {
+        return;
+      }
+
+      this.lastHandledRealtimeRevision = change.revision;
+      const isRelevant =
+        change.affectsAllProducts ||
+        change.productIds.includes(currentProduct.id) ||
+        (currentProduct.categoryId !== null &&
+          currentProduct.categoryId !== undefined &&
+          change.categoryIds.includes(currentProduct.categoryId));
+
+      if (isRelevant) untracked(() => void this.load(true));
+    });
     void this.load();
   }
 
@@ -502,7 +526,7 @@ export class ProductDetailsComponent {
     this.touchStartY = null;
   }
 
-  private async load(): Promise<void> {
+  private async load(preserveState = false): Promise<void> {
     const identifier =
       this.route.snapshot.paramMap.get('identifier');
 
@@ -511,7 +535,11 @@ export class ProductDetailsComponent {
       return;
     }
 
-    this.loading.set(true);
+    const previousVariantId = preserveState ? this.selectedVariant()?.id ?? null : null;
+    const previousImage = preserveState ? this.selectedImage() : null;
+    const previousQuantity = this.quantity();
+
+    if (!preserveState) this.loading.set(true);
     this.error.set(false);
 
     try {
@@ -519,29 +547,49 @@ export class ProductDetailsComponent {
         await this.catalog.getProductDetails(identifier);
 
       this.product.set(item);
-      this.quantity.set(1);
-      this.currentImageIndex.set(0);
+      this.quantity.set(preserveState ? previousQuantity : 1);
 
       const requestedVariantId = this.route.snapshot.queryParamMap.get('variant');
       const initialVariant =
+        item?.variants.find(
+          (variant) => variant.id === previousVariantId && variant.isActive,
+        ) ??
         item?.variants.find(
           (variant) => variant.id === requestedVariantId && variant.isActive,
         ) ?? item?.variants.find((variant) => variant.isActive) ?? null;
       this.selectedVariant.set(initialVariant);
       this.variantImageOverride.set(initialVariant?.imageUrl?.trim() || null);
 
-      if (item) {
+      const refreshedImages = this.galleryImages();
+      const preservedImageIndex = previousImage ? refreshedImages.indexOf(previousImage) : -1;
+      this.currentImageIndex.set(preservedImageIndex >= 0 ? preservedImageIndex : 0);
+      this.quantity.update((quantity) => Math.max(1, Math.min(quantity, this.availableQuantity())));
+
+      if (item && !preserveState) {
         void this.recentlyViewed.recordView(item.id);
       }
 
       // Load all gallery images in the background without
       // delaying the initial product display.
       this.preloadGalleryImages();
-    } catch {
-      this.error.set(true);
-      this.product.set(null);
+    } catch (error) {
+      if (preserveState) {
+        console.warn('Unable to refresh the open product details.', error);
+      } else {
+        this.error.set(true);
+        this.product.set(null);
+      }
     } finally {
-      this.loading.set(false);
+      if (!preserveState) this.loading.set(false);
     }
+  }
+
+  categorySlug(category: string): string {
+    return category
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

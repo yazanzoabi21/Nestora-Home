@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { CustomerNavbarComponent } from '../customer-navbar/customer-navbar.component';
 import { CustomerFooterComponent } from '../customer-footer/customer-footer.component';
 import { WhatsAppContactComponent } from '../whatsapp-contact/whatsapp-contact.component';
+import { CustomerScrollToTopComponent } from '../customer-scroll-to-top/customer-scroll-to-top.component';
 
 @Component({
   selector: 'app-customer-layout',
@@ -12,6 +13,7 @@ import { WhatsAppContactComponent } from '../whatsapp-contact/whatsapp-contact.c
     CustomerNavbarComponent,
     CustomerFooterComponent,
     WhatsAppContactComponent,
+    CustomerScrollToTopComponent,
   ],
   templateUrl: './customer-layout.component.html',
   styleUrl: './customer-layout.component.scss',

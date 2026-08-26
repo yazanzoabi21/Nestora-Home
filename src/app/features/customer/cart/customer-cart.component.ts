@@ -175,8 +175,45 @@ export class CustomerCartComponent implements OnInit {
 
   ngOnInit(): void {
     void this.loadFreeGiftDiscount();
+    void this.validateRestoredPromo();
     const applied = this.appliedDiscount();
     if (applied?.discount_type === 'free_gift') void this.loadEligibleGiftProducts(applied);
+  }
+
+  private async validateRestoredPromo(): Promise<void> {
+    const discount = this.appliedDiscount();
+
+    if (discount?.usage_per_customer == null) {
+      return;
+    }
+
+    try {
+      const canUse =
+        await this.discounts.canCurrentCustomerUseDiscount(discount);
+
+      if (canUse) {
+        return;
+      }
+
+      this.shopping.clearAppliedDiscount();
+      this.promoCode.set('');
+      if (discount.discount_type === 'free_gift') {
+        this.eligibleGiftProducts.set([]);
+        await this.shopping.clearFreeGiftSelection(discount.id);
+      }
+
+      this.toast.error(
+        'Promo code already used',
+        'You have already used this promo code.',
+      );
+    } catch {
+      this.shopping.clearAppliedDiscount();
+      this.promoCode.set('');
+      if (discount.discount_type === 'free_gift') {
+        this.eligibleGiftProducts.set([]);
+        await this.shopping.clearFreeGiftSelection(discount.id).catch(() => undefined);
+      }
+    }
   }
 
   private async loadFreeGiftDiscount(): Promise<void> {
@@ -334,6 +371,29 @@ export class CustomerCartComponent implements OnInit {
           'This code does not apply to the products in your cart.',
         );
         return;
+      }
+
+      if (discount.usage_per_customer != null) {
+        const canUse =
+          await this.discounts.canCurrentCustomerUseDiscount(
+            discount,
+          );
+
+        if (!canUse) {
+          this.shopping.clearAppliedDiscount();
+          this.promoCode.set(code);
+          if (discount.discount_type === 'free_gift') {
+            this.eligibleGiftProducts.set([]);
+            await this.shopping.clearFreeGiftSelection(discount.id);
+          }
+
+          this.toast.error(
+            'Promo code already used',
+            'You have already used this promo code.',
+          );
+
+          return;
+        }
       }
 
       this.shopping.setAppliedDiscount(discount);

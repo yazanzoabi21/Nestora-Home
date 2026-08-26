@@ -1,9 +1,10 @@
 import { CurrencyPipe, DatePipe, TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { CustomerOrder } from '../customer-order.model';
 import { CustomerOrderItemComponent } from '../customer-order-item/customer-order-item.component';
+import { ToastService } from '../../../../core/services';
 
 type OrderStatusTone = 'success' | 'info' | 'warning' | 'danger' | 'neutral';
 
@@ -57,6 +58,8 @@ const KNOWN_PAYMENT_STATUS_KEYS = new Set([
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerOrderCardComponent {
+  private readonly toast = inject(ToastService);
+
   readonly order = input.required<CustomerOrder>();
   readonly expanded = input(false);
   readonly toggleRequested = output<void>();
@@ -107,5 +110,29 @@ export class CustomerOrderCardComponent {
 
   readableStatus(status: string): string {
     return status.replaceAll('_', ' ');
+  }
+
+  async copyOrderId(event: Event): Promise<void> {
+    event.stopPropagation();
+
+    const orderNumber = this.order().orderNumber;
+
+    if (!orderNumber) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(orderNumber);
+
+      this.toast.success(
+        'Order ID copied',
+        `${orderNumber} was copied to your clipboard.`,
+      );
+    } catch {
+      this.toast.error(
+        'Copy failed',
+        'Unable to copy the Order ID.',
+      );
+    }
   }
 }

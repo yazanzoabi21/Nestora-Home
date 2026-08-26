@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -37,6 +44,10 @@ export class BestSellersPage {
   readonly loadingCards = [1, 2, 3, 4, 5, 6, 7, 8];
 
   constructor() {
+    effect(() => {
+      const products = this.catalog.productsSnapshot();
+      if (products) untracked(() => this.replaceProducts(products));
+    });
     void this.load();
   }
 
@@ -69,22 +80,31 @@ export class BestSellersPage {
     this.loadError.set(false);
 
     try {
-      const products = await this.catalog.getBestSellers();
-      this.products.set(
-        products
-          .filter((product) => product.isActive)
-          .sort(
-            (first, second) =>
-              second.soldCount - first.soldCount ||
-              second.rating - first.rating ||
-              second.reviewCount - first.reviewCount,
-          ),
-      );
+      this.replaceProducts(await this.catalog.getBestSellers());
     } catch (error) {
       console.error('Unable to load best sellers.', error);
       this.loadError.set(true);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private replaceProducts(products: readonly CustomerProduct[]): void {
+    const sortedProducts = [...products]
+      .filter((product) => product.isActive)
+      .sort(
+        (first, second) =>
+          second.soldCount - first.soldCount ||
+          second.rating - first.rating ||
+          second.reviewCount - first.reviewCount,
+      );
+    this.products.set(sortedProducts);
+
+    const selectedProductId = this.selectedProduct()?.id;
+    if (selectedProductId) {
+      this.selectedProduct.set(
+        sortedProducts.find((product) => product.id === selectedProductId) ?? null,
+      );
     }
   }
 }

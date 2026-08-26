@@ -1,5 +1,5 @@
 import { CdkTrapFocus } from '@angular/cdk/a11y';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
@@ -42,12 +42,16 @@ export class NewArrivalsComponent extends ProductBrowserPage {
 
   constructor() {
     super();
+    effect(() => {
+      const products = this.catalog.productsSnapshot();
+      if (products) this.replaceProducts(products.filter((product) => product.isNew));
+    });
     void this.load();
   }
 
   private async load(): Promise<void> {
     try {
-      this.products.set(await this.catalog.getNewArrivals());
+      this.replaceProducts(await this.catalog.getNewArrivals());
     } catch (error) {
       this.error.set(
         error instanceof Error

@@ -1,3 +1,37 @@
 :host {
   display: block;
 }
+
+.customer-floating-actions {
+  position: fixed;
+  inset-inline-end: max(1rem, env(safe-area-inset-right));
+  inset-block-end: max(1rem, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: flex;
+  max-width: calc(100vw - 2rem);
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+@media (min-width: 768px) {
+  .customer-floating-actions {
+    inset-inline-end: max(1.75rem, env(safe-area-inset-right));
+    inset-block-end: max(1.75rem, env(safe-area-inset-bottom));
+  }
+}
+
+:host-context([dir='rtl']) .customer-floating-actions {
+  inset-inline-end: max(1rem, env(safe-area-inset-left));
+}
+
+@media (min-width: 768px) {
+  :host-context([dir='rtl']) .customer-floating-actions {
+    inset-inline-end: max(1.75rem, env(safe-area-inset-left));
+  }
+}
+
+@media (max-width: 479px) {
+  .customer-floating-actions {
+    inset-block-end: max(4rem, calc(1rem + env(safe-area-inset-bottom)));
+  }
+}

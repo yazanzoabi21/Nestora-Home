@@ -116,7 +116,7 @@
 
   @if (orders().length > 5) {
   <app-admin-pagination variant="customer" class="customer-pagination mt-4" [currentPage]="currentPage()"
-    [totalItems]="orders().length" [pageSize]="pageSize()" [pageSizeOptions]="[12, 20, 25, 'all']" [showPageSize]="true"
+    [totalItems]="orders().length" [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 20, 'all']" [showPageSize]="true"
     [showSummary]="true" summaryKey="CUSTOMER.ACCOUNT.ORDERS.PAGINATION_SUMMARY" (pageChange)="changePage($event)"
     (pageSizeChange)="setPageSize($event)" />
   }

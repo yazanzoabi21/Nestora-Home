@@ -66,6 +66,12 @@ export class AllProducts extends ProductBrowserPage {
         this.applyRouteCategory();
       }
     });
+    effect(() => {
+      const products = this.catalog.productsSnapshot();
+      if (!products) return;
+
+      this.replaceProducts(products);
+    });
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       this.requestedCategorySlug.set(params.get('category'));
       this.navigationSource.set(params.get('source'));
@@ -83,10 +89,18 @@ export class AllProducts extends ProductBrowserPage {
 
   override clearFilters(): void {
     super.clearFilters();
+
     this.setProductSearch('');
+    this.requestedCategorySlug.set(null);
+    this.navigationSource.set(null);
+
     void this.routeNavigator.navigate([], {
       relativeTo: this.route,
-      queryParams: { search: null },
+      queryParams: {
+        category: null,
+        source: null,
+        search: null,
+      },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
@@ -103,7 +117,7 @@ export class AllProducts extends ProductBrowserPage {
   }
   private async load(): Promise<void> {
     try {
-      this.products.set(await this.catalog.getProducts());
+      this.replaceProducts(await this.catalog.getProducts());
       this.applyRouteCategory();
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Unable to load products.');
@@ -124,8 +138,11 @@ export class AllProducts extends ProductBrowserPage {
     const category = this.filterCategories().find(
       (option) => this.slugify(option.slug) === normalizedRequestedCategorySlug,
     );
-    this.selectedCategories.set(category ? [category.name] : []);
-    this.resetPagination();
+    const nextSelection = category ? [category.name] : [];
+    if (this.selectedCategories()[0] !== nextSelection[0]) {
+      this.selectedCategories.set(nextSelection);
+      this.resetPagination();
+    }
   }
 
   private slugify(value: string): string {

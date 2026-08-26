@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 
+import { CustomerAuthService } from '../../core/services/auth';
 import { SupabaseService } from '../../core/services/supabase';
+import { CUSTOMER_SUPABASE } from '../../core/tokens';
 import {
   Discount,
   DiscountGiftProduct,
@@ -37,6 +39,8 @@ const DISCOUNT_SELECT = `
 })
 export class DiscountsService {
   private readonly supabase = inject(SupabaseService).client;
+  private readonly customerSupabase = inject(CUSTOMER_SUPABASE);
+  private readonly customerAuth = inject(CustomerAuthService);
 
   async getDiscounts(): Promise<Discount[]> {
     const { data, error } = await this.supabase
@@ -101,13 +105,13 @@ export class DiscountsService {
       const product = Array.isArray(row.products) ? row.products[0] : row.products;
       return product
         ? [{
-            id: row.id,
-            discountId: row.discount_id,
-            productId: row.product_id,
-            sortOrder: Number(row.sort_order),
-            isActive: row.is_active !== false,
-            product,
-          }]
+          id: row.id,
+          discountId: row.discount_id,
+          productId: row.product_id,
+          sortOrder: Number(row.sort_order),
+          isActive: row.is_active !== false,
+          product,
+        }]
         : [];
     });
   }
@@ -366,5 +370,33 @@ export class DiscountsService {
       this.getDiscountStatus(discount) === 'active' &&
       !usageLimitReached
     );
+  }
+
+  async canCurrentCustomerUseDiscount(
+    discount: Discount,
+  ): Promise<boolean> {
+    if (discount.usage_per_customer == null) {
+      return true;
+    }
+
+    const customerId = await this.customerAuth.getCurrentUserId();
+    if (!customerId) {
+      return false;
+    }
+
+    const { data, error } = await this.customerSupabase.rpc(
+      'can_current_customer_use_discount',
+      {
+        p_discount_id: discount.id,
+      },
+    );
+
+    if (error) {
+      throw new Error(
+        `Unable to validate promo usage: ${error.message}`,
+      );
+    }
+
+    return data === true;
   }
 }

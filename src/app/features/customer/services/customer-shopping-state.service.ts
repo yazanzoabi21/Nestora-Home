@@ -1,4 +1,4 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { CustomerAuthService } from '../../../core/services/auth';
@@ -112,6 +112,20 @@ export class CustomerShoppingStateService {
   });
 
   constructor() {
+    effect(() => {
+      const products = this.catalog.productsSnapshot();
+      if (!products || this.wishlistProductIdsInOrder.length === 0) return;
+
+      untracked(() => {
+        const productsById = new Map(products.map((product) => [product.id, product]));
+        this.wishlistProducts.set(
+          this.wishlistProductIdsInOrder.flatMap((id) => {
+            const product = productsById.get(id);
+            return product ? [product] : [];
+          }),
+        );
+      });
+    });
     effect(() => {
       const authLoading = this.auth.isLoading();
       const userId = this.auth.isAuthenticated() ? this.auth.user()?.id ?? null : null;

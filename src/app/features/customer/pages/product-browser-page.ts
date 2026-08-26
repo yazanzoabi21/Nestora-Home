@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs';
@@ -197,6 +197,52 @@ export abstract class ProductBrowserPage {
 
   protected resetPagination(): void {
     this.currentPage.set(1);
+  }
+
+  protected replaceProducts(products: readonly CustomerProduct[]): void {
+    untracked(() => {
+      const selectedCategoryIds = new Set(
+        this.filterCategories()
+          .filter((category) => this.selectedCategories().includes(category.name))
+          .map((category) => category.id),
+      );
+      const categoryNamesById = new Map(
+        products.flatMap((product) =>
+          product.categoryId ? [[product.categoryId, product.category] as const] : [],
+        ),
+      );
+      this.filterCategories.update((categories) =>
+        categories.map((category) => {
+          const updatedName = categoryNamesById.get(category.id);
+          return updatedName && updatedName !== category.name
+            ? { ...category, name: updatedName }
+            : category;
+        }),
+      );
+      if (selectedCategoryIds.size > 0) {
+        this.selectedCategories.set(
+          this.filterCategories()
+            .filter((category) => selectedCategoryIds.has(category.id))
+            .map((category) => category.name),
+        );
+      }
+
+      this.products.set([...products]);
+
+      const selectedProductId = this.selectedProduct()?.id;
+      if (selectedProductId) {
+        this.selectedProduct.set(
+          products.find((product) => product.id === selectedProductId) ?? null,
+        );
+      }
+
+      const pageSize = this.productsPerPage();
+      const totalPages = Math.max(
+        1,
+        pageSize === 'all' ? 1 : Math.ceil(this.visibleProducts().length / pageSize),
+      );
+      this.currentPage.update((page) => Math.min(page, totalPages));
+    });
   }
 
   private scrollLockState: { scrollY: number; previousBodyStyle: Partial<CSSStyleDeclaration> } | null =

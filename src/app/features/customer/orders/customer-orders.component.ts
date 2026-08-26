@@ -36,7 +36,7 @@ import { CustomerOrdersService } from './customer-orders.service';
 export class CustomerOrdersComponent implements OnInit {
   private readonly customerOrders = inject(CustomerOrdersService);
   private readonly ordersList = viewChild<ElementRef<HTMLElement>>('ordersList');
-
+  
   readonly pageSize = signal<PaginationPageSize>(5);
 
   readonly orders = signal<CustomerOrder[]>([]);
