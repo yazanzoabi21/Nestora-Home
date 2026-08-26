@@ -21,8 +21,14 @@ import {
   LoyaltyPointsCalculatorService,
   CustomerCatalogService,
 } from '../services';
+import { CustomerPromotionsService } from '../services/customer-promotions.service';
 
 type DetailsTab = 'description' | 'features' | 'reviews';
+
+interface ProductPromotionBreadcrumb {
+  slug: string;
+  title: string;
+}
 
 @Component({
   selector: 'app-product-details',
@@ -46,6 +52,7 @@ export class ProductDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly catalog = inject(CustomerCatalogService);
+  private readonly promotions = inject(CustomerPromotionsService);
   private readonly recentlyViewed = inject(CustomerRecentlyViewedService);
   private readonly translate = inject(TranslateService);
 
@@ -61,6 +68,7 @@ export class ProductDetailsComponent {
   private lastHandledRealtimeRevision = 0;
 
   readonly product = signal<CustomerProductDetails | null>(null);
+  readonly promotionBreadcrumb = signal<ProductPromotionBreadcrumb | null>(null);
   readonly loading = signal(true);
   readonly error = signal(false);
 
@@ -242,6 +250,7 @@ export class ProductDetailsComponent {
 
       if (isRelevant) untracked(() => void this.load(true));
     });
+    void this.loadPromotionBreadcrumb();
     void this.load();
   }
 
@@ -572,15 +581,36 @@ export class ProductDetailsComponent {
       // Load all gallery images in the background without
       // delaying the initial product display.
       this.preloadGalleryImages();
-    } catch (error) {
-      if (preserveState) {
-
-      } else {
+    } catch {
+      if (!preserveState) {
         this.error.set(true);
         this.product.set(null);
       }
     } finally {
       if (!preserveState) this.loading.set(false);
+    }
+  }
+
+  private async loadPromotionBreadcrumb(): Promise<void> {
+    const promotionSlug = this.route.snapshot.queryParamMap.get('promotion')?.trim();
+
+    if (!promotionSlug) {
+      return;
+    }
+
+    try {
+      const promotion = await this.promotions.getPromotionBySlug(promotionSlug);
+
+      if (!promotion) {
+        return;
+      }
+
+      this.promotionBreadcrumb.set({
+        slug: promotionSlug,
+        title: promotion.title,
+      });
+    } catch {
+      this.promotionBreadcrumb.set(null);
     }
   }
 

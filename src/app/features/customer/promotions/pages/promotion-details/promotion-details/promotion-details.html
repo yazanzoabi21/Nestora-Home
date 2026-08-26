@@ -96,14 +96,23 @@
         </p>
 
         @if (promotionProducts().length) {
-        <div class="mt-8 grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-4">
+        <div #productsList
+            class="mt-8 grid scroll-mt-28 grid-cols-1 gap-5 outline-none min-[360px]:grid-cols-2 lg:grid-cols-4"
+            tabindex="-1">
             @for (
-            product of promotionProducts();
+            product of paginatedProducts();
             track product.id
             ) {
-            <app-customer-product-card [product]="product" />
+            <app-customer-product-card [product]="product" [detailQueryParams]="productDetailQueryParams()" />
             }
         </div>
+
+        @if (promotionProducts().length > 12) {
+        <app-admin-pagination variant="customer" class="customer-pagination mt-6" [currentPage]="currentPage()"
+            [totalItems]="promotionProducts().length" [pageSize]="pageSize()"
+            [pageSizeOptions]="[12, 20, 25, 'all']" [showPageSize]="true" [showSummary]="true"
+            (pageChange)="changePage($event)" (pageSizeChange)="setPageSize($event)" />
+        }
         } @else {
         <div class="mt-8 rounded-3xl border border-[#e8dccf] bg-white p-10 text-center">
             <h3 class="font-black text-[#1f2a1f]">

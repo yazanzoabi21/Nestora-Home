@@ -2,7 +2,7 @@
 <article
   class="customer-product-card customer-product-card--list group relative grid min-h-[132px] cursor-pointer grid-cols-[96px_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-3xl border bg-white p-4 transition sm:min-h-[164px] sm:grid-cols-[132px_minmax(0,1fr)_auto] sm:gap-6"
   [class.customer-product-card--selected]="selected()">
-  <a [routerLink]="detailUrl()"
+  <a [routerLink]="detailUrl()" [queryParams]="detailQueryParams()"
     class="absolute inset-0 z-0 rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
     [attr.aria-label]="'View details for ' + product().name"></a>
   @if (soldOut()) {
@@ -67,7 +67,7 @@
   class="customer-product-card group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[1.15rem] border bg-white sm:rounded-3xl"
   [class.customer-product-card--selected]="selected()"
   [class.customer-product-card--compact]="compact()">
-  <a [routerLink]="detailUrl()"
+  <a [routerLink]="detailUrl()" [queryParams]="detailQueryParams()"
     class="absolute inset-0 z-0 rounded-[1.15rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:rounded-3xl"
     [attr.aria-label]="'View details for ' + product().name"></a>
   <div class="customer-product-card__image pointer-events-none relative h-[164px] overflow-hidden bg-[#f5f2ee] min-[390px]:h-[184px] sm:h-72">

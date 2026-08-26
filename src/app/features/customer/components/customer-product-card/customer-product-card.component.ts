@@ -8,6 +8,7 @@ import { CustomerLoyaltyPointsBadgeComponent } from '../../../../shared/componen
 import { CustomerAuthService } from '../../../../core/services/auth';
 
 export type CustomerProductCardView = 'grid' | 'list';
+type CustomerProductDetailQueryParams = Readonly<Record<string, string>>;
 
 @Component({
   selector: 'app-customer-product-card',
@@ -22,6 +23,7 @@ export class CustomerProductCardComponent {
   readonly customerAuth = inject(CustomerAuthService);
   private readonly router = inject(Router);
   readonly product = input.required<CustomerProduct>();
+  readonly detailQueryParams = input<CustomerProductDetailQueryParams | null>(null);
   readonly view = input<CustomerProductCardView>('grid');
   readonly wishlistActive = input(false);
   readonly wishlistLoading = input(false);

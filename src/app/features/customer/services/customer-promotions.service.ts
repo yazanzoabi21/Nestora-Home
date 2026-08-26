@@ -62,8 +62,82 @@ const FLASH_DEAL_PROMOTION_SELECT = `
 })
 export class CustomerPromotionsService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
+  private flashDealsCache: Promotion[] | null = null;
+  private flashDealsRequest: Promise<Promotion[]> | null = null;
+  private readonly promotionDetailsCache = new Map<string, PromotionDetailsData | null>();
+  private readonly promotionDetailsRequests = new Map<
+    string,
+    Promise<PromotionDetailsData | null>
+  >();
+  private cacheGeneration = 0;
 
-  async getFlashDealPromotions(): Promise<Promotion[]> {
+  getFlashDealPromotions(): Promise<Promotion[]> {
+    if (this.flashDealsCache !== null) {
+      return Promise.resolve(this.flashDealsCache);
+    }
+
+    if (this.flashDealsRequest) {
+      return this.flashDealsRequest;
+    }
+
+    const generation = this.cacheGeneration;
+    const request = this.loadFlashDealPromotions()
+      .then((promotions) => {
+        if (this.cacheGeneration === generation) {
+          this.flashDealsCache = promotions;
+        }
+
+        return promotions;
+      })
+      .finally(() => {
+        if (this.flashDealsRequest === request) {
+          this.flashDealsRequest = null;
+        }
+      });
+
+    this.flashDealsRequest = request;
+    return request;
+  }
+
+  getPromotionBySlug(slug: string): Promise<PromotionDetailsData | null> {
+    if (this.promotionDetailsCache.has(slug)) {
+      return Promise.resolve(this.promotionDetailsCache.get(slug) ?? null);
+    }
+
+    const existingRequest = this.promotionDetailsRequests.get(slug);
+
+    if (existingRequest) {
+      return existingRequest;
+    }
+
+    const generation = this.cacheGeneration;
+    const request = this.loadPromotionBySlug(slug)
+      .then((promotion) => {
+        if (this.cacheGeneration === generation) {
+          this.promotionDetailsCache.set(slug, promotion);
+        }
+
+        return promotion;
+      })
+      .finally(() => {
+        if (this.promotionDetailsRequests.get(slug) === request) {
+          this.promotionDetailsRequests.delete(slug);
+        }
+      });
+
+    this.promotionDetailsRequests.set(slug, request);
+    return request;
+  }
+
+  clearPromotionCache(): void {
+    this.cacheGeneration += 1;
+    this.flashDealsCache = null;
+    this.flashDealsRequest = null;
+    this.promotionDetailsCache.clear();
+    this.promotionDetailsRequests.clear();
+  }
+
+  private async loadFlashDealPromotions(): Promise<Promotion[]> {
     const { data, error } = await this.supabase
       .from('promotions')
       .select(FLASH_DEAL_PROMOTION_SELECT)
@@ -84,7 +158,7 @@ export class CustomerPromotionsService {
       .filter((promotion) => this.isActive(promotion));
   }
 
-  async getPromotionBySlug(slug: string): Promise<PromotionDetailsData | null> {
+  private async loadPromotionBySlug(slug: string): Promise<PromotionDetailsData | null> {
     const { data, error } = await this.supabase
       .from('promotions')
       .select(

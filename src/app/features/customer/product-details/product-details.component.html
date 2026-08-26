@@ -38,6 +38,13 @@
         {{ item.category }}
       </a>
       <i class="pi pi-chevron-right text-[10px]"></i>
+      @if (promotionBreadcrumb(); as promotionSource) {
+      <a [routerLink]="['/shop/promotions', promotionSource.slug]"
+        class="cursor-pointer transition-colors hover:text-[#6b7d5e] hover:underline">
+        {{ promotionSource.title }}
+      </a>
+      <i class="pi pi-chevron-right text-[10px]"></i>
+      }
       <span class="text-[#1f2a1f]">{{ item.name }}</span>
     </nav>
 
