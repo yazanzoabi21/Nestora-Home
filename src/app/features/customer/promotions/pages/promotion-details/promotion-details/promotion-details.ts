@@ -11,8 +11,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { CustomerPromotionsService } from '../../../../services/customer-promotions.service';
-import { PromotionDetailsData } from '../../../../models';
-import { CustomerProductCardComponent } from '../../../../../customer/components/customer-product-card';
+import { CustomerShoppingStateService } from '../../../../services';
+import { CustomerProduct, PromotionDetailsData } from '../../../../models';
+import {
+  CustomerProductAddRequest,
+  CustomerProductQuickViewComponent,
+} from '../../../../components/customer-product-quick-view';
+import { CustomerProductCardComponent } from '../../../../components/customer-product-card';
 import {
   AdminPaginationComponent,
   PaginationPageSize,
@@ -21,16 +26,26 @@ import {
 @Component({
   selector: 'app-promotion-details',
   standalone: true,
-  imports: [RouterLink, CustomerProductCardComponent, TranslatePipe, AdminPaginationComponent],
+  imports: [
+    RouterLink,
+    CustomerProductCardComponent,
+    CustomerProductQuickViewComponent,
+    TranslatePipe,
+    AdminPaginationComponent,
+  ],
   templateUrl: './promotion-details.html',
+  styleUrl: '../../../../pages/all-products/all-products.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PromotionDetails {
+  readonly shopping = inject(CustomerShoppingStateService);
+
   private readonly route = inject(ActivatedRoute);
   private readonly promotionsService = inject(CustomerPromotionsService);
   private readonly productsList = viewChild<ElementRef<HTMLElement>>('productsList');
 
   readonly promotion = signal<PromotionDetailsData | null>(null);
+  readonly selectedProduct = signal<CustomerProduct | null>(null);
   readonly productDetailQueryParams = computed<Readonly<Record<string, string>> | null>(() => {
     const promotionSlug = this.promotion()?.slug?.trim();
 
@@ -116,8 +131,29 @@ export class PromotionDetails {
     });
   }
 
+  openQuickView(product: CustomerProduct): void {
+    this.selectedProduct.set(product);
+  }
+
+  closeQuickView(): void {
+    this.selectedProduct.set(null);
+  }
+
+  async addToCart(product: CustomerProduct, quantity = 1): Promise<void> {
+    await this.shopping.addToCart(product, quantity);
+  }
+
+  async addFromQuickView(request: CustomerProductAddRequest): Promise<void> {
+    await this.addToCart(request.product, request.quantity);
+  }
+
+  async toggleWishlist(product: CustomerProduct): Promise<void> {
+    await this.shopping.toggleWishlist(product);
+  }
+
   changePage(page: number): void {
     this.currentPage.set(page);
+    this.selectedProduct.set(null);
 
     queueMicrotask(() => {
       const list = this.productsList()?.nativeElement;
@@ -133,5 +169,6 @@ export class PromotionDetails {
   setPageSize(size: PaginationPageSize): void {
     this.pageSize.set(size);
     this.currentPage.set(1);
+    this.selectedProduct.set(null);
   }
 }

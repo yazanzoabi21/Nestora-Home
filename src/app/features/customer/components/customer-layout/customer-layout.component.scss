@@ -35,3 +35,13 @@
     inset-block-end: max(4rem, calc(1rem + env(safe-area-inset-bottom)));
   }
 }
+
+@media (max-width: 767px) {
+  :host.customer-layout--cart {
+    padding-block-end: calc(6.25rem + env(safe-area-inset-bottom));
+  }
+
+  :host.customer-layout--cart .customer-floating-actions {
+    inset-block-end: calc(6.75rem + env(safe-area-inset-bottom));
+  }
+}

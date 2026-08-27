@@ -1,10 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  computed,
   effect,
   inject,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -17,6 +20,7 @@ import {
 import { CustomerProductAddRequest } from '../../components/customer-product-quick-view';
 import { CustomerProduct } from '../../models';
 import { CustomerCatalogService, CustomerShoppingStateService } from '../../services';
+import { AdminPaginationComponent, PaginationPageSize } from '../../../../shared/ui/admin-pagination';
 
 @Component({
   selector: 'app-best-sellers',
@@ -27,6 +31,7 @@ import { CustomerCatalogService, CustomerShoppingStateService } from '../../serv
     CustomerProductQuickViewComponent,
     RouterLink,
     TranslatePipe,
+    AdminPaginationComponent
   ],
   templateUrl: './best-sellers.html',
   styleUrl: './best-sellers.css',
@@ -42,6 +47,25 @@ export class BestSellersPage {
   readonly loadError = signal(false);
   readonly selectedProduct = signal<CustomerProduct | null>(null);
   readonly loadingCards = [1, 2, 3, 4, 5, 6, 7, 8];
+
+  readonly currentPage = signal(1);
+  readonly pageSize = signal<PaginationPageSize>(12);
+
+  private readonly productsList =
+    viewChild<ElementRef<HTMLElement>>('productsList');
+
+  readonly paginatedProducts = computed(() => {
+    const products = this.products();
+    const size = this.pageSize();
+
+    if (size === 'all') {
+      return products;
+    }
+
+    const start = (this.currentPage() - 1) * size;
+
+    return products.slice(start, start + size);
+  });
 
   constructor() {
     effect(() => {
@@ -99,6 +123,7 @@ export class BestSellersPage {
           second.reviewCount - first.reviewCount,
       );
     this.products.set(sortedProducts);
+    this.currentPage.set(1);
 
     const selectedProductId = this.selectedProduct()?.id;
     if (selectedProductId) {
@@ -106,5 +131,27 @@ export class BestSellersPage {
         sortedProducts.find((product) => product.id === selectedProductId) ?? null,
       );
     }
+  }
+
+  changePage(page: number): void {
+    this.currentPage.set(page);
+    this.selectedProduct.set(null);
+
+    queueMicrotask(() => {
+      const list = this.productsList()?.nativeElement;
+
+      list?.focus({ preventScroll: true });
+
+      list?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  }
+
+  setPageSize(size: PaginationPageSize): void {
+    this.pageSize.set(size);
+    this.currentPage.set(1);
+    this.selectedProduct.set(null);
   }
 }

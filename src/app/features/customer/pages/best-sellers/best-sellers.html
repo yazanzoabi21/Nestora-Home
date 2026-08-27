@@ -84,8 +84,10 @@
       </p>
     </div>
     } @else {
-    <div class="grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      @for (product of products(); track product.id) {
+    <div #productsList
+      class="grid scroll-mt-28 grid-cols-1 gap-5 outline-none min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      tabindex="-1">
+      @for (product of paginatedProducts(); track product.id) {
       <app-customer-product-card [product]="product" [wishlistActive]="shopping.isInWishlist(product.id)"
         [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
         [cartLoading]="shopping.pendingProductIds().has(product.id)" [canAddToCart]="shopping.canAdd(product)"
@@ -93,6 +95,13 @@
         (addToCart)="addToCart($event)" (toggleWishlist)="toggleWishlist($event)" />
       }
     </div>
+
+    @if (products().length > 12) {
+    <app-admin-pagination variant="customer" class="customer-pagination mt-7" [currentPage]="currentPage()"
+      [totalItems]="products().length" [pageSize]="pageSize()" [pageSizeOptions]="[12, 20, 25, 'all']"
+      [showPageSize]="true" [showSummary]="true" (pageChange)="changePage($event)"
+      (pageSizeChange)="setPageSize($event)" />
+    }
     }
   </div>
 </section>

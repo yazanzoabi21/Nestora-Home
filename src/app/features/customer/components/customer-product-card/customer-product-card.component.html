@@ -53,12 +53,12 @@
     </button>
     <button type="button" class="customer-product-card__icon-button customer-product-card__icon-button--primary"
       [class.customer-product-card__icon-button--sold-out]="soldOut()"
-      [disabled]="soldOut() || !canAddToCart() || cartLoading()"
+      [disabled]="soldOut() || !canAddAnother() || cartPending()"
       [attr.aria-label]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
       [attr.title]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
       (click)="requestAddToCart($event)">
-      <i class="pi" [class.pi-shopping-cart]="!cartLoading() && !soldOut()" [class.pi-ban]="soldOut()"
-        [class.pi-spinner]="cartLoading() && !soldOut()" [class.pi-spin]="cartLoading() && !soldOut()"></i>
+      <i class="pi" [class.pi-shopping-cart]="!cartPending() && !soldOut()" [class.pi-ban]="soldOut()"
+        [class.pi-spinner]="cartPending() && !soldOut()" [class.pi-spin]="cartPending() && !soldOut()"></i>
     </button>
   </div>
 </article>
@@ -101,10 +101,16 @@
 
     <!-- Mobile: small cart control at the lower-right of the image, opposite the heart. -->
     <div class="pointer-events-auto absolute bottom-3 end-3 z-10 flex sm:hidden">
-      @if (cartQuantity() > 0) {
+      @if (soldOut()) {
+      <button type="button"
+        class="grid h-9 w-9 place-items-center rounded-full bg-[#9f2d24] text-white shadow-lg disabled:cursor-not-allowed"
+        disabled aria-label="Sold Out" title="Sold Out">
+        <i class="pi pi-ban"></i>
+      </button>
+      } @else if (cartQuantity() > 0) {
       <div class="inline-flex h-8 items-center overflow-hidden rounded-full bg-[#6b7d5e] text-white shadow-lg"
         role="group" aria-label="Cart quantity">
-        <button type="button" class="grid h-8 w-7 cursor-pointer place-items-center" [disabled]="cartLoading()"
+        <button type="button" class="grid h-8 w-7 cursor-pointer place-items-center" [disabled]="cartPending()"
           aria-label="Decrease quantity" (click)="decreaseCartQuantity($event)">
           <i class="pi pi-minus" style="font-size: 10px !important"></i>
         </button>
@@ -122,17 +128,18 @@
       } @else {
       <button type="button"
         class="grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-[#6b7d5e] text-white shadow-lg transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-        [disabled]="soldOut() || !canAddToCart() || cartLoading()"
-        [attr.aria-label]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
+        [disabled]="!canAddAnother() || cartPending()"
+        [attr.aria-label]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
         (click)="requestAddToCart($event)">
-        <i class="pi" [class.pi-shopping-cart]="!cartLoading() && !soldOut()" [class.pi-ban]="soldOut()"
-          [class.pi-spinner]="cartLoading() && !soldOut()" [class.pi-spin]="cartLoading() && !soldOut()"></i>
+        <i class="pi" [class.pi-shopping-cart]="!cartPending()" [class.pi-spinner]="cartPending()"
+          [class.pi-spin]="cartPending()"></i>
       </button>
       }
     </div>
 
     <div
       class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 hidden translate-y-2 items-center gap-3 opacity-0 transition sm:group-hover:flex sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:flex sm:group-focus-within:opacity-100">
+      @if (showQuickView()) {
       <button type="button"
         class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-black shadow-sm cursor-pointer"
         [attr.aria-label]="'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate"
@@ -140,14 +147,22 @@
         (click)="quickView.emit(product()); $event.stopPropagation()">
         <i class="pi pi-eye text-xs"></i>{{ 'CUSTOMER.PRODUCTS.QUICK_VIEW' | translate }}
       </button>
-      @if (cartQuantity() > 0) {
+      }
+      @if (soldOut()) {
+      <button type="button"
+        class="customer-product-card__cart-button customer-product-card__cart-button--sold-out inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full px-4 text-sm font-black text-white"
+        disabled aria-label="Sold Out" title="Sold Out">
+        <i class="pi pi-ban"></i>
+        Sold Out
+      </button>
+      } @else if (cartQuantity() > 0) {
       <div
         class="customer-product-card__cart-button inline-flex h-11 flex-1 items-center overflow-hidden rounded-full bg-[#6b7d5e] text-white"
         role="group" aria-label="Cart quantity">
 
         <button type="button"
           class="grid h-full w-10 shrink-0 cursor-pointer place-items-center transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-50"
-          [disabled]="cartLoading()" aria-label="Decrease quantity" (click)="decreaseCartQuantity($event)">
+          [disabled]="cartPending()" aria-label="Decrease quantity" (click)="decreaseCartQuantity($event)">
           <i class="pi pi-minus"></i>
         </button>
 
@@ -165,14 +180,13 @@
       } @else {
       <button type="button"
         class="customer-product-card__cart-button inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white cursor-pointer"
-        [class.customer-product-card__cart-button--sold-out]="soldOut()"
-        [disabled]="soldOut() || !canAddToCart() || cartLoading()"
-        [attr.aria-label]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
-        [attr.title]="soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate)"
+        [disabled]="!canAddAnother() || cartPending()"
+        [attr.aria-label]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
+        [attr.title]="'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate"
         (click)="requestAddToCart($event)">
-        <i class="pi" [class.pi-shopping-cart]="!cartLoading() && !soldOut()" [class.pi-ban]="soldOut()"
-          [class.pi-spinner]="cartLoading() && !soldOut()" [class.pi-spin]="cartLoading() && !soldOut()"></i>
-        {{ soldOut() ? 'Sold Out' : ('CUSTOMER.PRODUCTS.ADD_TO_CART' | translate) }}
+        <i class="pi" [class.pi-shopping-cart]="!cartPending()" [class.pi-spinner]="cartPending()"
+          [class.pi-spin]="cartPending()"></i>
+        {{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}
       </button>
       }
     </div>

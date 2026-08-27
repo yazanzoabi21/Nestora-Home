@@ -3,7 +3,7 @@
     <div
       class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(113,131,105,.65),transparent_46%),linear-gradient(135deg,#1f2a1f,#303b2e)]">
     </div>
-    <div class="customer-page-container relative py-12 sm:py-16 lg:py-20">
+    <div class="customer-page-container relative py-5 sm:py-16 lg:py-20">
       <nav class="flex flex-wrap items-center gap-2 text-xs font-bold text-white/65">
         <a routerLink="/shop" class="text-white/75 no-underline transition hover:text-white">
           {{ 'CUSTOMER.FLASH_DEALS_PAGE.HOME' | translate }}
@@ -31,7 +31,7 @@
     </div>
   </section>
 
-  <section class="customer-page-container py-10 sm:py-14 lg:py-16">
+  <section class="customer-page-container py-6 sm:py-14 lg:py-16">
     @if (loading()) {
     <div class="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
       [attr.aria-label]="'CUSTOMER.FLASH_DEALS_PAGE.LOADING' | translate">

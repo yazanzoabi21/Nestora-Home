@@ -5,30 +5,35 @@
   styleClass="nestora-toast"
 >
   <ng-template #message let-message>
-    <div class="flex w-full min-w-0 items-center gap-3">
+    <div class="flex min-w-0 flex-1 items-center gap-3">
       @if (message.data?.['imageUrl']) {
         <img
-          class="size-14 shrink-0 rounded-xl bg-[#f4f1ec] object-cover"
+          class="nestora-toast-product-image size-11 shrink-0 rounded-xl bg-[#f4efe8] object-cover min-[768px]:size-14 min-[768px]:bg-[#f4f1ec]"
           [src]="message.data['imageUrl']"
           [alt]="message.data['imageAlt'] || message.detail || message.summary"
         />
       } @else {
         <span
-          class="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#eef3ea] text-[#708565]"
+          class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#eef3ea] text-[#708565] min-[768px]:size-11"
           [class.!bg-[#fde8ec]]="message.data?.['wishlist']"
           [class.!text-[#d83b54]]="message.data?.['wishlist']"
         >
-          <i [class]="message.icon"></i>
+          <i class="text-[15px] min-[768px]:text-base" [class]="message.icon"></i>
         </span>
       }
 
       <div class="min-w-0 flex-1">
-        <p class="truncate text-sm font-semibold text-[#202820]">
+        <p
+          class="truncate text-[13px] font-bold text-[#292929] min-[768px]:text-sm min-[768px]:font-semibold min-[768px]:text-[#202820]"
+        >
           {{ message.summary }}
         </p>
 
         @if (message.detail) {
-          <p class="mt-1 truncate text-xs text-[#96918b]">
+          <p
+            class="mt-0.5 break-words text-[11px] font-medium text-[#99938c] min-[768px]:mt-1 min-[768px]:truncate min-[768px]:text-xs min-[768px]:font-normal min-[768px]:text-[#96918b]"
+            [class.truncate]="message.data?.['imageUrl']"
+          >
             {{ message.detail }}
           </p>
         }

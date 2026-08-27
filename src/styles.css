@@ -577,6 +577,55 @@ select option {
   }
 }
 
+@media (max-width: 767px) {
+  body:has(app-customer-layout) .p-toast.nestora-toast.p-toast-bottom-right {
+    top: var(--customer-toast-top, 142px) !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50% !important;
+    z-index: 1200 !important;
+    width: calc(100% - 32px) !important;
+    max-width: 360px !important;
+    transform: translateX(-50%);
+  }
+
+  body:has(app-customer-layout) .p-toast.nestora-toast .p-toast-message {
+    margin-block-end: 8px !important;
+    border-color: #e8dfd5 !important;
+    border-radius: 18px !important;
+    background: rgba(255, 253, 250, 0.95) !important;
+    box-shadow: 0 8px 24px rgba(31, 42, 31, 0.11) !important;
+    backdrop-filter: blur(20px);
+  }
+
+  body:has(app-customer-layout) .p-toast.nestora-toast .p-toast-message-content {
+    display: flex !important;
+    min-height: 0;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px !important;
+  }
+
+  body:has(app-customer-layout) .p-toast.nestora-toast .p-toast-close-button {
+    width: 32px !important;
+    height: 32px !important;
+    flex: 0 0 32px;
+    align-self: center;
+    color: #77736d !important;
+  }
+
+  body:has(app-customer-layout) .p-toast.nestora-toast .p-toast-close-button:hover {
+    background: #f1eee9 !important;
+    color: #333 !important;
+    transform: none;
+  }
+
+  body:has(app-customer-layout) .p-toast.nestora-toast .p-toast-close-icon {
+    width: 13px !important;
+    height: 13px !important;
+  }
+}
+
 .auth-field input[type='password']::-ms-reveal,
 .auth-field input[type='password']::-ms-clear,
 .password-input[type='password']::-ms-reveal,

@@ -223,17 +223,17 @@
     </div>
 
     <!-- Mobile navbar -->
-    <div class="customer-page-container flex flex-col gap-3 py-4 min-[1181px]:hidden">
-      <div class="flex min-w-0 items-center justify-between gap-3">
+    <div class="customer-page-container py-3 min-[1181px]:hidden">
+      <div class="relative flex w-full min-w-0 items-center gap-1.5 min-[360px]:gap-2">
         <button type="button"
-          class="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-[#718369] text-sm font-black uppercase text-white disabled:cursor-not-allowed disabled:opacity-60"
+          class="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-[#718369] text-sm font-black uppercase text-white disabled:cursor-not-allowed disabled:opacity-60"
           [attr.aria-label]="accountAriaLabel()" [disabled]="customerAuth.isLoading()"
           [attr.aria-busy]="customerAuth.isLoading()" (click)="openAccount()">
           @if (customerAuth.isLoading()) {
           <i class="pi pi-spinner pi-spin text-sm" aria-hidden="true"></i>
           } @else if (customerAuth.isAuthenticated()) {
           @if (customerAuth.customerProfile()?.avatar_url; as avatarUrl) {
-          <img class="h-9 w-9 rounded-full object-cover" [src]="avatarUrl" [alt]="customerAuth.displayName()" />
+          <img class="h-10 w-10 rounded-full object-cover" [src]="avatarUrl" [alt]="customerAuth.displayName()" />
           } @else {
           <span aria-hidden="true">{{ customerAuth.initials() }}</span>
           }
@@ -242,7 +242,10 @@
           }
         </button>
 
-        <div class="ml-auto flex shrink-0 items-center gap-3 text-[#1f2a1f]">
+        <app-customer-global-search variant="mobile" [categories]="subCategories()"
+          class="block min-w-0 flex-1" (searchFocus)="closeMobileMenu()" />
+
+        <div class="flex shrink-0 items-center gap-1 text-[#1f2a1f] min-[390px]:gap-2">
           <!-- Mobile wishlist -->
           <a routerLink="/shop/customer-account/wishlist"
             class="relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#1f2a1f] no-underline transition-[background-color,color,box-shadow] duration-[160ms] hover:bg-[#f3f0ea] hover:text-[#6b7d5e] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
@@ -283,10 +286,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Mobile search -->
-      <app-customer-global-search variant="mobile" [categories]="subCategories()" class="block w-full"
-        (searchFocus)="closeMobileMenu()" />
     </div>
 
     <!-- Mobile navigation menu -->

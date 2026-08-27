@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CustomerProduct } from '../../models';
-import { LoyaltyPointsCalculatorService } from '../../services';
+import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../../services';
 import { CustomerLoyaltyPointsBadgeComponent } from '../../../../shared/components/customer-loyalty-points-badge';
 import { CustomerAuthService } from '../../../../core/services/auth';
 
@@ -21,6 +21,7 @@ type CustomerProductDetailQueryParams = Readonly<Record<string, string>>;
 export class CustomerProductCardComponent {
   readonly loyalty = inject(LoyaltyPointsCalculatorService);
   readonly customerAuth = inject(CustomerAuthService);
+  private readonly shopping = inject(CustomerShoppingStateService);
   private readonly router = inject(Router);
   readonly product = input.required<CustomerProduct>();
   readonly detailQueryParams = input<CustomerProductDetailQueryParams | null>(null);
@@ -31,6 +32,7 @@ export class CustomerProductCardComponent {
   readonly canAddToCart = input(true);
   readonly selected = input(false);
   readonly compact = input(false);
+  readonly showQuickView = input(true);
 
   readonly quickView = output<CustomerProduct>();
   readonly addToCart = output<CustomerProduct>();
@@ -41,19 +43,22 @@ export class CustomerProductCardComponent {
   readonly detailUrl = computed(() => ['/shop/products', this.product().slug || this.product().id]);
   readonly soldOut = computed(() => this.product().stock <= 0 || !this.product().inStock);
   readonly loyaltyPreview = computed(() => this.loyalty.preview(this.product().price));
-
-  readonly cartQuantity = input(0);
-  readonly cartQuantityChange = output<{
-    product: CustomerProduct;
-    quantity: number;
-  }>();
+  readonly cartQuantity = computed(() =>
+    this.shopping.quantityFor(this.product().id, this.product().variantId),
+  );
+  readonly cartPending = computed(
+    () => this.cartLoading() || this.shopping.pendingProductIds().has(this.product().id),
+  );
+  readonly canAddAnother = computed(
+    () => this.canAddToCart() && this.shopping.canAdd(this.product()),
+  );
 
   readonly canIncreaseCartQuantity = computed(
     () =>
       this.cartQuantity() > 0 &&
       !this.soldOut() &&
-      !this.cartLoading() &&
-      this.canAddToCart(),
+      !this.cartPending() &&
+      this.canAddAnother(),
   );
 
   loyaltyReturnUrl(): string {
@@ -66,14 +71,20 @@ export class CustomerProductCardComponent {
 
     const currentQuantity = this.cartQuantity();
 
-    if (this.cartLoading() || currentQuantity < 1) {
+    if (this.cartPending() || currentQuantity < 1) {
       return;
     }
 
-    this.cartQuantityChange.emit({
-      product: this.product(),
-      quantity: currentQuantity - 1,
-    });
+    if (currentQuantity === 1) {
+      void this.shopping.removeFromCart(this.product().id, this.product().variantId);
+      return;
+    }
+
+    void this.shopping.setQuantity(
+      this.product().id,
+      currentQuantity - 1,
+      this.product().variantId,
+    );
   }
 
   increaseCartQuantity(event: Event): void {
@@ -84,15 +95,16 @@ export class CustomerProductCardComponent {
       return;
     }
 
-    this.cartQuantityChange.emit({
-      product: this.product(),
-      quantity: this.cartQuantity() + 1,
-    });
+    void this.shopping.setQuantity(
+      this.product().id,
+      this.cartQuantity() + 1,
+      this.product().variantId,
+    );
   }
 
   requestAddToCart(event: Event): void {
     event.stopPropagation();
-    if (this.soldOut() || !this.canAddToCart() || this.cartLoading()) {
+    if (this.soldOut() || !this.canAddAnother() || this.cartPending()) {
       return;
     }
 

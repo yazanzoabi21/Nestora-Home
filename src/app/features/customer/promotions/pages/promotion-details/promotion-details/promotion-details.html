@@ -5,7 +5,7 @@
     </p>
 </section>
 } @else if (promotion(); as promotionData) {
-<main class="bg-[#faf8f5] py-12">
+<main class="bg-[#faf8f5] py-5">
     <section class="customer-page-container pb-6">
         <nav class="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#858585]" [attr.aria-label]="
           'CUSTOMER.PRODUCT_DETAILS.BREADCRUMB_ARIA' | translate
@@ -73,7 +73,7 @@
     </section>
 
     <!-- Products connected to the promotion -->
-    <section id="promotion-products" class="customer-page-container scroll-mt-36 pt-16">
+    <section id="promotion-products" class="customer-page-container scroll-mt-36 pt-5">
         <p class="text-[.7rem] font-black uppercase tracking-[.18em] text-[#718369]">
             {{
             'CUSTOMER.PROMOTION_DETAILS.LIMITED_TIME'
@@ -96,23 +96,50 @@
         </p>
 
         @if (promotionProducts().length) {
-        <div #productsList
-            class="mt-8 grid scroll-mt-28 grid-cols-1 gap-5 outline-none min-[360px]:grid-cols-2 lg:grid-cols-4"
-            tabindex="-1">
-            @for (
-            product of paginatedProducts();
-            track product.id
-            ) {
-            <app-customer-product-card [product]="product" [detailQueryParams]="productDetailQueryParams()" />
+        <div [class]="
+            selectedProduct()
+                ? 'mt-8 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_430px]'
+                : 'mt-8'
+            ">
+            <div class="min-w-0">
+                <div #productsList [class]="
+                    selectedProduct()
+                        ? 'grid scroll-mt-28 grid-cols-1 gap-5 outline-none min-[360px]:grid-cols-2 xl:grid-cols-3'
+                        : 'grid scroll-mt-28 grid-cols-1 gap-5 outline-none min-[360px]:grid-cols-2 lg:grid-cols-4'
+                    " tabindex="-1">
+                    @for (
+                    product of paginatedProducts();
+                    track product.id
+                    ) {
+                    <app-customer-product-card [product]="product"
+                        [detailQueryParams]="productDetailQueryParams()"
+                        [wishlistActive]="shopping.isInWishlist(product.id)"
+                        [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
+                        [cartLoading]="shopping.pendingProductIds().has(product.id)"
+                        [canAddToCart]="shopping.canAdd(product)"
+                        [selected]="selectedProduct()?.id === product.id" (quickView)="openQuickView($event)"
+                        (addToCart)="addToCart($event)" (toggleWishlist)="toggleWishlist($event)" />
+                    }
+                </div>
+
+                @if (promotionProducts().length > 12) {
+                <app-admin-pagination variant="customer" class="customer-pagination mt-6"
+                    [currentPage]="currentPage()" [totalItems]="promotionProducts().length" [pageSize]="pageSize()"
+                    [pageSizeOptions]="[12, 20, 25, 'all']" [showPageSize]="true" [showSummary]="true"
+                    (pageChange)="changePage($event)" (pageSizeChange)="setPageSize($event)" />
+                }
+            </div>
+
+            @if (selectedProduct(); as product) {
+            <aside class="hidden min-w-0 xl:sticky xl:top-[110px] xl:block xl:self-start">
+                <app-customer-product-quick-view [product]="product"
+                    [wishlistActive]="shopping.isInWishlist(product.id)"
+                    [cartLoading]="shopping.pendingProductIds().has(product.id)"
+                    [availableQuantity]="shopping.remainingStock(product)" (closeRequested)="closeQuickView()"
+                    (addRequested)="addFromQuickView($event)" (toggleWishlist)="toggleWishlist($event)" />
+            </aside>
             }
         </div>
-
-        @if (promotionProducts().length > 12) {
-        <app-admin-pagination variant="customer" class="customer-pagination mt-6" [currentPage]="currentPage()"
-            [totalItems]="promotionProducts().length" [pageSize]="pageSize()"
-            [pageSizeOptions]="[12, 20, 25, 'all']" [showPageSize]="true" [showSummary]="true"
-            (pageChange)="changePage($event)" (pageSizeChange)="setPageSize($event)" />
-        }
         } @else {
         <div class="mt-8 rounded-3xl border border-[#e8dccf] bg-white p-10 text-center">
             <h3 class="font-black text-[#1f2a1f]">
@@ -164,4 +191,19 @@
         }}
     </a>
 </section>
+}
+
+@if (selectedProduct(); as product) {
+<div class="fixed inset-0 z-50 xl:hidden" role="dialog" aria-modal="true">
+    <button type="button" class="absolute inset-0 bg-[#1f2a1f]/35"
+        [attr.aria-label]="'COMMON.CLOSE' | translate" (click)="closeQuickView()"></button>
+
+    <div class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden px-3 sm:px-6">
+        <app-customer-product-quick-view [product]="product"
+            [wishlistActive]="shopping.isInWishlist(product.id)"
+            [cartLoading]="shopping.pendingProductIds().has(product.id)"
+            [availableQuantity]="shopping.remainingStock(product)" (closeRequested)="closeQuickView()"
+            (addRequested)="addFromQuickView($event)" (toggleWishlist)="toggleWishlist($event)" />
+    </div>
+</div>
 }

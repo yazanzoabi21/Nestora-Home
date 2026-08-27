@@ -293,6 +293,7 @@ export abstract class ProductBrowserPage {
       items.includes(value) ? items.filter((item) => item !== value) : [...items, value],
     );
     this.resetPagination();
+    this.onCategoryFiltersChanged();
   }
   setPriceRange(value: string | null): void {
     this.selectedPriceRange.set(this.selectedPriceRange() === value ? null : value);
@@ -313,6 +314,7 @@ export abstract class ProductBrowserPage {
     switch (chip.kind) {
       case 'category':
         this.selectedCategories.update((items) => items.filter((item) => item !== chip.value));
+        this.onCategoryFiltersChanged();
         break;
       case 'price':
         this.selectedPriceRange.set(null);
@@ -326,6 +328,11 @@ export abstract class ProductBrowserPage {
     }
     this.resetPagination();
   }
+
+  protected onCategoryFiltersChanged(): void {
+    return;
+  }
+
   async toggleWishlist(product: CustomerProduct): Promise<void> {
     await this.shopping.toggleWishlist(product);
   }

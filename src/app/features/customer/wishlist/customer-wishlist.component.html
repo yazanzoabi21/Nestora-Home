@@ -1,68 +1,235 @@
-<section class="rounded-[1.25rem] border border-[#eee8e1] bg-white p-5 shadow-[0_10px_28px_rgba(52,47,41,0.06)] sm:p-7">
-  <div class="mb-6 flex items-end justify-between gap-4">
+<section
+  class="min-w-0 rounded-[1.25rem] border border-[#eee8e1] bg-white p-5 shadow-[0_10px_28px_rgba(52,47,41,0.06)] sm:p-7">
+  <header class="mb-7 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
     <div>
       <p class="text-xs font-black uppercase tracking-[0.18em] text-[#718369]">
         {{ 'CUSTOMER.ACCOUNT.TITLE' | translate }}
       </p>
-      <h1 class="mt-2 text-2xl font-black text-[#172117]">
+      <h1 class="mt-2 text-3xl font-black text-[#172117] sm:text-4xl">
         {{ 'CUSTOMER.WISHLIST.TITLE' | translate }}
       </h1>
+      @if (!shopping.wishlistLoading()) {
+      <p class="mt-1 text-sm font-medium text-[#77736d] sm:text-base">
+        {{ 'CUSTOMER.WISHLIST.ITEMS_SAVED' | translate: { count: shopping.wishlistCount() } }}
+      </p>
+      }
     </div>
-    @if (!shopping.wishlistLoading()) {
-      <span class="rounded-full bg-[#f2f4ed] px-3 py-1 text-sm font-bold text-[#5f714f]">
-        {{ shopping.wishlistCount() }}
-      </span>
-    }
-  </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center xl:pb-1">
+      <div class="grid grid-cols-2 overflow-hidden rounded-xl border border-[#718369] bg-[#f4f6f1] p-0.5"
+        role="group" [attr.aria-label]="'CUSTOMER.WISHLIST.VIEW_OPTIONS' | translate">
+        <button type="button"
+          class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[0.6rem] px-4 text-sm font-bold text-[#30362f] transition"
+          [class.bg-white]="viewMode() === 'grid'" [class.shadow-sm]="viewMode() === 'grid'"
+          [attr.aria-pressed]="viewMode() === 'grid'" (click)="setViewMode('grid')">
+          <i class="pi pi-th-large" aria-hidden="true"></i>
+          {{ 'CUSTOMER.WISHLIST.GRID_VIEW' | translate }}
+        </button>
+        <button type="button"
+          class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[0.6rem] px-4 text-sm font-bold text-[#30362f] transition"
+          [class.bg-white]="viewMode() === 'list'" [class.shadow-sm]="viewMode() === 'list'"
+          [attr.aria-pressed]="viewMode() === 'list'" (click)="setViewMode('list')">
+          <i class="pi pi-list" aria-hidden="true"></i>
+          {{ 'CUSTOMER.WISHLIST.LIST_VIEW' | translate }}
+        </button>
+      </div>
+
+      <button type="button"
+        class="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#e8dccf] bg-white px-5 text-sm font-bold text-[#30362f] transition hover:border-[#718369] hover:text-[#596b4e] disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="shopping.wishlistLoading() || !shopping.wishlistProducts().length || sharePending()"
+        (click)="shareWishlist()">
+        <i class="pi" [class.pi-share-alt]="!sharePending()" [class.pi-spinner]="sharePending()"
+          [class.pi-spin]="sharePending()" aria-hidden="true"></i>
+        {{ 'CUSTOMER.WISHLIST.SHARE' | translate }}
+      </button>
+    </div>
+  </header>
 
   @if (shopping.wishlistLoading()) {
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
-      @for (_ of [1, 2, 3]; track $index) {
-        <div class="h-[20rem] animate-pulse rounded-3xl bg-[#f4f1ec]"></div>
-      }
-    </div>
-  } @else if (shopping.wishlistProducts().length) {
-    <div #wishlistGrid class="grid scroll-mt-28 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" tabindex="-1">
-      @for (product of paginatedProducts(); track product.id) {
-        <app-customer-product-card
-          [product]="product"
-          [compact]="true"
-          [wishlistActive]="true"
-          [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
-          [cartLoading]="shopping.pendingProductIds().has(product.id)"
-          [canAddToCart]="shopping.canAdd(product)"
-          (toggleWishlist)="toggleWishlist($event)"
-          (addToCart)="addToCart($event)"
-        />
-      }
-    </div>
-    @if (shopping.wishlistProducts().length > pageSize) {
-    <app-admin-pagination
-      class="customer-pagination mt-4"
-      [currentPage]="safeCurrentPage()"
-      [totalItems]="shopping.wishlistProducts().length"
-      [pageSize]="pageSize"
-      [showPageSize]="false"
-      [showSummary]="true"
-      summaryKey="CUSTOMER.WISHLIST.PAGINATION_SUMMARY"
-      (pageChange)="changePage($event)"
-    />
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+    @for (_ of [1, 2, 3]; track $index) {
+    <div class="h-[20rem] animate-pulse rounded-3xl bg-[#f4f1ec]"></div>
     }
+  </div>
+  } @else if (shopping.wishlistProducts().length) {
+  @if (viewMode() === 'grid') {
+  <div #wishlistGrid class="grid scroll-mt-28 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" tabindex="-1">
+    @for (product of paginatedProducts(); track product.id) {
+    <app-customer-product-card [product]="product" [compact]="true" [showQuickView]="false"
+      [wishlistActive]="shopping.isInWishlist(product.id)"
+      [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
+      [cartLoading]="shopping.pendingProductIds().has(product.id)" [canAddToCart]="shopping.canAdd(product)"
+      (toggleWishlist)="toggleWishlist($event)" (addToCart)="addToCart($event)" />
+    }
+  </div>
   } @else {
-    <div class="grid min-h-80 place-content-center justify-items-center px-4 text-center">
-      <span class="grid size-16 place-items-center rounded-full bg-[#fde8ec] text-2xl text-[#d83b54]">
-        <i class="pi pi-heart" aria-hidden="true"></i>
-      </span>
-      <h2 class="mt-5 text-xl font-black text-[#172117]">
-        {{ 'CUSTOMER.WISHLIST.EMPTY_TITLE' | translate }}
-      </h2>
-      <p class="mt-2 max-w-md text-sm leading-6 text-[#858585]">
-        {{ 'CUSTOMER.WISHLIST.EMPTY_TEXT' | translate }}
-      </p>
-      <a routerLink="/shop/products"
-        class="mt-6 rounded-full bg-[#6b7d5e] px-6 py-3 text-sm font-black text-white no-underline transition hover:bg-[#596b4e]">
-        {{ 'CUSTOMER.WISHLIST.BROWSE' | translate }}
-      </a>
+  <div #wishlistGrid class="scroll-mt-28 overflow-hidden rounded-2xl border border-[#e8dccf]" tabindex="-1">
+    <div
+      class="hidden min-h-14 items-center gap-5 border-b border-[#e8dccf] bg-[#fcfbf9] px-5 text-xs font-black uppercase tracking-[0.08em] text-[#77736d] xl:grid xl:grid-cols-[minmax(0,2.2fr)_minmax(6.5rem,.7fr)_minmax(7rem,.75fr)_minmax(9rem,1fr)_minmax(13rem,1.15fr)]">
+      <span>{{ 'CUSTOMER.WISHLIST.PRODUCT' | translate }}</span>
+      <span>{{ 'CUSTOMER.WISHLIST.PRICE' | translate }}</span>
+      <span>{{ 'CUSTOMER.WISHLIST.STOCK' | translate }}</span>
+      <span>{{ 'CUSTOMER.WISHLIST.POINTS' | translate }}</span>
+      <!-- <span>{{ 'CUSTOMER.WISHLIST.ACTIONS' | translate }}</span> -->
     </div>
+
+    @for (product of paginatedProducts(); track product.id) {
+    <article
+      class="grid min-w-0 gap-5 border-b border-[#eee8e1] p-4 last:border-b-0 sm:p-5 xl:grid-cols-[minmax(0,2.2fr)_minmax(6.5rem,.7fr)_minmax(7rem,.75fr)_minmax(9rem,1fr)_minmax(13rem,1.15fr)] xl:items-center">
+      <div class="flex min-w-0 gap-4">
+        <a [routerLink]="['/shop/products', product.slug || product.id]"
+          class="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-[#e8dccf] bg-[#f5f2ee] sm:h-28 sm:w-28">
+          <img [src]="product.imageUrl" [alt]="product.name" class="h-full w-full object-cover" />
+        </a>
+
+        <div class="min-w-0 self-center">
+          <p class="text-xs font-black text-[#718369] sm:text-sm">{{ product.brand }}</p>
+          <a [routerLink]="['/shop/products', product.slug || product.id]"
+            class="mt-1 block line-clamp-2 text-sm font-black text-[#1f2a1f] no-underline transition hover:text-[#596b4e] sm:text-base">
+            {{ product.name }}
+          </a>
+
+          <div class="mt-2 flex flex-wrap items-center gap-1">
+            @for (star of starItems; track star) {
+            <i class="pi pi-star-fill text-xs" [class.text-[#f2aa2f]]="isFilledStar(product, star)"
+              [class.text-[#d8d1c8]]="!isFilledStar(product, star)" aria-hidden="true"></i>
+            }
+            <span class="ms-1 text-xs font-semibold text-[#77736d]">({{ product.reviewCount }})</span>
+          </div>
+
+          <div class="mt-2 flex flex-wrap gap-2 xl:hidden">
+            @if (isSoldOut(product)) {
+            <span class="rounded-full bg-[#b42318] px-2.5 py-1 text-[0.68rem] font-black text-white">
+              {{ 'CUSTOMER.WISHLIST.SOLD_OUT' | translate }}
+            </span>
+            }
+            @if (discountPercentage(product); as discount) {
+            <span class="rounded-full bg-[#6b7d5e] px-2.5 py-1 text-[0.68rem] font-black text-white">
+              −{{ discount }}%
+            </span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:contents">
+        <div class="min-w-0">
+          <p class="mb-1 text-[0.68rem] font-black uppercase tracking-wide text-[#9a948d] xl:hidden">
+            {{ 'CUSTOMER.WISHLIST.PRICE' | translate }}
+          </p>
+          <p class="text-lg font-black text-[#1f2a1f]">
+            {{ product.price | currency: 'USD' : 'symbol' : '1.2-2' }}
+          </p>
+          @if (hasDiscount(product)) {
+          <p class="text-xs font-bold text-[#a59e95] line-through">
+            {{ product.originalPrice | currency: 'USD' : 'symbol' : '1.2-2' }}
+          </p>
+          @if (discountPercentage(product); as discount) {
+          <span class="mt-1 hidden w-fit rounded-full bg-[#6b7d5e] px-2.5 py-1 text-[0.68rem] font-black text-white xl:inline-flex">
+            −{{ discount }}%
+          </span>
+          }
+          }
+        </div>
+
+        <div>
+          <p class="mb-1 text-[0.68rem] font-black uppercase tracking-wide text-[#9a948d] xl:hidden">
+            {{ 'CUSTOMER.WISHLIST.STOCK' | translate }}
+          </p>
+          <span class="inline-flex rounded-lg px-3 py-2 text-xs font-black"
+            [class.bg-[#eef6ea]]="!isSoldOut(product)" [class.text-[#4f8a4b]]="!isSoldOut(product)"
+            [class.bg-red-50]="isSoldOut(product)" [class.text-red-700]="isSoldOut(product)">
+            {{ (isSoldOut(product) ? 'CUSTOMER.WISHLIST.SOLD_OUT' : 'CUSTOMER.WISHLIST.IN_STOCK') | translate }}
+          </span>
+        </div>
+
+        <div class="col-span-2 sm:col-span-1">
+          <p class="mb-1 text-[0.68rem] font-black uppercase tracking-wide text-[#9a948d] xl:hidden">
+            {{ 'CUSTOMER.WISHLIST.POINTS' | translate }}
+          </p>
+          @if (product.isLoyaltyEligible && loyalty.enabled()) {
+          <app-customer-loyalty-points-badge [pointsEarned]="loyaltyPoints(product)"
+            [loading]="loyalty.loading()" [authenticated]="customerAuth.isAuthenticated()"
+            returnUrl="/shop/customer-account/wishlist" />
+          }
+        </div>
+
+        <div class="col-span-2 flex min-w-0 items-center justify-end gap-3 sm:col-span-3 xl:col-span-1">
+          @let wishlistPending = shopping.wishlistPendingProductIds().has(product.id);
+          @let cartPending = shopping.pendingProductIds().has(product.id);
+          @let cartQuantity = shopping.quantityFor(product.id, product.variantId);
+          <button type="button"
+            class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[#f0c9d0] bg-[#fff5f6] text-[#d83b54] transition hover:bg-[#ffecef] disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="wishlistPending" [attr.aria-pressed]="shopping.isInWishlist(product.id)"
+            [attr.aria-label]="'CUSTOMER.WISHLIST.REMOVE' | translate" (click)="toggleWishlist(product)">
+            <i class="pi" [class.pi-heart-fill]="!wishlistPending" [class.pi-spinner]="wishlistPending"
+              [class.pi-spin]="wishlistPending" aria-hidden="true"></i>
+          </button>
+
+          @if (isSoldOut(product)) {
+          <button type="button"
+            class="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-[#9f2d24] px-5 text-sm font-black text-white opacity-70 disabled:cursor-not-allowed xl:w-36 xl:flex-none"
+            disabled>
+            <i class="pi pi-ban" aria-hidden="true"></i>
+            {{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}
+          </button>
+          } @else if (cartQuantity > 0) {
+          <div class="inline-flex h-11 min-w-0 flex-1 items-center overflow-hidden rounded-full bg-[#6b7d5e] text-white xl:w-36 xl:flex-none"
+            role="group" aria-label="Cart quantity">
+            <button type="button"
+              class="grid h-full w-11 shrink-0 cursor-pointer place-items-center transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="cartPending" aria-label="Decrease quantity"
+              (click)="updateCartQuantity(product, cartQuantity - 1)">
+              <i class="pi pi-minus" aria-hidden="true"></i>
+            </button>
+            <span class="flex min-w-14 flex-1 items-center justify-center gap-2 px-2 text-sm font-black">
+              <i class="pi pi-shopping-cart text-xs" aria-hidden="true"></i>
+              {{ cartQuantity }}
+            </span>
+            <button type="button"
+              class="grid h-full w-11 shrink-0 cursor-pointer place-items-center transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="cartPending || !shopping.canAdd(product)" aria-label="Increase quantity"
+              (click)="updateCartQuantity(product, cartQuantity + 1)">
+              <i class="pi pi-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+          } @else {
+          <button type="button"
+            class="inline-flex min-h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-5 text-sm font-black text-white transition hover:bg-[#596b4e] disabled:cursor-not-allowed disabled:opacity-50 xl:w-36 xl:flex-none"
+            [disabled]="!shopping.canAdd(product) || cartPending" (click)="addToCart(product)">
+            <i class="pi" [class.pi-shopping-cart]="!cartPending" [class.pi-spinner]="cartPending"
+              [class.pi-spin]="cartPending" aria-hidden="true"></i>
+            {{ 'CUSTOMER.PRODUCTS.ADD_TO_CART' | translate }}
+          </button>
+          }
+        </div>
+      </div>
+    </article>
+    }
+  </div>
+  }
+
+  @if (shopping.wishlistProducts().length > pageSize) {
+  <app-admin-pagination class="customer-pagination mt-4" [currentPage]="safeCurrentPage()"
+    [totalItems]="shopping.wishlistProducts().length" [pageSize]="pageSize" [showPageSize]="false"
+    [showSummary]="true" summaryKey="CUSTOMER.WISHLIST.PAGINATION_SUMMARY"
+    (pageChange)="changePage($event)" />
+  }
+  } @else {
+  <div class="grid min-h-80 place-content-center justify-items-center px-4 text-center">
+    <span class="grid size-16 place-items-center rounded-full bg-[#fde8ec] text-2xl text-[#d83b54]">
+      <i class="pi pi-heart" aria-hidden="true"></i>
+    </span>
+    <h2 class="mt-5 text-xl font-black text-[#172117]">
+      {{ 'CUSTOMER.WISHLIST.EMPTY_TITLE' | translate }}
+    </h2>
+    <p class="mt-2 max-w-md text-sm leading-6 text-[#858585]">
+      {{ 'CUSTOMER.WISHLIST.EMPTY_TEXT' | translate }}
+    </p>
+    <a routerLink="/shop/products"
+      class="mt-6 rounded-full bg-[#6b7d5e] px-6 py-3 text-sm font-black text-white no-underline transition hover:bg-[#596b4e]">
+      {{ 'CUSTOMER.WISHLIST.BROWSE' | translate }}
+    </a>
+  </div>
   }
 </section>

@@ -115,6 +115,26 @@ export class AllProducts extends ProductBrowserPage {
       replaceUrl: true,
     });
   }
+
+  protected override onCategoryFiltersChanged(): void {
+    if (this.selectedCategories().length > 0) {
+      return;
+    }
+
+    this.requestedCategorySlug.set(null);
+    this.navigationSource.set(null);
+
+    void this.routeNavigator.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        category: null,
+        source: null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
   private async load(): Promise<void> {
     try {
       this.replaceProducts(await this.catalog.getProducts());
