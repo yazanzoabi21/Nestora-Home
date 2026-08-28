@@ -5,7 +5,7 @@
   styleClass="nestora-toast"
 >
   <ng-template #message let-message>
-    <div class="flex min-w-0 flex-1 items-center gap-3">
+    <div class="flex w-full min-w-0 flex-1 items-center gap-3">
       @if (message.data?.['imageUrl']) {
         <img
           class="nestora-toast-product-image size-11 shrink-0 rounded-xl bg-[#f4efe8] object-cover min-[768px]:size-14 min-[768px]:bg-[#f4f1ec]"
@@ -18,7 +18,7 @@
           [class.!bg-[#fde8ec]]="message.data?.['wishlist']"
           [class.!text-[#d83b54]]="message.data?.['wishlist']"
         >
-          <i class="text-[15px] min-[768px]:text-base" [class]="message.icon"></i>
+          <i [class]="message.icon + ' nestora-toast-custom-icon'"></i>
         </span>
       }
 

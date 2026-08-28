@@ -624,6 +624,10 @@ select option {
     width: 13px !important;
     height: 13px !important;
   }
+
+  body:has(app-customer-layout) .p-toast.nestora-toast .nestora-toast-custom-icon {
+    font-size: 15px;
+  }
 }
 
 .auth-field input[type='password']::-ms-reveal,

@@ -12,7 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationStart, Params, Router, RouterLink } from '@angular/router';
+import { NavigationStart, Params, Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { filter } from 'rxjs';
 
@@ -21,7 +21,6 @@ import { Category } from '../../../../data-access/models';
 import {
   CustomerSearchResult,
   CustomerSearchResultGroup,
-  CustomerSearchResultType,
   CustomerSearchSuggestion,
 } from '../../models';
 import { CustomerSearchService } from '../../services';
@@ -30,22 +29,13 @@ export type CustomerGlobalSearchVariant = 'desktop' | 'mobile';
 
 const SEARCH_DEBOUNCE_MS = 275;
 const SUGGESTION_LIMIT = 4;
+const PRODUCT_RESULT_LIMIT = 4;
 const PRODUCT_IMAGE_FALLBACK = 'assets/images/product-placeholder.png';
-const GROUP_CONFIG: readonly {
-  type: CustomerSearchResultType;
-  labelKey: string;
-  limit: number;
-}[] = [
-  { type: 'product', labelKey: 'CUSTOMERS.SEARCH.PRODUCTS', limit: 4 },
-  { type: 'category', labelKey: 'CUSTOMERS.SEARCH.CATEGORIES', limit: 3 },
-  { type: 'page', labelKey: 'CUSTOMERS.SEARCH.HELP', limit: 3 },
-  { type: 'faq', labelKey: 'CUSTOMERS.SEARCH.FAQ', limit: 4 },
-];
 
 @Component({
   selector: 'app-customer-global-search',
   standalone: true,
-  imports: [CurrencyPipe, RouterLink, TranslatePipe],
+  imports: [CurrencyPipe, TranslatePipe],
   templateUrl: './customer-global-search.component.html',
   styleUrl: './customer-global-search.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,17 +60,18 @@ export class CustomerGlobalSearchComponent {
   readonly normalizedQuery = computed(() => this.searchService.normalizeQuery(this.searchTerm()));
   readonly inputId = computed(() => `customer-global-search-${this.variant()}`);
   readonly listboxId = computed(() => `${this.inputId()}-results`);
-  readonly groupedResults = computed<readonly CustomerSearchResultGroup[]>(() =>
-    GROUP_CONFIG.flatMap((config) => {
-      const results = this.results()
-        .filter((result) => result.type === config.type)
-        .slice(0, config.limit);
-      return results.length ? [{ type: config.type, labelKey: config.labelKey, results }] : [];
-    }),
+  readonly productResults = computed(() =>
+    this.results()
+      .filter((result) => result.type === 'product')
+      .slice(0, PRODUCT_RESULT_LIMIT),
   );
-  readonly selectableResults = computed(() =>
-    this.groupedResults().flatMap((group) => group.results),
-  );
+  readonly groupedResults = computed<readonly CustomerSearchResultGroup[]>(() => {
+    const results = this.productResults();
+    return results.length
+      ? [{ type: 'product', labelKey: 'CUSTOMERS.SEARCH.PRODUCTS', results }]
+      : [];
+  });
+  readonly selectableResults = computed(() => this.productResults());
   readonly activeDescendant = computed(() => {
     const result = this.selectableResults()[this.selectedIndex()];
     return result ? this.resultDomId(result) : null;
@@ -279,7 +270,7 @@ export class CustomerGlobalSearchComponent {
       if (requestVersion !== this.requestVersion || query !== this.normalizedQuery()) return;
       this.results.set(results);
       this.error.set(false);
-    } catch (error) {
+    } catch {
       if (requestVersion !== this.requestVersion) return;
 
       this.results.set([]);
