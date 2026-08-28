@@ -39,18 +39,27 @@ describe('CustomerImageSearchComponent', () => {
 
   afterEach(() => fixture.destroy());
 
-  it('associates the normal upload label with the supported image input', () => {
+  it('opens the native picker from the visible upload button', () => {
     const element = fixture.nativeElement as HTMLElement;
     const input = element.querySelector<HTMLInputElement>('#customer-visual-search-upload');
-    const label = element.querySelector<HTMLLabelElement>(
-      'label[for="customer-visual-search-upload"]',
+    const button = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find((candidate) =>
+      candidate.textContent?.includes('CUSTOMERS.IMAGE_SEARCH.UPLOAD'),
     );
+    const showPicker = vi.fn();
 
     expect(input).not.toBeNull();
+    if (!input) throw new Error('Expected the visual-search upload input to render.');
+
+    Object.defineProperty(input, 'showPicker', { configurable: true, value: showPicker });
+
     expect(input?.type).toBe('file');
     expect(input?.accept).toBe('image/jpeg,image/png,image/webp');
     expect(input?.hasAttribute('capture')).toBe(false);
-    expect(label?.htmlFor).toBe(input?.id);
+    expect(button).toBeDefined();
+
+    button?.click();
+
+    expect(showPicker).toHaveBeenCalledTimes(1);
   });
 
   it('resets the native input so selecting the same file can emit change again', () => {
@@ -76,16 +85,24 @@ describe('CustomerImageSearchComponent', () => {
   it('keeps mobile camera capture on its own native input', () => {
     const element = fixture.nativeElement as HTMLElement;
     const input = element.querySelector<HTMLInputElement>('#customer-visual-search-camera');
-    const label = element.querySelector<HTMLLabelElement>(
-      'label[for="customer-visual-search-camera"]',
+    const button = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find((candidate) =>
+      candidate.textContent?.includes('CUSTOMERS.IMAGE_SEARCH.TAKE_PHOTO'),
     );
+    const showPicker = vi.fn();
 
     expect(input).not.toBeNull();
+    if (!input) throw new Error('Expected the visual-search camera input to render.');
+
+    Object.defineProperty(input, 'showPicker', { configurable: true, value: showPicker });
+
     expect(input?.type).toBe('file');
     expect(input?.accept).toBe('image/*');
     expect(input?.getAttribute('capture')).toBe('environment');
-    expect(label?.htmlFor).toBe(input?.id);
-    expect(label?.classList.contains('sm:hidden')).toBe(true);
+    expect(button?.classList.contains('sm:hidden')).toBe(true);
+
+    button?.click();
+
+    expect(showPicker).toHaveBeenCalledTimes(1);
   });
 
   it('prevents the browser default and sends dropped files through the shared selection flow', () => {

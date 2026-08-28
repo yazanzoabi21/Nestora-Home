@@ -42,21 +42,22 @@
           </p>
           <div
             class="mx-auto mt-4 flex w-full max-w-sm flex-col justify-center gap-2.5 sm:mt-6 sm:max-w-none sm:flex-row sm:gap-3">
-            <input #imageFileInput class="sr-only" type="file" accept="image/jpeg,image/png,image/webp"
-              (change)="onFileInput($event)" />
+            <input #imageFileInput id="customer-visual-search-upload" class="sr-only" type="file"
+              accept="image/jpeg,image/png,image/webp" (change)="onFileInput($event)" />
 
             <button type="button"
               class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white transition hover:bg-[#596b4e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:w-auto"
-              (click)="imageFileInput.click()">
+              (click)="imageFileInput.showPicker()">
               <i class="pi pi-upload" aria-hidden="true"></i>
               {{ 'CUSTOMERS.IMAGE_SEARCH.UPLOAD' | translate }}
             </button>
-            <input #cameraFileInput class="sr-only" type="file" accept="image/*" capture="environment"
-              (change)="onFileInput($event)" />
+
+            <input #cameraFileInput id="customer-visual-search-camera" class="sr-only" type="file" accept="image/*"
+              capture="environment" (change)="onFileInput($event)" />
 
             <button type="button"
               class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-[#d9d0c6] bg-white px-6 text-sm font-black text-[#1f2a1f] transition hover:border-[#718369] sm:hidden"
-              (click)="cameraFileInput.click()">
+              (click)="cameraFileInput.showPicker()">
               <i class="pi pi-camera" aria-hidden="true"></i>
               {{ 'CUSTOMERS.IMAGE_SEARCH.TAKE_PHOTO' | translate }}
             </button>
