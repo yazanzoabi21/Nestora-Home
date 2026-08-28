@@ -6,6 +6,8 @@ import { CustomerNavbarComponent } from '../customer-navbar/customer-navbar.comp
 import { CustomerFooterComponent } from '../customer-footer/customer-footer.component';
 import { WhatsAppContactComponent } from '../whatsapp-contact/whatsapp-contact.component';
 import { CustomerScrollToTopComponent } from '../customer-scroll-to-top/customer-scroll-to-top.component';
+import { CustomerImageSearchComponent } from '../customer-image-search';
+import { CustomerImageSearchOverlayService } from '../../services';
 
 @Component({
   selector: 'app-customer-layout',
@@ -19,6 +21,7 @@ import { CustomerScrollToTopComponent } from '../customer-scroll-to-top/customer
     CustomerFooterComponent,
     WhatsAppContactComponent,
     CustomerScrollToTopComponent,
+    CustomerImageSearchComponent,
   ],
   templateUrl: './customer-layout.component.html',
   styleUrl: './customer-layout.component.scss',
@@ -27,6 +30,7 @@ import { CustomerScrollToTopComponent } from '../customer-scroll-to-top/customer
 export class CustomerLayoutComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  readonly imageSearch = inject(CustomerImageSearchOverlayService);
 
   readonly cartRouteActive = signal(this.isCartRoute(this.router.url));
 

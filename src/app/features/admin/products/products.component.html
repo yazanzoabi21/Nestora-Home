@@ -13,6 +13,15 @@
     </div>
 
     <div class="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
+      <button
+        type="button"
+        class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#d8d0c5] bg-white px-4 text-sm font-semibold text-[#5f6f43] shadow-sm transition hover:bg-[#f7f4ef] sm:w-auto"
+        (click)="openImageIndexModal()"
+      >
+        <i class="pi pi-sparkles text-sm"></i>
+        <span>{{ 'PRODUCTS.IMAGE_INDEX.ACTION' | translate }}</span>
+      </button>
+
       <app-export-report
         [config]="productsExportConfig()"
         [buttonLabel]="'PRODUCTS.EXPORT' | translate"
@@ -842,6 +851,68 @@
         />
       </div>
     </form>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal
+    [isOpen]="isImageIndexModalOpen()"
+    [title]="'PRODUCTS.IMAGE_INDEX.TITLE'"
+    [subtitle]="'PRODUCTS.IMAGE_INDEX.SUBTITLE'"
+    size="md"
+    [submitLabel]="'PRODUCTS.IMAGE_INDEX.GENERATE_MISSING'"
+    [cancelLabel]="'COMMON.CLOSE'"
+    [loading]="imageIndexRunning()"
+    (close)="closeImageIndexModal()"
+    (submit)="generateMissingImageEmbeddings()"
+  >
+    @if (imageIndexLoading()) {
+      <div class="flex min-h-40 items-center justify-center gap-3 text-sm font-bold text-[#5f6f43]" role="status">
+        <i class="pi pi-spinner pi-spin"></i>
+        {{ 'COMMON.LOADING' | translate }}
+      </div>
+    } @else {
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-2xl bg-[#eef4e8] p-4">
+          <p class="text-xs font-bold uppercase text-[#718369]">{{ 'PRODUCTS.IMAGE_INDEX.INDEXED' | translate }}</p>
+          <p class="mt-2 text-2xl font-black text-[#1f2a1f]">{{ imageIndexSummary().indexed }}</p>
+        </div>
+        <div class="rounded-2xl bg-[#fff7e8] p-4">
+          <p class="text-xs font-bold uppercase text-[#9a6815]">{{ 'PRODUCTS.IMAGE_INDEX.MISSING' | translate }}</p>
+          <p class="mt-2 text-2xl font-black text-[#1f2a1f]">{{ imageIndexSummary().missing }}</p>
+        </div>
+        <div class="rounded-2xl bg-[#f4efe8] p-4">
+          <p class="text-xs font-bold uppercase text-[#796b5d]">{{ 'PRODUCTS.IMAGE_INDEX.STALE' | translate }}</p>
+          <p class="mt-2 text-2xl font-black text-[#1f2a1f]">{{ imageIndexSummary().stale }}</p>
+        </div>
+        <div class="rounded-2xl bg-[#f4f4f4] p-4">
+          <p class="text-xs font-bold uppercase text-[#77736d]">{{ 'PRODUCTS.IMAGE_INDEX.NO_IMAGE' | translate }}</p>
+          <p class="mt-2 text-2xl font-black text-[#1f2a1f]">{{ imageIndexSummary().withoutImage }}</p>
+        </div>
+      </div>
+
+      @if (imageIndexRunning()) {
+        <div class="mt-5 rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4" role="status" aria-live="polite">
+          <div class="flex justify-between text-sm font-bold text-[#53604f]">
+            <span>{{ 'PRODUCTS.IMAGE_INDEX.PROCESSING' | translate }}</span>
+            <span>{{ imageIndexProcessed() }} / {{ imageIndexTotal() }}</span>
+          </div>
+          <div class="mt-3 h-2 overflow-hidden rounded-full bg-[#e5ded2]">
+            <span class="block h-full rounded-full bg-[#718369] transition-[width]"
+              [style.width.%]="imageIndexTotal() ? imageIndexProcessed() / imageIndexTotal() * 100 : 0"></span>
+          </div>
+        </div>
+      }
+
+      @if (imageIndexFailures().length) {
+        <div class="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4" role="alert">
+          <h3 class="text-sm font-black text-amber-900">{{ 'PRODUCTS.IMAGE_INDEX.FAILURES' | translate }}</h3>
+          <ul class="mt-3 max-h-40 space-y-2 overflow-y-auto text-xs font-semibold text-amber-900">
+            @for (failure of imageIndexFailures(); track failure.productId) {
+              <li><span class="font-mono">{{ failure.productId }}</span> — {{ failure.message }}</li>
+            }
+          </ul>
+        </div>
+      }
+    }
   </app-admin-form-modal>
 
   <app-admin-form-modal

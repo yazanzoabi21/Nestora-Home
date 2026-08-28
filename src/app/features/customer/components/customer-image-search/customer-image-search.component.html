@@ -1,0 +1,168 @@
+@if (isOpen()) {
+<div class="fixed inset-0 z-[1400] bg-[#1f2a1f]/50 p-0 backdrop-blur-sm sm:p-6" role="presentation"
+  (click)="$event.target === $event.currentTarget && close()">
+  <section class="mx-auto flex h-[100dvh] w-full items-end justify-center sm:h-full sm:items-center">
+    <div
+      class="image-search-dialog flex h-auto max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-[1.75rem] bg-[#faf8f5] shadow-2xl sm:max-h-[88dvh] sm:rounded-[1.75rem]"
+      role="dialog" aria-modal="true" [attr.aria-labelledby]="'customer-image-search-title'" cdkTrapFocus
+      [cdkTrapFocusAutoCapture]="true">
+      <header
+        class="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-[#e8dccf] bg-white px-4 py-3 sm:px-7 sm:py-4">
+        <div>
+          <p class="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#718369]">
+            {{ 'CUSTOMERS.IMAGE_SEARCH.EYEBROW' | translate }}
+          </p>
+          <h2 id="customer-image-search-title" class="mt-0.5 text-lg font-black text-[#1f2a1f] sm:mt-1 sm:text-2xl">
+            {{ 'CUSTOMERS.IMAGE_SEARCH.TITLE' | translate }}
+          </h2>
+        </div>
+        <button type="button"
+          class="grid h-11 w-11 place-items-center rounded-full text-[#1f2a1f] transition hover:bg-[#f2eee8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#718369]"
+          [attr.aria-label]="'COMMON.CLOSE' | translate" (click)="close()">
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-7 sm:py-6">
+        @if (stage() === 'select') {
+        <div
+          class="rounded-[1.25rem] border-2 border-dashed bg-white px-4 py-5 text-center transition sm:rounded-[1.5rem] sm:px-5 sm:py-16"
+          [class.border-[#718369]]="dragging()" [class.bg-[#eef1ea]]="dragging()" [class.border-[#d9d0c6]]="!dragging()"
+          (dragover)="$event.preventDefault(); dragging.set(true)" (dragleave)="dragging.set(false)"
+          (drop)="onDrop($event)">
+          <div
+            class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#eef1ea] text-xl text-[#6b7d5e] sm:h-16 sm:w-16 sm:text-2xl">
+            <i class="pi pi-camera" aria-hidden="true"></i>
+          </div>
+          <h3 class="mt-3 text-base font-black text-[#1f2a1f] sm:mt-5 sm:text-lg">
+            {{ 'CUSTOMERS.IMAGE_SEARCH.SELECT_HEADING' | translate }}
+          </h3>
+          <p class="mx-auto mt-1.5 max-w-lg text-sm font-semibold leading-5 text-[#77736d] sm:mt-2 sm:leading-6">
+            {{ 'CUSTOMERS.IMAGE_SEARCH.SELECT_DETAIL' | translate }}
+          </p>
+          <div
+            class="mx-auto mt-4 flex w-full max-w-sm flex-col justify-center gap-2.5 sm:mt-6 sm:max-w-none sm:flex-row sm:gap-3">
+            <input #imageFileInput class="sr-only" type="file" accept="image/jpeg,image/png,image/webp"
+              (change)="onFileInput($event)" />
+
+            <button type="button"
+              class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white transition hover:bg-[#596b4e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e] sm:w-auto"
+              (click)="imageFileInput.click()">
+              <i class="pi pi-upload" aria-hidden="true"></i>
+              {{ 'CUSTOMERS.IMAGE_SEARCH.UPLOAD' | translate }}
+            </button>
+            <input #cameraFileInput class="sr-only" type="file" accept="image/*" capture="environment"
+              (change)="onFileInput($event)" />
+
+            <button type="button"
+              class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-[#d9d0c6] bg-white px-6 text-sm font-black text-[#1f2a1f] transition hover:border-[#718369] sm:hidden"
+              (click)="cameraFileInput.click()">
+              <i class="pi pi-camera" aria-hidden="true"></i>
+              {{ 'CUSTOMERS.IMAGE_SEARCH.TAKE_PHOTO' | translate }}
+            </button>
+          </div>
+          @if (validationError(); as error) {
+          <p class="mt-5 text-sm font-bold text-red-700" role="alert">
+            {{ (error === 'too-large' ? 'CUSTOMERS.IMAGE_SEARCH.ERROR_TOO_LARGE' : 'CUSTOMERS.IMAGE_SEARCH.ERROR_TYPE')
+            | translate }}
+          </p>
+          }
+        </div>
+        } @else {
+        <div class="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+          <aside class="min-w-0">
+            @if (previewUrl(); as preview) {
+            <img
+              class="h-[min(200px,28dvh)] w-full rounded-[1.25rem] bg-[#eee9e1] object-contain lg:aspect-square lg:h-auto lg:rounded-[1.5rem]"
+              [src]="preview" [alt]="'CUSTOMERS.IMAGE_SEARCH.PREVIEW_ALT' | translate" (load)="onPreviewLoaded()" />
+            }
+            <button type="button"
+              class="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-[#d9d0c6] bg-white px-4 text-sm font-black text-[#53604f] hover:border-[#718369]"
+              [disabled]="stage() === 'processing'" (click)="chooseAnother()">
+              <i class="pi pi-refresh" aria-hidden="true"></i>
+              {{ 'CUSTOMERS.IMAGE_SEARCH.CHOOSE_ANOTHER' | translate }}
+            </button>
+          </aside>
+
+          <div class="min-w-0">
+            @if (stage() === 'ready') {
+            <div class="rounded-[1.25rem] border border-[#e8dccf] bg-white p-4 text-center sm:rounded-[1.5rem] sm:p-8">
+              <h3 class="text-lg font-black text-[#1f2a1f] sm:text-xl">{{ 'CUSTOMERS.IMAGE_SEARCH.READY' | translate }}
+              </h3>
+              <p class="mt-2 text-sm font-semibold leading-6 text-[#77736d]">{{ 'CUSTOMERS.IMAGE_SEARCH.LOCAL_NOTE' |
+                translate }}</p>
+              <button type="button"
+                class="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white hover:bg-[#596b4e] sm:mt-6 sm:min-h-12 sm:px-7"
+                (click)="findSimilar()">
+                <i class="pi pi-sparkles" aria-hidden="true"></i>
+                {{ 'CUSTOMERS.IMAGE_SEARCH.FIND' | translate }}
+              </button>
+            </div>
+            } @else if (stage() === 'processing') {
+            <div
+              class="flex min-h-36 flex-col items-center justify-center rounded-[1.25rem] border border-[#e8dccf] bg-white p-4 text-center sm:min-h-64 sm:rounded-[1.5rem] sm:p-8"
+              role="status" aria-live="polite">
+              <i class="pi pi-spinner pi-spin text-2xl text-[#718369] sm:text-3xl" aria-hidden="true"></i>
+              <h3 class="mt-3 text-base font-black text-[#1f2a1f] sm:mt-5 sm:text-lg">
+                {{ (modelPreparing() ? 'CUSTOMERS.IMAGE_SEARCH.PREPARING' : 'CUSTOMERS.IMAGE_SEARCH.ANALYZING') |
+                translate }}
+              </h3>
+              @if (modelPreparing() && progress() !== null) {
+              <div class="mt-5 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-[#e8dccf]" aria-hidden="true">
+                <span class="block h-full rounded-full bg-[#718369] transition-[width]"
+                  [style.width.%]="progress()"></span>
+              </div>
+              }
+            </div>
+            } @else if (stage() === 'error') {
+            <div class="rounded-[1.25rem] border border-red-200 bg-white p-4 text-center sm:rounded-[1.5rem] sm:p-8"
+              role="alert">
+              <i class="pi pi-exclamation-circle text-2xl text-[#9f2d24] sm:text-3xl" aria-hidden="true"></i>
+              <h3 class="mt-2 text-base font-black text-[#1f2a1f] sm:mt-4 sm:text-lg">
+                {{ (noIndexedProducts() ? 'CUSTOMERS.IMAGE_SEARCH.NO_INDEXED' : 'CUSTOMERS.IMAGE_SEARCH.ERROR') |
+                translate }}
+              </h3>
+              <p class="mt-1.5 text-sm font-semibold text-[#77736d] sm:mt-2">
+                {{ (noIndexedProducts() ? 'CUSTOMERS.IMAGE_SEARCH.NO_INDEXED_DETAIL' :
+                'CUSTOMERS.IMAGE_SEARCH.ERROR_DETAIL') | translate }}
+              </p>
+              @if (workingImage()) {
+              <button type="button"
+                class="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white hover:bg-[#596b4e]"
+                (click)="findSimilar()">
+                <i class="pi pi-refresh" aria-hidden="true"></i>
+                {{ 'CUSTOMERS.IMAGE_SEARCH.RETRY' | translate }}
+              </button>
+              }
+            </div>
+            } @else if (noResults()) {
+            <div class="rounded-[1.5rem] border border-[#e8dccf] bg-white p-8 text-center">
+              <i class="pi pi-search text-3xl text-[#718369]" aria-hidden="true"></i>
+              <h3 class="mt-4 text-lg font-black text-[#1f2a1f]">{{ 'CUSTOMERS.IMAGE_SEARCH.NO_RESULTS' | translate }}
+              </h3>
+              <p class="mt-2 text-sm font-semibold text-[#77736d]">{{ 'CUSTOMERS.IMAGE_SEARCH.NO_RESULTS_DETAIL' |
+                translate }}</p>
+            </div>
+            } @else {
+            <section [attr.aria-label]="'CUSTOMERS.IMAGE_SEARCH.SIMILAR_PRODUCTS' | translate">
+              <h3 class="text-xl font-black text-[#1f2a1f]">{{ 'CUSTOMERS.IMAGE_SEARCH.SIMILAR_PRODUCTS' | translate }}
+              </h3>
+              <div class="mt-4 grid grid-cols-1 gap-4 min-[390px]:grid-cols-2 xl:grid-cols-3">
+                @for (product of results(); track product.id) {
+                <app-customer-product-card [product]="product" [compact]="true" [showQuickView]="false"
+                  [wishlistActive]="shopping.wishlistIds().has(product.id)"
+                  [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
+                  [canAddToCart]="shopping.canAdd(product)" (addToCart)="addToCart($event)"
+                  (toggleWishlist)="toggleWishlist($event)" />
+                }
+              </div>
+            </section>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </section>
+</div>
+}

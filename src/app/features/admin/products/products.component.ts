@@ -49,6 +49,12 @@ import {
   ProductImageGalleryComponent,
   ProductImageItem,
 } from '../../../shared/ui/product-image-gallery';
+import {
+  ProductImageEmbeddingIndexSummary,
+  ProductImageEmbeddingStatus,
+  ProductImageIndexFailure,
+} from '../../../data-access/models/product-image-embedding.model';
+import { AdminProductImageIndexService } from './admin-product-image-index.service';
 type ViewMode = 'list' | 'grid';
 type ProductModalMode = 'add' | 'edit';
 type CategoryFilterValue = 'all' | 'uncategorized' | string;
@@ -115,6 +121,7 @@ export class ProductsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly imageIndex = inject(AdminProductImageIndexService);
 
   readonly products = signal<Product[]>([]);
   readonly categoryRecords = signal<Category[]>([]);
@@ -144,6 +151,28 @@ export class ProductsComponent implements OnInit {
   readonly productPendingDelete = signal<Product | null>(null);
   readonly tableSelectionResetKey = signal(0);
   readonly isProductModalOpen = signal(false);
+  readonly isImageIndexModalOpen = signal(false);
+  readonly imageIndexLoading = signal(false);
+  readonly imageIndexRunning = signal(false);
+  readonly imageIndexStatuses = signal<readonly ProductImageEmbeddingStatus[]>([]);
+  readonly imageIndexFailures = signal<readonly ProductImageIndexFailure[]>([]);
+  readonly imageIndexProcessed = signal(0);
+  readonly imageIndexTotal = signal(0);
+  readonly imageIndexSummary = computed<ProductImageEmbeddingIndexSummary>(() =>
+    this.imageIndexStatuses().reduce<ProductImageEmbeddingIndexSummary>(
+      (summary, status) => ({
+        total: summary.total + 1,
+        indexed: summary.indexed + Number(status.state === 'indexed'),
+        missing: summary.missing + Number(status.state === 'missing'),
+        stale: summary.stale + Number(status.state === 'stale'),
+        withoutImage: summary.withoutImage + Number(status.state === 'no-image'),
+      }),
+      { total: 0, indexed: 0, missing: 0, stale: 0, withoutImage: 0 },
+    ),
+  );
+  readonly imageIndexPendingCount = computed(
+    () => this.imageIndexSummary().missing + this.imageIndexSummary().stale,
+  );
   readonly productModalMode = signal<ProductModalMode>('add');
   readonly selectedProduct = signal<Product | null>(null);
   readonly productForm = signal<ProductFormModel>({ ...EMPTY_PRODUCT_FORM });
@@ -520,6 +549,57 @@ export class ProductsComponent implements OnInit {
     this.isProductModalOpen.set(true);
   }
 
+  async openImageIndexModal(): Promise<void> {
+    this.isImageIndexModalOpen.set(true);
+    this.imageIndexFailures.set([]);
+    this.imageIndex.prepare();
+    await this.refreshImageIndexStatuses();
+  }
+
+  closeImageIndexModal(): void {
+    if (this.imageIndexRunning()) return;
+    this.isImageIndexModalOpen.set(false);
+  }
+
+  async generateMissingImageEmbeddings(): Promise<void> {
+    if (this.imageIndexRunning()) return;
+    const pending = this.imageIndexStatuses().filter(
+      (status) => (status.state === 'missing' || status.state === 'stale') && !!status.imageUrl,
+    );
+    if (!pending.length) {
+      this.toast.info('AI image index is up to date.');
+      return;
+    }
+
+    this.imageIndexRunning.set(true);
+    this.imageIndexProcessed.set(0);
+    this.imageIndexTotal.set(pending.length);
+    this.imageIndexFailures.set([]);
+    const failures: ProductImageIndexFailure[] = [];
+
+    for (const status of pending) {
+      try {
+        await this.imageIndex.indexProduct(status.productId, status.imageUrl!);
+      } catch (error) {
+        failures.push({
+          productId: status.productId,
+          message: this.safeImageIndexError(error),
+        });
+      } finally {
+        this.imageIndexProcessed.update((count) => count + 1);
+      }
+    }
+
+    this.imageIndexFailures.set(failures);
+    await this.refreshImageIndexStatuses();
+    this.imageIndexRunning.set(false);
+    if (failures.length) {
+      this.toast.warn('AI image indexing finished with warnings.', `${failures.length} product image(s) could not be indexed.`);
+    } else {
+      this.toast.success('AI image index updated.', `${pending.length} product image(s) indexed.`);
+    }
+  }
+
   openEditProductModal(value: Product | AdminTableRow): void {
     const product = this.resolveProductFromTableEvent(value);
 
@@ -757,6 +837,7 @@ export class ProductsComponent implements OnInit {
         : [];
       const selectedProduct = this.selectedProduct();
       const isEdit = this.productModalMode() === 'edit' && !!selectedProduct;
+      const previousImageUrl = selectedProduct?.image_url?.trim() || null;
       let savedProduct: Product;
 
       if (isEdit) {
@@ -782,6 +863,7 @@ export class ProductsComponent implements OnInit {
         this.toast.created('Product');
       }
       this.closeProductModal();
+      await this.updateSavedProductImageIndex(savedProduct, previousImageUrl);
     } catch (error) {
       await Promise.allSettled(
         [...uploadedUrls, ...variantUploadedUrls].map((url) =>
@@ -948,7 +1030,7 @@ export class ProductsComponent implements OnInit {
   }
 
   viewProduct(row: AdminTableRow): void {
-
+    this.openEditProductModal(row);
   }
 
   async deleteProductRow(row: AdminTableRow): Promise<void> {
@@ -1450,6 +1532,43 @@ export class ProductsComponent implements OnInit {
         'Product was saved, but media usage tracking could not be updated.',
       );
     }
+  }
+
+  private async refreshImageIndexStatuses(): Promise<void> {
+    this.imageIndexLoading.set(true);
+    try {
+      this.imageIndexStatuses.set(await this.imageIndex.getStatuses());
+    } catch (error) {
+      this.imageIndexStatuses.set([]);
+      this.toast.failed('Loading AI image index', this.safeImageIndexError(error));
+    } finally {
+      this.imageIndexLoading.set(false);
+    }
+  }
+
+  private async updateSavedProductImageIndex(
+    product: Product,
+    previousImageUrl: string | null,
+  ): Promise<void> {
+    const imageUrl = product.image_url?.trim() || null;
+    if (imageUrl === previousImageUrl) return;
+
+    try {
+      if (imageUrl) await this.imageIndex.indexProduct(product.id, imageUrl);
+      else await this.imageIndex.remove(product.id);
+    } catch (error) {
+      this.toast.warn(
+        'Product saved; AI indexing is pending.',
+        `${this.safeImageIndexError(error)} Use Generate Missing to retry.`,
+      );
+    }
+  }
+
+  private safeImageIndexError(error: unknown): string {
+    const message = error instanceof Error ? error.message : 'Unable to index this image.';
+    if (/cors|failed to fetch|network/i.test(message)) return 'The product image could not be fetched.';
+    if (/model|visual search|image features|tensor/i.test(message)) return 'The image model could not process this product.';
+    return message.slice(0, 180);
   }
 
   selectProductMediaItems(assets: MediaAsset[]): void {

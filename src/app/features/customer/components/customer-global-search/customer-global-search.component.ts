@@ -23,7 +23,7 @@ import {
   CustomerSearchResultGroup,
   CustomerSearchSuggestion,
 } from '../../models';
-import { CustomerSearchService } from '../../services';
+import { CustomerImageSearchOverlayService, CustomerSearchService } from '../../services';
 
 export type CustomerGlobalSearchVariant = 'desktop' | 'mobile';
 
@@ -49,6 +49,7 @@ export class CustomerGlobalSearchComponent {
   private readonly appTranslation = inject(TranslationService);
   private readonly router = inject(Router);
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly imageSearch = inject(CustomerImageSearchOverlayService);
   private requestVersion = 0;
 
   readonly searchTerm = signal('');
@@ -148,6 +149,11 @@ export class CustomerGlobalSearchComponent {
     this.results.set([]);
     this.error.set(false);
     this.selectedIndex.set(-1);
+  }
+
+  openImageSearch(): void {
+    this.close();
+    this.imageSearch.show();
   }
 
   async useSuggestion(suggestion: CustomerSearchSuggestion): Promise<void> {

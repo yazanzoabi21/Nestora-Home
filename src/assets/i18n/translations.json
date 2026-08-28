@@ -311,6 +311,18 @@
       "SAVE_FAILED": "Unable to save product.",
       "COST_PRICE_NONNEGATIVE": "Cost Price cannot be negative.",
       "UPLOAD_FAILED": "Unable to upload product image.",
+      "IMAGE_INDEX": {
+        "ACTION": "AI Image Search Index",
+        "TITLE": "AI Image Search Index",
+        "SUBTITLE": "Generate visual-search embeddings from existing product images.",
+        "GENERATE_MISSING": "Generate Missing",
+        "INDEXED": "Indexed",
+        "MISSING": "Missing",
+        "STALE": "Stale",
+        "NO_IMAGE": "No image",
+        "PROCESSING": "Indexing product images...",
+        "FAILURES": "Products that need attention"
+      },
       "IMAGES": {
         "SECTION_LABEL": "Product image gallery",
         "TITLE": "Product images",
@@ -1669,6 +1681,32 @@
           "CLEANING": "Cleaning",
           "GEBE": "GeBe"
         }
+      },
+      "IMAGE_SEARCH": {
+        "OPEN": "Search by photo",
+        "EYEBROW": "Visual search",
+        "TITLE": "Search by photo",
+        "SELECT_HEADING": "Choose a product photo",
+        "SELECT_DETAIL": "Upload a JPG, PNG, or WEBP image up to 5 MB. You can also drag and drop it here.",
+        "UPLOAD": "Upload image",
+        "TAKE_PHOTO": "Take photo",
+        "PREVIEW_ALT": "Selected search photo",
+        "CHOOSE_ANOTHER": "Choose another image",
+        "READY": "Your photo is ready",
+        "LOCAL_NOTE": "Your photo stays in this browser. Only its numeric visual signature is used for search.",
+        "FIND": "Find Similar Products",
+        "PREPARING": "Preparing visual search...",
+        "ANALYZING": "Finding similar products...",
+        "ERROR_TYPE": "Please choose a JPG, PNG, or WEBP image.",
+        "ERROR_TOO_LARGE": "Please choose an image that is 5 MB or smaller.",
+        "ERROR": "Visual search is temporarily unavailable",
+        "ERROR_DETAIL": "Please try again or choose another photo.",
+        "RETRY": "Retry",
+        "NO_INDEXED": "No indexed products are available yet",
+        "NO_INDEXED_DETAIL": "The catalog is still being prepared for visual search. Please try again later.",
+        "NO_RESULTS": "We couldn't find a close match",
+        "NO_RESULTS_DETAIL": "Try another photo or return to normal product browsing.",
+        "SIMILAR_PRODUCTS": "Similar Products"
       }
     },
     "ORDERS": {
@@ -3079,6 +3117,18 @@
       "SAVE_FAILED": "تعذر حفظ المنتج.",
       "COST_PRICE_NONNEGATIVE": "لا يمكن أن يكون سعر التكلفة سالبًا.",
       "UPLOAD_FAILED": "تعذر رفع صورة المنتج.",
+      "IMAGE_INDEX": {
+        "ACTION": "فهرس البحث بالصور",
+        "TITLE": "فهرس البحث بالصور بالذكاء الاصطناعي",
+        "SUBTITLE": "أنشئ تمثيلات البحث المرئي من صور المنتجات الحالية.",
+        "GENERATE_MISSING": "إنشاء العناصر الناقصة",
+        "INDEXED": "مفهرس",
+        "MISSING": "ناقص",
+        "STALE": "قديم",
+        "NO_IMAGE": "بلا صورة",
+        "PROCESSING": "جارٍ فهرسة صور المنتجات...",
+        "FAILURES": "منتجات تحتاج إلى مراجعة"
+      },
       "IMAGES": {
         "SECTION_LABEL": "معرض صور المنتج",
         "TITLE": "صور المنتج",
@@ -4474,6 +4524,32 @@
           "CLEANING": "التنظيف",
           "GEBE": "GeBe"
         }
+      },
+      "IMAGE_SEARCH": {
+        "OPEN": "البحث بصورة",
+        "EYEBROW": "بحث مرئي",
+        "TITLE": "البحث بصورة",
+        "SELECT_HEADING": "اختر صورة منتج",
+        "SELECT_DETAIL": "ارفع صورة JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميغابايت، أو اسحبها وأفلتها هنا.",
+        "UPLOAD": "رفع صورة",
+        "TAKE_PHOTO": "التقاط صورة",
+        "PREVIEW_ALT": "الصورة المحددة للبحث",
+        "CHOOSE_ANOTHER": "اختيار صورة أخرى",
+        "READY": "صورتك جاهزة",
+        "LOCAL_NOTE": "تبقى صورتك داخل هذا المتصفح، ولا يُستخدم للبحث سوى تمثيلها الرقمي.",
+        "FIND": "البحث عن منتجات مشابهة",
+        "PREPARING": "جارٍ تحضير البحث المرئي...",
+        "ANALYZING": "جارٍ البحث عن منتجات مشابهة...",
+        "ERROR_TYPE": "يرجى اختيار صورة بصيغة JPG أو PNG أو WEBP.",
+        "ERROR_TOO_LARGE": "يرجى اختيار صورة بحجم 5 ميغابايت أو أقل.",
+        "ERROR": "البحث المرئي غير متاح مؤقتاً",
+        "ERROR_DETAIL": "يرجى المحاولة مجدداً أو اختيار صورة أخرى.",
+        "RETRY": "إعادة المحاولة",
+        "NO_INDEXED": "لا توجد منتجات مفهرسة للبحث المرئي بعد",
+        "NO_INDEXED_DETAIL": "لا يزال الكتالوج قيد التحضير للبحث المرئي. يرجى المحاولة لاحقاً.",
+        "NO_RESULTS": "لم نتمكن من العثور على تطابق قريب",
+        "NO_RESULTS_DETAIL": "جرّب صورة أخرى أو عد إلى تصفح المنتجات المعتاد.",
+        "SIMILAR_PRODUCTS": "منتجات مشابهة"
       },
       "DETAILS": {
         "CUSTOMER": "العميل",

@@ -12,3 +12,5 @@ export * from './customer-addresses.service';
 export * from './customer-settings.service';
 export * from './customer-content.service';
 export * from './customer-search.service';
+export * from './customer-image-search.service';
+export * from './customer-image-search-overlay.service';

@@ -7,6 +7,8 @@
 
   <app-customer-footer />
 
+  <app-customer-image-search [isOpen]="imageSearch.open()" (closed)="imageSearch.close()" />
+
   <div class="customer-floating-actions">
     <app-whatsapp-contact />
     <app-customer-scroll-to-top />

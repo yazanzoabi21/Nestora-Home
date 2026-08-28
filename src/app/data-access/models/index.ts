@@ -8,6 +8,7 @@ export * from './media.model';
 export * from './order.model';
 export * from './payment.model';
 export * from './product.model';
+export * from './product-image-embedding.model';
 export * from './promotion.model';
 export * from './review.model';
 export * from './shipping.model';
