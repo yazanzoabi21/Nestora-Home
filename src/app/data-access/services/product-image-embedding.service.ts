@@ -39,11 +39,11 @@ export class ProductImageEmbeddingService {
       const state = this.embeddingState(row.index_state);
       return state
         ? [{
-            productId: row.product_id,
-            imageUrl: row.image_url,
-            indexedImageUrl: row.indexed_image_url,
-            state,
-          }]
+          productId: row.product_id,
+          imageUrl: row.image_url,
+          indexedImageUrl: row.indexed_image_url,
+          state,
+        }]
         : [];
     });
   }
@@ -73,13 +73,22 @@ export class ProductImageEmbeddingService {
     minimumSimilarity = IMAGE_SEARCH_MINIMUM_SIMILARITY,
   ): Promise<ProductImageSearchMatch[]> {
     this.assertEmbedding(embedding);
+
     const requestId = crypto.randomUUID();
-    if (isDevMode()) console.info('[VisualSearch] RPC started', { requestId });
-    const { data, error } = await this.customerSupabase.rpc('search_products_by_image', {
-      query_embedding: `[${embedding.join(',')}]`,
-      match_count: matchCount,
-      minimum_similarity: minimumSimilarity,
-    });
+
+    if (isDevMode()) {
+      console.info('[VisualSearch] RPC started', { requestId });
+    }
+
+    const { data, error } = await this.customerSupabase.rpc(
+      'search_products_by_image',
+      {
+        query_embedding: `[${embedding.join(',')}]`,
+        match_count: 10,
+        minimum_similarity: 0,
+      },
+    );
+
     if (error) {
       throw new VisualSearchError({
         code: 'RPC_FAILED',
@@ -88,17 +97,30 @@ export class ProductImageEmbeddingService {
         originalError: `${error.code ?? 'RPC'}: ${error.message}`,
       });
     }
+
+    // ADD IT HERE
+    if (isDevMode()) {
+      console.log('[VisualSearch] RAW RPC RESULTS', data);
+    }
+
     const matches = ((data ?? []) as ProductImageSearchMatchRow[]).flatMap((row) => {
       const similarity = Number(row.similarity);
+
       return row.product_id && Number.isFinite(similarity)
         ? [{ productId: row.product_id, similarity }]
         : [];
     });
-    const filtered = filterImageSearchMatches(matches, minimumSimilarity, matchCount);
+
     if (isDevMode()) {
-      console.info(`[VisualSearch] RPC returned ${filtered.length} matches`, { requestId });
+      console.table(
+        matches.map((match) => ({
+          productId: match.productId,
+          similarity: match.similarity,
+        })),
+      );
     }
-    return filtered;
+
+    return matches.slice(0, 10);
   }
 
   async getCompatibleIndexCount(): Promise<number | null> {
