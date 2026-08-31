@@ -21,6 +21,7 @@ export class DinoImageEmbeddingService implements OnDestroy {
   private readonly pending = new Map<string, PendingEmbedding>();
   private worker: Worker | null = null;
   private runtime: 'webgpu' | 'wasm' = 'wasm';
+  private modelReady = false;
 
   readonly state = signal<DinoRuntimeState>('idle');
   readonly progress = signal<number | null>(null);
@@ -28,24 +29,73 @@ export class DinoImageEmbeddingService implements OnDestroy {
   prepare(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     if (this.state() !== 'idle' && this.state() !== 'error') return;
-    if (this.state() === 'error') this.destroyWorker();
+
+    if (this.state() === 'error') {
+      this.destroyWorker();
+    }
+
+    this.modelReady = false;
+
     this.runtime = this.canAttemptWebGpu() ? 'webgpu' : 'wasm';
+
     this.ensureWorker();
+
     this.state.set('loading');
-    this.post({ type: 'LOAD_MODEL', runtime: this.runtime });
-    this.log('[VisualSearch] loading DINO', { runtime: this.runtime });
+
+    this.post({
+      type: 'LOAD_MODEL',
+      runtime: this.runtime,
+    });
+
+    this.log('[VisualSearch] loading DINO', {
+      runtime: this.runtime,
+    });
   }
 
   async generateEmbedding(image: Blob): Promise<number[]> {
-    if (!isPlatformBrowser(this.platformId)) throw new Error('Visual search requires a browser.');
-    if (!this.worker || this.state() === 'error') this.prepare();
+    if (!isPlatformBrowser(this.platformId)) {
+      throw new Error('Visual search requires a browser.');
+    }
+
+    if (!this.worker || this.state() === 'error') {
+      this.prepare();
+    }
+
     this.ensureWorker();
+
     const requestId = crypto.randomUUID();
-    this.state.set('processing');
 
     return new Promise<number[]>((resolve, reject) => {
-      this.pending.set(requestId, { resolve, reject, image });
-      this.post({ type: 'GENERATE_EMBEDDING', requestId, image });
+      this.pending.set(requestId, {
+        resolve,
+        reject,
+        image,
+      });
+
+      // Only generate when the model is completely ready
+      if (this.modelReady) {
+        this.sendEmbeddingRequest(requestId, image);
+      } else {
+        this.log('[VisualSearch] embedding queued - waiting for model', {
+          requestId,
+          runtime: this.runtime,
+        });
+      }
+    });
+  }
+
+  private sendEmbeddingRequest(requestId: string, image: Blob): void {
+    this.state.set('processing');
+
+    this.post({
+      type: 'GENERATE_EMBEDDING',
+      requestId,
+      image,
+    });
+
+    this.log('[VisualSearch] generating embedding', {
+      requestId,
+      runtime: this.runtime,
     });
   }
 
@@ -95,11 +145,27 @@ export class DinoImageEmbeddingService implements OnDestroy {
       case 'MODEL_PROGRESS':
         this.progress.set(message.progress);
         break;
-      case 'MODEL_READY':
+      case 'MODEL_READY': {
+        this.modelReady = true;
         this.progress.set(100);
-        this.state.set(message.runtime === 'webgpu' ? 'ready-webgpu' : 'ready-wasm');
-        this.log(`[VisualSearch] model ready: ${message.runtime}`, { runtime: message.runtime });
+
+        this.state.set(
+          message.runtime === 'webgpu'
+            ? 'ready-webgpu'
+            : 'ready-wasm',
+        );
+
+        this.log(`[VisualSearch] model ready: ${message.runtime}`, {
+          runtime: message.runtime,
+        });
+
+        // Process images that were selected while model was loading
+        for (const [requestId, pending] of this.pending) {
+          this.sendEmbeddingRequest(requestId, pending.image);
+        }
+
         break;
+      }
       case 'EMBEDDING_RESULT': {
         const pending = this.pending.get(message.requestId);
         if (!pending) return;
@@ -134,15 +200,22 @@ export class DinoImageEmbeddingService implements OnDestroy {
   }
 
   private fallbackToWasm(): void {
-    this.log('[VisualSearch] WebGPU failed → trying WASM', { runtime: 'webgpu' });
+    this.log('[VisualSearch] WebGPU failed → trying WASM', {
+      runtime: 'webgpu',
+    });
+
     this.destroyWorker();
+
+    this.modelReady = false;
     this.runtime = 'wasm';
     this.state.set('loading');
+
     this.ensureWorker();
-    this.post({ type: 'LOAD_MODEL', runtime: 'wasm' });
-    for (const [requestId, pending] of this.pending) {
-      this.post({ type: 'GENERATE_EMBEDDING', requestId, image: pending.image });
-    }
+
+    this.post({
+      type: 'LOAD_MODEL',
+      runtime: 'wasm',
+    });
   }
 
   private canAttemptWebGpu(): boolean {
@@ -152,6 +225,7 @@ export class DinoImageEmbeddingService implements OnDestroy {
   private destroyWorker(): void {
     this.worker?.terminate();
     this.worker = null;
+    this.modelReady = false;
   }
 
   private rejectAll(error: Error): void {
