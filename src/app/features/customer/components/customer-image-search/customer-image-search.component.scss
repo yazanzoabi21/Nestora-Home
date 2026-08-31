@@ -6,3 +6,120 @@
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
+.image-preview-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e8dccf;
+  border-radius: 1.25rem;
+  background: #eee9e1;
+  box-shadow: 0 12px 30px rgb(31 42 31 / 8%);
+}
+
+.image-search-content--results {
+  display: block;
+
+  .image-search-query {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.625rem;
+    border: 1px solid #e8dccf;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 8px 22px rgb(31 42 31 / 5%);
+  }
+
+  .image-preview-shell {
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 0.75rem;
+    box-shadow: none;
+  }
+
+  .image-preview-shell img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+  }
+
+  .image-search-replace {
+    width: auto;
+    max-width: 100%;
+    margin-top: 0;
+    justify-self: start;
+    line-height: 1.25;
+  }
+}
+
+.image-preview-scanning .image-scan-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: rgb(31 42 31 / 16%);
+  pointer-events: none;
+}
+
+.image-scan-line {
+  position: absolute;
+  inset-inline: 5%;
+  top: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: #f7fff2;
+  box-shadow: 0 0 5px #fff, 0 0 12px rgb(113 131 105 / 85%);
+  animation: image-scan 2.25s ease-in-out infinite;
+}
+
+@keyframes image-scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+
+  10%,
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    top: calc(100% - 2px);
+    opacity: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .image-preview-shell {
+    border-radius: 1.5rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .image-search-content--results {
+    .image-search-query {
+      grid-template-columns: 6.5rem minmax(0, 1fr);
+      width: fit-content;
+      max-width: 100%;
+      margin-bottom: 1.25rem;
+      padding: 0.75rem;
+    }
+
+    .image-preview-shell {
+      width: 6.5rem;
+      height: 6.5rem;
+      border-radius: 0.875rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-scan-line {
+    top: 50%;
+    animation: none;
+    opacity: 0.9;
+  }
+}
+

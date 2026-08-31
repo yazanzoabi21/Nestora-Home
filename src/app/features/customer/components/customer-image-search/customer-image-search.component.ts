@@ -33,7 +33,7 @@ import {
 } from '../../services';
 import { CustomerProductCardComponent } from '../customer-product-card';
 
-type ImageSearchStage = 'select' | 'ready' | 'processing' | 'results' | 'error';
+type ImageSearchStage = 'select' | 'processing' | 'results' | 'error';
 
 @Component({
   selector: 'app-customer-image-search',
@@ -100,9 +100,9 @@ export class CustomerImageSearchComponent implements OnDestroy {
       this.workingImage.set(resized);
       this.previewUrl.set(URL.createObjectURL(resized));
       this.previewRevoked = false;
-      this.stage.set('ready');
+      await this.searchSelectedImage(resized, selectionVersion);
     } catch (error: unknown) {
-      if (selectionVersion !== this.requestVersion) return;
+      if (!isCurrentImageSearchRequest(selectionVersion, this.requestVersion, this.isOpen())) return;
       this.logFailure('image-preprocess', 'IMAGE_PREPROCESS_FAILED', error, selectionVersion.toString());
       this.stage.set('error');
       this.searchErrorCode.set('IMAGE_PREPROCESS_FAILED');
@@ -128,6 +128,10 @@ export class CustomerImageSearchComponent implements OnDestroy {
     const version = ++this.requestVersion;
     this.stage.set('processing');
     this.searchErrorCode.set(null);
+    await this.searchSelectedImage(image, version);
+  }
+
+  private async searchSelectedImage(image: Blob, version: number): Promise<void> {
     try {
       await this.searchService.assertIndexAvailable();
       if (!isCurrentImageSearchRequest(version, this.requestVersion, this.isOpen())) return;

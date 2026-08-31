@@ -70,46 +70,48 @@
           }
         </div>
         } @else {
-        <div class="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <aside class="min-w-0">
+        <div class="image-search-content grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]"
+          [class.image-search-content--results]="stage() === 'results'">
+          <aside class="image-search-query min-w-0">
             @if (previewUrl(); as preview) {
-            <img
-              class="h-[min(200px,28dvh)] w-full rounded-[1.25rem] bg-[#eee9e1] object-contain lg:aspect-square lg:h-auto lg:rounded-[1.5rem]"
-              [src]="preview" [alt]="'CUSTOMERS.IMAGE_SEARCH.PREVIEW_ALT' | translate" (load)="onPreviewLoaded()" />
+            <div class="image-preview-shell" [class.image-preview-scanning]="stage() === 'processing'">
+              <img
+                class="h-[min(260px,36dvh)] w-full bg-[#eee9e1] object-contain lg:aspect-square lg:h-auto"
+                [src]="preview" [alt]="'CUSTOMERS.IMAGE_SEARCH.PREVIEW_ALT' | translate"
+                (load)="onPreviewLoaded()" />
+              @if (stage() === 'processing') {
+              <div class="image-scan-overlay" aria-hidden="true">
+                <span class="image-scan-line"></span>
+              </div>
+              }
+            </div>
             }
+            <input #replacementFileInput id="customer-visual-search-replacement" class="sr-only" type="file"
+              accept="image/jpeg,image/png,image/webp" (change)="onFileInput($event)" />
             <button type="button"
-              class="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-[#d9d0c6] bg-white px-4 text-sm font-black text-[#53604f] hover:border-[#718369]"
-              [disabled]="stage() === 'processing'" (click)="chooseAnother()">
+              class="image-search-replace mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-[#d9d0c6] bg-white px-4 text-sm font-black text-[#53604f] hover:border-[#718369]"
+              (click)="replacementFileInput.showPicker()">
               <i class="pi pi-refresh" aria-hidden="true"></i>
               {{ 'CUSTOMERS.IMAGE_SEARCH.CHOOSE_ANOTHER' | translate }}
             </button>
           </aside>
 
           <div class="min-w-0">
-            @if (stage() === 'ready') {
-            <div class="rounded-[1.25rem] border border-[#e8dccf] bg-white p-4 text-center sm:rounded-[1.5rem] sm:p-8">
-              <h3 class="text-lg font-black text-[#1f2a1f] sm:text-xl">{{ 'CUSTOMERS.IMAGE_SEARCH.READY' | translate }}
-              </h3>
-              <p class="mt-2 text-sm font-semibold leading-6 text-[#77736d]">{{ 'CUSTOMERS.IMAGE_SEARCH.LOCAL_NOTE' |
-                translate }}</p>
-              <button type="button"
-                class="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#6b7d5e] px-6 text-sm font-black text-white hover:bg-[#596b4e] sm:mt-6 sm:min-h-12 sm:px-7"
-                (click)="findSimilar()">
-                <i class="pi pi-sparkles" aria-hidden="true"></i>
-                {{ 'CUSTOMERS.IMAGE_SEARCH.FIND' | translate }}
-              </button>
-            </div>
-            } @else if (stage() === 'processing') {
+            @if (stage() === 'processing') {
             <div
               class="flex min-h-36 flex-col items-center justify-center rounded-[1.25rem] border border-[#e8dccf] bg-white p-4 text-center sm:min-h-64 sm:rounded-[1.5rem] sm:p-8"
               role="status" aria-live="polite">
-              <i class="pi pi-spinner pi-spin text-2xl text-[#718369] sm:text-3xl" aria-hidden="true"></i>
+              <i class="pi pi-sparkles text-2xl text-[#718369] sm:text-3xl" aria-hidden="true"></i>
               <h3 class="mt-3 text-base font-black text-[#1f2a1f] sm:mt-5 sm:text-lg">
-                {{ (modelPreparing() ? 'CUSTOMERS.IMAGE_SEARCH.PREPARING' : 'CUSTOMERS.IMAGE_SEARCH.ANALYZING') |
-                translate }}
+                {{ 'CUSTOMERS.IMAGE_SEARCH.SCANNING' | translate }}
               </h3>
+              <p class="mt-1.5 text-sm font-semibold text-[#77736d] sm:mt-2">
+                {{ 'CUSTOMERS.IMAGE_SEARCH.SCANNING_DETAIL' | translate }}
+              </p>
               @if (modelPreparing() && progress() !== null) {
-              <div class="mt-5 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-[#e8dccf]" aria-hidden="true">
+              <div class="mt-5 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-[#e8dccf]"
+                role="progressbar" [attr.aria-label]="'CUSTOMERS.IMAGE_SEARCH.PREPARING' | translate"
+                [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
                 <span class="block h-full rounded-full bg-[#718369] transition-[width]"
                   [style.width.%]="progress()"></span>
               </div>
@@ -145,7 +147,8 @@
                 translate }}</p>
             </div>
             } @else {
-            <section [attr.aria-label]="'CUSTOMERS.IMAGE_SEARCH.SIMILAR_PRODUCTS' | translate">
+            <section class="image-search-results"
+              [attr.aria-label]="'CUSTOMERS.IMAGE_SEARCH.SIMILAR_PRODUCTS' | translate">
               <h3 class="text-xl font-black text-[#1f2a1f]">{{ 'CUSTOMERS.IMAGE_SEARCH.SIMILAR_PRODUCTS' | translate }}
               </h3>
               <div class="mt-4 grid grid-cols-1 gap-4 min-[390px]:grid-cols-2 xl:grid-cols-3">
