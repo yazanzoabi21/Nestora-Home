@@ -6,6 +6,7 @@ import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 import { Product } from '../../../data-access/models';
 import { CustomerProduct, CustomerProductDetails, CustomerProductVariant } from '../models';
 import { CustomerReviewsService } from './customer-reviews.service';
+import { CustomerProductVideosService } from './customer-product-videos.service';
 
 const PRODUCT_SELECT = `
   id,
@@ -73,6 +74,7 @@ export interface CustomerCatalogRealtimeChange {
 export class CustomerCatalogService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
   private readonly reviewsService = inject(CustomerReviewsService);
+  private readonly productVideosService = inject(CustomerProductVideosService);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -202,7 +204,10 @@ export class CustomerCatalogService {
     if (!product || product.is_active === false) {
       return null;
     }
-    const reviews = await this.reviewsService.getPublishedReviewsByProduct(product.id);
+    const [reviews, videos] = await Promise.all([
+      this.reviewsService.getPublishedReviewsByProduct(product.id),
+      this.productVideosService.getVideosForProduct(product.id),
+    ]);
     const mapped = this.withPublishedReviewStats(this.toCustomerProduct(product, false), reviews);
     return {
       ...mapped,
@@ -231,6 +236,7 @@ export class CustomerCatalogService {
           (feature): feature is string => typeof feature === 'string' && !!feature.trim(),
         )
         : [],
+      videos,
     };
   }
 
@@ -309,7 +315,9 @@ export class CustomerCatalogService {
 
       if (!this.cacheStale) this.publishRealtimeChange();
     } catch (error) {
-
+      this.refreshErrorState.set(
+        error instanceof Error ? error.message : 'Unable to refresh products.',
+      );
     } finally {
       this.reuseCachedReviewStats = false;
     }
@@ -331,8 +339,10 @@ export class CustomerCatalogService {
     this.backgroundRefreshTimer = setTimeout(() => {
       this.backgroundRefreshTimer = null;
       this.lastBackgroundRevalidationAt = Date.now();
-      void this.refreshProducts().catch((error) => {
-
+      void this.refreshProducts().catch((error: unknown) => {
+        this.refreshErrorState.set(
+          error instanceof Error ? error.message : 'Unable to refresh products.',
+        );
       });
     }, 0);
   }

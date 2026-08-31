@@ -336,6 +336,23 @@
         "EMPTY": "Upload images or choose them from the Media Library.",
         "DUPLICATE": "This image has already been added."
       },
+      "VIDEOS": {
+        "TITLE": "Product videos",
+        "HELPER": "Short videos showing the product in use.",
+        "CONSTRAINTS": "MP4 / WebM · Max 30 sec · Max 8 MB",
+        "UPLOAD": "Upload video",
+        "REMOVE": "Remove video",
+        "MOVE_UP": "Move video left",
+        "MOVE_DOWN": "Move video right",
+        "EMPTY": "No product videos have been added.",
+        "LOADING": "Loading product videos...",
+        "UNSUPPORTED_FORMAT": "Please upload an MP4 or WebM video.",
+        "TOO_LARGE": "Video must be 8 MB or smaller.",
+        "TOO_LONG": "Video must be 30 seconds or shorter.",
+        "LOAD_FAILED": "Unable to load product videos.",
+        "SAVE_FAILED": "Unable to save one or more product videos.",
+        "PARTIAL_SAVE_TITLE": "Product saved with video warnings"
+      },
       "FEATURES": {
         "TITLE": "Product features",
         "HELPER": "Add up to 20 concise features. Their order is preserved on the product page.",
@@ -2571,10 +2588,18 @@
         "HOME": "Home",
         "PRODUCTS": "Products",
         "GALLERY": {
-          "ARIA": "Product gallery",
+          "ARIA": "Product media gallery",
           "DISCOUNT_OFF": "−{{percentage}}% OFF",
+          "PREVIOUS_MEDIA": "Previous product media",
+          "NEXT_MEDIA": "Next product media",
+          "INDICATORS": "Product media indicators",
+          "THUMBNAILS": "Product media thumbnails",
           "VIEW_IMAGE": "View product image {{number}}",
-          "IMAGE_ALT": "{{product}} image {{number}}"
+          "VIEW_VIDEO": "View product video {{number}}",
+          "IMAGE_ALT": "{{product}} image {{number}}",
+          "VIDEO_THUMBNAIL_ALT": "{{product}} video {{number}} thumbnail",
+          "PLAY_VIDEO": "Play {{product}} video {{number}}",
+          "MEDIA_COUNTER": "Media {{current}} of {{total}}"
         },
         "STATUS": {
           "IN_STOCK": "In Stock",
@@ -2596,6 +2621,11 @@
         "ADD_TO_CART": "Add to Cart",
         "BUY_NOW": "Buy Now",
         "TOGGLE_WISHLIST": "Toggle wishlist",
+        "VIDEOS": {
+          "EYEBROW": "Product video",
+          "TITLE": "See it in action",
+          "PLAY_LABEL": "Play {{product}} video {{number}}"
+        },
         "BENEFITS": {
           "ARIA": "Shopping benefits",
           "FREE_DELIVERY": "Delivery Options",
@@ -3143,6 +3173,23 @@
         "PREVIEW": "معاينة الصورة",
         "EMPTY": "ارفع الصور أو اخترها من مكتبة الوسائط.",
         "DUPLICATE": "تمت إضافة هذه الصورة مسبقاً."
+      },
+      "VIDEOS": {
+        "TITLE": "فيديوهات المنتج",
+        "HELPER": "فيديوهات قصيرة تعرض المنتج أثناء الاستخدام.",
+        "CONSTRAINTS": "MP4 / WebM · بحد أقصى 30 ثانية · بحد أقصى 8 MB",
+        "UPLOAD": "رفع فيديو",
+        "REMOVE": "إزالة الفيديو",
+        "MOVE_UP": "نقل الفيديو إلى اليسار",
+        "MOVE_DOWN": "نقل الفيديو إلى اليمين",
+        "EMPTY": "لم تتم إضافة فيديوهات لهذا المنتج.",
+        "LOADING": "جارٍ تحميل فيديوهات المنتج...",
+        "UNSUPPORTED_FORMAT": "يرجى رفع فيديو بصيغة MP4 أو WebM.",
+        "TOO_LARGE": "يجب ألا يتجاوز حجم الفيديو 8 MB.",
+        "TOO_LONG": "يجب ألا تتجاوز مدة الفيديو 30 ثانية.",
+        "LOAD_FAILED": "تعذر تحميل فيديوهات المنتج.",
+        "SAVE_FAILED": "تعذر حفظ فيديو واحد أو أكثر للمنتج.",
+        "PARTIAL_SAVE_TITLE": "تم حفظ المنتج مع تحذيرات خاصة بالفيديو"
       },
       "FEATURES": {
         "TITLE": "ميزات المنتج",
@@ -5379,10 +5426,18 @@
         "HOME": "الرئيسية",
         "PRODUCTS": "المنتجات",
         "GALLERY": {
-          "ARIA": "معرض صور المنتج",
+          "ARIA": "معرض وسائط المنتج",
           "DISCOUNT_OFF": "خصم {{percentage}}٪",
+          "PREVIOUS_MEDIA": "الوسائط السابقة للمنتج",
+          "NEXT_MEDIA": "الوسائط التالية للمنتج",
+          "INDICATORS": "مؤشرات وسائط المنتج",
+          "THUMBNAILS": "صور مصغرة لوسائط المنتج",
           "VIEW_IMAGE": "عرض صورة المنتج رقم {{number}}",
-          "IMAGE_ALT": "صورة {{product}} رقم {{number}}"
+          "VIEW_VIDEO": "عرض فيديو المنتج رقم {{number}}",
+          "IMAGE_ALT": "صورة {{product}} رقم {{number}}",
+          "VIDEO_THUMBNAIL_ALT": "صورة مصغرة لفيديو {{product}} رقم {{number}}",
+          "PLAY_VIDEO": "تشغيل فيديو {{product}} رقم {{number}}",
+          "MEDIA_COUNTER": "الوسائط {{current}} من {{total}}"
         },
         "STATUS": {
           "IN_STOCK": "متوفر",
@@ -5404,6 +5459,11 @@
         "ADD_TO_CART": "أضف إلى السلة",
         "BUY_NOW": "اشترِ الآن",
         "TOGGLE_WISHLIST": "إضافة أو إزالة من المفضلة",
+        "VIDEOS": {
+          "EYEBROW": "فيديو المنتج",
+          "TITLE": "شاهده أثناء الاستخدام",
+          "PLAY_LABEL": "تشغيل فيديو {{product}} رقم {{number}}"
+        },
         "BENEFITS": {
           "ARIA": "مزايا التسوق",
           "FREE_DELIVERY": "خيارات التوصيل",

@@ -13,6 +13,27 @@ export interface ProductGalleryItem {
   alt?: string;
 }
 
+export interface ProductVideoRow {
+  readonly id: string;
+  readonly product_id: string;
+  readonly storage_path: string;
+  readonly poster_url: string | null;
+  readonly sort_order: number;
+  readonly is_active: boolean;
+  readonly created_at: string;
+}
+
+export interface ProductVideo {
+  readonly id: string;
+  readonly productId: string;
+  readonly storagePath: string;
+  readonly posterUrl: string | null;
+  readonly sortOrder: number;
+  readonly isActive: boolean;
+  readonly createdAt: string;
+  readonly url: string;
+}
+
 export type ProductGallery = string[] | ProductGalleryItem[] | null;
 
 export type ProductVariantAttributes = Readonly<Record<string, string>>;

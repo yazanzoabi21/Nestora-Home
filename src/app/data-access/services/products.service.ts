@@ -10,6 +10,7 @@ import {
   ProductVariant,
   ProductVariantMutationPayload,
 } from '../models';
+import { ProductVideosService } from './product-videos.service';
 
 const LOW_STOCK_LIMIT = 25;
 
@@ -66,6 +67,7 @@ const PRODUCT_SELECT = `
 })
 export class ProductsService {
   private readonly supabase = inject(SupabaseService).client;
+  private readonly productVideos = inject(ProductVideosService);
 
   async getProducts(): Promise<Product[]> {
     const { data, error } = await this.supabase
@@ -163,10 +165,22 @@ export class ProductsService {
   }
 
   async deleteProduct(id: string): Promise<void> {
+    const videoStoragePaths = (await this.productVideos.getVideosForProduct(id)).map(
+      (video) => video.storagePath,
+    );
     const { error } = await this.supabase.from('products').delete().eq('id', id);
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    try {
+      await this.productVideos.removeStorageObjects(videoStoragePaths);
+    } catch (cleanupError) {
+      const detail = cleanupError instanceof Error ? cleanupError.message : 'Unknown storage error';
+      throw new Error(`Product deleted, but video storage cleanup failed: ${detail}`, {
+        cause: cleanupError,
+      });
     }
   }
 

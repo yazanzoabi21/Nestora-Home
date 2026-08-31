@@ -54,17 +54,25 @@
           class="relative aspect-square touch-pan-y select-none overflow-hidden rounded-[2rem] bg-[#eeeae4] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b7d5e] focus-visible:outline-offset-[3px]"
           role="region" tabindex="0" [attr.aria-label]="'CUSTOMER.PRODUCT_DETAILS.GALLERY.ARIA' | translate"
           (touchstart)="onGalleryTouchStart($event)" (touchend)="onGalleryTouchEnd($event)"
-          (keydown.arrowleft)="showPreviousImage(); $event.preventDefault()"
-          (keydown.arrowright)="showNextImage(); $event.preventDefault()">
-          <img [src]="selectedImage()" [alt]="
+          (keydown)="onGalleryKeydown($event)">
+          @if (selectedMedia(); as media) {
+          @if (media.type === 'video') {
+          <video class="h-full w-full bg-[#1f2a1f] object-contain" controls playsinline preload="metadata"
+            [src]="media.url" [attr.poster]="media.posterUrl"
+            [attr.aria-label]="'CUSTOMER.PRODUCT_DETAILS.GALLERY.PLAY_VIDEO' | translate: { product: item.name, number: currentMediaNumber() }">
+          </video>
+          } @else {
+          <img [src]="media.url" [alt]="
               'CUSTOMER.PRODUCT_DETAILS.GALLERY.IMAGE_ALT'
                 | translate
                   : {
                       product: item.name,
-                      number: currentImageNumber(),
+                      number: currentMediaNumber(),
                     }
             " class="pointer-events-none h-full w-full object-cover [-webkit-user-drag:none]" loading="eager"
             decoding="async" fetchpriority="high" draggable="false" />
+          }
+          }
 
           @if (item.discountPercentage) {
           <span class="absolute start-5 top-5 z-20 rounded-full bg-[#6b7d5e] px-4 py-2 text-sm font-black text-white">
@@ -75,20 +83,20 @@
           </span>
           }
 
-          @if (hasMultipleImages()) {
+          @if (hasMultipleMedia()) {
           <button type="button"
             class="absolute top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf]/80 bg-white/[0.10] text-[#1f2a1f] shadow-[0_10px_28px_rgb(31_42_31_/_16%)] backdrop-blur-[8px] transition-[background-color,color,transform,box-shadow] duration-[160ms] ease-out hover:scale-[1.04] hover:bg-[#6b7d5e] hover:text-white hover:shadow-[0_12px_32px_rgb(31_42_31_/_22%)] active:scale-[0.96] motion-reduce:transition-none sm:h-12 sm:w-12 left-3 sm:left-4"
             [attr.aria-label]="
-                'CUSTOMER.PRODUCT_DETAILS.GALLERY.PREVIOUS_IMAGE' | translate
-              " (click)="showPreviousImage()">
+                'CUSTOMER.PRODUCT_DETAILS.GALLERY.PREVIOUS_MEDIA' | translate
+              " (click)="showPreviousMedia()">
             <i class="pi pi-chevron-left" aria-hidden="true"></i>
           </button>
 
           <button type="button"
             class="absolute top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf]/80 bg-white/[0.10] text-[#1f2a1f] shadow-[0_10px_28px_rgb(31_42_31_/_16%)] backdrop-blur-[8px] transition-[background-color,color,transform,box-shadow] duration-[160ms] ease-out hover:scale-[1.04] hover:bg-[#6b7d5e] hover:text-white hover:shadow-[0_12px_32px_rgb(31_42_31_/_22%)] active:scale-[0.96] motion-reduce:transition-none sm:h-12 sm:w-12 right-3 sm:right-4"
             [attr.aria-label]="
-                'CUSTOMER.PRODUCT_DETAILS.GALLERY.NEXT_IMAGE' | translate
-              " (click)="showNextImage()">
+                'CUSTOMER.PRODUCT_DETAILS.GALLERY.NEXT_MEDIA' | translate
+              " (click)="showNextMedia()">
             <i class="pi pi-chevron-right" aria-hidden="true"></i>
           </button>
 
@@ -97,44 +105,49 @@
             [attr.aria-label]="
                 'CUSTOMER.PRODUCT_DETAILS.GALLERY.INDICATORS' | translate
               ">
-            @for (image of galleryImages(); track image; let index = $index) {
+            @for (media of galleryMedia(); track media.id; let index = $index) {
             <button type="button"
               class="h-[0.45rem] w-[0.45rem] cursor-pointer rounded-full border-0 bg-[#c8cfc3] transition-[width,background-color,transform] duration-[160ms] hover:scale-[1.15] hover:bg-[#8b9a81] motion-reduce:transition-none aria-[current=true]:w-[1.35rem] aria-[current=true]:bg-[#6b7d5e]"
               [attr.aria-label]="
-                    'CUSTOMER.PRODUCT_DETAILS.GALLERY.VIEW_IMAGE'
+                    (media.type === 'image'
+                      ? 'CUSTOMER.PRODUCT_DETAILS.GALLERY.VIEW_IMAGE'
+                      : 'CUSTOMER.PRODUCT_DETAILS.GALLERY.VIEW_VIDEO')
                       | translate: { number: index + 1 }
-                  " [attr.aria-current]="currentImageIndex() === index ? 'true' : null"
-              (click)="selectImage(index)"></button>
+                  " [attr.aria-current]="currentMediaIndex() === index ? 'true' : null"
+              (click)="selectMedia(index)"></button>
             }
           </div>
           }
 
           <span class="sr-only" aria-live="polite">
             {{
-            'CUSTOMER.PRODUCT_DETAILS.GALLERY.IMAGE_COUNTER'
+            'CUSTOMER.PRODUCT_DETAILS.GALLERY.MEDIA_COUNTER'
             | translate
             : {
-            current: currentImageNumber(),
-            total: galleryImages().length,
+            current: currentMediaNumber(),
+            total: galleryMedia().length,
             }
             }}
           </span>
         </div>
 
-        @if (hasMultipleImages()) {
+        @if (hasMultipleMedia()) {
         <div
           class="mt-4 flex snap-x snap-proximity gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           [attr.aria-label]="
               'CUSTOMER.PRODUCT_DETAILS.GALLERY.THUMBNAILS' | translate
             ">
-          @for (image of galleryImages(); track image; let index = $index) {
+          @for (media of galleryMedia(); track media.id; let index = $index) {
           <button type="button"
-            class="h-20 w-20 shrink-0 snap-start cursor-pointer overflow-hidden rounded-2xl border-2 border-transparent bg-white p-1 opacity-[0.72] transition-[border-color,opacity,transform,box-shadow] duration-[160ms] hover:-translate-y-0.5 hover:opacity-100 motion-reduce:transition-none aria-[pressed=true]:border-[#6b7d5e] aria-[pressed=true]:opacity-100 aria-[pressed=true]:shadow-[0_6px_18px_rgb(31_42_31_/_12%)]"
+            class="relative h-20 w-20 shrink-0 snap-start cursor-pointer overflow-hidden rounded-2xl border-2 border-transparent bg-white p-1 opacity-[0.72] transition-[border-color,opacity,transform,box-shadow] duration-[160ms] hover:-translate-y-0.5 hover:opacity-100 motion-reduce:transition-none aria-[pressed=true]:border-[#6b7d5e] aria-[pressed=true]:opacity-100 aria-[pressed=true]:shadow-[0_6px_18px_rgb(31_42_31_/_12%)]"
             [attr.aria-label]="
-                  'CUSTOMER.PRODUCT_DETAILS.GALLERY.VIEW_IMAGE'
+                  (media.type === 'image'
+                    ? 'CUSTOMER.PRODUCT_DETAILS.GALLERY.VIEW_IMAGE'
+                    : 'CUSTOMER.PRODUCT_DETAILS.GALLERY.VIEW_VIDEO')
                     | translate: { number: index + 1 }
-                " [attr.aria-pressed]="currentImageIndex() === index" (click)="selectImage(index)">
-            <img [src]="image" [alt]="
+                " [attr.aria-pressed]="currentMediaIndex() === index" (click)="selectMedia(index)">
+            @if (media.type === 'image') {
+            <img [src]="media.url" [alt]="
     'CUSTOMER.PRODUCT_DETAILS.GALLERY.IMAGE_ALT'
       | translate
         : {
@@ -143,6 +156,20 @@
           }
   " class="pointer-events-none h-full w-full rounded-xl object-cover [-webkit-user-drag:none]" loading="eager"
               decoding="async" draggable="false" />
+            } @else {
+            <span class="relative block h-full w-full overflow-hidden rounded-xl bg-[#1f2a1f]">
+              @if (media.posterUrl) {
+              <img [src]="media.posterUrl"
+                [alt]="'CUSTOMER.PRODUCT_DETAILS.GALLERY.VIDEO_THUMBNAIL_ALT' | translate: { product: item.name, number: index + 1 }"
+                class="pointer-events-none h-full w-full object-cover" loading="lazy" decoding="async" />
+              }
+              <span class="pointer-events-none absolute inset-0 grid place-items-center bg-black/15" aria-hidden="true">
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-white/90 text-xs text-[#53674d] shadow-md">
+                  <i class="pi pi-play translate-x-px"></i>
+                </span>
+              </span>
+            </span>
+            }
           </button>
           }
         </div>

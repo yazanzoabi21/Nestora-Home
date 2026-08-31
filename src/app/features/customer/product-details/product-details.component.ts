@@ -14,12 +14,18 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CustomerAuthService } from '../../../core/services/auth';
 import { CustomerLoyaltyPointsBadgeComponent } from '../../../shared/components/customer-loyalty-points-badge';
 import { ProductReviewsComponent } from '../components/product-reviews';
-import { CustomerProduct, CustomerProductDetails, CustomerProductVariant } from '../models';
+import {
+  CustomerProduct,
+  CustomerProductDetails,
+  CustomerProductMediaItem,
+  CustomerProductVariant,
+} from '../models';
 import {
   CustomerRecentlyViewedService,
   CustomerShoppingStateService,
   LoyaltyPointsCalculatorService,
   CustomerCatalogService,
+  CustomerProductVideosService,
 } from '../services';
 import { CustomerPromotionsService } from '../services/customer-promotions.service';
 
@@ -52,6 +58,7 @@ export class ProductDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly catalog = inject(CustomerCatalogService);
+  private readonly productVideos = inject(CustomerProductVideosService);
   private readonly promotions = inject(CustomerPromotionsService);
   private readonly recentlyViewed = inject(CustomerRecentlyViewedService);
   private readonly translate = inject(TranslateService);
@@ -66,6 +73,7 @@ export class ProductDetailsComponent {
   private touchStartX: number | null = null;
   private touchStartY: number | null = null;
   private lastHandledRealtimeRevision = 0;
+  private lastHandledVideoRealtimeRevision = 0;
 
   readonly product = signal<CustomerProductDetails | null>(null);
   readonly promotionBreadcrumb = signal<ProductPromotionBreadcrumb | null>(null);
@@ -73,7 +81,7 @@ export class ProductDetailsComponent {
   readonly error = signal(false);
 
   readonly quantity = signal(1);
-  readonly currentImageIndex = signal(0);
+  readonly currentMediaIndex = signal(0);
   readonly selectedVariant = signal<CustomerProductVariant | null>(null);
   readonly variantImageOverride = signal<string | null>(null);
   readonly activeTab = signal<DetailsTab>('description');
@@ -81,27 +89,52 @@ export class ProductDetailsComponent {
   readonly stars = [1, 2, 3, 4, 5];
   readonly returnUrl = this.router.url;
 
-  readonly galleryImages = computed<string[]>(() => {
+  readonly galleryMedia = computed<CustomerProductMediaItem[]>(() => {
     const item = this.product();
 
     if (!item) {
       return [];
     }
 
-    const images = [item.imageUrl, ...(item.gallery ?? [])]
+    const imageUrls = [item.imageUrl, ...(item.gallery ?? [])]
       .filter((image): image is string => Boolean(image?.trim()))
       .map((image) => image.trim());
+    const images = [...new Set(imageUrls)].map(
+      (url): CustomerProductMediaItem => ({
+        id: `image:${url}`,
+        type: 'image',
+        url,
+        posterUrl: null,
+      }),
+    );
+    const videos = item.videos
+      .filter((video) => Boolean(video.url.trim()))
+      .map(
+        (video): CustomerProductMediaItem => ({
+          id: `video:${video.id}`,
+          type: 'video',
+          url: video.url,
+          posterUrl: video.posterUrl,
+        }),
+      );
 
-    return [...new Set(images)];
+    return [...images, ...videos];
   });
 
-  readonly selectedImage = computed(() => {
+  readonly selectedMedia = computed<CustomerProductMediaItem | null>(() => {
     const variantImage = this.variantImageOverride();
-    if (variantImage) return variantImage;
-    const images = this.galleryImages();
-    const selectedIndex = this.currentImageIndex();
+    if (variantImage) {
+      return {
+        id: `variant:${variantImage}`,
+        type: 'image',
+        url: variantImage,
+        posterUrl: null,
+      };
+    }
+    const media = this.galleryMedia();
+    const selectedIndex = this.currentMediaIndex();
 
-    return images[selectedIndex] ?? this.product()?.imageUrl ?? '';
+    return media[selectedIndex] ?? null;
   });
 
   readonly displayProduct = computed<CustomerProduct | null>(() => {
@@ -139,8 +172,8 @@ export class ProductDetailsComponent {
     };
   });
 
-  readonly hasMultipleImages = computed(
-    () => this.galleryImages().length > 1,
+  readonly hasMultipleMedia = computed(
+    () => this.galleryMedia().length > 1,
   );
 
   readonly variantSelectorLabel = computed(() => {
@@ -150,10 +183,10 @@ export class ProductDetailsComponent {
       : this.translate.instant('CUSTOMER.PRODUCT_DETAILS.OPTIONS');
   });
 
-  readonly currentImageNumber = computed(() => {
-    const imageCount = this.galleryImages().length;
+  readonly currentMediaNumber = computed(() => {
+    const mediaCount = this.galleryMedia().length;
 
-    return imageCount > 0 ? this.currentImageIndex() + 1 : 0;
+    return mediaCount > 0 ? this.currentMediaIndex() + 1 : 0;
   });
 
   readonly wishlisted = computed(() => {
@@ -250,13 +283,34 @@ export class ProductDetailsComponent {
 
       if (isRelevant) untracked(() => void this.load(true));
     });
+    effect(() => {
+      const change = this.productVideos.realtimeChange();
+      const currentProduct = this.product();
+      if (
+        !currentProduct ||
+        change.revision === 0 ||
+        change.revision === this.lastHandledVideoRealtimeRevision
+      ) {
+        return;
+      }
+
+      this.lastHandledVideoRealtimeRevision = change.revision;
+      if (!change.productIds.includes(currentProduct.id)) return;
+
+      const videos = this.productVideos.videosSnapshot()[currentProduct.id];
+      if (videos) {
+        untracked(() => this.product.update((product) =>
+          product ? { ...product, videos: [...videos] } : product,
+        ));
+      }
+    });
     void this.loadPromotionBreadcrumb();
     void this.load();
   }
 
-  selectImage(index: number): void {
+  selectMedia(index: number): void {
     this.variantImageOverride.set(null);
-    this.activateImage(index);
+    this.activateMedia(index);
   }
 
   selectVariant(variant: CustomerProductVariant): void {
@@ -276,32 +330,43 @@ export class ProductDetailsComponent {
     return !variant.isActive || (variant.stock ?? this.product()?.stock ?? 0) <= 0;
   }
 
-  showPreviousImage(): void {
+  showPreviousMedia(): void {
     this.variantImageOverride.set(null);
-    const imageCount = this.galleryImages().length;
+    const mediaCount = this.galleryMedia().length;
 
-    if (imageCount <= 1) {
+    if (mediaCount <= 1) {
       return;
     }
 
     const previousIndex =
-      (this.currentImageIndex() - 1 + imageCount) % imageCount;
+      (this.currentMediaIndex() - 1 + mediaCount) % mediaCount;
 
-    this.activateImage(previousIndex);
+    this.activateMedia(previousIndex);
   }
 
-  showNextImage(): void {
+  showNextMedia(): void {
     this.variantImageOverride.set(null);
-    const imageCount = this.galleryImages().length;
+    const mediaCount = this.galleryMedia().length;
 
-    if (imageCount <= 1) {
+    if (mediaCount <= 1) {
       return;
     }
 
     const nextIndex =
-      (this.currentImageIndex() + 1) % imageCount;
+      (this.currentMediaIndex() + 1) % mediaCount;
 
-    this.activateImage(nextIndex);
+    this.activateMedia(nextIndex);
+  }
+
+  onGalleryKeydown(event: KeyboardEvent): void {
+    if (event.target !== event.currentTarget) return;
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.showPreviousMedia();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.showNextMedia();
+    }
   }
 
   onGalleryTouchStart(event: TouchEvent): void {
@@ -322,7 +387,7 @@ export class ProductDetailsComponent {
       !touch ||
       this.touchStartX === null ||
       this.touchStartY === null ||
-      !this.hasMultipleImages()
+      !this.hasMultipleMedia()
     ) {
       this.resetTouchState();
       return;
@@ -342,11 +407,11 @@ export class ProductDetailsComponent {
     }
 
     if (deltaX < 0) {
-      this.showNextImage();
+      this.showNextMedia();
       return;
     }
 
-    this.showPreviousImage();
+    this.showPreviousMedia();
   }
 
   decrease(): void {
@@ -451,45 +516,45 @@ export class ProductDetailsComponent {
     this.activeTab.set(tab);
   }
 
-  private activateImage(index: number): void {
-    const images = this.galleryImages();
+  private activateMedia(index: number): void {
+    const media = this.galleryMedia();
 
     if (
       index < 0 ||
-      index >= images.length ||
-      index === this.currentImageIndex()
+      index >= media.length ||
+      index === this.currentMediaIndex()
     ) {
       return;
     }
 
-    // Change the displayed image immediately.
-    this.currentImageIndex.set(index);
+    this.currentMediaIndex.set(index);
 
-    // Prepare the previous and next images in the background.
     this.preloadAdjacentImages(index);
   }
 
   private preloadAdjacentImages(index: number): void {
-    const images = this.galleryImages();
-    const imageCount = images.length;
+    const media = this.galleryMedia();
+    const mediaCount = media.length;
 
-    if (imageCount <= 1) {
+    if (mediaCount <= 1) {
       return;
     }
 
     const previousIndex =
-      (index - 1 + imageCount) % imageCount;
+      (index - 1 + mediaCount) % mediaCount;
 
     const nextIndex =
-      (index + 1) % imageCount;
+      (index + 1) % mediaCount;
 
-    void this.preloadImage(images[previousIndex]);
-    void this.preloadImage(images[nextIndex]);
+    const adjacentMedia = [media[previousIndex], media[nextIndex]];
+    for (const item of adjacentMedia) {
+      if (item.type === 'image') void this.preloadImage(item.url);
+    }
   }
 
   private preloadGalleryImages(): void {
-    for (const imageUrl of this.galleryImages()) {
-      void this.preloadImage(imageUrl);
+    for (const media of this.galleryMedia()) {
+      if (media.type === 'image') void this.preloadImage(media.url);
     }
   }
 
@@ -545,7 +610,7 @@ export class ProductDetailsComponent {
     }
 
     const previousVariantId = preserveState ? this.selectedVariant()?.id ?? null : null;
-    const previousImage = preserveState ? this.selectedImage() : null;
+    const previousMediaId = preserveState ? this.selectedMedia()?.id ?? null : null;
     const previousQuantity = this.quantity();
 
     if (!preserveState) this.loading.set(true);
@@ -567,11 +632,14 @@ export class ProductDetailsComponent {
           (variant) => variant.id === requestedVariantId && variant.isActive,
         ) ?? item?.variants.find((variant) => variant.isActive) ?? null;
       this.selectedVariant.set(initialVariant);
-      this.variantImageOverride.set(initialVariant?.imageUrl?.trim() || null);
-
-      const refreshedImages = this.galleryImages();
-      const preservedImageIndex = previousImage ? refreshedImages.indexOf(previousImage) : -1;
-      this.currentImageIndex.set(preservedImageIndex >= 0 ? preservedImageIndex : 0);
+      const refreshedMedia = this.galleryMedia();
+      const preservedMediaIndex = previousMediaId
+        ? refreshedMedia.findIndex((media) => media.id === previousMediaId)
+        : -1;
+      this.currentMediaIndex.set(preservedMediaIndex >= 0 ? preservedMediaIndex : 0);
+      this.variantImageOverride.set(
+        preservedMediaIndex >= 0 ? null : initialVariant?.imageUrl?.trim() || null,
+      );
       this.quantity.update((quantity) => Math.max(1, Math.min(quantity, this.availableQuantity())));
 
       if (item && !preserveState) {

@@ -9,6 +9,7 @@ export * from './orders.service';
 export * from './payments.service';
 export * from './products.service';
 export * from './product-image-embedding.service';
+export * from './product-videos.service';
 export * from './promotions.service';
 export * from './reviews.service';
 export * from './shipping.service';

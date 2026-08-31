@@ -1,3 +1,19 @@
+import { ProductVideo } from '../../../data-access/models';
+
+export type CustomerProductMediaItem =
+  | {
+      readonly id: string;
+      readonly type: 'image';
+      readonly url: string;
+      readonly posterUrl: null;
+    }
+  | {
+      readonly id: string;
+      readonly type: 'video';
+      readonly url: string;
+      readonly posterUrl: string | null;
+    };
+
 export interface CustomerProduct {
   id: string;
   name: string;
@@ -35,6 +51,7 @@ export interface CustomerProductDetails extends CustomerProduct {
   sku?: string | null;
   features: string[];
   variants: CustomerProductVariant[];
+  videos: ProductVideo[];
 }
 
 export interface CustomerProductVariant {

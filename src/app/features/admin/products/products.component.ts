@@ -11,7 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import {
   CategoriesService,
@@ -27,6 +27,8 @@ import {
   ProductStatus,
   ProductStatusFilter,
   ProductTableRowData,
+  ProductVideo,
+  ProductVideosService,
   ProductVariantFormModel,
   ProductVariantMutationPayload,
   ProductsService,
@@ -65,8 +67,20 @@ interface AdminSelectOption<T extends string | null = string> {
   value: T;
 }
 
+interface AdminProductVideoItem {
+  readonly clientId: string;
+  readonly name: string;
+  readonly url: string;
+  readonly durationSeconds: number | null;
+  readonly file: File | null;
+  readonly existing: ProductVideo | null;
+}
+
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+const MAX_VIDEO_SIZE_BYTES = 35 * 1024 * 1024;
+const MAX_VIDEO_DURATION_SECONDS = 30;
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
 
 const EMPTY_PRODUCT_FORM: ProductFormModel = {
   name: '',
@@ -118,8 +132,10 @@ export class ProductsComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
   private readonly mediaLibraryService = inject(MediaLibraryService);
   private readonly uploadService = inject(UploadService);
+  private readonly productVideosService = inject(ProductVideosService);
   private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly imageIndex = inject(AdminProductImageIndexService);
 
@@ -128,6 +144,8 @@ export class ProductsComponent implements OnInit {
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly imageUploadError = signal<string | null>(null);
+  readonly videoUploadError = signal<string | null>(null);
+  readonly videoLoading = signal(false);
   readonly featureError = signal<string | null>(null);
   readonly searchTerm = signal('');
   readonly selectedCategory = signal<CategoryFilterValue>('all');
@@ -184,6 +202,8 @@ export class ProductsComponent implements OnInit {
     this.loyalty.preview(this.productForm().price, this.productForm().salePrice),
   );
   readonly productImages = signal<ProductImageItem[]>([]);
+  readonly productVideos = signal<AdminProductVideoItem[]>([]);
+  readonly originalProductVideos = signal<ProductVideo[]>([]);
   readonly productVariants = signal<ProductVariantFormModel[]>([]);
   readonly variantError = signal<string | null>(null);
   readonly variantMediaTargetId = signal<string | null>(null);
@@ -545,6 +565,7 @@ export class ProductsComponent implements OnInit {
     this.productVariants.set([]);
     this.variantError.set(null);
     this.resetImageState();
+    this.resetVideoState();
     this.imageUploadError.set(null);
     this.isProductModalOpen.set(true);
   }
@@ -600,7 +621,7 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  openEditProductModal(value: Product | AdminTableRow): void {
+  async openEditProductModal(value: Product | AdminTableRow): Promise<void> {
     const product = this.resolveProductFromTableEvent(value);
 
     if (!product) {
@@ -665,7 +686,33 @@ export class ProductsComponent implements OnInit {
     this.productImages.set(images);
     this.coverImageId.set(images[0]?.id ?? null);
     this.imageUploadError.set(null);
+    this.resetVideoState();
     this.isProductModalOpen.set(true);
+
+    this.videoLoading.set(true);
+    try {
+      const videos = await this.productVideosService.getVideosForProduct(product.id);
+      if (this.selectedProduct()?.id !== product.id || !this.isProductModalOpen()) return;
+      this.originalProductVideos.set(videos);
+      this.productVideos.set(
+        videos.map((video) => ({
+          clientId: video.id,
+          name: this.videoFileName(video.storagePath),
+          url: video.url,
+          durationSeconds: null,
+          file: null,
+          existing: video,
+        })),
+      );
+    } catch (error) {
+      this.videoUploadError.set('PRODUCTS.VIDEOS.LOAD_FAILED');
+      this.toast.failed(
+        this.translate.instant('PRODUCTS.VIDEOS.LOAD_FAILED'),
+        this.errorDetail(error, this.translate.instant('PRODUCTS.VIDEOS.LOAD_FAILED')),
+      );
+    } finally {
+      this.videoLoading.set(false);
+    }
   }
 
   closeProductModal(): void {
@@ -727,6 +774,69 @@ export class ProductsComponent implements OnInit {
     });
   }
 
+  async onVideosSelected(files: FileList | null): Promise<void> {
+    if (!files?.length || this.saving()) return;
+    this.videoUploadError.set(null);
+
+    for (const file of Array.from(files)) {
+      const validationError = this.validateVideoFile(file);
+      if (validationError) {
+        this.videoUploadError.set(validationError);
+        continue;
+      }
+
+      const url = URL.createObjectURL(file);
+      try {
+        const durationSeconds = await this.readVideoDuration(url);
+        if (durationSeconds > MAX_VIDEO_DURATION_SECONDS) {
+          URL.revokeObjectURL(url);
+          this.videoUploadError.set('PRODUCTS.VIDEOS.TOO_LONG');
+          continue;
+        }
+        this.productVideos.update((videos) => [
+          ...videos,
+          {
+            clientId: `local-${crypto.randomUUID()}`,
+            name: file.name,
+            url,
+            durationSeconds,
+            file,
+            existing: null,
+          },
+        ]);
+      } catch {
+        URL.revokeObjectURL(url);
+        this.videoUploadError.set('PRODUCTS.VIDEOS.UNSUPPORTED_FORMAT');
+      }
+    }
+  }
+
+  removeProductVideo(clientId: string): void {
+    const removed = this.productVideos().find((video) => video.clientId === clientId);
+    if (removed?.file) URL.revokeObjectURL(removed.url);
+    this.productVideos.update((videos) => videos.filter((video) => video.clientId !== clientId));
+    this.videoUploadError.set(null);
+  }
+
+  moveProductVideo(clientId: string, direction: -1 | 1): void {
+    this.productVideos.update((videos) => {
+      const from = videos.findIndex((video) => video.clientId === clientId);
+      const to = from + direction;
+      if (from < 0 || to < 0 || to >= videos.length) return videos;
+      const reordered = [...videos];
+      [reordered[from], reordered[to]] = [reordered[to], reordered[from]];
+      return reordered;
+    });
+  }
+
+  formatVideoDuration(durationSeconds: number | null): string {
+    if (durationSeconds === null || !Number.isFinite(durationSeconds)) return '';
+    const totalSeconds = Math.round(durationSeconds);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
   openProductMediaPicker(): void {
     if (this.saving()) {
       return;
@@ -764,8 +874,10 @@ export class ProductsComponent implements OnInit {
 
     this.saving.set(true);
     this.imageUploadError.set(null);
+    this.videoUploadError.set(null);
     const uploadedUrls: string[] = [];
     const variantUploadedUrls: string[] = [];
+    let productPersisted = false;
 
     try {
       const costPriceError = this.costPriceError();
@@ -845,6 +957,7 @@ export class ProductsComponent implements OnInit {
       } else {
         savedProduct = await this.productsService.createProduct(payload);
       }
+      productPersisted = true;
 
       await this.productsService.replaceProductVariants(
         savedProduct.id,
@@ -852,6 +965,16 @@ export class ProductsComponent implements OnInit {
       );
 
       await this.saveProductMediaUsage(savedProduct, payload.media_id);
+
+      let videoSaveWarning: string | null = null;
+      try {
+        await this.syncProductVideos(savedProduct.id);
+      } catch (videoError) {
+        videoSaveWarning = this.errorDetail(
+          videoError,
+          this.translate.instant('PRODUCTS.VIDEOS.SAVE_FAILED'),
+        );
+      }
 
       await this.loadProducts();
       await this.loadCategories();
@@ -864,12 +987,20 @@ export class ProductsComponent implements OnInit {
       }
       this.closeProductModal();
       await this.updateSavedProductImageIndex(savedProduct, previousImageUrl);
+      if (videoSaveWarning) {
+        this.toast.warn(
+          this.translate.instant('PRODUCTS.VIDEOS.PARTIAL_SAVE_TITLE'),
+          videoSaveWarning,
+        );
+      }
     } catch (error) {
-      await Promise.allSettled(
-        [...uploadedUrls, ...variantUploadedUrls].map((url) =>
-          this.uploadService.deleteProductImage(url),
-        ),
-      );
+      if (!productPersisted) {
+        await Promise.allSettled(
+          [...uploadedUrls, ...variantUploadedUrls].map((url) =>
+            this.uploadService.deleteProductImage(url),
+          ),
+        );
+      }
 
       const message =
         error instanceof Error && error.message.startsWith('PRODUCTS.')
@@ -1311,6 +1442,82 @@ export class ProductsComponent implements OnInit {
     return null;
   }
 
+  private validateVideoFile(file: File): string | null {
+    if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+      return 'PRODUCTS.VIDEOS.UNSUPPORTED_FORMAT';
+    }
+    if (file.size > MAX_VIDEO_SIZE_BYTES) {
+      return 'PRODUCTS.VIDEOS.TOO_LARGE';
+    }
+    return null;
+  }
+
+  private readVideoDuration(url: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      const cleanup = (): void => {
+        video.removeAttribute('src');
+        video.load();
+      };
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        const duration = video.duration;
+        cleanup();
+        if (!Number.isFinite(duration) || duration < 0) {
+          reject(new Error('Invalid video duration.'));
+          return;
+        }
+        resolve(duration);
+      };
+      video.onerror = () => {
+        cleanup();
+        reject(new Error('Unable to read video metadata.'));
+      };
+      video.src = url;
+    });
+  }
+
+  private async syncProductVideos(productId: string): Promise<void> {
+    const items = this.productVideos();
+    const uploadedByClientId = new Map<string, ProductVideo>();
+
+    try {
+      for (const [sortOrder, item] of items.entries()) {
+        if (!item.file) continue;
+        const uploaded = await this.productVideosService.uploadProductVideo(
+          productId,
+          item.file,
+          sortOrder,
+        );
+        uploadedByClientId.set(item.clientId, uploaded);
+      }
+    } catch (error) {
+      await Promise.allSettled(
+        [...uploadedByClientId.values()].map((video) =>
+          this.productVideosService.deleteProductVideo(video),
+        ),
+      );
+      throw new Error(
+        `${this.translate.instant('PRODUCTS.VIDEOS.SAVE_FAILED')} ${this.errorDetail(error, '')}`.trim(),
+        { cause: error },
+      );
+    }
+
+    const retainedIds = new Set(
+      items.flatMap((item) => (item.existing ? [item.existing.id] : [])),
+    );
+    const removedVideos = this.originalProductVideos().filter((video) => !retainedIds.has(video.id));
+    for (const video of removedVideos) {
+      await this.productVideosService.deleteProductVideo(video);
+    }
+
+    const resolvedVideos = items.flatMap((item) => {
+      const video = item.existing ?? uploadedByClientId.get(item.clientId);
+      return video ? [video] : [];
+    });
+    await this.productVideosService.updateSortOrders(resolvedVideos);
+  }
+
   private errorDetail(error: unknown, fallback: string): string {
     return error instanceof Error ? error.message : fallback;
   }
@@ -1326,6 +1533,16 @@ export class ProductsComponent implements OnInit {
     this.imageUploadError.set(null);
   }
 
+  private resetVideoState(): void {
+    this.productVideos().forEach((video) => {
+      if (video.file) URL.revokeObjectURL(video.url);
+    });
+    this.productVideos.set([]);
+    this.originalProductVideos.set([]);
+    this.videoUploadError.set(null);
+    this.videoLoading.set(false);
+  }
+
   private resetProductForm(): void {
     this.selectedProduct.set(null);
     this.productForm.set({ ...EMPTY_PRODUCT_FORM });
@@ -1336,6 +1553,11 @@ export class ProductsComponent implements OnInit {
     this.variantError.set(null);
     this.variantMediaTargetId.set(null);
     this.resetImageState();
+    this.resetVideoState();
+  }
+
+  private videoFileName(storagePath: string): string {
+    return decodeURIComponent(storagePath.split('/').pop() ?? 'video');
   }
 
   private buildProductPayload(
