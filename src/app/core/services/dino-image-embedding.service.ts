@@ -36,8 +36,8 @@ export class DinoImageEmbeddingService implements OnDestroy {
 
     this.modelReady = false;
 
-    this.runtime = this.canAttemptWebGpu() ? 'webgpu' : 'wasm';
-
+    // this.runtime = this.canAttemptWebGpu() ? 'webgpu' : 'wasm';
+    this.runtime = 'wasm';
     this.ensureWorker();
 
     this.state.set('loading');
@@ -149,11 +149,7 @@ export class DinoImageEmbeddingService implements OnDestroy {
         this.modelReady = true;
         this.progress.set(100);
 
-        this.state.set(
-          message.runtime === 'webgpu'
-            ? 'ready-webgpu'
-            : 'ready-wasm',
-        );
+        this.state.set(message.runtime === 'webgpu' ? 'ready-webgpu' : 'ready-wasm');
 
         this.log(`[VisualSearch] model ready: ${message.runtime}`, {
           runtime: message.runtime,

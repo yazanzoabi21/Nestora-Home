@@ -38,12 +38,14 @@ export class ProductImageEmbeddingService {
     return ((data ?? []) as ProductImageEmbeddingStatusRow[]).flatMap((row) => {
       const state = this.embeddingState(row.index_state);
       return state
-        ? [{
-          productId: row.product_id,
-          imageUrl: row.image_url,
-          indexedImageUrl: row.indexed_image_url,
-          state,
-        }]
+        ? [
+            {
+              productId: row.product_id,
+              imageUrl: row.image_url,
+              indexedImageUrl: row.indexed_image_url,
+              state,
+            },
+          ]
         : [];
     });
   }
@@ -80,14 +82,20 @@ export class ProductImageEmbeddingService {
       console.info('[VisualSearch] RPC started', { requestId });
     }
 
-    const { data, error } = await this.customerSupabase.rpc(
-      'search_products_by_image',
-      {
-        query_embedding: `[${embedding.join(',')}]`,
-        match_count: 10,
-        minimum_similarity: 0,
-      },
-    );
+    // const { data, error } = await this.customerSupabase.rpc(
+    //   'search_products_by_image',
+    //   {
+    //     query_embedding: `[${embedding.join(',')}]`,
+    //     match_count: 10,
+    //     minimum_similarity: 0,
+    //   },
+    // );
+
+    const { data, error } = await this.customerSupabase.rpc('search_products_by_image', {
+      query_embedding: `[${embedding.join(',')}]`,
+      match_count: Math.max(matchCount, 20),
+      minimum_similarity: -1,
+    });
 
     if (error) {
       throw new VisualSearchError({
@@ -110,7 +118,7 @@ export class ProductImageEmbeddingService {
         ? [{ productId: row.product_id, similarity }]
         : [];
     });
-
+    console.log('[VisualSearch] RAW matches:', data);
     if (isDevMode()) {
       console.table(
         matches.map((match) => ({
