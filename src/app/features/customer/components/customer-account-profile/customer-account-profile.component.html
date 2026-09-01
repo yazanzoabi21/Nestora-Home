@@ -1,14 +1,20 @@
 <header class="profile-heading">
   <div>
-    <h1>My Profile</h1>
-    <p>Manage your personal information and customer account details.</p>
+    <h1>{{ 'CUSTOMER.ACCOUNT.PROFILE.TITLE' | translate }}</h1>
+    <p>{{ 'CUSTOMER.ACCOUNT.PROFILE.SUBTITLE' | translate }}</p>
   </div>
-  <div class="profile-actions">
+  <div class="profile-actions desktop-profile-actions">
     <button type="button" class="secondary-action" [disabled]="!hasChanges() || saving()" (click)="clearEdit()">Clear
       Edit</button>
     <button type="button" class="primary-action" [disabled]="!canSave()" (click)="saveChanges()">@if(saving()){<i
         class="pi pi-spin pi-spinner"></i> Saving...} @else {Save Changes}</button>
   </div>
+  @if (!mobileEditing()) {
+  <button type="button" class="mobile-edit-action" (click)="beginMobileEdit()">
+    <i class="pi pi-pencil" aria-hidden="true"></i>
+    {{ 'CUSTOMER.ACCOUNT.PROFILE.EDIT' | translate }}
+  </button>
+  }
 </header>
 <section class="profile-card">
   <div class="profile-hero">
@@ -29,14 +35,38 @@
 
     <div>
       <h2>{{ auth.displayName() }}</h2>
-      <p>Member since {{ memberSince() }}</p>
+      @if (memberSince(); as joinedDate) {
+      <p>{{ 'CUSTOMER.ACCOUNT.PROFILE.MEMBER_SINCE' | translate }} {{ joinedDate }}</p>
+      }
 
       @if (profile()?.is_active) {
       <span class="status">Active member</span>
       }
     </div>
   </div>
-  <form class="fields" [formGroup]="form" (ngSubmit)="saveChanges()" novalidate>
+
+  @if (!mobileEditing()) {
+  <dl class="mobile-profile-facts">
+    <div>
+      <dt><i class="pi pi-user" aria-hidden="true"></i>{{ 'CUSTOMER.ACCOUNT.PROFILE.FULL_NAME' | translate }}</dt>
+      <dd>{{ fullName() }}</dd>
+    </div>
+    <div>
+      <dt><i class="pi pi-envelope" aria-hidden="true"></i>{{ 'CUSTOMER.ACCOUNT.PROFILE.EMAIL_ADDRESS' | translate }}</dt>
+      <dd>{{ profileEmail() ?? ('CUSTOMER.ACCOUNT.PROFILE.NOT_PROVIDED' | translate) }}</dd>
+    </div>
+    <div>
+      <dt><i class="pi pi-phone" aria-hidden="true"></i>{{ 'CUSTOMER.ACCOUNT.PROFILE.PHONE_NUMBER' | translate }}</dt>
+      <dd>{{ phone() ?? ('CUSTOMER.ACCOUNT.PROFILE.NOT_PROVIDED' | translate) }}</dd>
+    </div>
+    <div>
+      <dt><i class="pi pi-calendar" aria-hidden="true"></i>{{ 'CUSTOMER.ACCOUNT.PROFILE.MEMBER_SINCE' | translate }}</dt>
+      <dd>{{ memberSince() ?? ('CUSTOMER.ACCOUNT.PROFILE.NOT_PROVIDED' | translate) }}</dd>
+    </div>
+  </dl>
+  }
+
+  <form class="fields" [class.mobile-form-hidden]="!mobileEditing()" [formGroup]="form" (ngSubmit)="saveChanges()" novalidate>
     <label><span>First Name</span><input type="text" formControlName="firstName"
         autocomplete="given-name" />@if(showError(form.controls.firstName)){<small>@if(form.controls.firstName.hasError('required')){First
         name is required.} @else {First name must be 60 characters or fewer.}</small>}</label>
@@ -50,5 +80,17 @@
         number.</small>}</label>
     <label><span>Birthday</span><input type="date" formControlName="birthday"
         [max]="today" />@if(showError(form.controls.birthday)){<small>Birthday cannot be in the future.</small>}</label>
+
+    <div class="mobile-profile-actions">
+      <button type="button" class="secondary-action" [disabled]="saving()" (click)="cancelMobileEdit()">
+        {{ 'CUSTOMER.ACCOUNT.PROFILE.CANCEL' | translate }}
+      </button>
+      <button type="submit" class="primary-action" [disabled]="!canSave()">
+        @if (saving()) {
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        }
+        {{ 'CUSTOMER.ACCOUNT.PROFILE.SAVE_CHANGES' | translate }}
+      </button>
+    </div>
   </form>
 </section>

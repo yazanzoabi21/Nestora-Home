@@ -1,4 +1,4 @@
-<section class="grid w-full min-w-0 max-w-full gap-4 sm:gap-6"
+<section class="loyalty-page grid w-full min-w-0 max-w-full gap-4 sm:gap-6"
   [attr.aria-label]="'CUSTOMER.LOYALTY.PAGE.TITLE' | translate">
   @if (loyalty.loading()) {
   <div class="grid gap-4" role="status">
@@ -15,9 +15,9 @@
       (click)="loyalty.load()">{{ 'CUSTOMER.LOYALTY.PAGE.RETRY' | translate }}</button>
   </div>
   } @else {
-  <section class="relative min-w-0 overflow-hidden rounded-[1.5rem] bg-[#1f2a1f] p-4 text-white shadow-[0_16px_38px_rgba(31,42,31,.16)] min-[361px]:p-5 sm:p-8">
+  <section class="points-summary relative min-w-0 overflow-hidden rounded-[1.5rem] bg-[#1f2a1f] p-4 text-white shadow-[0_16px_38px_rgba(31,42,31,.16)] min-[361px]:p-5 sm:p-8">
     <div class="absolute -end-12 -top-12 size-44 rounded-full bg-[#718369]/30" aria-hidden="true"></div>
-    <div class="relative grid min-w-0 gap-6 sm:grid-cols-2 sm:gap-8">
+    <div class="points-summary-grid relative grid min-w-0 gap-6 sm:grid-cols-2 sm:gap-8">
       <div class="min-w-0">
         <div class="flex min-w-0 items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.13em] text-[#cbd6c4] min-[361px]:text-xs min-[361px]:tracking-[0.16em]">
           <i class="pi pi-star-fill text-[#d8c399]" aria-hidden="true"></i>
@@ -59,16 +59,28 @@
     </div>
   </section> -->
 
-  <section class="min-w-0 rounded-[1.5rem] border border-[#eee8e1] bg-white p-4 shadow-[0_10px_28px_rgba(52,47,41,.06)] min-[361px]:p-5 sm:p-6">
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div class="min-w-0"><h2 class="break-words text-lg font-black text-[#1f2a1f] min-[361px]:text-xl">{{ 'CUSTOMER.LOYALTY.PAGE.HISTORY_TITLE' | translate }}</h2>
-        <p class="mt-1 break-words text-xs leading-5 text-[#7d7770] min-[361px]:text-sm">{{ 'CUSTOMER.LOYALTY.PAGE.HISTORY_SUBTITLE' | translate }}</p></div>
+  <section class="points-history-card min-w-0 rounded-[1.5rem] border border-[#eee8e1] bg-white p-4 shadow-[0_10px_28px_rgba(52,47,41,.06)] min-[361px]:p-5 sm:p-6">
+    <div class="points-history-header flex flex-wrap items-center justify-between gap-3">
+      <div class="flex min-w-0 items-center gap-2.5">
+        <span class="mobile-section-icon" aria-hidden="true"><i class="pi pi-history"></i></span>
+        <div class="min-w-0">
+          <h2 class="break-words text-lg font-black text-[#1f2a1f] min-[361px]:text-xl">{{ 'CUSTOMER.LOYALTY.PAGE.HISTORY_TITLE' | translate }}</h2>
+          <p class="history-subtitle mt-1 break-words text-xs leading-5 text-[#7d7770] min-[361px]:text-sm">{{ 'CUSTOMER.LOYALTY.PAGE.HISTORY_SUBTITLE' | translate }}</p>
+        </div>
+      </div>
+      @if (canToggleHistory()) {
+      <button type="button" class="mobile-view-all" aria-controls="points-history-list"
+        [attr.aria-expanded]="historyExpanded()" (click)="toggleHistory()">
+        {{ (historyExpanded() ? 'CUSTOMER.LOYALTY.PAGE.VIEW_LESS' : 'CUSTOMER.LOYALTY.PAGE.VIEW_ALL') | translate }}
+      </button>
+      }
     </div>
 
     @if (loyalty.transactions().length) {
-    <div class="mt-5 divide-y divide-[#eee8e1]">
+    <div id="points-history-list" class="history-list mt-5 divide-y divide-[#eee8e1]"
+      [class.history-list-expanded]="historyExpanded()">
       @for (transaction of loyalty.transactions(); track transaction.id) {
-      <article class="flex min-w-0 items-start gap-2 py-3 first:pt-0 last:pb-0 min-[361px]:gap-3 min-[361px]:py-4 sm:gap-4">
+      <article class="history-row flex min-w-0 items-start gap-2 py-3 first:pt-0 last:pb-0 min-[361px]:gap-3 min-[361px]:py-4 sm:gap-4">
         <span class="grid size-8 shrink-0 place-items-center rounded-full min-[361px]:size-10"
           [class.bg-[#edf5e9]]="transaction.pointsDelta > 0" [class.text-[#58704e]]="transaction.pointsDelta > 0"
           [class.bg-[#fff0ed]]="transaction.pointsDelta < 0" [class.text-[#a65345]]="transaction.pointsDelta < 0">
@@ -76,12 +88,15 @@
         </span>
         <div class="min-w-0 flex-1">
           <h3 class="break-words text-xs font-black leading-5 text-[#263326] min-[361px]:text-sm">{{ transactionLabelKey(transaction.transactionType) | translate }}</h3>
-          <p class="mt-0.5 break-words text-[0.66rem] leading-4 text-[#858585] [overflow-wrap:anywhere] min-[361px]:mt-1 min-[361px]:text-xs">
-            @if (transaction.orderNumber) {
-            {{ 'CUSTOMER.LOYALTY.PAGE.ORDER_REFERENCE' | translate: { orderNumber: transaction.orderNumber } }} &middot;
-            }
-            {{ transaction.createdAt | date: 'mediumDate' }}
+          @if (transaction.orderNumber) {
+          <p class="history-order mt-0.5 min-w-0 break-words text-[0.66rem] leading-4 text-[#858585] [overflow-wrap:anywhere] min-[361px]:mt-1 min-[361px]:text-xs">
+            {{ 'CUSTOMER.LOYALTY.PAGE.ORDER_REFERENCE' | translate: { orderNumber: transaction.orderNumber } }}
           </p>
+          }
+          <time class="history-date mt-0.5 block text-[0.66rem] leading-4 text-[#858585] min-[361px]:text-xs"
+            [attr.datetime]="transaction.createdAt">
+            {{ transaction.createdAt | date: 'mediumDate' }}
+          </time>
         </div>
         <div class="ms-auto max-w-[6.25rem] shrink-0 text-end">
           <strong class="block whitespace-nowrap text-xs font-black min-[361px]:text-sm sm:text-base" [class.text-[#58704e]]="transaction.pointsDelta > 0"
@@ -101,7 +116,7 @@
       }
     </div>
     @if (loyalty.hasMoreHistory()) {
-    <button type="button" class="mt-5 min-h-11 w-full cursor-pointer rounded-xl border border-[#dcd3c7] font-black text-[#5f714f] disabled:opacity-50"
+    <button type="button" class="history-load-more mt-5 min-h-11 w-full cursor-pointer rounded-xl border border-[#dcd3c7] font-black text-[#5f714f] disabled:opacity-50"
       [disabled]="loyalty.loadingMore()" (click)="loyalty.loadMoreHistory()">
       {{ (loyalty.loadingMore() ? 'COMMON.LOADING' : 'CUSTOMER.LOYALTY.PAGE.LOAD_MORE') | translate }}
     </button>
@@ -114,23 +129,29 @@
     }
   </section>
 
-  <section class="min-w-0 rounded-[1.5rem] border border-[#eee8e1] bg-white p-3 shadow-[0_10px_28px_rgba(52,47,41,.06)] min-[361px]:p-5 sm:p-6">
-    <h2 class="break-words text-lg font-black text-[#1f2a1f] min-[361px]:text-xl">{{ 'CUSTOMER.LOYALTY.PAGE.REDEEM_TITLE' | translate }}</h2>
-    <p class="mt-1 break-words text-xs leading-5 text-[#7d7770] min-[361px]:text-sm">{{ 'CUSTOMER.LOYALTY.PAGE.REDEEM_SUBTITLE' | translate }}</p>
+  <section class="redeem-card min-w-0 rounded-[1.5rem] border border-[#eee8e1] bg-white p-3 shadow-[0_10px_28px_rgba(52,47,41,.06)] min-[361px]:p-5 sm:p-6">
+    <div class="flex min-w-0 items-start gap-2.5">
+      <span class="mobile-section-icon" aria-hidden="true"><i class="pi pi-gift"></i></span>
+      <div class="min-w-0">
+        <h2 class="break-words text-lg font-black text-[#1f2a1f] min-[361px]:text-xl">{{ 'CUSTOMER.LOYALTY.PAGE.REDEEM_TITLE' | translate }}</h2>
+        <p class="mt-1 break-words text-xs leading-5 text-[#7d7770] min-[361px]:text-sm">{{ 'CUSTOMER.LOYALTY.PAGE.REDEEM_SUBTITLE' | translate }}</p>
+      </div>
+    </div>
 
     @if (loyalty.redeemableProducts().length) {
-    <div class="mt-4 grid min-w-0 grid-cols-1 gap-2.5 min-[361px]:mt-5 min-[361px]:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div class="redeem-products mt-4 grid min-w-0 grid-cols-1 gap-2.5 min-[361px]:mt-5 min-[361px]:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      [attr.aria-label]="'CUSTOMER.LOYALTY.PAGE.REDEEM_TITLE' | translate">
       @for (product of loyalty.redeemableProducts(); track product.productId) {
-      <article class="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[#e8dccf] bg-[#faf8f5]">
-        <img class="block h-28 w-full max-w-full bg-[#eee8df] object-cover min-[361px]:h-32 sm:h-36" [src]="product.imageUrl || 'assets/images/product-placeholder.png'"
+      <article class="redeem-product-card w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[#e8dccf] bg-[#faf8f5]">
+        <img class="redeem-product-image block h-28 w-full max-w-full bg-[#eee8df] object-cover min-[361px]:h-32 sm:h-36" [src]="product.imageUrl || 'assets/images/product-placeholder.png'"
           [alt]="product.name" loading="lazy" />
-        <div class="min-w-0 p-2.5 min-[361px]:p-3">
+        <div class="redeem-product-body min-w-0 p-2.5 min-[361px]:p-3">
           <p class="truncate text-[0.68rem] font-bold text-[#718369]">{{ product.categoryName || ('COMMON.PRODUCTS' | translate) }}</p>
           <h3 class="mt-1 line-clamp-2 text-[0.8rem] font-black leading-[1.3] text-[#1f2a1f] min-[361px]:min-h-9 min-[361px]:text-sm">{{ product.name }}</h3>
-          <div class="mt-2 flex min-w-0 flex-wrap items-start justify-between gap-x-2 gap-y-1">
-            <strong class="min-w-0 break-words text-[0.7rem] text-[#5f714f] [overflow-wrap:anywhere] min-[361px]:text-xs">{{ 'CUSTOMER.LOYALTY.FREE_WITH' | translate: { points: product.pointsCost } }}</strong>
-            <span class="shrink-0 text-[0.68rem] font-bold text-[#8a847c]">{{ product.effectivePrice | currency: 'USD' }}</span>
-          </div>
+          <strong class="points-cost-badge mt-2 inline-flex max-w-full items-center gap-1 rounded-full bg-[#edf4e9] px-2 py-1 text-[0.65rem] text-[#58704e]">
+            <i class="pi pi-star-fill text-[0.55rem]" aria-hidden="true"></i>
+            {{ 'CUSTOMER.LOYALTY.PAGE.POINTS_VALUE' | translate: { value: product.pointsCost } }}
+          </strong>
           <a class="mt-2.5 inline-flex min-h-9 w-full max-w-full items-center justify-center rounded-lg bg-[#718369] px-3 text-xs font-black text-white min-[361px]:mt-3"
             [routerLink]="['/shop/products', product.slug || product.productId]">
             {{ 'CUSTOMER.LOYALTY.PAGE.VIEW_PRODUCT' | translate }}

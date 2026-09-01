@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -20,9 +20,15 @@ export class CustomerLoyaltyPointsPageComponent {
   readonly dollarEquivalent = computed(
     () => this.balance() * this.loyalty.calculator.settings().point_value_usd,
   );
+  readonly historyExpanded = signal(false);
+  readonly canToggleHistory = computed(() => this.loyalty.transactions().length > 3);
 
   constructor() {
     void this.loyalty.load();
+  }
+
+  toggleHistory(): void {
+    this.historyExpanded.update((expanded) => !expanded);
   }
 
   transactionLabelKey(type: LoyaltyTransactionType): string {

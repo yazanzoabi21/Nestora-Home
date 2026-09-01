@@ -22,6 +22,12 @@
     gap: .75rem
 }
 
+.mobile-edit-action,
+.mobile-profile-facts,
+.mobile-profile-actions {
+    display: none
+}
+
 .profile-actions button {
     display: inline-flex;
     min-height: 2.75rem;
@@ -190,6 +196,146 @@
 
     .profile-actions button {
         width: 100%
+    }
+}
+
+@media(max-width:520px) {
+    .profile-heading {
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        gap: .75rem;
+        margin: 0 0 .85rem;
+        padding-inline-end: 5.25rem
+    }
+
+    .profile-heading h1 {
+        font-size: 1.15rem
+    }
+
+    .profile-heading p {
+        font-size: .78rem;
+        line-height: 1.45
+    }
+
+    .desktop-profile-actions {
+        display: none
+    }
+
+    .mobile-edit-action {
+        position: absolute;
+        inset-inline-end: 0;
+        top: 0;
+        display: inline-flex;
+        min-height: 2.5rem;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        border: 1px solid #91a083;
+        border-radius: .8rem;
+        background: #fff;
+        padding: .55rem .75rem;
+        color: #5f714f;
+        font-size: .78rem;
+        font-weight: 800
+    }
+
+    .profile-card {
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 8px 22px rgba(52, 47, 41, .055)
+    }
+
+    .profile-hero {
+        gap: .9rem;
+        padding-bottom: 1rem
+    }
+
+    .avatar {
+        width: 3.75rem;
+        height: 3.75rem;
+        font-size: 1.25rem
+    }
+
+    .profile-hero h2 {
+        font-size: 1rem
+    }
+
+    .profile-hero p {
+        font-size: .75rem
+    }
+
+    .mobile-profile-facts {
+        display: grid;
+        margin-top: .25rem
+    }
+
+    .mobile-profile-facts > div {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+        align-items: center;
+        gap: .75rem;
+        min-height: 3.6rem;
+        border-bottom: 1px solid #eee8e1
+    }
+
+    .mobile-profile-facts > div:last-child {
+        border-bottom: 0
+    }
+
+    .mobile-profile-facts dt,
+    .mobile-profile-facts dd {
+        min-width: 0;
+        margin: 0
+    }
+
+    .mobile-profile-facts dt {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        color: #545b52;
+        font-size: .76rem;
+        font-weight: 700
+    }
+
+    .mobile-profile-facts dt i {
+        display: grid;
+        width: 1.85rem;
+        height: 1.85rem;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: .6rem;
+        background: #f0f3eb;
+        color: #617254;
+        font-size: .75rem
+    }
+
+    .mobile-profile-facts dd {
+        overflow-wrap: anywhere;
+        color: #263326;
+        font-size: .78rem;
+        text-align: end
+    }
+
+    .fields.mobile-form-hidden {
+        display: none
+    }
+
+    .mobile-profile-actions {
+        display: flex;
+        gap: .65rem
+    }
+
+    .mobile-profile-actions button {
+        display: inline-flex;
+        min-height: 2.75rem;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        border-radius: .8rem;
+        padding: .6rem .8rem;
+        font-weight: 800
     }
 }
 
