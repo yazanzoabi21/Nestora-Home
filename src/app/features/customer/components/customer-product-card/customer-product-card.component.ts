@@ -37,6 +37,7 @@ export class CustomerProductCardComponent {
   readonly quickView = output<CustomerProduct>();
   readonly addToCart = output<CustomerProduct>();
   readonly toggleWishlist = output<CustomerProduct>();
+  readonly detailNavigation = output<CustomerProduct>();
 
   readonly starItems = [1, 2, 3, 4, 5];
 
@@ -63,6 +64,21 @@ export class CustomerProductCardComponent {
 
   loyaltyReturnUrl(): string {
     return this.router.url;
+  }
+
+  notifyDetailNavigation(event: MouseEvent): void {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    this.detailNavigation.emit(this.product());
   }
 
   decreaseCartQuantity(event: Event): void {

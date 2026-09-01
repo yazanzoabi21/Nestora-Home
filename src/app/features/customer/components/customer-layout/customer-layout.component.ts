@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
 import { CustomerNavbarComponent } from '../customer-navbar/customer-navbar.component';
 import { CustomerFooterComponent } from '../customer-footer/customer-footer.component';
 import { WhatsAppContactComponent } from '../whatsapp-contact/whatsapp-contact.component';
@@ -35,12 +34,18 @@ export class CustomerLayoutComponent {
   readonly cartRouteActive = signal(this.isCartRoute(this.router.url));
 
   constructor() {
+    this.imageSearch.setCurrentRoute(this.router.url);
     this.router.events
       .pipe(
-        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((event) => this.cartRouteActive.set(this.isCartRoute(event.urlAfterRedirects)));
+      .subscribe((event) => {
+        this.imageSearch.handleRouterEvent(event);
+        if (event instanceof NavigationEnd) {
+          this.imageSearch.setCurrentRoute(event.urlAfterRedirects);
+          this.cartRouteActive.set(this.isCartRoute(event.urlAfterRedirects));
+        }
+      });
   }
 
   private isCartRoute(url: string): boolean {

@@ -77,8 +77,7 @@
             <div class="image-preview-shell" [class.image-preview-scanning]="stage() === 'processing'">
               <img
                 class="h-[min(260px,36dvh)] w-full bg-[#eee9e1] object-contain lg:aspect-square lg:h-auto"
-                [src]="preview" [alt]="'CUSTOMERS.IMAGE_SEARCH.PREVIEW_ALT' | translate"
-                (load)="onPreviewLoaded()" />
+                [src]="preview" [alt]="'CUSTOMERS.IMAGE_SEARCH.PREVIEW_ALT' | translate" />
               @if (stage() === 'processing') {
               <div class="image-scan-overlay" aria-hidden="true">
                 <span class="image-scan-line"></span>
@@ -157,7 +156,7 @@
                   [wishlistActive]="shopping.wishlistIds().has(product.id)"
                   [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"
                   [canAddToCart]="shopping.canAdd(product)" (addToCart)="addToCart($event)"
-                  (toggleWishlist)="toggleWishlist($event)" />
+                  (toggleWishlist)="toggleWishlist($event)" (detailNavigation)="onProductNavigation()" />
                 }
               </div>
             </section>

@@ -10,7 +10,6 @@ import {
   inject,
   input,
   isDevMode,
-  output,
   signal,
 } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -21,19 +20,17 @@ import {
   VisualSearchErrorCode,
 } from '../../../../core/models/dino-worker.model';
 import {
-  ImageSearchValidationError,
   resizeImageForEmbedding,
   validateImageSearchFile,
 } from '../../../../core/utils/image-embedding.util';
 import { CustomerProduct } from '../../models';
 import {
   CustomerImageSearchService,
+  CustomerImageSearchOverlayService,
   CustomerShoppingStateService,
   isCurrentImageSearchRequest,
 } from '../../services';
 import { CustomerProductCardComponent } from '../customer-product-card';
-
-type ImageSearchStage = 'select' | 'processing' | 'results' | 'error';
 
 @Component({
   selector: 'app-customer-image-search',
@@ -45,19 +42,19 @@ type ImageSearchStage = 'select' | 'processing' | 'results' | 'error';
 })
 export class CustomerImageSearchComponent implements OnDestroy {
   readonly isOpen = input(false);
-  readonly closed = output<void>();
 
   readonly embedding = inject(DinoImageEmbeddingService);
   readonly shopping = inject(CustomerShoppingStateService);
   private readonly searchService = inject(CustomerImageSearchService);
+  private readonly overlay = inject(CustomerImageSearchOverlayService);
   private readonly document = inject(DOCUMENT);
 
-  readonly stage = signal<ImageSearchStage>('select');
-  readonly previewUrl = signal<string | null>(null);
-  readonly workingImage = signal<Blob | null>(null);
-  readonly results = signal<readonly CustomerProduct[]>([]);
-  readonly validationError = signal<ImageSearchValidationError>(null);
-  readonly searchErrorCode = signal<VisualSearchErrorCode | null>(null);
+  readonly stage = this.overlay.stage;
+  readonly previewUrl = this.overlay.previewUrl;
+  readonly workingImage = this.overlay.workingImage;
+  readonly results = this.overlay.results;
+  readonly validationError = this.overlay.validationError;
+  readonly searchErrorCode = this.overlay.searchErrorCode;
   readonly dragging = signal(false);
   readonly modelPreparing = computed(
     () => this.embedding.state() === 'loading' || this.embedding.state() === 'idle',
@@ -68,7 +65,6 @@ export class CustomerImageSearchComponent implements OnDestroy {
 
   private requestVersion = 0;
   private scrollValue = '';
-  private previewRevoked = false;
 
   constructor() {
     effect(() => {
@@ -90,16 +86,13 @@ export class CustomerImageSearchComponent implements OnDestroy {
     if (error) return;
 
     const selectionVersion = ++this.requestVersion;
+    this.overlay.startNewSelection();
     this.stage.set('processing');
-    this.releasePreview();
-    this.workingImage.set(null);
-    this.results.set([]);
     try {
       const resized = await resizeImageForEmbedding(file);
       if (!isCurrentImageSearchRequest(selectionVersion, this.requestVersion, this.isOpen())) return;
       this.workingImage.set(resized);
       this.previewUrl.set(URL.createObjectURL(resized));
-      this.previewRevoked = false;
       await this.searchSelectedImage(resized, selectionVersion);
     } catch (error: unknown) {
       if (!isCurrentImageSearchRequest(selectionVersion, this.requestVersion, this.isOpen())) return;
@@ -160,32 +153,22 @@ export class CustomerImageSearchComponent implements OnDestroy {
 
   chooseAnother(): void {
     ++this.requestVersion;
-    this.releasePreview();
-    this.workingImage.set(null);
-    this.results.set([]);
-    this.validationError.set(null);
-    this.searchErrorCode.set(null);
-    this.stage.set('select');
+    this.overlay.startNewSelection();
   }
 
   close(): void {
     ++this.requestVersion;
-    this.chooseAnother();
-    this.closed.emit();
+    this.overlay.dismiss();
+  }
+
+  onProductNavigation(): void {
+    this.overlay.suspendForProductNavigation();
   }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
     this.dragging.set(false);
     if (event.dataTransfer?.files.length) void this.selectFiles(event.dataTransfer.files);
-  }
-
-  onPreviewLoaded(): void {
-    const url = this.previewUrl();
-    if (url && !this.previewRevoked) {
-      URL.revokeObjectURL(url);
-      this.previewRevoked = true;
-    }
   }
 
   addToCart(product: CustomerProduct): void {
@@ -203,16 +186,7 @@ export class CustomerImageSearchComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     ++this.requestVersion;
-    this.releasePreview();
-    this.workingImage.set(null);
     this.unlockScroll();
-  }
-
-  private releasePreview(): void {
-    const url = this.previewUrl();
-    if (url && !this.previewRevoked) URL.revokeObjectURL(url);
-    this.previewUrl.set(null);
-    this.previewRevoked = false;
   }
 
   private lockScroll(): void {
