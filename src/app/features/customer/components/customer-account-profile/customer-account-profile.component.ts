@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthenticatedUserProfile } from '../../../../core/models/auth';
 import { CustomerAuthService } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -10,7 +11,7 @@ import { prepareAvatarImage } from '../../../../shared/utils/avatar-upload.util'
 interface CustomerProfileFormValue { firstName: string; lastName: string; email: string; phone: string; birthday: string; }
 
 @Component({
-  selector: 'app-customer-account-profile', standalone: true, imports: [ReactiveFormsModule],
+  selector: 'app-customer-account-profile', standalone: true, imports: [ReactiveFormsModule, TranslatePipe],
   templateUrl: './customer-account-profile.component.html', styleUrl: './customer-account-profile.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,9 +24,23 @@ export class CustomerAccountProfileComponent implements OnDestroy {
   readonly submitted = signal(false);
   readonly selectedAvatarFile = signal<File | null>(null);
   readonly avatarPreviewUrl = signal<string | null>(null);
+  readonly mobileEditing = signal(false);
   readonly profile = this.auth.customerProfile;
   readonly today = new Date().toISOString().slice(0, 10);
-  readonly memberSince = computed(() => new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(this.profile()?.created_at ?? this.auth.user()?.created_at ?? Date.now())));
+  readonly fullName = computed(() => this.profile()?.full_name?.trim() || this.auth.displayName());
+  readonly profileEmail = computed(() => this.profile()?.email || this.auth.user()?.email || null);
+  readonly phone = computed(() => this.profile()?.phone?.trim() || null);
+  readonly memberSince = computed(() => {
+    const createdAt = this.profile()?.created_at;
+    if (!createdAt) return null;
+    const date = new Date(createdAt);
+    if (Number.isNaN(date.getTime())) return null;
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(date);
+  });
   readonly form = this.fb.nonNullable.group({
     firstName: ['', [trimmedRequired(), Validators.maxLength(60)]],
     lastName: ['', [trimmedRequired(), Validators.maxLength(60)]],
@@ -54,6 +69,18 @@ export class CustomerAccountProfileComponent implements OnDestroy {
     if (!this.hasChanges() || this.saving()) return;
     this.clearAvatarSelection();
     this.resetForm(this.original());
+  }
+
+  beginMobileEdit(): void {
+    this.mobileEditing.set(true);
+  }
+
+  cancelMobileEdit(): void {
+    if (this.saving()) return;
+    this.clearAvatarSelection();
+    const profile = this.profile();
+    if (profile) this.resetToProfile(profile, this.auth.user()?.email);
+    this.mobileEditing.set(false);
   }
 
   async onAvatarSelected(event: Event): Promise<void> {
@@ -91,6 +118,7 @@ export class CustomerAccountProfileComponent implements OnDestroy {
       });
       this.clearAvatarSelection();
       this.resetToProfile(saved, this.auth.user()?.email);
+      this.mobileEditing.set(false);
       this.toast.updated('Profile');
     } catch (error) {
       this.toast.failed('Profile update', error instanceof Error ? error.message : 'Unable to save your profile.');

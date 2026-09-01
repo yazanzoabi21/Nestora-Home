@@ -26,13 +26,6 @@ interface AccountNavItem {
   badgeKey?: AccountCountKey;
 }
 
-type CustomerAccountTab =
-  | 'profile'
-  | 'orders'
-  | 'wishlist'
-  | 'addresses'
-  | 'settings';
-
 @Component({
   selector: 'app-customer-account',
   standalone: true,
