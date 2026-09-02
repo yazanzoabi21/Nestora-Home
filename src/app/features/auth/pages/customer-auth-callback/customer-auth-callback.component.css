@@ -1,0 +1,53 @@
+:host {
+  display: block;
+}
+
+.callback-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1.5rem;
+  background: #faf8f5;
+  color: #1f2a1f;
+}
+
+.callback-card {
+  width: min(100%, 32rem);
+  border: 1px solid #e8dccf;
+  border-radius: 1.5rem;
+  background: #fff;
+  padding: 2.5rem;
+  text-align: center;
+  box-shadow: 0 1.5rem 4rem rgb(31 42 31 / 12%);
+}
+
+.callback-card h1 {
+  margin-top: 1rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.callback-card p {
+  margin-top: 0.75rem;
+  color: #6f675e;
+}
+
+.callback-card a {
+  display: inline-flex;
+  margin-top: 1.5rem;
+  border-radius: 0.875rem;
+  background: #6b7d5e;
+  padding: 0.8rem 1.25rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.callback-spinner,
+.callback-error-icon {
+  font-size: 2rem;
+  color: #6b7d5e;
+}
+
+.callback-error-icon {
+  color: #b42318;
+}

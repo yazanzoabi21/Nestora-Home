@@ -125,8 +125,17 @@ export class CustomerOffersService {
     const startDate = this.parseDate(offer.start_date);
     const endDate = this.parseDate(offer.end_date);
     if (startDate && startDate > now) return 'scheduled';
-    if (endDate && endDate < now) return 'expired';
+    if (endDate && endDate < now) return 'inactive';
     return 'active';
+  }
+
+  getVisibleCustomerOffers(
+    offers: readonly CustomerOffer[],
+    now = new Date(),
+  ): CustomerOffer[] {
+    return offers
+      .filter((offer) => this.getCustomerOfferStatus(offer, now) === 'active')
+      .sort((first, second) => first.sort_order - second.sort_order);
   }
 
   private mapOffers(data: unknown): CustomerOffer[] {
@@ -159,7 +168,7 @@ export class CustomerOffersService {
       button_color: row.button_color?.trim() || '#526148',
       show_discount_code: row.show_discount_code === true,
       sort_order: Math.max(0, Number(row.sort_order ?? 0)),
-      is_active: row.is_active !== false,
+      is_active: row.is_active === true,
       start_date: row.start_date ?? null,
       end_date: row.end_date ?? null,
       created_at: row.created_at ?? null,
@@ -193,6 +202,7 @@ export class CustomerOffersService {
       background_color: payload.background_color.trim(),
       button_color: payload.button_color.trim(),
       sort_order: Math.max(0, Math.trunc(Number(payload.sort_order) || 0)),
+      is_active: payload.is_active === true,
       discount_id: payload.offer_type === 'discount' ? payload.discount_id : null,
       show_discount_code: payload.offer_type === 'discount' && payload.show_discount_code === true,
       start_date: payload.start_date || null,

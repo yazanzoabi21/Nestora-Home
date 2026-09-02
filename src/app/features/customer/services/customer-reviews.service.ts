@@ -9,12 +9,6 @@ import {
   ReviewStatus,
 } from '../../../data-access';
 
-const PUBLIC_REVIEW_SELECT = `
-  id, product_id, user_id, rating, comment, status, admin_reply, admin_reply_at,
-  admin_reply_by, is_liked_by_admin, is_featured, helpful_count, created_at,
-  profiles:user_id (id, full_name, avatar_url)
-`;
-
 const OWN_REVIEW_SELECT = `
   id, product_id, user_id, rating, comment, status, admin_reply, admin_reply_at,
   admin_reply_by, is_liked_by_admin, is_featured, helpful_count, created_at,
@@ -47,16 +41,14 @@ export class CustomerReviewsService {
 
   async getPublishedReviews(limit = 3): Promise<Review[]> {
     const { data, error } = await this.supabase
-      .from('reviews')
-      .select(PUBLIC_REVIEW_SELECT)
-      .eq('status', 'published')
-      .not('comment', 'is', null)
-      .order('is_featured', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(limit);
+      .rpc('get_public_product_reviews', {
+        p_product_id: null,
+        p_limit: limit,
+      });
 
     if (error) throw new Error('Unable to load reviews.');
-    return (data ?? []).map((review) => this.mapReview(review as ReviewRecord));
+    const reviews = (data ?? []) as ReviewRecord[];
+    return reviews.map((review) => this.mapReview(review));
   }
 
   async getPublishedReviewsByProduct(productId: string): Promise<Review[]> {
@@ -69,24 +61,23 @@ export class CustomerReviewsService {
 
     try {
       return await request;
-    } catch (error) {
+    } finally {
       if (this.publishedReviewsByProduct.get(normalizedProductId) === request) {
         this.publishedReviewsByProduct.delete(normalizedProductId);
       }
-      throw error;
     }
   }
 
   private async loadPublishedReviewsByProduct(productId: string): Promise<Review[]> {
     const { data, error } = await this.supabase
-      .from('reviews')
-      .select(PUBLIC_REVIEW_SELECT)
-      .eq('product_id', productId)
-      .eq('status', 'published')
-      .order('created_at', { ascending: false });
+      .rpc('get_public_product_reviews', {
+        p_product_id: productId,
+        p_limit: null,
+      });
 
     if (error) throw new Error('Unable to load reviews.');
-    return (data ?? []).map((review) => this.mapReview(review as ReviewRecord));
+    const reviews = (data ?? []) as ReviewRecord[];
+    return reviews.map((review) => this.mapReview(review));
   }
 
   async getCurrentUserReview(productId: string, userId: string): Promise<Review | null> {

@@ -26,7 +26,6 @@ import {
 } from '../../../components/customer-product-quick-view';
 import { CustomerRecentlyViewedComponent } from '../../../components/customer-recently-viewed';
 import { CustomerProduct } from '../../../models';
-import { CustomerOrdersService } from '../../../orders';
 import {
   CustomerShoppingStateService,
   CustomerRecentlyViewedService,
@@ -69,7 +68,6 @@ export class HomePageComponent {
   private readonly recentlyViewedService = inject(CustomerRecentlyViewedService);
   private readonly offersService = inject(CustomerOffersService);
   private readonly auth = inject(CustomerAuthService);
-  private readonly customerOrders = inject(CustomerOrdersService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -80,7 +78,6 @@ export class HomePageComponent {
   readonly promotions = signal<Promotion[]>([]);
   readonly reviews = signal<Review[]>([]);
   readonly offers = signal<CustomerOffer[]>([]);
-  readonly completedOrderCount = signal<number | null>(null);
   readonly loading = signal(true);
   readonly loadError = signal(false);
   readonly selectedProduct = signal<CustomerProduct | null>(null);
@@ -133,26 +130,9 @@ export class HomePageComponent {
   //     .sort((a, b) => Number(b.is_featured) - Number(a.is_featured))
   //     .slice(0, 3),
   // );
-  readonly visibleOffers = computed(() => {
-    const isAuthenticated = this.auth.isAuthenticated();
-    const completedOrderCount = this.completedOrderCount();
-
-    return this.offers()
-      .filter((offer) => {
-        switch (offer.audience) {
-          case 'guest':
-            return !isAuthenticated;
-          case 'customer':
-            return isAuthenticated;
-          case 'new_customer':
-            return !isAuthenticated || completedOrderCount === 0;
-          case 'all':
-          default:
-            return true;
-        }
-      })
-      .slice(0, 4);
-  });
+  readonly visibleOffers = computed(() =>
+    this.offersService.getVisibleCustomerOffers(this.offers()),
+  );
 
   readonly loadingCards = [1, 2, 3, 4];
   readonly benefits: readonly HomeBenefit[] = [
@@ -237,11 +217,6 @@ export class HomePageComponent {
     });
     effect(() => {
       const authLoading = this.auth.isLoading();
-      const isAuthenticated = this.auth.isAuthenticated();
-      if (!authLoading) void this.loadCompletedOrderCount(isAuthenticated);
-    });
-    effect(() => {
-      const authLoading = this.auth.isLoading();
       const sessionUserId = this.auth.session()?.user.id ?? null;
       const revision = this.recentlyViewedService.revision();
 
@@ -313,8 +288,7 @@ export class HomePageComponent {
       this.recentlyViewedRequestId += 1;
       this.recentlyViewedProducts.set([]);
       this.recentlyViewedStatus.set('empty');
-    } catch (error) {
-
+    } catch {
       this.toast.error(this.translate.instant('CUSTOMER.HOME.RECENTLY_VIEWED.CLEAR_FAILED'));
     } finally {
       this.recentlyViewedClearing.set(false);
@@ -404,29 +378,10 @@ export class HomePageComponent {
       this.promotions.set(promotions);
       this.reviews.set(reviews);
       this.offers.set(offers);
-    } catch (error) {
-
+    } catch {
       this.loadError.set(true);
     } finally {
       this.loading.set(false);
-    }
-  }
-
-  private async loadCompletedOrderCount(isAuthenticated: boolean): Promise<void> {
-    if (!isAuthenticated) {
-      this.completedOrderCount.set(null);
-      return;
-    }
-
-    try {
-      const orders = await this.customerOrders.getCustomerOrders();
-      this.completedOrderCount.set(
-        orders.filter((order) => order.status === 'completed' || order.status === 'delivered')
-          .length,
-      );
-    } catch (error) {
-
-      this.completedOrderCount.set(null);
     }
   }
 
@@ -453,8 +408,7 @@ export class HomePageComponent {
         }
         this.recentlyViewedStatus.set(snapshot.products.length > 0 ? 'ready' : 'empty');
       }
-    } catch (error) {
-
+    } catch {
       if (requestId === this.recentlyViewedRequestId) {
         this.recentlyViewedProducts.set([]);
         this.recentlyViewedStatus.set('error');

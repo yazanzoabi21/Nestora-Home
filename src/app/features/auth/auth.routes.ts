@@ -27,4 +27,11 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () => import('./pages/login').then((m) => m.LoginComponent),
     data: { audience: 'customer', initialMode: 'register' },
   },
+  {
+    path: 'customer-callback',
+    loadComponent: () =>
+      import('./pages/customer-auth-callback/customer-auth-callback.component').then(
+        (m) => m.CustomerAuthCallbackComponent,
+      ),
+  },
 ];

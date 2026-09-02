@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { ADMIN_SUPABASE } from '../../tokens';
+import { ADMIN_AUTH_PERSISTENCE, ADMIN_SUPABASE } from '../../tokens';
 import {
   AppRoleName,
   AuthenticatedUserProfile,
@@ -19,11 +19,17 @@ const ADMIN_ROLES: AppRoleName[] = ['admin', 'super_admin'];
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
   private readonly supabase = inject(ADMIN_SUPABASE);
+  private readonly persistence = inject(ADMIN_AUTH_PERSISTENCE);
   private readonly router = inject(Router);
 
   readonly currentUserProfile = signal<AuthenticatedUserProfile | null>(null);
 
-  async login(request: LoginRequest, returnUrl?: string | null): Promise<void> {
+  async login(
+    request: LoginRequest,
+    returnUrl?: string | null,
+    rememberSession = true,
+  ): Promise<void> {
+    this.persistence.setRememberSession(rememberSession);
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email: request.email,
       password: request.password,

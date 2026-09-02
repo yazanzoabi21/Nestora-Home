@@ -1,9 +1,10 @@
+import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import type { Session, User } from '@supabase/supabase-js';
 import { uploadAvatar } from '../../../shared/utils/avatar-upload.util';
 
-import { CUSTOMER_SUPABASE } from '../../tokens';
+import { CUSTOMER_AUTH_PERSISTENCE, CUSTOMER_SUPABASE } from '../../tokens';
 import {
   AuthenticatedUserProfile,
   CustomerProfileUpdate,
@@ -26,6 +27,8 @@ const CUSTOMER_SIGNUP_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   validation_failed: 'Please check your registration details and try again.',
   unexpected_failure: 'Unable to create account. Please try again.',
 };
+
+const CUSTOMER_OAUTH_RETURN_URL_KEY = 'nestora-customer-oauth-return-url';
 
 export function getCustomerSignupErrorMessage(error: unknown): string {
   const code = getStringProperty(error, 'code');
@@ -58,7 +61,9 @@ function getStringProperty(value: unknown, property: string): string | null {
 @Injectable({ providedIn: 'root' })
 export class CustomerAuthService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
+  private readonly persistence = inject(CUSTOMER_AUTH_PERSISTENCE);
   private readonly router = inject(Router);
+  private readonly document = inject(DOCUMENT);
 
   private readonly destroyRef = inject(DestroyRef);
   readonly session = signal<Session | null>(null);
@@ -100,7 +105,12 @@ export class CustomerAuthService {
     return this.initialized;
   }
 
-  async login(request: LoginRequest, returnUrl?: string | null): Promise<void> {
+  async login(
+    request: LoginRequest,
+    returnUrl?: string | null,
+    rememberSession = true,
+  ): Promise<void> {
+    this.persistence.setRememberSession(rememberSession);
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email: request.email,
       password: request.password,
@@ -126,11 +136,56 @@ export class CustomerAuthService {
 
     this.currentCustomerProfile.set(profile);
 
-    if (returnUrl?.startsWith('/shop') && !returnUrl.startsWith('//')) {
-      await this.router.navigateByUrl(returnUrl);
-    } else {
-      await this.router.navigate(['/shop']);
+    await this.navigateToCustomerReturnUrl(returnUrl);
+  }
+
+  async continueWithGoogle(
+    returnUrl?: string | null,
+    rememberSession = true,
+  ): Promise<void> {
+    const origin = this.document.defaultView?.location.origin;
+    if (!origin) throw new Error('Google sign-in is unavailable in this environment.');
+
+    this.persistence.setRememberSession(rememberSession);
+    this.storeOAuthReturnUrl(returnUrl);
+
+    const { error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${origin}/auth/customer-callback`,
+      },
+    });
+
+    if (error) {
+      this.clearOAuthReturnUrl();
+      throw new Error(error.message);
     }
+  }
+
+  async completeGoogleSignIn(oauthError?: string | null): Promise<string> {
+    if (oauthError) {
+      this.clearOAuthReturnUrl();
+      throw new Error(oauthError);
+    }
+
+    await this.initialize();
+    const session = this.session();
+    if (!session?.user.id) throw new Error('Google sign-in did not return a session.');
+
+    await this.synchronizeProfileForSession(session, true);
+    const profile = this.currentCustomerProfile();
+    if (!profile) {
+      await this.logout(false);
+      throw new Error('Your customer profile could not be initialized.');
+    }
+    if (!profile.is_active) {
+      await this.logout(false);
+      throw new Error('Your account is inactive.');
+    }
+
+    const returnUrl = this.readOAuthReturnUrl();
+    this.clearOAuthReturnUrl();
+    return this.isSafeCustomerReturnUrl(returnUrl) ? returnUrl : '/shop';
   }
 
   // async register(request: RegisterRequest): Promise<CustomerSignupResult> {
@@ -160,6 +215,7 @@ export class CustomerAuthService {
   // }
 
   async register(request: RegisterRequest): Promise<CustomerSignupResult> {
+  this.persistence.setRememberSession(true);
   const email = request.email.trim().toLowerCase();
   const fullName = request.fullName.trim();
   const phone = request.phone.trim();
@@ -332,6 +388,43 @@ export class CustomerAuthService {
 
     const profile = data as unknown as AuthenticatedUserProfile | null;
     return profile?.roles?.name === 'customer' ? profile : null;
+  }
+
+  private async navigateToCustomerReturnUrl(returnUrl?: string | null): Promise<void> {
+    if (this.isSafeCustomerReturnUrl(returnUrl)) {
+      await this.router.navigateByUrl(returnUrl);
+    } else {
+      await this.router.navigate(['/shop']);
+    }
+  }
+
+  private isSafeCustomerReturnUrl(returnUrl?: string | null): returnUrl is string {
+    return !!returnUrl && returnUrl.startsWith('/shop') && !returnUrl.startsWith('//');
+  }
+
+  private storeOAuthReturnUrl(returnUrl?: string | null): void {
+    const storage = this.sessionStorage();
+    if (!storage) return;
+    storage.setItem(
+      CUSTOMER_OAUTH_RETURN_URL_KEY,
+      this.isSafeCustomerReturnUrl(returnUrl) ? returnUrl : '/shop',
+    );
+  }
+
+  private readOAuthReturnUrl(): string | null {
+    return this.sessionStorage()?.getItem(CUSTOMER_OAUTH_RETURN_URL_KEY) ?? null;
+  }
+
+  private clearOAuthReturnUrl(): void {
+    this.sessionStorage()?.removeItem(CUSTOMER_OAUTH_RETURN_URL_KEY);
+  }
+
+  private sessionStorage(): Storage | null {
+    try {
+      return this.document.defaultView?.sessionStorage ?? null;
+    } catch {
+      return null;
+    }
   }
 
   async uploadCurrentUserAvatar(file: File): Promise<string> {

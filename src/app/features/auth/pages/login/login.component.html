@@ -1,8 +1,5 @@
-<main
-  class="auth-shell min-h-screen overflow-x-hidden bg-[#f7f4ef] text-[#1f2a1f]"
-  [class.auth-login-mode]="authMode() === 'login'"
-  [class.auth-register-mode]="authMode() === 'register'"
->
+<main class="auth-shell min-h-screen overflow-x-hidden bg-[#f7f4ef] text-[#1f2a1f]"
+  [class.auth-login-mode]="authMode() === 'login'" [class.auth-register-mode]="authMode() === 'register'">
   <section class="auth-layout grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(360px,40%)_minmax(0,1fr)]">
     <aside
       class="brand-panel relative hidden overflow-hidden bg-[#1f241d] px-10 py-12 text-white lg:flex lg:flex-col xl:px-16">
@@ -10,9 +7,14 @@
       <div class="brand-glow brand-glow-two"></div>
 
       <div class="relative z-10 flex items-center gap-4">
-        <span
+        <!-- <span
           class="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#5f6f43] text-white shadow-[0_18px_40px_rgba(95,111,67,0.35)]">
           <i class="pi pi-leaf text-3xl"></i>
+        </span> -->
+        <span
+          class="inline-flex h-15 w-15 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#718369] shadow-[0_2px_5px_rgba(31,42,31,0.18)] max-sm:h-10 max-sm:w-10 max-sm:rounded-xl"
+          aria-hidden="true">
+          <img src="/images/Logo.png" alt="" class="h-full w-full object-cover" />
         </span>
         <span>
           <span class="block text-3xl font-extrabold tracking-normal">{{ 'AUTH.BRAND' | translate }}</span>
@@ -29,8 +31,8 @@
         </h1>
         <p class="mt-8 max-w-lg text-xl font-medium leading-8 text-[#e3e0d8]">
           {{ audience === 'customer'
-            ? 'Discover home essentials, save your favorites, and manage your orders in one place.'
-            : ('AUTH.BRAND_DESCRIPTION' | translate) }}
+          ? 'Discover home essentials, save your favorites, and manage your orders in one place.'
+          : ('AUTH.BRAND_DESCRIPTION' | translate) }}
         </p>
       </div>
 
@@ -42,8 +44,10 @@
             <i class="pi pi-shield text-2xl"></i>
           </span>
           <div>
-            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Secure account' : ('AUTH.FEATURE_SECURE_TITLE' | translate) }}</h2>
-            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Protected authentication for your personal shopping account.' : ('AUTH.FEATURE_SECURE_TEXT' | translate) }}
+            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Secure account' :
+              ('AUTH.FEATURE_SECURE_TITLE' | translate) }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Protected
+              authentication for your personal shopping account.' : ('AUTH.FEATURE_SECURE_TEXT' | translate) }}
             </p>
           </div>
         </div>
@@ -53,8 +57,10 @@
             <i class="pi pi-users text-2xl"></i>
           </span>
           <div>
-            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Personalized shopping' : ('AUTH.FEATURE_ROLES_TITLE' | translate) }}</h2>
-            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Keep your profile, orders, and favorites together.' : ('AUTH.FEATURE_ROLES_TEXT' | translate) }}
+            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Personalized shopping' :
+              ('AUTH.FEATURE_ROLES_TITLE' | translate) }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Keep your
+              profile, orders, and favorites together.' : ('AUTH.FEATURE_ROLES_TEXT' | translate) }}
             </p>
           </div>
         </div>
@@ -64,8 +70,10 @@
             <i class="pi pi-chart-line text-2xl"></i>
           </span>
           <div>
-            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Easy ordering' : ('AUTH.FEATURE_EFFICIENCY_TITLE' | translate) }}</h2>
-            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Enjoy a smoother checkout and order history.' : ('AUTH.FEATURE_EFFICIENCY_TEXT' | translate) }}</p>
+            <h2 class="text-lg font-bold text-white">{{ audience === 'customer' ? 'Easy ordering' :
+              ('AUTH.FEATURE_EFFICIENCY_TITLE' | translate) }}</h2>
+            <p class="mt-1 text-base font-medium leading-6 text-[#d2cec5]">{{ audience === 'customer' ? 'Enjoy a
+              smoother checkout and order history.' : ('AUTH.FEATURE_EFFICIENCY_TEXT' | translate) }}</p>
           </div>
         </div>
       </div>
@@ -95,10 +103,9 @@
             @if (errorMessage()) {
             <div
               class="flex items-start gap-3 rounded-2xl border border-[#fecaca] bg-[#fff1f0] px-4 py-3.5 text-[#c62828] shadow-[0_12px_24px_rgba(220,63,53,0.08)]"
-              role="alert"
-              aria-live="polite"
-            >
-              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#ffe4e1] text-sm text-[#dc3f35]">
+              role="alert" aria-live="polite">
+              <span
+                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#ffe4e1] text-sm text-[#dc3f35]">
                 <i class="pi pi-exclamation-circle"></i>
               </span>
               <p class="min-w-0 break-words text-sm font-bold leading-relaxed">{{ errorMessage() }}</p>
@@ -142,7 +149,8 @@
 
             <div class="flex items-center justify-between gap-4 text-sm">
               <label class="flex items-center gap-3 font-medium text-[#342f29]">
-                <input type="checkbox" checked class="h-4 w-4 accent-[#5f6f43]" />
+                <input type="checkbox" name="rememberMe" [(ngModel)]="loginForm.rememberMe"
+                  class="h-4 w-4 accent-[#5f6f43]" />
                 {{ 'AUTH.REMEMBER_ME' | translate }}
               </label>
               <a href="#" class="font-semibold text-[#5f6f43] transition hover:text-[#495735]">{{ 'AUTH.FORGOT_PASSWORD'
@@ -157,12 +165,19 @@
               }
               {{ 'AUTH.SIGN_IN' | translate }}
             </button>
-            <div class="auth-divider"><span>{{ 'AUTH.OR' | translate }}</span></div>
+            @if (audience === 'customer') {
+              <div class="auth-divider"><span>{{ 'AUTH.OR' | translate }}</span></div>
 
-            <button type="button" class="auth-google">
-              <span class="text-xl font-extrabold text-[#4285f4]">G</span>
-              {{ 'AUTH.CONTINUE_GOOGLE' | translate }}
-            </button>
+              <button type="button" class="auth-google" (click)="continueWithGoogle()"
+                [disabled]="loading() || oauthLoading()">
+                @if (oauthLoading()) {
+                  <i class="pi pi-spin pi-spinner"></i>
+                } @else {
+                  <span class="text-xl font-extrabold text-[#4285f4]">G</span>
+                }
+                {{ 'AUTH.CONTINUE_GOOGLE' | translate }}
+              </button>
+            }
 
             @if (audience === 'customer') {
             <p class="text-center text-sm font-medium text-[#6f675e]">
@@ -183,7 +198,8 @@
                 Create customer account
               </span>
               <h2 class="mt-6 text-4xl font-extrabold text-[#1f2a1f]">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</h2>
-              <p class="mt-3 text-base font-medium text-[#8d877e]">Create your account to start shopping with Nestora Home.</p>
+              <p class="mt-3 text-base font-medium text-[#8d877e]">Create your account to start shopping with Nestora
+                Home.</p>
             </div>
 
             <label class="auth-label">
@@ -245,8 +261,11 @@
             <ng-container *ngTemplateOutlet="authError"></ng-container>
 
             @if (successMessage()) {
-            <div class="flex items-start gap-3 rounded-2xl border border-[#cdddbf] bg-[#f1f7ec] px-4 py-3.5 text-[#3f5a32]" role="status" aria-live="polite">
-              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#dfeeda] text-sm"><i class="pi pi-check"></i></span>
+            <div
+              class="flex items-start gap-3 rounded-2xl border border-[#cdddbf] bg-[#f1f7ec] px-4 py-3.5 text-[#3f5a32]"
+              role="status" aria-live="polite">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#dfeeda] text-sm"><i
+                  class="pi pi-check"></i></span>
               <p class="min-w-0 text-sm font-bold leading-relaxed">{{ successMessage() }}</p>
             </div>
             }
@@ -262,8 +281,13 @@
 
             <div class="auth-divider"><span>{{ 'AUTH.OR' | translate }}</span></div>
 
-            <button type="button" class="auth-google">
-              <span class="text-xl font-extrabold text-[#4285f4]">G</span>
+            <button type="button" class="auth-google" (click)="continueWithGoogle()"
+              [disabled]="isSubmitting() || oauthLoading()">
+              @if (oauthLoading()) {
+                <i class="pi pi-spin pi-spinner"></i>
+              } @else {
+                <span class="text-xl font-extrabold text-[#4285f4]">G</span>
+              }
               {{ 'AUTH.CONTINUE_GOOGLE' | translate }}
             </button>
 

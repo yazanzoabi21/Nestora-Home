@@ -30,6 +30,7 @@ export class LoginComponent {
   readonly confirmPasswordVisible = signal(false);
   readonly loading = signal(false);
   readonly isSubmitting = signal(false);
+  readonly oauthLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
 
@@ -44,6 +45,7 @@ export class LoginComponent {
   loginForm = {
     email: '',
     password: '',
+    rememberMe: true,
   };
 
   registerForm = {
@@ -62,7 +64,10 @@ export class LoginComponent {
 
   setMode(mode: AuthMode): void {
     if (this.audience === 'customer') {
-      void this.router.navigate([mode === 'register' ? '/auth/customer-register' : '/auth/customer-login']);
+      void this.router.navigate(
+        [mode === 'register' ? '/auth/customer-register' : '/auth/customer-login'],
+        { queryParamsHandling: 'preserve' },
+      );
     }
   }
 
@@ -108,15 +113,30 @@ export class LoginComponent {
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
       const request = { email, password };
       if (this.audience === 'customer') {
-        await this.customerAuth.login(request, returnUrl);
+        await this.customerAuth.login(request, returnUrl, this.loginForm.rememberMe);
       } else {
-        await this.adminAuth.login(request, returnUrl);
+        await this.adminAuth.login(request, returnUrl, this.loginForm.rememberMe);
       }
       await this.shopping.initialize();
     } catch {
       this.errorMessage.set(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  async continueWithGoogle(): Promise<void> {
+    if (this.audience !== 'customer' || this.oauthLoading()) return;
+
+    this.oauthLoading.set(true);
+    this.errorMessage.set(null);
+    try {
+      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+      const rememberSession = this.authMode() === 'login' ? this.loginForm.rememberMe : true;
+      await this.customerAuth.continueWithGoogle(returnUrl, rememberSession);
+    } catch {
+      this.errorMessage.set(this.t('AUTH.ERRORS.GOOGLE_SIGN_IN_FAILED'));
+      this.oauthLoading.set(false);
     }
   }
 

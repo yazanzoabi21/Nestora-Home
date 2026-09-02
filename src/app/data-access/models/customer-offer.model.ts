@@ -2,7 +2,7 @@ import { DiscountType } from './discount.model';
 
 export type CustomerOfferType = 'discount' | 'referral' | 'app' | 'loyalty' | 'marketing';
 export type CustomerOfferAudience = 'all' | 'guest' | 'customer' | 'new_customer';
-export type CustomerOfferStatus = 'active' | 'scheduled' | 'expired' | 'inactive';
+export type CustomerOfferStatus = 'active' | 'scheduled' | 'inactive';
 
 export interface CustomerOfferDiscount {
   id: string;

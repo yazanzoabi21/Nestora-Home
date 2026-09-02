@@ -277,6 +277,40 @@
         (valueChange)="updateForm('audience', $event)"
       />
 
+      <section
+        class="flex items-center justify-between gap-4 rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4 md:col-span-2"
+      >
+        <div>
+          <h3 class="text-sm font-black text-[#342f29]">
+            {{ 'PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ACTIVE' | translate }}
+          </h3>
+          <span class="mt-1 block text-xs font-bold text-[#746d64]">
+            {{
+              (form().isActive
+                ? 'PROMOTIONS_ADS.CUSTOMER_OFFERS.STATUSES.ACTIVE'
+                : 'PROMOTIONS_ADS.CUSTOMER_OFFERS.STATUSES.INACTIVE'
+              ) | translate
+            }}
+          </span>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          dir="ltr"
+          class="relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#5f6f43]/25 disabled:cursor-not-allowed disabled:opacity-60"
+          [attr.aria-checked]="form().isActive"
+          [attr.aria-label]="'PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ACTIVE' | translate"
+          [ngClass]="form().isActive ? 'bg-[#5f6f43]' : 'bg-[#d8d0c5]'"
+          [disabled]="saving()"
+          (click)="updateForm('isActive', !form().isActive)"
+        >
+          <span
+            class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200 ease-out"
+            [ngClass]="form().isActive ? 'translate-x-5' : 'translate-x-0'"
+          ></span>
+        </button>
+      </section>
+
       @if (form().offerType === 'discount') {
         <app-admin-form-field
           type="select"
@@ -328,15 +362,6 @@
         label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.END_DATE"
         [value]="form().endDate"
         (valueChange)="updateForm('endDate', $event)"
-      />
-
-      <app-admin-form-field
-        class="md:col-span-2"
-        type="checkbox"
-        name="offerActive"
-        label="PROMOTIONS_ADS.CUSTOMER_OFFERS.FIELDS.ACTIVE"
-        [value]="form().isActive"
-        (valueChange)="updateForm('isActive', $event)"
       />
 
       <section class="rounded-2xl border border-[#e5ded2] bg-[#fbfaf8] p-4 md:col-span-2">

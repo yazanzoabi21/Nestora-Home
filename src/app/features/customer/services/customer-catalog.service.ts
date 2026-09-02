@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, inject, isDevMode, signal } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
@@ -205,7 +205,7 @@ export class CustomerCatalogService {
       return null;
     }
     const [reviews, videos] = await Promise.all([
-      this.reviewsService.getPublishedReviewsByProduct(product.id),
+      this.getPublishedReviewsSafely(product.id),
       this.productVideosService.getVideosForProduct(product.id),
     ]);
     const mapped = this.withPublishedReviewStats(this.toCustomerProduct(product, false), reviews);
@@ -526,6 +526,22 @@ export class CustomerCatalogService {
     };
   }
 
+  private async getPublishedReviewsSafely(
+    productId: string,
+  ): Promise<Awaited<ReturnType<CustomerReviewsService['getPublishedReviewsByProduct']>>> {
+    try {
+      return await this.reviewsService.getPublishedReviewsByProduct(productId);
+    } catch (error: unknown) {
+      if (isDevMode()) {
+        console.warn('[CustomerCatalog] Reviews unavailable; continuing product load.', {
+          productId,
+          error,
+        });
+      }
+      return [];
+    }
+  }
+
   private toCustomerProduct(product: Product, useDefaultVariant = true): CustomerProduct {
     const defaultVariant = useDefaultVariant
       ? (product.product_variants ?? [])
@@ -594,7 +610,7 @@ export class CustomerCatalogService {
 
         return this.withPublishedReviewStats(
           mapped,
-          await this.reviewsService.getPublishedReviewsByProduct(product.id),
+          await this.getPublishedReviewsSafely(product.id),
         );
       }),
     );

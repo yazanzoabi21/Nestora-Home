@@ -1399,6 +1399,7 @@
       "SUBMIT": "Submit review",
       "SUCCESS": "Thank you. Your review is awaiting approval.",
       "RESPONSE": "Response from Nestora Home",
+      "LIKED_BY_NESTORA": "Liked by Nestora Home",
       "EMPTY_TITLE": "No reviews yet",
       "EMPTY_TEXT": "Be the first customer to review this product.",
       "RETRY": "Try again",
@@ -2837,6 +2838,7 @@
         "PASSWORDS_NOT_MATCH": "Passwords do not match.",
         "REQUIRED_FIELDS": "Please fill all required fields.",
         "INVALID_CREDENTIALS": "Invalid email or password.",
+        "GOOGLE_SIGN_IN_FAILED": "Unable to continue with Google. Please try again.",
         "SIGN_IN_FAILED": "Unable to sign in. Please try again.",
         "REGISTER_FAILED": "Unable to create account. Please try again.",
         "UNKNOWN": "Something went wrong. Please try again."
@@ -4288,6 +4290,7 @@
       "SUBMIT": "إرسال التقييم",
       "SUCCESS": "شكراً لك. تقييمك بانتظار الموافقة.",
       "RESPONSE": "رد من Nestora Home",
+      "LIKED_BY_NESTORA": "أعجب Nestora Home بتقييمك",
       "EMPTY_TITLE": "لا توجد تقييمات بعد",
       "EMPTY_TEXT": "كن أول عميل يقيّم هذا المنتج.",
       "RETRY": "إعادة المحاولة",

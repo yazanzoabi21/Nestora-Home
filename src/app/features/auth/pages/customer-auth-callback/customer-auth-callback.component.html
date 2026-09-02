@@ -1,0 +1,14 @@
+<main class="callback-shell">
+  <section class="callback-card" aria-live="polite">
+    @if (errorMessage(); as message) {
+      <i class="pi pi-exclamation-circle callback-error-icon" aria-hidden="true"></i>
+      <h1>Unable to complete Google sign-in</h1>
+      <p>{{ message }}</p>
+      <a routerLink="/auth/customer-login">Return to sign in</a>
+    } @else {
+      <i class="pi pi-spin pi-spinner callback-spinner" aria-hidden="true"></i>
+      <h1>Completing your sign-in</h1>
+      <p>Please wait while we securely prepare your Nestora Home account.</p>
+    }
+  </section>
+</main>

@@ -1,11 +1,13 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import {
   Component,
+  ChangeDetectionStrategy,
   Input,
   OnChanges,
   SimpleChanges,
   computed,
   inject,
+  isDevMode,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -28,6 +30,7 @@ interface RatingRow {
   imports: [DatePipe, DecimalPipe, FormsModule, TranslatePipe],
   templateUrl: './product-reviews.component.html',
   styleUrl: './product-reviews.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductReviewsComponent implements OnChanges {
   private readonly reviewsService = inject(CustomerReviewsService);
@@ -73,6 +76,7 @@ export class ProductReviewsComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['productId'] && this.productId) void this.load();
   }
+
   async load(): Promise<void> {
     this.loading.set(true);
     this.error.set(false);
@@ -87,8 +91,16 @@ export class ProductReviewsComponent implements OnChanges {
       ]);
       this.reviews.set(reviews);
       this.ownReview.set(own);
-    } catch {
+    } catch (error: unknown) {
+      this.reviews.set([]);
+      this.ownReview.set(null);
       this.error.set(true);
+      if (isDevMode()) {
+        console.warn('[ProductReviews] Unable to load product reviews.', {
+          productId: this.productId,
+          error,
+        });
+      }
     } finally {
       this.loading.set(false);
     }

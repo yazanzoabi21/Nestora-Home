@@ -266,11 +266,10 @@
       }
     </div>
     } @else if (visibleOffers().length) {
-    <div class="mt-8 flex flex-wrap justify-center gap-4">
+    <div class="mx-auto mt-8 flex w-full max-w-7xl flex-wrap justify-center gap-4">
       @for (offer of visibleOffers(); track offer.id) {
-      <article class="flex min-h-64 w-full flex-col rounded-3xl border border-[#e8dccf] p-6 text-start shadow-sm
-         sm:w-[calc((100%-1rem)/2)]
-         xl:w-[calc((100%-3rem)/4)]" [style.background-color]="offer.background_color">
+      <article class="flex min-h-64 w-full max-w-[20rem] flex-col rounded-3xl border border-[#e8dccf] p-6 text-start shadow-sm sm:w-[calc(50%_-_0.5rem)] xl:w-[calc(25%_-_0.75rem)]"
+        [style.background-color]="offer.background_color">
         <div class="flex items-start justify-between gap-3">
           <i [class]="offer.icon || 'pi pi-gift'" class="text-xl text-[#526148]" aria-hidden="true"></i>
           @if (offerBadge(offer); as badge) {

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ToastService } from '../../../../core/services';
@@ -105,6 +106,7 @@ const EMPTY_FORM: CustomerOfferFormModel = {
     AdminFormModalComponent,
     AdminTableCellTemplateDirective,
     AdminTableComponent,
+    NgClass,
     TranslatePipe,
   ],
   templateUrl: './customer-offers-admin.component.html',
@@ -165,7 +167,6 @@ export class CustomerOffersAdminComponent {
     { label: 'PROMOTIONS_ADS.CUSTOMER_OFFERS.FILTERS.ALL_STATUSES', value: 'all' },
     { label: 'PROMOTIONS_ADS.CUSTOMER_OFFERS.STATUSES.ACTIVE', value: 'active' },
     { label: 'PROMOTIONS_ADS.CUSTOMER_OFFERS.STATUSES.SCHEDULED', value: 'scheduled' },
-    { label: 'PROMOTIONS_ADS.CUSTOMER_OFFERS.STATUSES.EXPIRED', value: 'expired' },
     { label: 'PROMOTIONS_ADS.CUSTOMER_OFFERS.STATUSES.INACTIVE', value: 'inactive' },
   ];
 
@@ -208,7 +209,6 @@ export class CustomerOffersAdminComponent {
     const counts: Record<CustomerOfferStatus, number> = {
       active: 0,
       scheduled: 0,
-      expired: 0,
       inactive: 0,
     };
     for (const offer of this.offers()) counts[this.offerStatus(offer)] += 1;
@@ -544,7 +544,6 @@ export class CustomerOffersAdminComponent {
     const classes: Record<CustomerOfferStatus, string> = {
       active: 'bg-[#e9f8ef] text-[#117047]',
       scheduled: 'bg-[#eaf2ff] text-[#2f6fd0]',
-      expired: 'bg-[#f0ebe4] text-[#675f55]',
       inactive: 'bg-[#fff6e7] text-[#a66309]',
     };
     return classes[status];
