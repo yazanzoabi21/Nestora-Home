@@ -1,12 +1,13 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { TranslationService } from '../../../../core/services/translation';
 import {
   AdminAuthService,
+  CUSTOMER_PASSWORD_MIN_LENGTH,
   CustomerAuthService,
   getCustomerSignupErrorMessage,
 } from '../../../../core/services/auth';
@@ -18,7 +19,7 @@ type AuthAudience = 'admin' | 'customer';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet, TranslatePipe],
+  imports: [FormsModule, NgTemplateOutlet, RouterLink, TranslatePipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -179,8 +180,10 @@ export class LoginComponent {
         return;
       }
 
-      if (password.length < 6) {
-        this.errorMessage.set(this.t('AUTH.ERRORS.PASSWORD_MIN_LENGTH', { min: 6 }));
+      if (password.length < CUSTOMER_PASSWORD_MIN_LENGTH) {
+        this.errorMessage.set(
+          this.t('AUTH.ERRORS.PASSWORD_MIN_LENGTH', { min: CUSTOMER_PASSWORD_MIN_LENGTH }),
+        );
         return;
       }
 

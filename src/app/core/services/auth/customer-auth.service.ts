@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import type { Session, User } from '@supabase/supabase-js';
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import { uploadAvatar } from '../../../shared/utils/avatar-upload.util';
 
 import { CUSTOMER_AUTH_PERSISTENCE, CUSTOMER_SUPABASE } from '../../tokens';
@@ -29,6 +29,7 @@ const CUSTOMER_SIGNUP_ERROR_MESSAGES: Readonly<Record<string, string>> = {
 };
 
 const CUSTOMER_OAUTH_RETURN_URL_KEY = 'nestora-customer-oauth-return-url';
+export const CUSTOMER_PASSWORD_MIN_LENGTH = 6;
 
 export function getCustomerSignupErrorMessage(error: unknown): string {
   const code = getStringProperty(error, 'code');
@@ -72,6 +73,7 @@ export class CustomerAuthService {
   readonly isLoading = signal(true);
   readonly currentCustomerProfile = signal<AuthenticatedUserProfile | null>(null);
   readonly customerProfile = this.currentCustomerProfile;
+  private readonly passwordRecoverySession = signal<Session | null>(null);
   readonly displayName = computed<string>(() => {
     const metadataName = this.user()?.user_metadata['full_name'];
     return this.currentCustomerProfile()?.full_name?.trim()
@@ -85,11 +87,12 @@ export class CustomerAuthService {
   private lastLoadedProfileUserId: string | null | undefined;
   private activeProfileLoad: { userId: string | null; promise: Promise<void> } | null = null;
   private profileLoadSequence = 0;
+  private readonly passwordRecoveryWaiters = new Set<(session: Session) => void>();
 
   constructor() {
-    void this.initialize();
-    const { data } = this.supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = this.supabase.auth.onAuthStateChange((event, session) => {
       this.session.set(session);
+      this.handlePasswordRecoveryEvent(event, session);
       if (this.currentCustomerProfile()?.id !== session?.user.id) {
         this.currentCustomerProfile.set(null);
       }
@@ -98,6 +101,7 @@ export class CustomerAuthService {
       });
     });
     this.destroyRef.onDestroy(() => data.subscription.unsubscribe());
+    void this.initialize();
   }
 
   initialize(): Promise<void> {
@@ -160,6 +164,59 @@ export class CustomerAuthService {
       this.clearOAuthReturnUrl();
       throw new Error(error.message);
     }
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const origin = this.document.defaultView?.location.origin;
+    if (!origin) throw new Error('Password reset is unavailable in this environment.');
+
+    const { error } = await this.supabase.auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+      { redirectTo: `${origin}/auth/customer-reset-password` },
+    );
+
+    if (error) throw new Error(error.message);
+  }
+
+  async waitForPasswordRecoverySession(timeoutMs = 5000): Promise<Session | null> {
+    if (this.passwordRecoverySession()) return this.passwordRecoverySession();
+
+    await this.initialize();
+    if (this.passwordRecoverySession()) return this.passwordRecoverySession();
+
+    const view = this.document.defaultView;
+    if (!view) return null;
+
+    return new Promise<Session | null>((resolve) => {
+      const waiter = (session: Session): void => {
+        view.clearTimeout(timeoutId);
+        this.passwordRecoveryWaiters.delete(waiter);
+        resolve(session);
+      };
+      const timeoutId = view.setTimeout(() => {
+        this.passwordRecoveryWaiters.delete(waiter);
+        resolve(null);
+      }, timeoutMs);
+
+      this.passwordRecoveryWaiters.add(waiter);
+    });
+  }
+
+  async updatePasswordFromRecovery(password: string): Promise<void> {
+    const recoverySession = this.passwordRecoverySession();
+    if (!recoverySession) throw new Error('The password reset link is invalid or has expired.');
+
+    const { data: userData, error: userError } = await this.supabase.auth.getUser();
+    if (userError || userData.user?.id !== recoverySession.user.id) {
+      this.passwordRecoverySession.set(null);
+      throw new Error('The password reset link is invalid or has expired.');
+    }
+
+    const { error: updateError } = await this.supabase.auth.updateUser({ password });
+    if (updateError) throw new Error(updateError.message);
+
+    this.passwordRecoverySession.set(null);
+    await this.logout(false);
   }
 
   async completeGoogleSignIn(oauthError?: string | null): Promise<string> {
@@ -388,6 +445,17 @@ export class CustomerAuthService {
 
     const profile = data as unknown as AuthenticatedUserProfile | null;
     return profile?.roles?.name === 'customer' ? profile : null;
+  }
+
+  private handlePasswordRecoveryEvent(event: AuthChangeEvent, session: Session | null): void {
+    if (event === 'PASSWORD_RECOVERY' && session) {
+      this.passwordRecoverySession.set(session);
+      for (const waiter of this.passwordRecoveryWaiters) waiter(session);
+      this.passwordRecoveryWaiters.clear();
+      return;
+    }
+
+    if (event === 'SIGNED_OUT') this.passwordRecoverySession.set(null);
   }
 
   private async navigateToCustomerReturnUrl(returnUrl?: string | null): Promise<void> {

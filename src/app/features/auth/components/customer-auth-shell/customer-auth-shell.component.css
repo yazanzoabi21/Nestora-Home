@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.auth-shell {
+  background:
+    radial-gradient(circle at 72% 18%, rgb(95 111 67 / 10%), transparent 28%),
+    linear-gradient(135deg, #f7f4ef 0%, #fbfaf8 100%);
+}
+
+.brand-panel {
+  background:
+    radial-gradient(circle at 85% 12%, rgb(143 163 106 / 12%), transparent 22%),
+    radial-gradient(circle at 0% 100%, rgb(95 111 67 / 25%), transparent 32%),
+    #1f241d;
+}
+
+.brand-panel::before,
+.brand-panel::after {
+  position: absolute;
+  border: 1px solid rgb(169 193 132 / 9%);
+  border-radius: 999px;
+  content: '';
+  pointer-events: none;
+}
+
+.brand-panel::before {
+  top: -120px;
+  right: -260px;
+  width: 620px;
+  height: 620px;
+}
+
+.brand-panel::after {
+  right: -300px;
+  bottom: -220px;
+  width: 720px;
+  height: 720px;
+}
+
+.auth-house {
+  position: absolute;
+  right: 44px;
+  bottom: 66px;
+  color: rgb(143 163 106 / 24%);
+  font-size: 150px;
+}

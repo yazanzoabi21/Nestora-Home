@@ -1,0 +1,76 @@
+<main class="auth-shell min-h-screen overflow-x-hidden bg-[#f7f4ef] text-[#1f2a1f]">
+  <section class="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(360px,40%)_minmax(0,1fr)]">
+    <aside
+      class="brand-panel relative hidden overflow-hidden bg-[#1f241d] px-10 py-12 text-white lg:flex lg:flex-col xl:px-16"
+    >
+      <div class="relative z-10 flex items-center gap-4">
+        <span
+          class="inline-flex h-15 w-15 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#718369] shadow-[0_2px_5px_rgba(31,42,31,0.18)]"
+          aria-hidden="true"
+        >
+          <img src="/images/Logo.png" alt="" class="h-full w-full object-cover" />
+        </span>
+        <span>
+          <span class="block text-3xl font-extrabold">{{ 'AUTH.BRAND' | translate }}</span>
+          <span class="mt-1 block text-sm font-semibold uppercase tracking-[0.28em] text-[#a9b79a]">
+            {{ 'AUTH.PASSWORD_RESET.CUSTOMER_ACCOUNT' | translate }}
+          </span>
+        </span>
+      </div>
+
+      <div class="relative z-10 my-auto max-w-xl py-16">
+        <p class="text-3xl font-bold text-[#a9c184]">{{ 'AUTH.WELCOME_TO' | translate }}</p>
+        <h1 class="mt-4 text-6xl font-extrabold text-white drop-shadow-sm xl:text-7xl">
+          {{ 'AUTH.BRAND' | translate }}
+        </h1>
+        <p class="mt-8 max-w-lg text-xl font-medium leading-8 text-[#e3e0d8]">
+          {{ 'AUTH.PASSWORD_RESET.SECURITY_MESSAGE' | translate }}
+        </p>
+      </div>
+
+      <div class="auth-house" aria-hidden="true"><i class="pi pi-home"></i></div>
+    </aside>
+
+    <section class="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-10">
+      <div class="w-full max-w-[620px]">
+        <div class="mb-8 flex items-center justify-center gap-3 lg:hidden">
+          <span class="inline-flex h-12 w-12 overflow-hidden rounded-2xl bg-[#718369]">
+            <img src="/images/Logo.png" alt="" class="h-full w-full object-cover" />
+          </span>
+          <span>
+            <span class="block text-xl font-extrabold">{{ 'AUTH.BRAND' | translate }}</span>
+            <span class="block text-xs font-bold uppercase tracking-[0.24em] text-[#8d877e]">
+              {{ 'AUTH.PASSWORD_RESET.CUSTOMER_ACCOUNT' | translate }}
+            </span>
+          </span>
+        </div>
+
+        <article
+          class="rounded-[28px] border border-[#e5ded2] bg-white/95 px-5 py-8 shadow-[0_24px_70px_rgba(52,47,41,0.10)] sm:px-10 lg:px-14"
+        >
+          <header class="text-center">
+            <span
+              class="inline-flex items-center gap-2 rounded-2xl border border-[#dce4d4] bg-[#f0f4ec] px-4 py-2 text-sm font-semibold text-[#3f4c2e]"
+            >
+              <i class="pi pi-shield text-sm" aria-hidden="true"></i>
+              {{ badgeKey() | translate }}
+            </span>
+            <h2 class="mt-7 text-3xl font-extrabold text-[#1f2a1f] sm:text-4xl">
+              {{ titleKey() | translate }}
+            </h2>
+            <p class="mx-auto mt-3 max-w-md text-sm font-medium leading-6 text-[#8d877e] sm:text-base">
+              {{ descriptionKey() | translate }}
+            </p>
+          </header>
+
+          <div class="mt-8"><ng-content /></div>
+        </article>
+
+        <p class="mt-8 flex items-center justify-center gap-2 text-center text-sm font-medium text-[#8d877e]">
+          <i class="pi pi-shield text-[#718369]" aria-hidden="true"></i>
+          {{ 'AUTH.PASSWORD_RESET.PROTECTED' | translate }}
+        </p>
+      </div>
+    </section>
+  </section>
+</main>

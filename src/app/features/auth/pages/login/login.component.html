@@ -153,7 +153,8 @@
                   class="h-4 w-4 accent-[#5f6f43]" />
                 {{ 'AUTH.REMEMBER_ME' | translate }}
               </label>
-              <a href="#" class="font-semibold text-[#5f6f43] transition hover:text-[#495735]">{{ 'AUTH.FORGOT_PASSWORD'
+              <a [routerLink]="audience === 'customer' ? '/auth/customer-forgot-password' : null"
+                class="font-semibold text-[#5f6f43] transition hover:text-[#495735]">{{ 'AUTH.FORGOT_PASSWORD'
                 | translate }}</a>
             </div>
 

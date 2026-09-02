@@ -28,6 +28,21 @@ export const AUTH_ROUTES: Routes = [
     data: { audience: 'customer', initialMode: 'register' },
   },
   {
+    path: 'customer-forgot-password',
+    canActivate: [customerGuestGuard],
+    loadComponent: () =>
+      import('./pages/customer-forgot-password/customer-forgot-password.component').then(
+        (m) => m.CustomerForgotPasswordComponent,
+      ),
+  },
+  {
+    path: 'customer-reset-password',
+    loadComponent: () =>
+      import('./pages/customer-reset-password/customer-reset-password.component').then(
+        (m) => m.CustomerResetPasswordComponent,
+      ),
+  },
+  {
     path: 'customer-callback',
     loadComponent: () =>
       import('./pages/customer-auth-callback/customer-auth-callback.component').then(
