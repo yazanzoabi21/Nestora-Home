@@ -217,32 +217,45 @@
 
 
 @if (filtersEnabled && mobileFiltersOpen()) {
-<div class="customer-filter-drawer-shell fixed inset-0 z-[1200] lg:hidden" role="dialog" aria-modal="true"
-  aria-labelledby="customer-mobile-filter-title" id="customer-mobile-filter-drawer">
+<div id="customer-mobile-filter-drawer" class="fixed inset-0 z-[1200] flex items-center justify-center p-4 lg:hidden"
+  role="dialog" aria-modal="true" aria-labelledby="customer-mobile-filter-title">
+
+  <!-- Backdrop -->
   <button type="button" class="absolute inset-0 bg-[#1f2a1f]/38" [attr.aria-label]="'COMMON.CLOSE' | translate"
     (click)="closeMobileFilters()"></button>
+
+  <!-- Filter panel -->
   <div
-    class="customer-filter-drawer absolute inset-y-0 end-0 flex w-full max-w-[480px] flex-col overflow-hidden bg-white shadow-2xl"
+    class="relative z-10 flex h-[88dvh] max-h-[780px] w-full max-w-[400px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
     cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
-    <div class="sticky top-0 z-10 flex min-h-16 items-center justify-between border-b border-[#e8dccf] bg-white px-5">
+
+    <!-- HEADER -->
+    <div class="flex min-h-14 shrink-0 items-center justify-between border-b border-[#e8dccf] bg-white px-5">
       <div class="min-w-0">
         <h2 id="customer-mobile-filter-title" class="text-lg font-black text-[#1f2a1f]">
-          Filter Products
+          {{ 'CUSTOMER.PRODUCTS.FILTER_PRODUCTS' | translate }}
         </h2>
+
         @if (activeFilterCount() > 0) {
         <p class="mt-0.5 text-xs font-bold text-[#718369]">
-          {{ activeFilterCount() }} active
+          {{
+          'CUSTOMER.PRODUCTS.ACTIVE_FILTERS_COUNT'
+          | translate:{ count: activeFilterCount() }
+          }}
         </p>
         }
       </div>
+
       <button id="customer-mobile-filter-close" type="button"
-        class="flex h-10 w-10 items-center justify-center rounded-full text-[#1f2a1f] transition hover:bg-[#f7f4ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b7d5e]"
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#1f2a1f] transition hover:bg-[#f7f4ef]"
         [attr.aria-label]="'COMMON.CLOSE' | translate" (click)="closeMobileFilters()">
         <i class="pi pi-times"></i>
       </button>
     </div>
 
-    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6">
+
+    <!-- SCROLLABLE FILTER CONTENT -->
+    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-3 pb-4">
       <app-customer-product-filters [framed]="false" [categories]="categoryOptions()" [priceRanges]="priceRanges"
         [ratings]="ratingOptions" [selectedCategories]="selectedCategories()"
         [selectedPriceRange]="selectedPriceRange()" [selectedRating]="selectedRating()" [inStockOnly]="inStockOnly()"
@@ -251,18 +264,29 @@
         (clearFilters)="clearFilters()" />
     </div>
 
-    <div class="sticky bottom-0 grid grid-cols-[0.85fr_1.15fr] gap-3 border-t border-[#e8dccf] bg-white p-4">
-      <button type="button"
-        class="inline-flex h-11 items-center justify-center rounded-full border border-[#e8dccf] bg-white px-4 text-sm font-black text-[#30362f] transition hover:border-[#6b7d5e]"
-        (click)="clearFilters()">
-        {{ 'CUSTOMER.PRODUCTS.CLEAR' | translate }}
-      </button>
-      <button type="button"
-        class="inline-flex h-11 items-center justify-center rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white transition hover:bg-[#596b4e]"
-        (click)="closeMobileFilters()">
-        Show {{ visibleProducts().length }} Products
-      </button>
+
+    <!-- FOOTER: ALWAYS VISIBLE -->
+    <div class="shrink-0 border-t border-[#e8dccf] bg-white px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <div class="grid grid-cols-[0.85fr_1.15fr] gap-3">
+
+        <button type="button"
+          class="inline-flex h-11 items-center justify-center rounded-full border border-[#e8dccf] bg-white px-4 text-sm font-black text-[#30362f] transition hover:border-[#6b7d5e]"
+          (click)="clearFilters()">
+          {{ 'CUSTOMER.PRODUCTS.CLEAR' | translate }}
+        </button>
+
+        <button type="button"
+          class="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-[#6b7d5e] px-4 text-sm font-black text-white transition hover:bg-[#596b4e]"
+          (click)="closeMobileFilters()">
+          {{
+          'CUSTOMER.PRODUCTS.SHOW_PRODUCTS'
+          | translate:{ count: visibleProducts().length }
+          }}
+        </button>
+
+      </div>
     </div>
+
   </div>
 </div>
 }

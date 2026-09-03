@@ -15,7 +15,7 @@
       </h1>
 
       <p class="mt-2 max-w-2xl text-base font-medium text-[#8d877e]">
-        {{ 'DASHBOARD.SUBTITLE' | translate }}
+        {{ 'DASHBOARD.SUBTITLE' | translate:{ name: loggedInName() } }}
       </p>
     </div>
 
@@ -48,12 +48,14 @@
   <!-- Main Performance Row -->
   <section class="mt-6 grid w-full max-w-full min-w-0 grid-cols-1 gap-6 2xl:grid-cols-3">
     <div class="min-w-0 2xl:col-span-2">
-      <app-analytics-chart [config]="revenueOverviewChart()" [loading]="loading()" (filterChange)="setRevenueFilter($event)">
+      <app-analytics-chart [config]="revenueOverviewChart()" [loading]="loading()"
+        (filterChange)="setRevenueFilter($event)">
       </app-analytics-chart>
     </div>
 
     <app-dashboard-card class="min-w-0 2xl:col-span-1" title="Sales Performance" titleKey="DASHBOARD.SALES_PERFORMANCE"
-      [filters]="performanceFilters" [activeFilter]="performanceFilter()" [loading]="loading()" (filterChange)="setPerformanceFilter($event)">
+      [filters]="performanceFilters" [activeFilter]="performanceFilter()" [loading]="loading()"
+      (filterChange)="setPerformanceFilter($event)">
 
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2" [attr.aria-busy]="loading()">
         @if (loading()) {
@@ -90,7 +92,8 @@
   <!-- Analytics Row -->
   <section class="mt-6 grid w-full max-w-full min-w-0 grid-cols-1 gap-6 2xl:grid-cols-3">
     <div class="min-w-0 2xl:col-span-2">
-      <app-analytics-chart [config]="salesOrdersChart()" [loading]="loading()" (filterChange)="setSalesOrdersFilter($event)">
+      <app-analytics-chart [config]="salesOrdersChart()" [loading]="loading()"
+        (filterChange)="setSalesOrdersFilter($event)">
       </app-analytics-chart>
     </div>
 
@@ -101,8 +104,9 @@
   <!-- Activity Row -->
   <section class="mt-6 grid w-full max-w-full min-w-0 grid-cols-1 gap-6 2xl:grid-cols-3">
     <div class="min-w-0 2xl:col-span-2">
-      <app-dashboard-card title="Recent Orders" titleKey="DASHBOARD.RECENT_ORDERS" subtitle="Latest 6 orders" subtitleKey="DASHBOARD.LATEST_6_ORDERS" [padded]="false"
-        [filters]="recentOrdersFilters" filterLabelPrefix="DASHBOARD.FILTERS" [activeFilter]="recentOrdersFilter()" [action]="{
+      <app-dashboard-card title="Recent Orders" titleKey="DASHBOARD.RECENT_ORDERS" subtitle="Latest 6 orders"
+        subtitleKey="DASHBOARD.LATEST_6_ORDERS" [padded]="false" [filters]="recentOrdersFilters"
+        filterLabelPrefix="DASHBOARD.FILTERS" [activeFilter]="recentOrdersFilter()" [action]="{
           labelKey: 'COMMON.VIEW_ALL',
           icon: 'pi pi-arrow-right',
           variant: 'button'
@@ -203,8 +207,10 @@
       </app-dashboard-card>
     </div>
 
-    <app-dashboard-card class="min-w-0 2xl:col-span-1" title="Best Selling Products" titleKey="DASHBOARD.BEST_SELLING_PRODUCTS" subtitle="By selected filter" subtitleKey="DASHBOARD.BY_SELECTED_FILTER"
-      [filters]="bestSellingFilters" filterLabelPrefix="DASHBOARD.FILTERS" [activeFilter]="bestSellingFilter()" [action]="{
+    <app-dashboard-card class="min-w-0 2xl:col-span-1" title="Best Selling Products"
+      titleKey="DASHBOARD.BEST_SELLING_PRODUCTS" subtitle="By selected filter"
+      subtitleKey="DASHBOARD.BY_SELECTED_FILTER" [filters]="bestSellingFilters" filterLabelPrefix="DASHBOARD.FILTERS"
+      [activeFilter]="bestSellingFilter()" [action]="{
         icon: 'pi pi-ellipsis-h',
         variant: 'icon'
       }" [loading]="loading()" (filterChange)="setBestSellingFilter($event)" (actionClick)="openBestSellingMenu()">

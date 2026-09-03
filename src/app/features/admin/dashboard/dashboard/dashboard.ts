@@ -9,6 +9,7 @@ import { DashboardCard } from '../../../../shared/ui/dashboard-card';
 import { ExportReportComponent, ExportReportConfig } from '../../../../shared/ui/export-report';
 import { KpiCardComponent, KpiCardData } from '../../../../shared/ui/kpi-card';
 import { DashboardService, DashboardStatisticsRow } from '../../../../data-access/services/dashboard.service';
+import { ADMIN_SUPABASE } from '../../../../core/tokens';
 
 type DashboardTrendType = 'up' | 'down';
 type DashboardTone = 'positive' | 'negative';
@@ -63,6 +64,7 @@ export class Dashboard implements OnInit {
   }
 
   ngOnInit(): void {
+    void this.loadLoggedInUser();
     void this.loadDashboard('30D');
   }
 
@@ -70,6 +72,8 @@ export class Dashboard implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private dashboardRequestId = 0;
+
+  private readonly supabase = inject(ADMIN_SUPABASE);
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -89,6 +93,8 @@ export class Dashboard implements OnInit {
   readonly performanceSkeletonItems = Array.from({ length: 4 }, (_, index) => index);
   readonly tableSkeletonRows = Array.from({ length: 6 }, (_, index) => index);
   readonly productSkeletonRows = Array.from({ length: 5 }, (_, index) => index);
+
+  readonly loggedInName = signal('');
 
   readonly revenueOverviewChart = computed<AnalyticsChartConfig>(() => {
     this.langVersion();
@@ -553,5 +559,33 @@ export class Dashboard implements OnInit {
         this.loading.set(false);
       }
     }
+  }
+
+  private async loadLoggedInUser(): Promise<void> {
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
+
+    if (!user) {
+      return;
+    }
+
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Failed to load admin profile:', error);
+      return;
+    }
+
+    this.loggedInName.set(
+      data?.full_name ||
+      user.user_metadata?.['full_name'] ||
+      user.email?.split('@')[0] ||
+      ''
+    );
   }
 }

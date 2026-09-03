@@ -1,13 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   computed,
   effect,
   inject,
   signal,
   untracked,
-  viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -50,9 +48,6 @@ export class BestSellersPage {
 
   readonly currentPage = signal(1);
   readonly pageSize = signal<PaginationPageSize>(12);
-
-  private readonly productsList =
-    viewChild<ElementRef<HTMLElement>>('productsList');
 
   readonly paginatedProducts = computed(() => {
     const products = this.products();
@@ -105,8 +100,7 @@ export class BestSellersPage {
 
     try {
       this.replaceProducts(await this.catalog.getBestSellers());
-    } catch (error) {
-
+    } catch {
       this.loadError.set(true);
     } finally {
       this.loading.set(false);
@@ -136,17 +130,6 @@ export class BestSellersPage {
   changePage(page: number): void {
     this.currentPage.set(page);
     this.selectedProduct.set(null);
-
-    queueMicrotask(() => {
-      const list = this.productsList()?.nativeElement;
-
-      list?.focus({ preventScroll: true });
-
-      list?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
   }
 
   setPageSize(size: PaginationPageSize): void {

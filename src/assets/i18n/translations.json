@@ -88,7 +88,7 @@
     },
     "DASHBOARD": {
       "TITLE": "Dashboard",
-      "SUBTITLE": "Welcome back, Alex. Here's what's happening today.",
+      "SUBTITLE": "Welcome back, {{name}}. Here's what's happening today.",
       "MONTH": "April 2026",
       "EXPORT_REPORT": "Export Report",
       "TOTAL_REVENUE": "Total Revenue",
@@ -614,8 +614,8 @@
         "PRODUCT_REQUIRED": "Please select a product.",
         "CATEGORY_REQUIRED": "Please select a category.",
         "END_BEFORE_START": "End date cannot be before start date.",
-        "TITLE_REQUIRED": "Title is required."
-        ,"GIFT_QUANTITY": "Gift quantity must be a positive whole number.",
+        "TITLE_REQUIRED": "Title is required.",
+        "GIFT_QUANTITY": "Gift quantity must be a positive whole number.",
         "GIFT_PRODUCTS_REQUIRED": "Select at least one eligible gift product."
       },
       "UNLIMITED": "Unlimited",
@@ -2270,7 +2270,13 @@
         "ADD_TO_CART": "Add to Cart",
         "TOGGLE_WISHLIST": "Toggle wishlist",
         "NO_RESULTS": "No products match your filters",
-        "NO_RESULTS_DETAIL": "Try removing a filter or changing your sort to discover more Nestora Home essentials."
+        "NO_RESULTS_DETAIL": "Try removing a filter or changing your sort to discover more Nestora Home essentials.",
+        "FILTER_PRODUCTS": "Filter Products",
+        "ACTIVE_FILTERS_COUNT": "{{count}} active",
+        "SHOW_PRODUCTS": "Show {{count}} Products",
+        "ACTIVE_FILTERS": "Active filters",
+        "REMOVE_FILTER": "Remove filter {{name}}",
+        "CLEAR_ALL": "Clear all"
       },
       "ACCOUNT": {
         "HOME": "Home",
@@ -3496,8 +3502,8 @@
         "PRODUCT_REQUIRED": "يرجى اختيار منتج.",
         "CATEGORY_REQUIRED": "يرجى اختيار فئة.",
         "END_BEFORE_START": "لا يمكن أن يكون تاريخ النهاية قبل تاريخ البداية.",
-        "TITLE_REQUIRED": "العنوان مطلوب."
-        ,"GIFT_QUANTITY": "يجب أن تكون كمية الهدايا عدداً صحيحاً موجباً.",
+        "TITLE_REQUIRED": "العنوان مطلوب.",
+        "GIFT_QUANTITY": "يجب أن تكون كمية الهدايا عدداً صحيحاً موجباً.",
         "GIFT_PRODUCTS_REQUIRED": "يرجى اختيار منتج هدية مؤهل واحد على الأقل."
       },
       "UNLIMITED": "غير محدود",
@@ -5057,7 +5063,13 @@
         "ADD_TO_CART": "أضف إلى السلة",
         "TOGGLE_WISHLIST": "تبديل المفضلة",
         "NO_RESULTS": "لا توجد منتجات تطابق الفلاتر",
-        "NO_RESULTS_DETAIL": "جرّب إزالة فلتر أو تغيير الترتيب لاكتشاف المزيد من أساسيات Nestora Home."
+        "NO_RESULTS_DETAIL": "جرّب إزالة فلتر أو تغيير الترتيب لاكتشاف المزيد من أساسيات Nestora Home.",
+        "FILTER_PRODUCTS": "تصفية المنتجات",
+        "ACTIVE_FILTERS_COUNT": "{{count}} نشط",
+        "SHOW_PRODUCTS": "عرض {{count}} منتج",
+        "ACTIVE_FILTERS": "الفلاتر النشطة",
+        "REMOVE_FILTER": "إزالة فلتر {{name}}",
+        "CLEAR_ALL": "مسح الكل"
       },
       "CHECKOUT": {
         "BREADCRUMB": "الرئيسية / السلة / الدفع",

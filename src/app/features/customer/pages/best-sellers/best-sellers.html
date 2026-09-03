@@ -84,9 +84,7 @@
       </p>
     </div>
     } @else {
-    <div #productsList
-      class="grid scroll-mt-28 grid-cols-1 gap-5 outline-none min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-      tabindex="-1">
+    <div class="grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       @for (product of paginatedProducts(); track product.id) {
       <app-customer-product-card [product]="product" [wishlistActive]="shopping.isInWishlist(product.id)"
         [wishlistLoading]="shopping.wishlistPendingProductIds().has(product.id)"

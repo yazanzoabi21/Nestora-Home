@@ -58,11 +58,44 @@ describe('CustomerAuthService profile synchronization', () => {
     await service.refreshCurrentCustomerProfile();
     expect(profileQuery).toHaveBeenCalledTimes(2);
   });
+
+  it('requests a neutral customer password reset with the current origin callback', async () => {
+    const { service, resetPasswordForEmail } = configureAuthService();
+
+    await service.requestPasswordReset(' Customer@Example.com ');
+
+    expect(resetPasswordForEmail).toHaveBeenCalledWith('customer@example.com', {
+      redirectTo: `${window.location.origin}/auth/customer-reset-password`,
+    });
+  });
+
+  it('only updates a password after Supabase emits PASSWORD_RECOVERY', async () => {
+    const { service, emitAuthState, updateUser, signOut } = configureAuthService();
+
+    emitAuthState('PASSWORD_RECOVERY', SESSION);
+    await expect(service.waitForPasswordRecoverySession()).resolves.toBe(SESSION);
+    await service.updatePasswordFromRecovery('new-secret');
+
+    expect(updateUser).toHaveBeenCalledWith({ password: 'new-secret' });
+    expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+
+  it('rejects password updates without a recovery event', async () => {
+    const { service, updateUser } = configureAuthService();
+
+    await expect(service.updatePasswordFromRecovery('new-secret')).rejects.toThrow(
+      'invalid or has expired',
+    );
+    expect(updateUser).not.toHaveBeenCalled();
+  });
 });
 
 function configureAuthService(): {
   readonly service: CustomerAuthService;
   readonly profileQuery: ReturnType<typeof vi.fn>;
+  readonly resetPasswordForEmail: ReturnType<typeof vi.fn>;
+  readonly updateUser: ReturnType<typeof vi.fn>;
+  readonly signOut: ReturnType<typeof vi.fn>;
   emitAuthState(event: AuthChangeEvent, session: Session | null): void;
 } {
   let authStateHandler: ((event: AuthChangeEvent, session: Session | null) => void) | null = null;
@@ -70,10 +103,19 @@ function configureAuthService(): {
   const eq = vi.fn(() => ({ maybeSingle: profileQuery }));
   const select = vi.fn(() => ({ eq }));
   const from = vi.fn(() => ({ select }));
+  const resetPasswordForEmail = vi.fn(() => Promise.resolve({ data: {}, error: null }));
+  const updateUser = vi.fn(() => Promise.resolve({ data: { user: SESSION.user }, error: null }));
+  const signOut = vi.fn(() => Promise.resolve({ error: null }));
 
   const supabase = {
     auth: {
       getSession: vi.fn(() => Promise.resolve({ data: { session: SESSION }, error: null })),
+      getUser: vi.fn(() =>
+        Promise.resolve({ data: { user: SESSION.user }, error: null }),
+      ),
+      resetPasswordForEmail,
+      updateUser,
+      signOut,
       onAuthStateChange: vi.fn(
         (handler: (event: AuthChangeEvent, session: Session | null) => void) => {
           authStateHandler = handler;
@@ -95,6 +137,9 @@ function configureAuthService(): {
   return {
     service: TestBed.inject(CustomerAuthService),
     profileQuery,
+    resetPasswordForEmail,
+    updateUser,
+    signOut,
     emitAuthState(event: AuthChangeEvent, session: Session | null): void {
       authStateHandler?.(event, session);
     },

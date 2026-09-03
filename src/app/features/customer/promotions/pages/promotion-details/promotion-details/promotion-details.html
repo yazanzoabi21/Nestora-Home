@@ -102,11 +102,11 @@
                 : 'mt-8'
             ">
             <div class="min-w-0">
-                <div #productsList [class]="
+                <div [class]="
                     selectedProduct()
-                        ? 'grid scroll-mt-28 grid-cols-1 gap-5 outline-none min-[360px]:grid-cols-2 xl:grid-cols-3'
-                        : 'grid scroll-mt-28 grid-cols-1 gap-5 outline-none min-[360px]:grid-cols-2 lg:grid-cols-4'
-                    " tabindex="-1">
+                        ? 'grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 xl:grid-cols-3'
+                        : 'grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-4'
+                    ">
                     @for (
                     product of paginatedProducts();
                     track product.id

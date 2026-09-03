@@ -1,11 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   computed,
   inject,
   signal,
-  viewChild,
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -42,7 +40,6 @@ export class PromotionDetails {
 
   private readonly route = inject(ActivatedRoute);
   private readonly promotionsService = inject(CustomerPromotionsService);
-  private readonly productsList = viewChild<ElementRef<HTMLElement>>('productsList');
 
   readonly promotion = signal<PromotionDetailsData | null>(null);
   readonly selectedProduct = signal<CustomerProduct | null>(null);
@@ -154,16 +151,6 @@ export class PromotionDetails {
   changePage(page: number): void {
     this.currentPage.set(page);
     this.selectedProduct.set(null);
-
-    queueMicrotask(() => {
-      const list = this.productsList()?.nativeElement;
-
-      list?.focus({ preventScroll: true });
-      list?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
   }
 
   setPageSize(size: PaginationPageSize): void {
