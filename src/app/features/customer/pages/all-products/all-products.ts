@@ -1,11 +1,15 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   HostListener,
+  Injector,
   effect,
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -53,6 +57,8 @@ export class AllProducts extends ProductBrowserPage {
   private readonly catalog = inject(CustomerCatalogService);
   private readonly route = inject(ActivatedRoute);
   private readonly routeNavigator = inject(Router);
+  private readonly injector = inject(Injector);
+  private readonly productsStart = viewChild.required<ElementRef<HTMLElement>>('productsStart');
   private readonly requestedCategorySlug = signal<string | null>(null);
   private readonly navigationSource = signal<string | null>(null);
 
@@ -114,6 +120,27 @@ export class AllProducts extends ProductBrowserPage {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
+  }
+
+  override setPage(page: number): void {
+    const previousPage = this.currentPage();
+    super.setPage(page);
+
+    if (this.currentPage() === previousPage) {
+      return;
+    }
+
+    afterNextRender(
+      {
+        write: () => {
+          this.productsStart().nativeElement.scrollIntoView({
+            behavior: 'auto',
+            block: 'start',
+          });
+        },
+      },
+      { injector: this.injector },
+    );
   }
 
   protected override onCategoryFiltersChanged(): void {
