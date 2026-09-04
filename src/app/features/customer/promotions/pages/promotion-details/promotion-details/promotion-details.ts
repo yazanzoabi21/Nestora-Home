@@ -20,6 +20,7 @@ import {
   AdminPaginationComponent,
   PaginationPageSize,
 } from '../../../../../../shared/ui/admin-pagination';
+import { PaginationScrollAnchorDirective } from '../../../../../../shared/directives';
 
 @Component({
   selector: 'app-promotion-details',
@@ -30,6 +31,7 @@ import {
     CustomerProductQuickViewComponent,
     TranslatePipe,
     AdminPaginationComponent,
+    PaginationScrollAnchorDirective,
   ],
   templateUrl: './promotion-details.html',
   styleUrl: '../../../../pages/all-products/all-products.css',

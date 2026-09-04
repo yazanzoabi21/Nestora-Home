@@ -1,4 +1,4 @@
-<section class="min-h-[70vh] overflow-x-clip bg-[#faf8f5] pb-16 sm:pb-20">
+<section class="overflow-x-clip bg-[#faf8f5] pb-16 sm:pb-20">
   <div class="customer-page-container pt-5 sm:pt-6">
     <nav class="flex items-center gap-2 text-xs font-semibold text-[#858a80] sm:text-sm sm:font-bold"
       aria-label="Breadcrumb">
@@ -84,6 +84,8 @@
       </p>
     </div>
     } @else {
+    <div appPaginationScrollAnchor #productsStart="paginationScrollAnchor"
+      class="h-0 scroll-mt-36 lg:scroll-mt-28" aria-hidden="true"></div>
     <div class="grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       @for (product of paginatedProducts(); track product.id) {
       <app-customer-product-card [product]="product" [wishlistActive]="shopping.isInWishlist(product.id)"
@@ -95,10 +97,13 @@
     </div>
 
     @if (products().length > 12) {
-    <app-admin-pagination variant="customer" class="customer-pagination mt-7" [currentPage]="currentPage()"
-      [totalItems]="products().length" [pageSize]="pageSize()" [pageSizeOptions]="[12, 20, 25, 'all']"
-      [showPageSize]="true" [showSummary]="true" (pageChange)="changePage($event)"
-      (pageSizeChange)="setPageSize($event)" />
+    <div class="mt-8 w-full">
+      <app-admin-pagination class="block w-full" variant="customer" [currentPage]="currentPage()"
+        [totalItems]="products().length" [pageSize]="pageSize()" [pageSizeOptions]="[12, 20, 25, 'all']"
+        [showPageSize]="true" [showSummary]="true"
+        (pageChange)="changePage($event); productsStart.scrollAfterNextRender()"
+        (pageSizeChange)="setPageSize($event)" />
+    </div>
     }
     }
   </div>

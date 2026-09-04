@@ -141,8 +141,8 @@
       }
 
       <div class="min-w-0">
-        <div id="all-products-results-start" #productsStart class="h-0 scroll-mt-36 lg:scroll-mt-28"
-          aria-hidden="true"></div>
+        <div appPaginationScrollAnchor #productsStart="paginationScrollAnchor"
+          class="h-0 scroll-mt-36 lg:scroll-mt-28" aria-hidden="true"></div>
         @if (loading()) {
         <div role="status" aria-live="polite" aria-busy="true" class="w-full">
           <span class="sr-only">
@@ -183,7 +183,8 @@
         <div class="mt-8 w-full">
           <app-admin-pagination class="block w-full" variant="customer" [currentPage]="currentPage()"
             [totalItems]="visibleProducts().length" [pageSize]="productsPerPage()" [showPageSize]="false"
-            [showSummary]="true" (pageChange)="setPage($event)" />
+            [showSummary]="true"
+            (pageChange)="setPage($event); productsStart.scrollAfterNextRender()" />
         </div>
         } @else {
         <div class="rounded-[1.5rem] border border-[#e8dccf] bg-white px-6 py-16 text-center shadow-sm">
