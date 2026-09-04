@@ -101,7 +101,8 @@
                 ? 'mt-8 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_430px]'
                 : 'mt-8'
             ">
-            <div class="min-w-0">
+            <div appPaginationScrollAnchor #productsStart="paginationScrollAnchor"
+                class="min-w-0 scroll-mt-36 lg:scroll-mt-28">
                 <div [class]="
                     selectedProduct()
                         ? 'grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 xl:grid-cols-3'
@@ -123,10 +124,13 @@
                 </div>
 
                 @if (promotionProducts().length > 12) {
-                <app-admin-pagination variant="customer" class="customer-pagination mt-6"
-                    [currentPage]="currentPage()" [totalItems]="promotionProducts().length" [pageSize]="pageSize()"
-                    [pageSizeOptions]="[12, 20, 25, 'all']" [showPageSize]="true" [showSummary]="true"
-                    (pageChange)="changePage($event)" (pageSizeChange)="setPageSize($event)" />
+                <div class="mt-8 w-full">
+                    <app-admin-pagination class="block w-full" variant="customer" [currentPage]="currentPage()"
+                        [totalItems]="promotionProducts().length" [pageSize]="pageSize()"
+                        [pageSizeOptions]="[12, 20, 25, 'all']" [showPageSize]="true" [showSummary]="true"
+                        (pageChange)="changePage($event); productsStart.scrollAfterNextRender()"
+                        (pageSizeChange)="setPageSize($event)" />
+                </div>
                 }
             </div>
 

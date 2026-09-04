@@ -13,6 +13,7 @@ import {
 import { CustomerCatalogService } from '../../services';
 import { ProductBrowserPage } from '../product-browser-page';
 import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination';
+import { PaginationScrollAnchorDirective } from '../../../../shared/directives';
 
 @Component({
   selector: 'app-new-arrivals',
@@ -26,7 +27,8 @@ import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination
     CustomerProductQuickViewComponent,
     RouterLink,
     TranslatePipe,
-    AdminPaginationComponent
+    AdminPaginationComponent,
+    PaginationScrollAnchorDirective,
   ],
   templateUrl: './new-arrivals.html',
   styleUrls: [

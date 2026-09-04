@@ -1,15 +1,11 @@
 import {
-  afterNextRender,
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   HostListener,
-  Injector,
   effect,
   computed,
   inject,
   signal,
-  viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -23,6 +19,7 @@ import { CustomerCatalogService } from '../../services';
 import { ProductBrowserPage } from '../product-browser-page';
 import { CustomerProductCardSkeleton } from '../../components/customer-product-card-skeleton/customer-product-card-skeleton';
 import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination';
+import { PaginationScrollAnchorDirective } from '../../../../shared/directives';
 
 @Component({
   selector: 'app-all-products',
@@ -37,6 +34,7 @@ import { AdminPaginationComponent } from '../../../../shared/ui/admin-pagination
     RouterLink,
     TranslatePipe,
     AdminPaginationComponent,
+    PaginationScrollAnchorDirective,
   ],
   templateUrl: './all-products.html',
   styleUrl: './all-products.css',
@@ -57,8 +55,6 @@ export class AllProducts extends ProductBrowserPage {
   private readonly catalog = inject(CustomerCatalogService);
   private readonly route = inject(ActivatedRoute);
   private readonly routeNavigator = inject(Router);
-  private readonly injector = inject(Injector);
-  private readonly productsStart = viewChild.required<ElementRef<HTMLElement>>('productsStart');
   private readonly requestedCategorySlug = signal<string | null>(null);
   private readonly navigationSource = signal<string | null>(null);
 
@@ -120,27 +116,6 @@ export class AllProducts extends ProductBrowserPage {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
-  }
-
-  override setPage(page: number): void {
-    const previousPage = this.currentPage();
-    super.setPage(page);
-
-    if (this.currentPage() === previousPage) {
-      return;
-    }
-
-    afterNextRender(
-      {
-        write: () => {
-          this.productsStart().nativeElement.scrollIntoView({
-            behavior: 'auto',
-            block: 'start',
-          });
-        },
-      },
-      { injector: this.injector },
-    );
   }
 
   protected override onCategoryFiltersChanged(): void {

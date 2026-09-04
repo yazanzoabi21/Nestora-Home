@@ -19,6 +19,7 @@ import { CustomerProductAddRequest } from '../../components/customer-product-qui
 import { CustomerProduct } from '../../models';
 import { CustomerCatalogService, CustomerShoppingStateService } from '../../services';
 import { AdminPaginationComponent, PaginationPageSize } from '../../../../shared/ui/admin-pagination';
+import { PaginationScrollAnchorDirective } from '../../../../shared/directives';
 
 @Component({
   selector: 'app-best-sellers',
@@ -29,7 +30,8 @@ import { AdminPaginationComponent, PaginationPageSize } from '../../../../shared
     CustomerProductQuickViewComponent,
     RouterLink,
     TranslatePipe,
-    AdminPaginationComponent
+    AdminPaginationComponent,
+    PaginationScrollAnchorDirective,
   ],
   templateUrl: './best-sellers.html',
   styleUrl: './best-sellers.css',
