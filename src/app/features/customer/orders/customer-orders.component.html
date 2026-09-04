@@ -1,25 +1,18 @@
 <section class="block min-w-0" aria-labelledby="orders-page-title">
-  <header class="mb-[1.35rem] flex items-end justify-between gap-4 max-[620px]:items-start">
-    <div>
-      <p class="mb-[0.3rem] text-[0.72rem] font-black uppercase tracking-[0.1em] text-[#718369]">
-        {{ 'CUSTOMER.ACCOUNT.ORDERS.EYEBROW' | translate }}
-      </p>
+  <header class="mb-[1.35rem] flex items-start justify-between gap-4">
+  <div class="mt-2">
+    <p class="mb-[0.3rem] text-[0.72rem] font-black uppercase tracking-[0.1em] text-[#718369]">
+      {{ 'CUSTOMER.ACCOUNT.ORDERS.EYEBROW' | translate }}
+    </p>
 
-      <h1 id="orders-page-title" class="text-[clamp(1.65rem,3vw,2.1rem)] font-black leading-[1.15] text-[#1f2a1f]">
-        {{ 'CUSTOMER.ACCOUNT.ORDERS.TITLE' | translate }}
-      </h1>
-    </div>
+    <h1 id="orders-page-title"
+      class="whitespace-nowrap text-[clamp(1.65rem,3vw,2.1rem)] font-black leading-[1.15] text-[#1f2a1f]">
+      {{ 'CUSTOMER.ACCOUNT.ORDERS.TITLE' | translate }}
+    </h1>
+  </div>
 
-    @if (!loading() && orders().length) {
-    <div class="flex flex-wrap items-center justify-end gap-[0.65rem]">
-      <span
-        class="shrink-0 rounded-full border border-[#dfe5da] bg-[#f2f5ef] px-[0.8rem] py-[0.45rem] text-[0.75rem] font-extrabold text-[#607253]">
-        {{
-        'CUSTOMER.ACCOUNT.ORDERS.ORDER_COUNT'
-        | translate: { count: orders().length }
-        }}
-      </span>
-
+  @if (!loading() && orders().length) {
+    <div class="flex shrink-0 flex-col items-end gap-2">
       <span
         class="inline-flex min-h-8 items-center gap-[0.4rem] whitespace-nowrap rounded-full border border-[#e5e1d9] bg-white px-3 py-[0.4rem] text-[0.75rem] text-[#34402f]">
         <span class="font-semibold text-[#817b71]">
@@ -30,9 +23,17 @@
           {{ totalSpent() | currency: 'USD' : 'symbol' : '1.2-2' }}
         </strong>
       </span>
+
+      <span
+        class="rounded-full border border-[#dfe5da] bg-[#f2f5ef] px-[0.8rem] py-[0.4rem] text-[0.75rem] font-extrabold text-[#607253]">
+        {{
+          'CUSTOMER.ACCOUNT.ORDERS.ORDER_COUNT'
+          | translate: { count: orders().length }
+        }}
+      </span>
     </div>
-    }
-  </header>
+  }
+</header>
 
   @if (loading()) {
   <div class="grid gap-[0.9rem]" aria-busy="true" [attr.aria-label]="'CUSTOMER.ACCOUNT.ORDERS.LOADING' | translate">

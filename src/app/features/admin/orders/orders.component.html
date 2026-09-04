@@ -526,21 +526,32 @@
                       }
                     </div>
 
-                    <p
-                      class="shrink-0 text-base font-black text-[#4f643e]"
-                    >
-                      @if (item.isFreeGift) {
-                      <span class="text-[#58704e]">{{ 'CUSTOMER.FREE_GIFT.FREE' | translate }}</span>
-                      } @else {
-                      {{
-                        item.total
-                          | currency
-                            : 'USD'
-                            : 'symbol'
-                            : '1.2-2'
-                      }}
-                      }
-                    </p>
+                    <div class="flex shrink-0 items-center gap-2">
+                      <p class="text-base font-black text-[#4f643e]">
+                        @if (item.isFreeGift) {
+                        <span class="text-[#58704e]">{{ 'CUSTOMER.FREE_GIFT.FREE' | translate }}</span>
+                        } @else {
+                        {{
+                          item.total
+                            | currency
+                              : 'USD'
+                              : 'symbol'
+                              : '1.2-2'
+                        }}
+                        }
+                      </p>
+
+                      <button
+                        type="button"
+                        class="inline-flex size-9 cursor-pointer items-center justify-center rounded-lg border border-[#eadbd5] bg-white text-[#a14f40] transition hover:bg-[#fff3ef] disabled:cursor-not-allowed disabled:opacity-50"
+                        [attr.aria-label]="'ORDERS.DETAILS.REMOVE_ITEM' | translate: { name: item.name }"
+                        [title]="'ORDERS.DETAILS.REMOVE_ITEM' | translate: { name: item.name }"
+                        [disabled]="savingOrderStatus() || removingOrderItem()"
+                        (click)="requestRemoveOrderItem(item)"
+                      >
+                        <i class="pi pi-trash text-xs" aria-hidden="true"></i>
+                      </button>
+                    </div>
                   </div>
 
                   <div
@@ -885,5 +896,34 @@
         }}
       </p>
     </div>
+  </app-admin-form-modal>
+
+  <app-admin-form-modal
+    [isOpen]="!!orderItemToRemove()"
+    size="sm"
+    [title]="'ORDERS.REMOVE_ITEM.CONFIRM_TITLE' | translate"
+    [subtitle]="'ORDERS.REMOVE_ITEM.CONFIRM_SUBTITLE' | translate"
+    [submitLabel]="'ORDERS.REMOVE_ITEM.CONFIRM_ACTION' | translate"
+    [cancelLabel]="'COMMON.CANCEL' | translate"
+    [loading]="removingOrderItem()"
+    (close)="closeRemoveOrderItemConfirmation()"
+    (submit)="confirmRemoveOrderItem()"
+  >
+    @if (orderItemToRemove(); as item) {
+      <div class="rounded-2xl border border-[#eadbd5] bg-[#fff8f5] p-5 text-center text-[#7d4137]">
+        <span class="mx-auto grid size-12 place-items-center rounded-full bg-[#f7dfd7] text-xl">
+          <i class="pi pi-trash" aria-hidden="true"></i>
+        </span>
+        <p class="mt-4 text-sm font-bold leading-6">
+          {{
+            'ORDERS.REMOVE_ITEM.CONFIRM_MESSAGE'
+              | translate: { name: item.name, quantity: item.quantity }
+          }}
+        </p>
+        <p class="mt-2 text-xs font-semibold leading-5 text-[#93675f]">
+          {{ 'ORDERS.REMOVE_ITEM.INVENTORY_NOTE' | translate }}
+        </p>
+      </div>
+    }
   </app-admin-form-modal>
 </main>

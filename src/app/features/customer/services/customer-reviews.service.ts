@@ -34,10 +34,30 @@ interface ReviewRecord {
   profiles?: ReviewRelation<ReviewCustomerSummary>;
 }
 
+interface ReviewCountRecord {
+  product_id: string | null;
+}
+
+interface PublishedReviewsCacheEntry {
+  readonly request: Promise<Review[]>;
+  readonly timestamp: number;
+}
+
+interface PublishedReviewCountCacheEntry {
+  readonly count: number;
+  readonly timestamp: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CustomerReviewsService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
-  private readonly publishedReviewsByProduct = new Map<string, Promise<Review[]>>();
+  private readonly publishedReviewsCacheTtlMs = 30 * 1000;
+  private readonly publishedReviewCountsCacheTtlMs = 5 * 60 * 1000;
+  private readonly publishedReviewsByProduct = new Map<string, PublishedReviewsCacheEntry>();
+  private readonly publishedReviewCountByProduct = new Map<
+    string,
+    PublishedReviewCountCacheEntry
+  >();
 
   async getPublishedReviews(limit = 3): Promise<Review[]> {
     const { data, error } = await this.supabase
@@ -53,19 +73,72 @@ export class CustomerReviewsService {
 
   async getPublishedReviewsByProduct(productId: string): Promise<Review[]> {
     const normalizedProductId = productId.trim();
-    const existingRequest = this.publishedReviewsByProduct.get(normalizedProductId);
-    if (existingRequest) return existingRequest;
+    const existing = this.publishedReviewsByProduct.get(normalizedProductId);
+    if (existing && Date.now() - existing.timestamp < this.publishedReviewsCacheTtlMs) {
+      return existing.request;
+    }
 
     const request = this.loadPublishedReviewsByProduct(normalizedProductId);
-    this.publishedReviewsByProduct.set(normalizedProductId, request);
+    this.publishedReviewsByProduct.set(normalizedProductId, { request, timestamp: Date.now() });
 
     try {
-      return await request;
-    } finally {
-      if (this.publishedReviewsByProduct.get(normalizedProductId) === request) {
+      const reviews = await request;
+      this.publishedReviewCountByProduct.set(normalizedProductId, {
+        count: reviews.length,
+        timestamp: Date.now(),
+      });
+      return reviews;
+    } catch (error: unknown) {
+      if (this.publishedReviewsByProduct.get(normalizedProductId)?.request === request) {
         this.publishedReviewsByProduct.delete(normalizedProductId);
       }
+      throw error;
     }
+  }
+
+  async getPublishedReviewCountsByProduct(
+    productIds: readonly string[],
+  ): Promise<ReadonlyMap<string, number>> {
+    const uniqueProductIds = [
+      ...new Set(productIds.map((productId) => productId.trim()).filter(Boolean)),
+    ];
+    const missingProductIds = uniqueProductIds.filter(
+      (productId) => {
+        const cached = this.publishedReviewCountByProduct.get(productId);
+        return (
+          !cached || Date.now() - cached.timestamp >= this.publishedReviewCountsCacheTtlMs
+        );
+      },
+    );
+
+    if (missingProductIds.length > 0) {
+      const { data, error } = await this.supabase
+        .from('reviews')
+        .select('product_id')
+        .in('product_id', missingProductIds)
+        .eq('status', 'published')
+        .not('comment', 'is', null);
+
+      if (error) throw new Error('Unable to load review counts.');
+
+      const counts = new Map(missingProductIds.map((productId) => [productId, 0]));
+      for (const review of (data ?? []) as ReviewCountRecord[]) {
+        if (review.product_id && counts.has(review.product_id)) {
+          counts.set(review.product_id, (counts.get(review.product_id) ?? 0) + 1);
+        }
+      }
+
+      counts.forEach((count, productId) => {
+        this.publishedReviewCountByProduct.set(productId, { count, timestamp: Date.now() });
+      });
+    }
+
+    return new Map(
+      uniqueProductIds.map((productId) => [
+        productId,
+        this.publishedReviewCountByProduct.get(productId)?.count ?? 0,
+      ]),
+    );
   }
 
   private async loadPublishedReviewsByProduct(productId: string): Promise<Review[]> {
@@ -110,6 +183,7 @@ export class CustomerReviewsService {
     }
 
     this.publishedReviewsByProduct.delete(payload.productId);
+    this.publishedReviewCountByProduct.delete(payload.productId);
   }
 
   async updateOwnReview(payload: CustomerReviewEditPayload): Promise<void> {
@@ -127,6 +201,7 @@ export class CustomerReviewsService {
 
     if (error) throw new Error('REVIEW_UPDATE_FAILED');
     this.publishedReviewsByProduct.clear();
+    this.publishedReviewCountByProduct.clear();
   }
 
   private mapReview(review: ReviewRecord): Review {

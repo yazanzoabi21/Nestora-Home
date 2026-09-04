@@ -1795,6 +1795,13 @@
         "CONFIRM_MESSAGE": "Saving this status will automatically credit {{points}} loyalty points to the customer.",
         "CONFIRM_ACTION": "Confirm and save"
       },
+      "REMOVE_ITEM": {
+        "CONFIRM_TITLE": "Remove order item",
+        "CONFIRM_SUBTITLE": "The order totals and inventory will be updated automatically",
+        "CONFIRM_ACTION": "Remove item",
+        "CONFIRM_MESSAGE": "Remove {{quantity}} × {{name}} from this order?",
+        "INVENTORY_NOTE": "The exact ordered quantity will be returned to inventory."
+      },
       "FIELDS": {
         "ORDER_NUMBER": "Order Number",
         "CUSTOMER_NAME": "Customer Name",
@@ -1814,7 +1821,10 @@
       },
       "TOAST": {
         "LOAD_FAILED_TITLE": "Orders could not be loaded",
-        "LOAD_FAILED_DETAIL": "Please try again."
+        "LOAD_FAILED_DETAIL": "Please try again.",
+        "ITEM_REMOVED_TITLE": "Order item removed",
+        "ITEM_REMOVE_FAILED_TITLE": "Order item could not be removed",
+        "ITEM_REMOVE_FAILED_DETAIL": "Please try again."
       },
       "DETAILS": {
         "CUSTOMER": "Customer",
@@ -1832,7 +1842,8 @@
         "DISCOUNT": "Discount",
         "ORDER_TOTAL": "Order Total",
         "STATUS_CONTROLS": "Order Status",
-        "STATUS_HELPER": "Update delivery and payment status."
+        "STATUS_HELPER": "Update delivery and payment status.",
+        "REMOVE_ITEM": "Remove {{name}} from order"
       }
     },
     "MEDIA_PICKER": {
@@ -4738,6 +4749,13 @@
         "CONFIRM_MESSAGE": "سيؤدي حفظ هذه الحالة تلقائياً إلى إضافة {{points}} نقطة ولاء إلى رصيد العميل.",
         "CONFIRM_ACTION": "تأكيد وحفظ"
       },
+      "REMOVE_ITEM": {
+        "CONFIRM_TITLE": "إزالة منتج من الطلب",
+        "CONFIRM_SUBTITLE": "سيتم تحديث إجماليات الطلب والمخزون تلقائياً",
+        "CONFIRM_ACTION": "إزالة المنتج",
+        "CONFIRM_MESSAGE": "هل تريد إزالة {{quantity}} × {{name}} من هذا الطلب؟",
+        "INVENTORY_NOTE": "ستتم إعادة الكمية المطلوبة بالكامل إلى المخزون."
+      },
       "FIELDS": {
         "ORDER_NUMBER": "رقم الطلب",
         "CUSTOMER_NAME": "اسم العميل",
@@ -4757,7 +4775,13 @@
       },
       "TOAST": {
         "LOAD_FAILED_TITLE": "تعذر تحميل الطلبات",
-        "LOAD_FAILED_DETAIL": "يرجى المحاولة مرة أخرى."
+        "LOAD_FAILED_DETAIL": "يرجى المحاولة مرة أخرى.",
+        "ITEM_REMOVED_TITLE": "تمت إزالة المنتج من الطلب",
+        "ITEM_REMOVE_FAILED_TITLE": "تعذرت إزالة المنتج من الطلب",
+        "ITEM_REMOVE_FAILED_DETAIL": "يرجى المحاولة مرة أخرى."
+      },
+      "DETAILS": {
+        "REMOVE_ITEM": "إزالة {{name}} من الطلب"
       }
     },
     "PAYMENTS": {

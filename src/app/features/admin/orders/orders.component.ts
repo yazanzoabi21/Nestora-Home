@@ -22,6 +22,7 @@ import {
 
 import {
   AdminOrder,
+  AdminOrderItem,
   OrderDateFilter,
   OrderDeliveryStatus,
   OrderPaymentStatus,
@@ -141,6 +142,12 @@ export class OrdersComponent
     signal(false);
 
   readonly loyaltyConfirmationVisible =
+    signal(false);
+
+  readonly orderItemToRemove =
+    signal<AdminOrderItem | null>(null);
+
+  readonly removingOrderItem =
     signal(false);
 
   readonly langVersion =
@@ -871,7 +878,8 @@ export class OrdersComponent
 
   closeOrderDetails(): void {
     if (
-      this.savingOrderStatus()
+      this.savingOrderStatus() ||
+      this.removingOrderItem()
     ) {
       return;
     }
@@ -880,11 +888,63 @@ export class OrdersComponent
       false,
     );
 
+    this.orderItemToRemove.set(null);
+
     this.selectedOrder.set(
       null,
     );
 
     this.clearOrderIdQueryParam();
+  }
+
+  requestRemoveOrderItem(item: AdminOrderItem): void {
+    if (!this.savingOrderStatus() && !this.removingOrderItem()) {
+      this.orderItemToRemove.set(item);
+    }
+  }
+
+  closeRemoveOrderItemConfirmation(): void {
+    if (!this.removingOrderItem()) {
+      this.orderItemToRemove.set(null);
+    }
+  }
+
+  async confirmRemoveOrderItem(): Promise<void> {
+    const order = this.selectedOrder();
+    const item = this.orderItemToRemove();
+
+    if (!order?.supabaseOrderId || !item || this.removingOrderItem()) {
+      return;
+    }
+
+    this.removingOrderItem.set(true);
+
+    try {
+      await this.ordersService.removeOrderItem(order.supabaseOrderId, item.id);
+
+      const refreshedOrders = await this.ordersService.getOrders();
+      this.orders.set(refreshedOrders);
+
+      const updatedOrder = refreshedOrders.find(
+        (candidate) => candidate.supabaseOrderId === order.supabaseOrderId,
+      ) ?? null;
+
+      this.selectedOrder.set(updatedOrder);
+      if (updatedOrder) {
+        this.selectedOrderDelivery.set(updatedOrder.delivery);
+        this.selectedOrderPayment.set(updatedOrder.payment);
+      }
+
+      this.orderItemToRemove.set(null);
+      this.toast.updated(this.t('ORDERS.TOAST.ITEM_REMOVED_TITLE'));
+    } catch (error) {
+      this.toast.failed(
+        this.t('ORDERS.TOAST.ITEM_REMOVE_FAILED_TITLE'),
+        this.errorDetail(error, this.t('ORDERS.TOAST.ITEM_REMOVE_FAILED_DETAIL')),
+      );
+    } finally {
+      this.removingOrderItem.set(false);
+    }
   }
 
   async saveOrderStatus(): Promise<void> {

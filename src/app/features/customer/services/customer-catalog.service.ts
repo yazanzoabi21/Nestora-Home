@@ -542,6 +542,22 @@ export class CustomerCatalogService {
     }
   }
 
+  private async getPublishedReviewCountsSafely(
+    productIds: readonly string[],
+  ): Promise<ReadonlyMap<string, number>> {
+    try {
+      return await this.reviewsService.getPublishedReviewCountsByProduct(productIds);
+    } catch (error: unknown) {
+      if (isDevMode()) {
+        console.warn('[CustomerCatalog] Review counts unavailable; continuing product load.', {
+          productIds,
+          error,
+        });
+      }
+      return new Map();
+    }
+  }
+
   private toCustomerProduct(product: Product, useDefaultVariant = true): CustomerProduct {
     const defaultVariant = useDefaultVariant
       ? (product.product_variants ?? [])
@@ -596,24 +612,21 @@ export class CustomerCatalogService {
     };
   }
 
-  private mapCustomerProducts(products: Product[]): Promise<CustomerProduct[]> {
+  private async mapCustomerProducts(products: Product[]): Promise<CustomerProduct[]> {
     const cachedById = this.reuseCachedReviewStats
       ? new Map((this.memoryCache ?? []).map((product) => [product.id, product]))
       : new Map<string, CustomerProduct>();
-    return Promise.all(
-      products.map(async (product) => {
-        const mapped = this.toCustomerProduct(product);
-        const cached = cachedById.get(product.id);
-        if (cached) {
-          return { ...mapped, rating: cached.rating, reviewCount: cached.reviewCount };
-        }
-
-        return this.withPublishedReviewStats(
-          mapped,
-          await this.getPublishedReviewsSafely(product.id),
-        );
-      }),
+    const reviewCounts = await this.getPublishedReviewCountsSafely(
+      products.filter((product) => !cachedById.has(product.id)).map((product) => product.id),
     );
+
+    return products.map((product) => {
+      const mapped = this.toCustomerProduct(product);
+      return {
+        ...mapped,
+        reviewCount: cachedById.get(product.id)?.reviewCount ?? reviewCounts.get(product.id) ?? 0,
+      };
+    });
   }
 
   private collectRealtimeTargets(table: CatalogRealtimeTable, payload: unknown): void {

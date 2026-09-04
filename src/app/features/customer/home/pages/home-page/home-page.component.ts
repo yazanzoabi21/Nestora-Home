@@ -12,7 +12,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '../../../../../core/services';
 import { CustomerAuthService } from '../../../../../core/services/auth';
 import { TranslationService } from '../../../../../core/services/translation';
-import { Category, CustomerOffer, Promotion, Review } from '../../../../../data-access/models';
+import { Category, CustomerOffer, Promotion } from '../../../../../data-access/models';
 import {
   CategoriesService,
   CustomerOffersService,
@@ -29,7 +29,6 @@ import { CustomerProduct } from '../../../models';
 import {
   CustomerShoppingStateService,
   CustomerRecentlyViewedService,
-  CustomerReviewsService,
   CustomerCatalogService,
 } from '../../../services';
 import { CustomerFlashDeals } from '../components/customer-flash-deals/customer-flash-deals/customer-flash-deals';
@@ -64,7 +63,6 @@ export class HomePageComponent {
   private readonly productsService = inject(CustomerCatalogService);
   private readonly categoriesService = inject(CategoriesService);
   private readonly promotionsService = inject(PromotionsService);
-  private readonly reviewsService = inject(CustomerReviewsService);
   private readonly recentlyViewedService = inject(CustomerRecentlyViewedService);
   private readonly offersService = inject(CustomerOffersService);
   private readonly auth = inject(CustomerAuthService);
@@ -76,7 +74,6 @@ export class HomePageComponent {
   readonly products = signal<CustomerProduct[]>([]);
   readonly categories = signal<Category[]>([]);
   readonly promotions = signal<Promotion[]>([]);
-  readonly reviews = signal<Review[]>([]);
   readonly offers = signal<CustomerOffer[]>([]);
   readonly loading = signal(true);
   readonly loadError = signal(false);
@@ -132,6 +129,9 @@ export class HomePageComponent {
   // );
   readonly visibleOffers = computed(() =>
     this.offersService.getVisibleCustomerOffers(this.offers()),
+  );
+  readonly reviewCount = computed(() =>
+    this.products().reduce((count, product) => count + product.reviewCount, 0),
   );
 
   readonly loadingCards = [1, 2, 3, 4];
@@ -357,11 +357,10 @@ export class HomePageComponent {
     this.loading.set(true);
     this.loadError.set(false);
     try {
-      const [products, categories, promotions, reviews, offers] = await Promise.all([
+      const [products, categories, promotions, offers] = await Promise.all([
         this.productsService.getProducts(),
         this.categoriesService.getCategoriesWithProductCount(),
         this.promotionsService.getPromotions(),
-        this.reviewsService.getPublishedReviews(3),
         this.offersService.getActiveCustomerOffers(),
       ]);
       this.products.set(products);
@@ -376,7 +375,6 @@ export class HomePageComponent {
           .slice(0, 4),
       );
       this.promotions.set(promotions);
-      this.reviews.set(reviews);
       this.offers.set(offers);
     } catch {
       this.loadError.set(true);

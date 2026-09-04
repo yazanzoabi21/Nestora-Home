@@ -231,6 +231,19 @@ export class OrdersService {
     }
   }
 
+  async removeOrderItem(orderId: string, orderItemId: string): Promise<void> {
+    await this.ensureAdminSession();
+
+    const { error } = await this.supabase.rpc('remove_admin_order_item', {
+      p_order_id: orderId,
+      p_order_item_id: orderItemId,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
   getOrderStats(
     orders: AdminOrder[],
   ): OrderStats {
