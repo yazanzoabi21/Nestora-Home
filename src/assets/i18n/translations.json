@@ -2412,7 +2412,12 @@
             "REFUNDED": "Refunded",
             "PARTIALLY_REFUNDED": "Partially refunded"
           },
-          "DATE_UNAVAILABLE": "Date unavailable"
+          "DATE_UNAVAILABLE": "Date unavailable",
+          "DOWNLOAD_INVOICE": "Download Invoice",
+          "GENERATING_INVOICE": "Generating invoice…",
+          "INVOICE_ARIA": "Download invoice for order {{orderNumber}}",
+          "INVOICE_ERROR_TITLE": "Invoice download failed",
+          "INVOICE_ERROR_TEXT": "Unable to download your invoice. Please check that you are signed in and try again."
         },
         "EMAIL_NOT_PROVIDED": "Not provided",
         "SETTINGS": {
@@ -5313,7 +5318,12 @@
             "REFUNDED": "مسترد",
             "PARTIALLY_REFUNDED": "مسترد جزئياً"
           },
-          "DATE_UNAVAILABLE": "التاريخ غير متوفر"
+          "DATE_UNAVAILABLE": "التاريخ غير متوفر",
+          "DOWNLOAD_INVOICE": "تنزيل الفاتورة",
+          "GENERATING_INVOICE": "جارٍ إنشاء الفاتورة…",
+          "INVOICE_ARIA": "تنزيل فاتورة الطلب {{orderNumber}}",
+          "INVOICE_ERROR_TITLE": "تعذر تنزيل الفاتورة",
+          "INVOICE_ERROR_TEXT": "تعذر تنزيل فاتورتك. يرجى التأكد من تسجيل الدخول والمحاولة مرة أخرى."
         },
         "EMAIL_NOT_PROVIDED": "غير متوفر",
         "SETTINGS": {

@@ -9,12 +9,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminPaginationComponent, PaginationPageSize } from '../../../shared/ui/admin-pagination';
 import { CurrencyPipe } from '@angular/common';
 import { CustomerOrderCardComponent } from './customer-order-card/customer-order-card.component';
 import { CustomerOrder } from './customer-order.model';
 import { CustomerOrdersService } from './customer-orders.service';
+import { CustomerAuthService } from '../../../core/services/auth';
+import { ToastService } from '../../../core/services/toast.service';
+import { CustomerInvoicePdfService } from '../services/customer-invoice-pdf.service';
 
 @Component({
   selector: 'app-customer-orders',
@@ -35,6 +38,10 @@ import { CustomerOrdersService } from './customer-orders.service';
 })
 export class CustomerOrdersComponent implements OnInit {
   private readonly customerOrders = inject(CustomerOrdersService);
+  private readonly auth = inject(CustomerAuthService);
+  private readonly invoicePdf = inject(CustomerInvoicePdfService);
+  private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   private readonly ordersList = viewChild<ElementRef<HTMLElement>>('ordersList');
   
   readonly pageSize = signal<PaginationPageSize>(5);
@@ -44,6 +51,7 @@ export class CustomerOrdersComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly expandedOrderId = signal<string | null>(null);
   readonly currentPage = signal(1);
+  readonly generatingInvoiceIds = signal<ReadonlySet<string>>(new Set());
   readonly paginatedOrders = computed(() => {
     const items = this.orders();
     const size = this.pageSize();
@@ -90,6 +98,30 @@ export class CustomerOrdersComponent implements OnInit {
     this.expandedOrderId.update((currentOrderId) =>
       currentOrderId === orderId ? null : orderId,
     );
+  }
+
+  async downloadInvoice(orderId: string): Promise<void> {
+    if (this.generatingInvoiceIds().has(orderId)) return;
+    this.generatingInvoiceIds.update(ids => new Set([...ids, orderId]));
+    try {
+      const order = this.orders().find(item => item.id === orderId);
+      const customer = this.auth.customerProfile();
+      if (!order || !customer || !this.auth.isAuthenticated() || order.userId !== this.auth.user()?.id) {
+        throw new Error('The authenticated order is no longer available.');
+      }
+      await this.invoicePdf.download(order, customer);
+    } catch {
+      this.toast.error(
+        this.translate.instant('CUSTOMER.ACCOUNT.ORDERS.INVOICE_ERROR_TITLE'),
+        this.translate.instant('CUSTOMER.ACCOUNT.ORDERS.INVOICE_ERROR_TEXT'),
+      );
+    } finally {
+      this.generatingInvoiceIds.update(ids => {
+        const remaining = new Set(ids);
+        remaining.delete(orderId);
+        return remaining;
+      });
+    }
   }
 
   changePage(page: number): void {

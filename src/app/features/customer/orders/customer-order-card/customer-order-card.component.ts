@@ -62,6 +62,8 @@ export class CustomerOrderCardComponent {
 
   readonly order = input.required<CustomerOrder>();
   readonly expanded = input(false);
+  readonly generatingInvoice = input(false);
+  readonly invoiceRequested = output<void>();
   readonly toggleRequested = output<void>();
 
   readonly detailsId = computed(() => `customer-order-details-${this.order().id}`);
