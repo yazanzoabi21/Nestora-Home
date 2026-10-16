@@ -1,4 +1,5 @@
 import { AuthPersistenceStorage } from './supabase.tokens';
+import { vi } from 'vitest';
 
 describe('AuthPersistenceStorage', () => {
   const storageKey = 'test-auth-session';
@@ -6,6 +7,36 @@ describe('AuthPersistenceStorage', () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+  });
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('continues in memory when browser storage methods throw', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('Storage blocked', 'SecurityError');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage full', 'QuotaExceededError');
+    });
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new DOMException('Storage blocked', 'SecurityError');
+    });
+    const storage = new AuthPersistenceStorage(storageKey);
+    storage.setRememberSession(false);
+    storage.setItem(storageKey, 'memory-session');
+    expect(storage.getItem(storageKey)).toBe('memory-session');
+    storage.removeItem(storageKey);
+    expect(storage.getItem(storageKey)).toBeNull();
+  });
+
+  it('does not restore a stale session after browser removal fails', () => {
+    localStorage.setItem(storageKey, 'old-session');
+    const storage = new AuthPersistenceStorage(storageKey);
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new DOMException('Storage blocked', 'SecurityError');
+    });
+    storage.removeItem(storageKey);
+    expect(storage.getItem(storageKey)).toBeNull();
   });
 
   it('stores remembered Supabase sessions in local storage', () => {

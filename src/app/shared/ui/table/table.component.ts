@@ -1,7 +1,8 @@
-﻿import { Component } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'ui-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-ui-table',
   standalone: true,
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',

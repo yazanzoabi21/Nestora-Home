@@ -1,7 +1,8 @@
-﻿import { Component } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'ui-badge',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-ui-badge',
   standalone: true,
   templateUrl: './badge.component.html',
   styleUrl: './badge.component.scss',

@@ -82,19 +82,10 @@ export class ProductImageEmbeddingService {
       console.info('[VisualSearch] RPC started', { requestId });
     }
 
-    // const { data, error } = await this.customerSupabase.rpc(
-    //   'search_products_by_image',
-    //   {
-    //     query_embedding: `[${embedding.join(',')}]`,
-    //     match_count: 10,
-    //     minimum_similarity: 0,
-    //   },
-    // );
-
     const { data, error } = await this.customerSupabase.rpc('search_products_by_image', {
       query_embedding: `[${embedding.join(',')}]`,
-      match_count: Math.max(matchCount, 20),
-      minimum_similarity: -1,
+      match_count: matchCount,
+      minimum_similarity: minimumSimilarity,
     });
 
     if (error) {
@@ -106,7 +97,6 @@ export class ProductImageEmbeddingService {
       });
     }
 
-    // ADD IT HERE
     if (isDevMode()) {
       console.log('[VisualSearch] RAW RPC RESULTS', data);
     }
@@ -118,7 +108,6 @@ export class ProductImageEmbeddingService {
         ? [{ productId: row.product_id, similarity }]
         : [];
     });
-    console.log('[VisualSearch] RAW matches:', data);
     if (isDevMode()) {
       console.table(
         matches.map((match) => ({
@@ -128,7 +117,7 @@ export class ProductImageEmbeddingService {
       );
     }
 
-    return matches.slice(0, 10);
+    return matches.slice(0, matchCount);
   }
 
   async getCompatibleIndexCount(): Promise<number | null> {

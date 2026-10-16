@@ -9,6 +9,8 @@ import {
   untracked,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { distinctUntilChanged, map } from 'rxjs';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { CustomerAuthService } from '../../../core/services/auth';
@@ -74,6 +76,8 @@ export class ProductDetailsComponent {
   private touchStartY: number | null = null;
   private lastHandledRealtimeRevision = 0;
   private lastHandledVideoRealtimeRevision = 0;
+  private loadVersion = 0;
+  private breadcrumbVersion = 0;
 
   readonly product = signal<CustomerProductDetails | null>(null);
   readonly promotionBreadcrumb = signal<ProductPromotionBreadcrumb | null>(null);
@@ -304,8 +308,21 @@ export class ProductDetailsComponent {
         ));
       }
     });
-    void this.loadPromotionBreadcrumb();
-    void this.load();
+    this.route.paramMap.pipe(
+      map((params) => params.get('identifier')),
+      distinctUntilChanged(),
+      takeUntilDestroyed(),
+    ).subscribe(() => {
+      this.product.set(null);
+      this.activeTab.set('description');
+      this.imagePreloadCache.clear();
+      void this.load();
+    });
+    this.route.queryParamMap.pipe(
+      map((params) => params.get('promotion')),
+      distinctUntilChanged(),
+      takeUntilDestroyed(),
+    ).subscribe(() => void this.loadPromotionBreadcrumb());
   }
 
   selectMedia(index: number): void {
@@ -601,6 +618,7 @@ export class ProductDetailsComponent {
   }
 
   private async load(preserveState = false): Promise<void> {
+    const version = ++this.loadVersion;
     const identifier =
       this.route.snapshot.paramMap.get('identifier');
 
@@ -619,6 +637,7 @@ export class ProductDetailsComponent {
     try {
       const item =
         await this.catalog.getProductDetails(identifier);
+      if (version !== this.loadVersion) return;
 
       this.product.set(item);
       this.quantity.set(preserveState ? previousQuantity : 1);
@@ -646,20 +665,22 @@ export class ProductDetailsComponent {
         void this.recentlyViewed.recordView(item.id);
       }
 
-      // Load all gallery images in the background without
-      // delaying the initial product display.
+      // Limit background image downloads to the adjacent gallery items.
       this.preloadGalleryImages();
     } catch {
+      if (version !== this.loadVersion) return;
       if (!preserveState) {
         this.error.set(true);
         this.product.set(null);
       }
     } finally {
-      if (!preserveState) this.loading.set(false);
+      if (!preserveState && version === this.loadVersion) this.loading.set(false);
     }
   }
 
   private async loadPromotionBreadcrumb(): Promise<void> {
+    const version = ++this.breadcrumbVersion;
+    this.promotionBreadcrumb.set(null);
     const promotionSlug = this.route.snapshot.queryParamMap.get('promotion')?.trim();
 
     if (!promotionSlug) {
@@ -668,6 +689,7 @@ export class ProductDetailsComponent {
 
     try {
       const promotion = await this.promotions.getPromotionBySlug(promotionSlug);
+      if (version !== this.breadcrumbVersion) return;
 
       if (!promotion) {
         return;
@@ -678,7 +700,7 @@ export class ProductDetailsComponent {
         title: promotion.title,
       });
     } catch {
-      this.promotionBreadcrumb.set(null);
+      if (version === this.breadcrumbVersion) this.promotionBreadcrumb.set(null);
     }
   }
 

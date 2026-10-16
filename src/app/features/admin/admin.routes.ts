@@ -1,4 +1,5 @@
 ﻿import { Routes } from '@angular/router';
+import { provideHighcharts } from 'highcharts-angular';
 import { AdminLayoutComponent } from '../../core/layouts/admin-layout';
 import { authGuard } from '../../core/guards/auth.guard';
 
@@ -7,6 +8,8 @@ export const ADMIN_ROUTES: Routes = [
     path: '',
     component: AdminLayoutComponent,
     canActivate: [authGuard],
+    canActivateChild: [authGuard],
+    providers: [provideHighcharts()],
     children: [
       {
         path: '',

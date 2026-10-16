@@ -103,12 +103,12 @@ export class AdminGlobalSearchService {
     const searchResults = this.pages
       .filter((page) => page.searchable)
       .map((page) => ({
-        ...this.toSearchResult(page, query.trim()),
+        result: this.toSearchResult(page, query.trim()),
         score: this.score(page, normalizedQuery),
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 5)
-      .map(({ score: _score, ...result }) => result);
+      .map(({ result }) => result);
 
     return [...pageResults.slice(0, 4), ...actionResults.slice(0, 3), ...searchResults].slice(0, 10);
   }

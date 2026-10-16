@@ -39,7 +39,7 @@ export class FlashDealsPage {
 
     try {
       this.promotions.set(await this.promotionsService.getFlashDealPromotions());
-    } catch (error) {
+    } catch {
 
       this.promotions.set([]);
       this.loadError.set(true);

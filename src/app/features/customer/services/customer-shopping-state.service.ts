@@ -526,7 +526,7 @@ export class CustomerShoppingStateService {
     try {
       await this.wishlistRepository.add(userId, product.id, product.variantId);
       this.toast.wishlist(this.translate.instant('CUSTOMER.WISHLIST.SAVED'));
-    } catch (error) {
+    } catch {
       this.wishlistIds.update((ids) => {
         const next = new Set(ids);
         next.delete(product.id);
@@ -537,7 +537,7 @@ export class CustomerShoppingStateService {
         (id) => id !== product.id,
       );
       this.advanceWishlistRevision(userId, productsWereHydrated);
-      this.showWishlistError(error);
+      this.showWishlistError();
     } finally {
       this.setWishlistPending(product.id, false);
     }
@@ -563,12 +563,12 @@ export class CustomerShoppingStateService {
     try {
       await this.wishlistRepository.remove(userId, productId);
       this.toast.wishlist(this.translate.instant('CUSTOMER.WISHLIST.REMOVED'));
-    } catch (error) {
+    } catch {
       this.wishlistIds.update((ids) => new Set(ids).add(productId));
       this.wishlistProducts.set(previousProducts);
       this.wishlistProductIdsInOrder = previousProductIdsInOrder;
       this.advanceWishlistRevision(userId, productsWereHydrated);
-      this.showWishlistError(error);
+      this.showWishlistError();
     } finally {
       this.setWishlistPending(productId, false);
     }
@@ -754,7 +754,7 @@ export class CustomerShoppingStateService {
       this.wishlistError.set(
         error instanceof Error ? error.message : 'Unable to load your wishlist.',
       );
-      this.showWishlistError(error);
+      this.showWishlistError();
     } finally {
       if (sequence === this.wishlistLoadSequence) {
         this.wishlistLoading.set(false);
@@ -791,7 +791,7 @@ export class CustomerShoppingStateService {
       this.wishlistError.set(
         error instanceof Error ? error.message : 'Unable to load your wishlist.',
       );
-      this.showWishlistError(error);
+      this.showWishlistError();
     } finally {
       if (this.lastLoadedWishlistUserId === userId) {
         this.wishlistLoading.set(false);
@@ -832,7 +832,7 @@ export class CustomerShoppingStateService {
     });
   }
 
-  private showWishlistError(error: unknown): void {
+  private showWishlistError(): void {
 
     this.toast.failed(this.translate.instant('CUSTOMER.WISHLIST.UPDATE_FAILED'));
   }
@@ -852,7 +852,8 @@ export class CustomerShoppingStateService {
     return userId && userId === this.serverCartUserId ? this.serverCartId : null;
   }
   private persistGuest(): void {
-    if (!this.auth.isAuthenticated() && typeof window !== 'undefined')
+    if (this.auth.isAuthenticated() || typeof window === 'undefined') return;
+    try {
       window.localStorage.setItem(
         GUEST_CART_KEY,
         JSON.stringify(
@@ -866,6 +867,9 @@ export class CustomerShoppingStateService {
           })),
         ),
       );
+    } catch {
+      // Keep the in-memory cart usable when persistence is unavailable.
+    }
   }
   private readGuestItems(): GuestCartItem[] {
     if (typeof window === 'undefined') return [];
@@ -888,6 +892,10 @@ export class CustomerShoppingStateService {
     }
   }
   private clearGuestItems(): void {
-    if (typeof window !== 'undefined') window.localStorage.removeItem(GUEST_CART_KEY);
+    try {
+      if (typeof window !== 'undefined') window.localStorage.removeItem(GUEST_CART_KEY);
+    } catch {
+      // Storage failure must not interrupt checkout or sign-in.
+    }
   }
 }

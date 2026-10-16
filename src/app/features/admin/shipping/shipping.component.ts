@@ -1,3 +1,4 @@
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -129,6 +130,7 @@ const DEFAULT_METHOD_ZONE_FORM: MethodZoneForm = {
   selector: 'app-shipping',
   standalone: true,
   imports: [
+    CdkTrapFocus,
     AdminFormFieldComponent,
     AdminFormModalComponent,
     AdminPaginationComponent,

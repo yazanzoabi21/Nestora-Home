@@ -23,6 +23,10 @@ export class AdminAuthService {
   private readonly router = inject(Router);
 
   readonly currentUserProfile = signal<AuthenticatedUserProfile | null>(null);
+  private profileRequest: {
+    userId: string;
+    promise: Promise<AuthenticatedUserProfile | null>;
+  } | null = null;
 
   async login(
     request: LoginRequest,
@@ -90,7 +94,7 @@ export class AdminAuthService {
     }
 
     const profile = await this.getAuthenticatedProfile(userId);
-    if (!profile || !isAdminRole(profile.roles?.name)) {
+    if (!profile?.is_active || !isAdminRole(profile.roles?.name)) {
       this.currentUserProfile.set(null);
       return null;
     }
@@ -172,6 +176,17 @@ export class AdminAuthService {
   `;
 
   private async getAuthenticatedProfile(userId: string): Promise<AuthenticatedUserProfile | null> {
+    if (this.profileRequest?.userId === userId) return this.profileRequest.promise;
+    const promise = this.loadAuthenticatedProfile(userId);
+    this.profileRequest = { userId, promise };
+    try {
+      return await promise;
+    } finally {
+      if (this.profileRequest?.promise === promise) this.profileRequest = null;
+    }
+  }
+
+  private async loadAuthenticatedProfile(userId: string): Promise<AuthenticatedUserProfile | null> {
     const { data, error } = await this.supabase
       .from('profiles')
       .select(this.profileSelect)

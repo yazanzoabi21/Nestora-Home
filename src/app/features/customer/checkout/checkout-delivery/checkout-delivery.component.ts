@@ -34,6 +34,8 @@ export class CheckoutDeliveryComponent {
   readonly loading = input(false);
   readonly error = input<string | null>(null);
 
+  // Preserve the checkout selection event API for existing consumers.
+  // eslint-disable-next-line @angular-eslint/no-output-native
   readonly select = output<string>();
   readonly back = output<void>();
   readonly continue = output<void>();

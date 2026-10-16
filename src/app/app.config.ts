@@ -1,35 +1,31 @@
-import {
-  ApplicationConfig,
-  provideBrowserGlobalErrorListeners,
-  isDevMode,
-} from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideHighcharts } from 'highcharts-angular';
-import {
-  provideTranslateService,
-  TranslateLoader,
-} from '@ngx-translate/core';
+import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import type { TranslationObject } from '@ngx-translate/core';
 import { MessageService } from 'primeng/api';
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 
 import { routes } from './app.routes';
 
 type TranslationFile = Record<string, TranslationObject>;
 
 class SingleFileTranslateLoader implements TranslateLoader {
-  constructor(private readonly http: HttpClient) { }
+  private readonly translations: Observable<TranslationFile>;
+
+  constructor(http: HttpClient) {
+    this.translations = http
+      .get<TranslationFile>('./assets/i18n/translations.json')
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+  }
 
   getTranslation(lang: string): Observable<TranslationObject> {
-    return this.http
-      .get<TranslationFile>('./assets/i18n/translations.json')
-      .pipe(
-        map((translations) => {
-          return translations[lang] ?? translations['en'] ?? {};
-        })
-      );
+    return this.translations.pipe(
+      map((translations) => {
+        return translations[lang] ?? translations['en'] ?? {};
+      }),
+    );
   }
 }
 
@@ -41,8 +37,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
-    provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' })),
-    provideHighcharts(),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
+    ),
     MessageService,
 
     provideTranslateService({

@@ -70,7 +70,7 @@ export class CustomerContentPageComponent {
       const page = await this.contentService.getPageBySlug(this.slug);
       this.page.set(page);
       this.status.set(page ? 'ready' : 'not-found');
-    } catch (error) {
+    } catch {
 
       this.status.set('error');
     }

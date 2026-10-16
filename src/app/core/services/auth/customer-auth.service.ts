@@ -69,7 +69,10 @@ export class CustomerAuthService {
   private readonly destroyRef = inject(DestroyRef);
   readonly session = signal<Session | null>(null);
   readonly user = computed<User | null>(() => this.session()?.user ?? null);
-  readonly isAuthenticated = computed(() => !!this.user() && this.currentCustomerProfile()?.roles?.name === 'customer');
+  readonly isAuthenticated = computed(() =>
+    !!this.user() && this.currentCustomerProfile()?.is_active === true &&
+    this.currentCustomerProfile()?.roles?.name === 'customer',
+  );
   readonly isLoading = signal(true);
   readonly currentCustomerProfile = signal<AuthenticatedUserProfile | null>(null);
   readonly customerProfile = this.currentCustomerProfile;
@@ -101,7 +104,9 @@ export class CustomerAuthService {
       });
     });
     this.destroyRef.onDestroy(() => data.subscription.unsubscribe());
-    void this.initialize();
+    void this.initialize().catch(() => {
+      // Callers awaiting initialize() handle session restoration failures.
+    });
   }
 
   initialize(): Promise<void> {
@@ -473,18 +478,30 @@ export class CustomerAuthService {
   private storeOAuthReturnUrl(returnUrl?: string | null): void {
     const storage = this.sessionStorage();
     if (!storage) return;
-    storage.setItem(
-      CUSTOMER_OAUTH_RETURN_URL_KEY,
-      this.isSafeCustomerReturnUrl(returnUrl) ? returnUrl : '/shop',
-    );
+    try {
+      storage.setItem(
+        CUSTOMER_OAUTH_RETURN_URL_KEY,
+        this.isSafeCustomerReturnUrl(returnUrl) ? returnUrl : '/shop',
+      );
+    } catch {
+      // OAuth can still return to the shop when browser persistence is unavailable.
+    }
   }
 
   private readOAuthReturnUrl(): string | null {
-    return this.sessionStorage()?.getItem(CUSTOMER_OAUTH_RETURN_URL_KEY) ?? null;
+    try {
+      return this.sessionStorage()?.getItem(CUSTOMER_OAUTH_RETURN_URL_KEY) ?? null;
+    } catch {
+      return null;
+    }
   }
 
   private clearOAuthReturnUrl(): void {
-    this.sessionStorage()?.removeItem(CUSTOMER_OAUTH_RETURN_URL_KEY);
+    try {
+      this.sessionStorage()?.removeItem(CUSTOMER_OAUTH_RETURN_URL_KEY);
+    } catch {
+      // A blocked storage operation must not interrupt the authentication callback.
+    }
   }
 
   private sessionStorage(): Storage | null {

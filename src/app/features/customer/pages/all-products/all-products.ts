@@ -137,7 +137,13 @@ export class AllProducts extends ProductBrowserPage {
     });
   }
 
+  retryLoad(): Promise<void> {
+    return this.load();
+  }
+
   private async load(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
     try {
       this.replaceProducts(await this.catalog.getProducts());
       this.applyRouteCategory();

@@ -43,6 +43,8 @@ export class CheckoutPaymentComponent {
   readonly submitting = input(false);
   readonly canPlaceOrder = input(false);
 
+  // Preserve the checkout selection event API for existing consumers.
+  // eslint-disable-next-line @angular-eslint/no-output-native
   readonly select = output<string>();
   readonly back = output<void>();
   readonly placeOrder = output<void>();

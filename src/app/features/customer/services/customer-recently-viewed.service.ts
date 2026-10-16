@@ -36,8 +36,8 @@ export class CustomerRecentlyViewedService {
       const userId = this.auth.session()?.user.id ?? null;
 
       if (!authLoading && userId) {
-        void this.mergeGuestHistory().catch((error: unknown) => {
-
+        void this.mergeGuestHistory().catch(() => {
+          // Guest history remains available for a later merge attempt.
         });
       }
     });
@@ -54,9 +54,9 @@ export class CustomerRecentlyViewedService {
 
         try {
           await this.mergeGuestHistory();
-        } catch (error) {
-
-        }
+        } catch {
+      // A failed history merge must not prevent reading or recording current views.
+    }
         await this.recordAuthenticatedView(normalizedProductId);
       } else {
         this.writeGuestIds([
@@ -99,8 +99,8 @@ export class CustomerRecentlyViewedService {
 
     try {
       await this.mergeGuestHistory();
-    } catch (error) {
-
+    } catch {
+      // A failed history merge must not prevent reading or recording current views.
     }
 
     const { data, error } = await this.supabase

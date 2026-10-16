@@ -1,7 +1,8 @@
-﻿import { Component } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'ui-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-ui-button',
   standalone: true,
   templateUrl: './button.component.html',
   styleUrl: './button.component.scss',

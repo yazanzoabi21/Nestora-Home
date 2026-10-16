@@ -29,7 +29,11 @@ export class TranslationService {
     this.updateDocument(language);
 
     if (this.isBrowser()) {
-      localStorage.setItem(STORAGE_KEY, language);
+      try {
+        localStorage.setItem(STORAGE_KEY, language);
+      } catch {
+        // Language switching remains available when browser storage is blocked or full.
+      }
     }
   }
 
@@ -42,8 +46,12 @@ export class TranslationService {
       return DEFAULT_LANGUAGE;
     }
 
-    const savedLanguage = localStorage.getItem(STORAGE_KEY);
-    return savedLanguage === 'ar' ? 'ar' : DEFAULT_LANGUAGE;
+    try {
+      const savedLanguage = localStorage.getItem(STORAGE_KEY);
+      return savedLanguage === 'ar' ? 'ar' : DEFAULT_LANGUAGE;
+    } catch {
+      return DEFAULT_LANGUAGE;
+    }
   }
 
   private updateDocument(language: SupportedLanguage): void {

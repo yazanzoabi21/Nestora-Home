@@ -1,4 +1,5 @@
-import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { AppRoleName, AuthenticatedUserProfile, CurrentUserProfileUpdate } from '../../../core/models/auth';
 import { ToastService } from '../../../core/services';
 import { AdminAuthService } from '../../../core/services/auth';
@@ -78,9 +79,10 @@ const AVATAR_UPLOAD_QUALITY = 0.82;
 const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-profile',
   standalone: true,
-  imports: [AdminFormModalComponent, MediaPickerModalComponent],
+  imports: [AdminFormModalComponent, MediaPickerModalComponent, CdkTrapFocus],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })

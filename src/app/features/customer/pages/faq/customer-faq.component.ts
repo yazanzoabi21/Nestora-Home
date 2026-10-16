@@ -91,7 +91,7 @@ export class CustomerFaqComponent {
     try {
       this.faqs.set(await this.contentService.getFaqs());
       this.status.set('ready');
-    } catch (error) {
+    } catch {
 
       this.status.set('error');
     }

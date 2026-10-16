@@ -57,7 +57,7 @@ export class AdminNotificationsService {
 
       this.notifications.set(notifications);
       this.loaded = true;
-    } catch (error) {
+    } catch {
 
       this.error.set('Unable to load notifications.');
     } finally {
@@ -122,7 +122,7 @@ export class AdminNotificationsService {
       return null;
     }
 
-    const data = this.readRecord(record['data']);
+
     const rawMessage = this.firstString(
       record['body'],
       record['message'],

@@ -1,7 +1,8 @@
-﻿import { Component } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'ui-modal',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-ui-modal',
   standalone: true,
   templateUrl: './modal.component.html',
   styleUrl: './modal.component.scss',

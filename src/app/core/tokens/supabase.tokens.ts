@@ -6,15 +6,15 @@ import { environment } from '../../../environments/environment';
 const SESSION_PERSISTENCE_SUFFIX = '.session-only';
 
 export class AuthPersistenceStorage {
-  private readonly memoryStorage = new Map<string, string>();
+  private readonly memoryStorage = new Map<string, string | null>();
   private rememberSession: boolean;
 
   constructor(private readonly authStorageKey: string) {
     const sessionStorage = this.browserStorage('sessionStorage');
     const localStorage = this.browserStorage('localStorage');
-    const sessionOnly = sessionStorage?.getItem(this.persistenceKey) === 'true';
-    const hasSessionOnlyAuth = sessionStorage?.getItem(this.authStorageKey) !== null;
-    const hasPersistentAuth = localStorage?.getItem(this.authStorageKey) !== null;
+    const sessionOnly = this.readStorage(sessionStorage, this.persistenceKey) === 'true';
+    const hasSessionOnlyAuth = this.readStorage(sessionStorage, this.authStorageKey) !== null;
+    const hasPersistentAuth = this.readStorage(localStorage, this.authStorageKey) !== null;
 
     this.rememberSession = !sessionOnly && (hasPersistentAuth || !hasSessionOnlyAuth);
   }
@@ -23,24 +23,22 @@ export class AuthPersistenceStorage {
     this.rememberSession = rememberSession;
     const sessionStorage = this.browserStorage('sessionStorage');
 
-    if (rememberSession) {
-      sessionStorage?.removeItem(this.persistenceKey);
-    } else {
-      sessionStorage?.setItem(this.persistenceKey, 'true');
-    }
+    this.writeStorage(sessionStorage, this.persistenceKey, rememberSession ? null : 'true');
   }
 
   getItem(key: string): string | null {
-    return this.activeStorage()?.getItem(key) ?? this.memoryStorage.get(key) ?? null;
+    return this.memoryStorage.has(key)
+      ? this.memoryStorage.get(key) ?? null
+      : this.readStorage(this.activeStorage(), key);
   }
 
   setItem(key: string, value: string): void {
     const activeStorage = this.activeStorage();
     const inactiveStorage = this.inactiveStorage();
 
-    activeStorage?.setItem(key, value);
-    inactiveStorage?.removeItem(key);
-    if (activeStorage) {
+    const persisted = this.writeStorage(activeStorage, key, value);
+    this.writeStorage(inactiveStorage, key, null);
+    if (persisted) {
       this.memoryStorage.delete(key);
     } else {
       this.memoryStorage.set(key, value);
@@ -48,9 +46,10 @@ export class AuthPersistenceStorage {
   }
 
   removeItem(key: string): void {
-    this.browserStorage('localStorage')?.removeItem(key);
-    this.browserStorage('sessionStorage')?.removeItem(key);
-    this.memoryStorage.delete(key);
+    this.writeStorage(this.browserStorage('localStorage'), key, null);
+    this.writeStorage(this.browserStorage('sessionStorage'), key, null);
+    // Prevent a failed browser-storage removal from restoring a signed-out session.
+    this.memoryStorage.set(key, null);
   }
 
   private get persistenceKey(): string {
@@ -70,6 +69,25 @@ export class AuthPersistenceStorage {
       return typeof window === 'undefined' ? null : window[type];
     } catch {
       return null;
+    }
+  }
+
+  private readStorage(storage: Storage | null, key: string): string | null {
+    try {
+      return storage?.getItem(key) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  private writeStorage(storage: Storage | null, key: string, value: string | null): boolean {
+    if (!storage) return false;
+    try {
+      if (value === null) storage.removeItem(key);
+      else storage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
     }
   }
 }

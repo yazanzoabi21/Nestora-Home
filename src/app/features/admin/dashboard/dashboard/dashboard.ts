@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, signal, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, signal, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import type { LegendOptions, Options, XAxisOptions, YAxisOptions } from 'highcharts';
@@ -11,37 +11,9 @@ import { KpiCardComponent, KpiCardData } from '../../../../shared/ui/kpi-card';
 import { DashboardService, DashboardStatisticsRow } from '../../../../data-access/services/dashboard.service';
 import { ADMIN_SUPABASE } from '../../../../core/tokens';
 
-type DashboardTrendType = 'up' | 'down';
-type DashboardTone = 'positive' | 'negative';
-
-interface PerformanceMetric {
-  label: string;
-  labelKey: string;
-  value: string;
-  change: string;
-  tone: DashboardTone;
-}
-
-interface RecentOrder {
-  id: string;
-  customer: string;
-  email: string;
-  date: string;
-  total: string;
-  payment: string;
-  delivery: string;
-}
-
-interface BestSellingProduct {
-  rank: number;
-  name: string;
-  trend: string;
-  trendType: DashboardTrendType;
-  sold: string;
-  progress: number;
-}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard',
   standalone: true,
   imports: [
@@ -547,7 +519,7 @@ export class Dashboard implements OnInit {
       }
 
       this.dashboardData.set(data);
-    } catch (error) {
+    } catch {
       if (requestId !== this.dashboardRequestId) {
         return;
       }

@@ -162,7 +162,12 @@
           <h2 class="text-xl font-black text-[#1f2a1f]">
             {{ 'CUSTOMER.PRODUCTS.LOAD_ERROR' | translate }}
           </h2>
-          <p class="mt-2 text-sm text-[#77736d]">{{ error() }}</p>
+          <p class="mt-2 text-sm text-[#77736d]">{{ 'CUSTOMER.PRODUCTS.LOAD_ERROR_DETAIL' | translate }}</p>
+          <button type="button"
+            class="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-[#6b7d5e] px-6 text-sm font-bold text-white hover:bg-[#596b4e]"
+            (click)="retryLoad()">
+            {{ 'CUSTOMER.PRODUCTS.RETRY' | translate }}
+          </button>
         </div>
         } @else if (visibleProducts().length) {
         <div [class]="

@@ -21,6 +21,7 @@ interface CachedSearchResults {
 export class CustomerSearchService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
   private readonly cache = new Map<string, CachedSearchResults>();
+  private readonly pendingRequests = new Map<string, Promise<readonly CustomerSearchResult[]>>();
 
   async search(query: string, language: SupportedLanguage): Promise<readonly CustomerSearchResult[]> {
     const normalizedQuery = this.normalizeQuery(query);
@@ -30,6 +31,23 @@ export class CustomerSearchService {
     const cached = this.cache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) return cached.results;
     if (cached) this.cache.delete(cacheKey);
+
+    const pending = this.pendingRequests.get(cacheKey);
+    if (pending) return pending;
+    const request = this.loadResults(cacheKey, normalizedQuery, language);
+    this.pendingRequests.set(cacheKey, request);
+    try {
+      return await request;
+    } finally {
+      this.pendingRequests.delete(cacheKey);
+    }
+  }
+
+  private async loadResults(
+    cacheKey: string,
+    normalizedQuery: string,
+    language: SupportedLanguage,
+  ): Promise<readonly CustomerSearchResult[]> {
 
     const { data, error } = await this.supabase.rpc('search_customer_site', {
       p_query: normalizedQuery,

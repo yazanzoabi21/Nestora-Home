@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -8,6 +8,7 @@ import { AnalyticsChart } from '../../../shared/ui/analytics-chart';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-analytics',
   standalone: true,
   imports: [FormsModule, KpiCardComponent, AnalyticsChart, TranslatePipe],
@@ -62,7 +63,7 @@ export class AnalyticsComponent implements OnInit {
 
       const data = await this.analyticsService.refreshAnalyticsByPeriod(this.selectedPeriod());
       this.analytics.set(data);
-    } catch (error) {
+    } catch {
 
       this.analytics.set(null);
       this.error.set(this.t('ANALYTICS.TOAST.LOAD_FAILED_DETAIL'));

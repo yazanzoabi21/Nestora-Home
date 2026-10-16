@@ -1,7 +1,8 @@
-﻿import { Component } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'ui-chart-card',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-ui-chart-card',
   standalone: true,
   templateUrl: './chart-card.component.html',
   styleUrl: './chart-card.component.scss',

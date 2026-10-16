@@ -107,7 +107,7 @@ export class CustomerContactComponent {
       this.form.reset();
       this.submitted = false;
       this.feedback.set('success');
-    } catch (error) {
+    } catch {
 
       this.feedback.set('error');
     } finally {

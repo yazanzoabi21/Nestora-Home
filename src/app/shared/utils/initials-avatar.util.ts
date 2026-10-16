@@ -4,7 +4,7 @@ export interface InitialsAvatar {
   textColor: string;
 }
 
-const AVATAR_PALETTE: Array<Pick<InitialsAvatar, 'backgroundColor' | 'textColor'>> = [
+const AVATAR_PALETTE: Pick<InitialsAvatar, 'backgroundColor' | 'textColor'>[] = [
   { backgroundColor: '#eef4e8', textColor: '#4f6338' },
   { backgroundColor: '#edf4ff', textColor: '#315f9f' },
   { backgroundColor: '#fff6e7', textColor: '#98610d' },

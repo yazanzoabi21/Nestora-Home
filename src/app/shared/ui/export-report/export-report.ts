@@ -1,15 +1,17 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
   Input,
+  inject,
   ViewChild,
   signal,
 } from '@angular/core';
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+import type { jsPDF } from 'jspdf';
+
+import { ToastService } from '../../../core/services/toast.service';
 
 export type ExportCell = string | number;
 
@@ -27,14 +29,15 @@ export interface ExportReportConfig {
   reportTitle: string;
   reportSubtitle?: string;
   orientation?: 'portrait' | 'landscape';
-  summaryItems?: Array<{
+  summaryItems?: {
     label: string;
     value: string | number;
-  }>;
+  }[];
   sections: ExportReportSection[];
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-export-report',
   standalone: true,
   templateUrl: './export-report.html',
@@ -46,7 +49,9 @@ export class ExportReportComponent {
   @Input() buttonLabel = 'Export Report';
   @Input() buttonIcon = 'pi pi-download';
 
+  private readonly toast = inject(ToastService);
   readonly isOpen = signal(false);
+  readonly exporting = signal(false);
 
   @ViewChild('exportWrapper') exportWrapper?: ElementRef<HTMLElement>;
 
@@ -58,170 +63,180 @@ export class ExportReportComponent {
     this.isOpen.set(false);
   }
 
-  exportPdf(): void {
-    if (!this.config) {
+  async exportPdf(): Promise<void> {
+    if (!this.config || this.exporting()) {
       return;
     }
 
-    const generatedAt = new Date();
-    const doc = new jsPDF({
-      orientation: this.config.orientation ?? 'portrait',
-      unit: 'mm',
-      format: 'a4',
-    });
-
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const marginX = 10;
-    const brandGreen: [number, number, number] = [95, 111, 67];
-    const ink: [number, number, number] = [31, 42, 31];
-    const muted: [number, number, number] = [120, 120, 120];
-
-    doc.setFillColor(251, 250, 248);
-    doc.rect(0, 0, pageWidth, 36, 'F');
-    doc.setDrawColor(229, 222, 210);
-    doc.line(marginX, 36, pageWidth - marginX, 36);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(...ink);
-    doc.text(this.config.reportTitle, marginX, 15);
-
-    if (this.config.reportSubtitle) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(...muted);
-      doc.text(this.config.reportSubtitle, marginX, 22);
-    }
-
-    doc.setFontSize(9);
-    doc.setTextColor(...muted);
-    doc.text(
-      `Generated ${this.formatDateTime(generatedAt)}`,
-      pageWidth - marginX,
-      15,
-      { align: 'right' }
-    );
-
-    let startY = 44;
-
-    if (this.config.summaryItems?.length) {
-      const summaryWidth = (pageWidth - marginX * 2) / this.config.summaryItems.length;
-
-      this.config.summaryItems.forEach((item, index) => {
-        const x = marginX + index * summaryWidth;
-
-        doc.setFillColor(255, 253, 250);
-        doc.setDrawColor(229, 222, 210);
-        doc.roundedRect(x, startY, summaryWidth - 3, 16, 3, 3, 'FD');
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(...muted);
-        doc.text(item.label.toUpperCase(), x + 4, startY + 6);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.setTextColor(...ink);
-        doc.text(String(item.value), x + 4, startY + 12);
+    this.exporting.set(true);
+    try {
+      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+      ]);
+      const generatedAt = new Date();
+      const doc = new jsPDF({
+        orientation: this.config.orientation ?? 'portrait',
+        unit: 'mm',
+        format: 'a4',
       });
 
-      startY += 24;
-    }
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const marginX = 10;
+      const brandGreen: [number, number, number] = [95, 111, 67];
+      const ink: [number, number, number] = [31, 42, 31];
+      const muted: [number, number, number] = [120, 120, 120];
 
-    this.config.sections.forEach((section) => {
-      const pdfSection = this.createPdfSection(section);
-
-      if (pdfSection.headers.length === 0) {
-        return;
-      }
-
-      if (startY > pageHeight - 42) {
-        doc.addPage();
-        startY = 18;
-      }
+      doc.setFillColor(251, 250, 248);
+      doc.rect(0, 0, pageWidth, 36, 'F');
+      doc.setDrawColor(229, 222, 210);
+      doc.line(marginX, 36, pageWidth - marginX, 36);
 
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(13);
+      doc.setFontSize(18);
       doc.setTextColor(...ink);
-      doc.text(section.title, marginX, startY);
+      doc.text(this.config.reportTitle, marginX, 15);
 
-      autoTable(doc, {
-        startY: startY + 5,
-        head: [pdfSection.headers],
-        body: pdfSection.rows,
-        theme: 'grid',
-        tableWidth: 'auto',
-        styles: {
-          font: 'helvetica',
-          fontSize: 8,
-          cellPadding: 2.2,
-          overflow: 'ellipsize',
-          minCellHeight: 7,
-          valign: 'middle',
-          lineColor: [229, 222, 210],
-          lineWidth: 0.1,
-          textColor: ink,
-        },
-        headStyles: {
-          fillColor: brandGreen,
-          textColor: [255, 255, 255],
-          fontStyle: 'bold',
-          halign: 'left',
-          minCellHeight: 8,
-        },
-        alternateRowStyles: {
-          fillColor: [251, 250, 248],
-        },
-        margin: {
-          left: marginX,
-          right: marginX,
-        },
-        columnStyles: this.createColumnStyles(pdfSection.headers, section.columnWidths),
-        didDrawPage: () => {
-          this.drawFooter(doc, generatedAt);
-        },
+      if (this.config.reportSubtitle) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(...muted);
+        doc.text(this.config.reportSubtitle, marginX, 22);
+      }
+
+      doc.setFontSize(9);
+      doc.setTextColor(...muted);
+      doc.text(`Generated ${this.formatDateTime(generatedAt)}`, pageWidth - marginX, 15, {
+        align: 'right',
       });
 
-      startY = (doc as jsPDF & { lastAutoTable?: { finalY: number } })
-        .lastAutoTable?.finalY
-        ? (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable!
-            .finalY + 14
-        : startY + 40;
+      let startY = 44;
 
-      if (startY > pageHeight - 28) {
-        doc.addPage();
-        startY = 18;
+      if (this.config.summaryItems?.length) {
+        const summaryWidth = (pageWidth - marginX * 2) / this.config.summaryItems.length;
+
+        this.config.summaryItems.forEach((item, index) => {
+          const x = marginX + index * summaryWidth;
+
+          doc.setFillColor(255, 253, 250);
+          doc.setDrawColor(229, 222, 210);
+          doc.roundedRect(x, startY, summaryWidth - 3, 16, 3, 3, 'FD');
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(...muted);
+          doc.text(item.label.toUpperCase(), x + 4, startY + 6);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.setTextColor(...ink);
+          doc.text(String(item.value), x + 4, startY + 12);
+        });
+
+        startY += 24;
       }
-    });
 
-    this.addPageNumbers(doc, generatedAt);
-    doc.save(`${this.config.fileName}.pdf`);
-    this.closeMenu();
+      this.config.sections.forEach((section) => {
+        const pdfSection = this.createPdfSection(section);
+
+        if (pdfSection.headers.length === 0) {
+          return;
+        }
+
+        if (startY > pageHeight - 42) {
+          doc.addPage();
+          startY = 18;
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(...ink);
+        doc.text(section.title, marginX, startY);
+
+        autoTable(doc, {
+          startY: startY + 5,
+          head: [pdfSection.headers],
+          body: pdfSection.rows,
+          theme: 'grid',
+          tableWidth: 'auto',
+          styles: {
+            font: 'helvetica',
+            fontSize: 8,
+            cellPadding: 2.2,
+            overflow: 'ellipsize',
+            minCellHeight: 7,
+            valign: 'middle',
+            lineColor: [229, 222, 210],
+            lineWidth: 0.1,
+            textColor: ink,
+          },
+          headStyles: {
+            fillColor: brandGreen,
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            halign: 'left',
+            minCellHeight: 8,
+          },
+          alternateRowStyles: {
+            fillColor: [251, 250, 248],
+          },
+          margin: {
+            left: marginX,
+            right: marginX,
+          },
+          columnStyles: this.createColumnStyles(pdfSection.headers, section.columnWidths),
+          didDrawPage: () => {
+            this.drawFooter(doc, generatedAt);
+          },
+        });
+
+        startY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY
+          ? (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable!.finalY + 14
+          : startY + 40;
+
+        if (startY > pageHeight - 28) {
+          doc.addPage();
+          startY = 18;
+        }
+      });
+
+      this.addPageNumbers(doc, generatedAt);
+      doc.save(`${this.config.fileName}.pdf`);
+      this.closeMenu();
+    } catch {
+      this.toast.failed('Export report');
+    } finally {
+      this.exporting.set(false);
+    }
   }
 
-  exportExcel(): void {
-    if (!this.config) {
+  async exportExcel(): Promise<void> {
+    if (!this.config || this.exporting()) {
       return;
     }
 
-    const workbook = XLSX.utils.book_new();
+    this.exporting.set(true);
+    try {
+      const XLSX = await import('xlsx');
+      const workbook = XLSX.utils.book_new();
 
-    this.config.sections.forEach((section) => {
-      const sheetData = [section.headers, ...section.rows];
-      const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+      this.config.sections.forEach((section) => {
+        const sheetData = [section.headers, ...section.rows];
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
 
-      worksheet['!cols'] = section.headers.map(() => ({
-        wch: 22,
-      }));
+        worksheet['!cols'] = section.headers.map(() => ({
+          wch: 22,
+        }));
 
-      XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        this.sanitizeSheetName(section.title)
-      );
-    });
+        XLSX.utils.book_append_sheet(workbook, worksheet, this.sanitizeSheetName(section.title));
+      });
 
-    XLSX.writeFile(workbook, `${this.config.fileName}.xlsx`);
-    this.closeMenu();
+      XLSX.writeFile(workbook, `${this.config.fileName}.xlsx`);
+      this.closeMenu();
+    } catch {
+      this.toast.failed('Export report');
+    } finally {
+      this.exporting.set(false);
+    }
   }
 
   private sanitizeSheetName(name: string): string {
@@ -245,28 +260,27 @@ export class ExportReportComponent {
           return truncateColumns.has(header)
             ? this.truncateCell(value, 42)
             : this.normalizePdfCell(value);
-        })
+        }),
       ),
     };
   }
 
   private createColumnStyles(
     headers: string[],
-    columnWidths: Record<string, number> | undefined
+    columnWidths: Record<string, number> | undefined,
   ): Record<number, { cellWidth: number; halign?: 'left' | 'center' | 'right' }> {
-    return headers.reduce<Record<number, { cellWidth: number; halign?: 'left' | 'center' | 'right' }>>(
-      (styles, header, index) => {
-        if (columnWidths?.[header]) {
-          styles[index] = {
-            cellWidth: columnWidths[header],
-            halign: this.numericColumn(header) ? 'right' : 'left',
-          };
-        }
+    return headers.reduce<
+      Record<number, { cellWidth: number; halign?: 'left' | 'center' | 'right' }>
+    >((styles, header, index) => {
+      if (columnWidths?.[header]) {
+        styles[index] = {
+          cellWidth: columnWidths[header],
+          halign: this.numericColumn(header) ? 'right' : 'left',
+        };
+      }
 
-        return styles;
-      },
-      {}
-    );
+      return styles;
+    }, {});
   }
 
   private normalizePdfCell(value: ExportCell): string | number {
@@ -308,7 +322,7 @@ export class ExportReportComponent {
     doc: jsPDF,
     generatedAt: Date,
     pageNumber = doc.getCurrentPageInfo().pageNumber,
-    pageCount = doc.getNumberOfPages()
+    pageCount = doc.getNumberOfPages(),
   ): void {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();

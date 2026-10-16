@@ -476,7 +476,7 @@ export class PromotionsAdsComponent implements OnInit {
       const products = await this.promotionsService.getSelectableProducts();
 
       this.availableProducts.set(products);
-    } catch (error) {
+    } catch {
 
 
       this.availableProducts.set([]);
@@ -501,7 +501,7 @@ export class PromotionsAdsComponent implements OnInit {
       if (this.selectedPromotion()?.id === promotionId && this.isPromotionModalOpen()) {
         this.selectedProductIds.set(productIds);
       }
-    } catch (error) {
+    } catch {
 
 
       if (this.selectedPromotion()?.id === promotionId && this.isPromotionModalOpen()) {

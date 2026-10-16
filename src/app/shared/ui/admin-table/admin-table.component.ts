@@ -6,6 +6,7 @@ import {
   Directive,
   EventEmitter,
   Input,
+  inject,
   OnChanges,
   Output,
   QueryList,
@@ -117,13 +118,15 @@ export interface AdminTableCellTemplateContext {
 }
 
 @Directive({
+  // Preserve the existing template API used throughout admin pages.
+  // eslint-disable-next-line @angular-eslint/directive-selector
   selector: 'ng-template[adminTableCell]',
   standalone: true,
 })
 export class AdminTableCellTemplateDirective {
   @Input('adminTableCell') columnKey = '';
 
-  constructor(readonly templateRef: TemplateRef<AdminTableCellTemplateContext>) {}
+  readonly templateRef = inject<TemplateRef<AdminTableCellTemplateContext>>(TemplateRef);
 }
 
 @Component({

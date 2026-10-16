@@ -29,6 +29,13 @@ const PROFILE: AuthenticatedUserProfile = {
 };
 
 describe('CustomerAuthService profile synchronization', () => {
+  it('denies access when a restored customer profile is inactive', async () => {
+    const { service } = configureAuthService();
+    await service.initialize();
+    service.currentCustomerProfile.set({ ...PROFILE, is_active: false });
+    expect(service.isAuthenticated()).toBe(false);
+    await expect(service.getCurrentUserId()).resolves.toBeNull();
+  });
   afterEach(() => {
     TestBed.resetTestingModule();
     vi.restoreAllMocks();

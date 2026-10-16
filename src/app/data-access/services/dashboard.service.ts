@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from '../../core/services';
-import { AnalyticsChartConfig } from '../../shared/ui/analytics-chart';
 import { KpiCardData } from '../../shared/ui/kpi-card';
 
 export type DashboardTrendType = 'up' | 'down';

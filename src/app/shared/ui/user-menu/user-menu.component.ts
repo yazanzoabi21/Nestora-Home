@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, Input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, Input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminAuthService } from '../../../core/services/auth';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -20,6 +20,7 @@ const USER_MENU_FALLBACK: UserMenuUser = {
 const DEFAULT_AVATAR_URL = 'assets/images/default-avatar.svg';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-user-menu',
   standalone: true,
   imports: [RouterLink, TranslatePipe],
@@ -33,7 +34,7 @@ export class UserMenuComponent {
 
   readonly isOpen = signal(false);
 
-  constructor(private readonly elementRef: ElementRef<HTMLElement>) { }
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   avatarSrc(): string {
     return this.user.avatarUrl || DEFAULT_AVATAR_URL;

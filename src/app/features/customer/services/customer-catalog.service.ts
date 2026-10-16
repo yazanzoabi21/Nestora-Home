@@ -200,13 +200,16 @@ export class CustomerCatalogService {
 
   async getProductDetails(identifier: string): Promise<CustomerProductDetails | null> {
     const product =
-      (await this.getProductBySlug(identifier)) ?? (await this.getProductById(identifier));
+      (await this.getProductBySlug(identifier)) ??
+      (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier)
+        ? await this.getProductById(identifier)
+        : null);
     if (!product || product.is_active === false) {
       return null;
     }
     const [reviews, videos] = await Promise.all([
       this.getPublishedReviewsSafely(product.id),
-      this.productVideosService.getVideosForProduct(product.id),
+      this.productVideosService.getVideosForProduct(product.id).catch(() => []),
     ]);
     const mapped = this.withPublishedReviewStats(this.toCustomerProduct(product, false), reviews);
     return {

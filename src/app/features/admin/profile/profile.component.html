@@ -171,8 +171,10 @@
 
   @if (isAvatarPreviewOpen()) {
     <div class="avatar-lightbox" role="dialog" aria-modal="true" [attr.aria-label]="profileSummary().name + ' avatar preview'"
-      (click)="closeAvatarPreview()">
-      <div class="avatar-lightbox-panel" (click)="$event.stopPropagation()">
+      tabindex="-1" cdkTrapFocus [cdkTrapFocusAutoCapture]="true"
+      (click)="$event.target === $event.currentTarget ? closeAvatarPreview() : null"
+      (keydown.escape)="closeAvatarPreview()">
+      <div class="avatar-lightbox-panel">
         <button type="button" class="avatar-lightbox-close" aria-label="Close avatar preview"
           (click)="closeAvatarPreview()">
           <i class="pi pi-times"></i>

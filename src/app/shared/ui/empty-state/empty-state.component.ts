@@ -1,7 +1,8 @@
-﻿import { Component } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'ui-empty-state',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-ui-empty-state',
   standalone: true,
   templateUrl: './empty-state.component.html',
   styleUrl: './empty-state.component.scss',
