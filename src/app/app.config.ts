@@ -5,6 +5,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import type { TranslationObject } from '@ngx-translate/core';
 import { MessageService } from 'primeng/api';
+import { provideHighcharts } from 'highcharts-angular';
 import { Observable, map, shareReplay } from 'rxjs';
 
 import { routes } from './app.routes';
@@ -37,6 +38,11 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
+    // The wrapper's HighchartsChartService is root-scoped, so its loader must
+    // also be available at the application injector (not a child route).
+    provideHighcharts({
+      instance: () => import('highcharts/esm/highcharts.js').then((module) => module.default),
+    }),
     provideRouter(
       routes,
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),

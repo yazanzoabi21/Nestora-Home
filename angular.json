@@ -64,6 +64,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "prebundle": {
+              "exclude": ["highcharts"]
+            }
+          },
           "configurations": {
             "production": {
               "buildTarget": "nestora-home:build:production"

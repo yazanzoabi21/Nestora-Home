@@ -70,15 +70,44 @@ export interface DashboardStatisticsRow {
 export class DashboardService {
     private readonly supabase = inject(SupabaseService).client;
 
-    async refreshStatistics(periodKey: string): Promise<DashboardStatisticsRow> {
-        const { data, error } = await this.supabase.rpc('refresh_dashboard_statistics', {
-            p_period_key: periodKey,
+    async refreshStatistics(signal?: AbortSignal): Promise<DashboardStatisticsRow> {
+        const request = this.supabase.rpc('refresh_dashboard_statistics', {
+            p_period_key: 'ALL',
         });
+        const { data, error } = await (signal ? request.abortSignal(signal) : request);
 
         if (error) {
             throw error;
         }
 
-        return data as DashboardStatisticsRow;
+        // PostgREST returns a row array for SETOF/table RPCs and an object for
+        // scalar composite/JSON RPCs. A cast does not unwrap a row array.
+        const response: unknown = data;
+        const row: unknown = Array.isArray(response) && response.length === 1 ? response[0] : response;
+        if (!isDashboardRow(row) || row.period_key !== 'ALL') {
+            throw new Error('Invalid dashboard response or mismatched period');
+        }
+        return row;
     }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isDashboardRow(value: unknown): value is DashboardStatisticsRow {
+    if (!isRecord(value)) return false;
+    const validDate = (date: unknown): date is string => typeof date === 'string'
+        && /^\d{4}-\d{2}-\d{2}/.test(date) && Number.isFinite(Date.parse(date));
+    const isChart = (chart: unknown, series: string[]): boolean => isRecord(chart)
+        && Array.isArray(chart['categories']) && chart['categories'].every((item: unknown) => typeof item === 'string')
+        && series.every((key) => Array.isArray(chart[key])
+            && chart[key].every((item: unknown) => typeof item === 'number' && Number.isFinite(item)));
+    return typeof value['period_key'] === 'string'
+        && validDate(value['start_date']) && validDate(value['end_date'])
+        && value['start_date'] <= value['end_date']
+        && ['kpi_cards', 'sales_category_chart', 'sales_performance_card', 'recent_orders_card', 'best_selling_products_card']
+            .every((key) => Array.isArray(value[key]))
+        && isChart(value['revenue_overview_chart'], ['revenue', 'target'])
+        && isChart(value['sales_orders_chart'], ['revenue', 'orders']);
 }

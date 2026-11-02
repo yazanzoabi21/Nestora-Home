@@ -30,6 +30,10 @@ import { ADMIN_SUPABASE } from '../../../../core/tokens';
 export class Dashboard implements OnInit {
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      ++this.dashboardRequestId;
+      this.dashboardAbortController?.abort();
+    });
     this.translate.onLangChange
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.langVersion.update((version) => version + 1));
@@ -37,13 +41,14 @@ export class Dashboard implements OnInit {
 
   ngOnInit(): void {
     void this.loadLoggedInUser();
-    void this.loadDashboard('30D');
+    void this.loadDashboard();
   }
 
   private readonly dashboardService = inject(DashboardService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private dashboardRequestId = 0;
+  private dashboardAbortController?: AbortController;
 
   private readonly supabase = inject(ADMIN_SUPABASE);
 
@@ -52,19 +57,17 @@ export class Dashboard implements OnInit {
   readonly dashboardData = signal<DashboardStatisticsRow | null>(null);
   readonly langVersion = signal(0);
 
-  readonly revenueFilter = signal('12M');
-  readonly salesOrdersFilter = signal('7D');
-  readonly performanceFilter = signal('30D');
   readonly recentOrdersFilter = signal('All');
   readonly bestSellingFilter = signal('Sold');
 
-  readonly performanceFilters = ['7D', '30D', '3M'];
   readonly recentOrdersFilters = ['All', 'Paid', 'Pending', 'Refunded'];
   readonly bestSellingFilters = ['Sold'];
   readonly kpiSkeletonItems = Array.from({ length: 4 }, (_, index) => index);
   readonly performanceSkeletonItems = Array.from({ length: 4 }, (_, index) => index);
   readonly tableSkeletonRows = Array.from({ length: 6 }, (_, index) => index);
   readonly productSkeletonRows = Array.from({ length: 5 }, (_, index) => index);
+
+  readonly hasRevenue = (value: number): boolean => value !== 0;
 
   readonly loggedInName = signal('');
 
@@ -125,17 +128,12 @@ export class Dashboard implements OnInit {
     return {
       fileName: 'nestora-dashboard-report',
       reportTitle: this.t('DASHBOARD.EXPORT_REPORT_TITLE'),
-      reportSubtitle: this.t('DASHBOARD.MONTH'),
+      reportSubtitle: this.t('DASHBOARD.ALL_TIME'),
       sections: [
         {
           title: this.t('DASHBOARD.KPI_SUMMARY'),
           headers: [this.t('DASHBOARD.METRIC'), this.t('DASHBOARD.VALUE'), this.t('DASHBOARD.TREND')],
-          rows: [
-            [this.t('DASHBOARD.TOTAL_REVENUE'), '$891.4K', '+18.4%'],
-            [this.t('DASHBOARD.TOTAL_ORDERS'), '6.8K', '+12.2%'],
-            [this.t('DASHBOARD.TOTAL_CUSTOMERS'), '14.3K', '+8.6%'],
-            [this.t('DASHBOARD.ACTIVE_PRODUCTS'), '524', '-2.1%'],
-          ],
+          rows: this.kpiCards().map((card) => [this.t(card.titleKey ?? card.title), card.value, card.trend ?? '']),
         },
         {
           title: this.t('DASHBOARD.RECENT_ORDERS'),
@@ -147,44 +145,16 @@ export class Dashboard implements OnInit {
             this.t('DASHBOARD.PAYMENT'),
             this.t('DASHBOARD.DELIVERY'),
           ],
-          rows: [
-            ['ORD-8821', 'Sophie Barrett', '22 Apr 2026', '$248.97', this.dashboardStatusLabel('Paid'), this.dashboardStatusLabel('Delivered')],
-            ['ORD-8820', 'Marcus Hunt', '22 Apr 2026', '$89.99', this.dashboardStatusLabel('Paid'), this.dashboardStatusLabel('Shipped')],
-            ['ORD-8819', 'Clara Morel', '21 Apr 2026', '$387.45', this.dashboardStatusLabel('Paid'), this.dashboardStatusLabel('Processing')],
-            ['ORD-8818', 'James Thornton', '21 Apr 2026', '$124.98', this.dashboardStatusLabel('Pending'), this.dashboardStatusLabel('Processing')],
-            ['ORD-8817', 'Anya Patel', '20 Apr 2026', '$312.96', this.dashboardStatusLabel('Paid'), this.dashboardStatusLabel('Delivered')],
-            ['ORD-8816', 'Luca Rossi', '20 Apr 2026', '$149.99', this.dashboardStatusLabel('Refunded'), this.dashboardStatusLabel('Returned')],
-          ],
+          rows: this.recentOrders().map((order) => [order.id, order.customer, order.date, order.total, this.dashboardStatusLabel(order.payment), this.dashboardStatusLabel(order.delivery)]),
         },
         {
           title: this.t('DASHBOARD.BEST_SELLING_PRODUCTS'),
           headers: [this.t('DASHBOARD.PRODUCT'), this.t('DASHBOARD.TREND'), this.t('DASHBOARD.SOLD')],
-          rows: [
-            [this.t('DASHBOARD.ECO_CLEANING_KIT_BUNDLE'), '+24%', this.t('DASHBOARD.SOLD_COUNT', { count: '1,203' })],
-            [this.t('DASHBOARD.BAMBOO_CUTTING_BOARD'), '+18%', this.t('DASHBOARD.SOLD_COUNT', { count: '876' })],
-            [this.t('DASHBOARD.LINEN_TEA_TOWEL_SET'), '+12%', this.t('DASHBOARD.SOLD_COUNT', { count: '892' })],
-            [this.t('DASHBOARD.STAINLESS_CHEFS_KNIFE'), '+8%', this.t('DASHBOARD.SOLD_COUNT', { count: '703' })],
-            [this.t('DASHBOARD.NORDIC_CERAMIC_BOWL_SET'), '-4%', this.t('DASHBOARD.SOLD_COUNT', { count: '567' })],
-          ],
+          rows: this.bestSellingProducts().map((product) => [product.name, product.trend, this.soldLabel(product.sold)]),
         },
       ],
     };
   });
-
-  setRevenueFilter(filter: string): void {
-    this.revenueFilter.set(filter);
-    void this.loadDashboard(filter);
-  }
-
-  setSalesOrdersFilter(filter: string): void {
-    this.salesOrdersFilter.set(filter);
-    void this.loadDashboard(filter);
-  }
-
-  setPerformanceFilter(filter: string): void {
-    this.performanceFilter.set(filter);
-    void this.loadDashboard(filter);
-  }
 
   setRecentOrdersFilter(filter: string): void {
     this.recentOrdersFilter.set(filter);
@@ -192,10 +162,6 @@ export class Dashboard implements OnInit {
 
   setBestSellingFilter(filter: string): void {
     this.bestSellingFilter.set(filter);
-  }
-
-  selectMonth(): void {
-    // Later: open month filter dropdown/modal.
   }
 
   exportReport(): void {
@@ -258,11 +224,8 @@ export class Dashboard implements OnInit {
     return {
       title: 'Revenue Overview',
       titleKey: 'DASHBOARD.REVENUE_OVERVIEW',
-      subtitle: this.t('DASHBOARD.REVENUE_OVERVIEW_SUBTITLE'),
-      subtitleKey: 'DASHBOARD.REVENUE_OVERVIEW_SUBTITLE',
-      filters: ['7D', '30D', '3M', '12M'],
-      filterLabelPrefix: 'DASHBOARD.FILTERS',
-      activeFilter: this.revenueFilter(),
+      subtitle: this.t('DASHBOARD.REVENUE_OVERVIEW_ALL_TIME_SUBTITLE'),
+      subtitleKey: 'DASHBOARD.REVENUE_OVERVIEW_ALL_TIME_SUBTITLE',
       height: 315,
       chartOptions: this.createRevenueOverviewOptions(data),
       loadingConfig: {
@@ -310,8 +273,6 @@ export class Dashboard implements OnInit {
       titleKey: 'DASHBOARD.SALES_VS_ORDERS',
       subtitle: this.t('DASHBOARD.SALES_VS_ORDERS_SUBTITLE'),
       subtitleKey: 'DASHBOARD.SALES_VS_ORDERS_SUBTITLE',
-      filters: ['7D', '30D', '3M', '12M'],
-      activeFilter: this.salesOrdersFilter(),
       height: 320,
       chartOptions: this.createSalesOrdersOptions(data),
       loadingConfig: {
@@ -335,18 +296,17 @@ export class Dashboard implements OnInit {
       credits: { enabled: false },
       legend: this.defaultLegend(),
       xAxis: this.defaultXAxis(data.categories),
-      yAxis: this.defaultYAxis('${value}k'),
+      yAxis: this.defaultYAxis('${value}'),
       tooltip: {
         borderColor: '#e5ded2',
         borderRadius: 12,
         shadow: false,
         valuePrefix: '$',
-        valueSuffix: 'k',
       },
       plotOptions: {
         series: {
           marker: {
-            enabled: false,
+            enabled: true,
             symbol: 'circle',
           },
           lineWidth: 3,
@@ -423,7 +383,7 @@ export class Dashboard implements OnInit {
       legend: this.defaultLegend(),
       xAxis: this.defaultXAxis(data.categories),
       yAxis: [
-        this.defaultYAxis('${value}k'),
+        this.defaultYAxis('${value}'),
         {
           title: { text: undefined },
           opposite: true,
@@ -505,14 +465,18 @@ export class Dashboard implements OnInit {
     };
   }
 
-  async loadDashboard(periodKey = '30D'): Promise<void> {
+  async loadDashboard(): Promise<void> {
+    this.dashboardData.set(null);
     const requestId = ++this.dashboardRequestId;
+    this.dashboardAbortController?.abort();
+    const controller = new AbortController();
+    this.dashboardAbortController = controller;
 
     try {
       this.loading.set(true);
       this.errorMessage.set(null);
 
-      const data = await this.dashboardService.refreshStatistics(periodKey);
+      const data = await this.dashboardService.refreshStatistics(controller.signal);
 
       if (requestId !== this.dashboardRequestId) {
         return;

@@ -142,6 +142,10 @@
       "NO_ORDERS_FOR_FILTER": "No orders found for this filter.",
       "BY_SELECTED_FILTER": "By selected filter",
       "SOLD_COUNT": "{{count}} sold",
+      "ALL_TIME": "All time",
+      "REVENUE_OVERVIEW_ALL_TIME_SUBTITLE": "Monthly revenue across all history",
+      "RETRY": "Retry",
+      "NO_DATA": "No data available.",
       "LOAD_FAILED_DETAIL": "Failed to load dashboard statistics.",
       "FILTERS": {
         "ALL": "All",
@@ -3048,6 +3052,10 @@
       "NO_ORDERS_FOR_FILTER": "لا توجد طلبات لهذا الفلتر.",
       "BY_SELECTED_FILTER": "حسب الفلتر المحدد",
       "SOLD_COUNT": "{{count}} مباع",
+      "ALL_TIME": "كل الوقت",
+      "REVENUE_OVERVIEW_ALL_TIME_SUBTITLE": "الإيرادات الشهرية عبر السجل الكامل",
+      "RETRY": "إعادة المحاولة",
+      "NO_DATA": "لا توجد بيانات متاحة.",
       "LOAD_FAILED_DETAIL": "فشل تحميل إحصاءات لوحة التحكم.",
       "FILTERS": {
         "ALL": "الكل",
