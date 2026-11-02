@@ -138,6 +138,7 @@ export class LoginComponent {
     } catch {
       this.errorMessage.set(this.t('AUTH.ERRORS.GOOGLE_SIGN_IN_FAILED'));
       this.oauthLoading.set(false);
+      console.log('');
     }
   }
 
