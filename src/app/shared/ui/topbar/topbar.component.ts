@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
@@ -13,8 +14,6 @@ import {
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import { AuthenticatedUserProfile } from '../../../core/models/auth';
-import { AdminAuthService } from '../../../core/services/auth';
 import { AdminGlobalSearchService, AdminSearchResult } from '../../../core/services/navigation';
 import { TranslationService } from '../../../core/services/translation';
 import { UserMenuComponent } from '../user-menu';
@@ -37,6 +36,7 @@ export const TOPBAR_USER_FALLBACK: TopbarUser = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-topbar',
   standalone: true,
   imports: [TranslatePipe, UserMenuComponent, UserMenuComponent, AdminNotificationsPopoverComponent,],
@@ -44,7 +44,6 @@ export const TOPBAR_USER_FALLBACK: TopbarUser = {
   styleUrl: './topbar.component.css',
 })
 export class TopbarComponent implements OnInit {
-  private readonly authService = inject(AdminAuthService);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly globalSearch = inject(AdminGlobalSearchService);
   private readonly router = inject(Router);
@@ -52,20 +51,11 @@ export class TopbarComponent implements OnInit {
   readonly translation = inject(TranslationService);
 
   private readonly inputUser = signal<TopbarUser | null>(null);
-  private readonly loadedUser = signal<TopbarUser>(TOPBAR_USER_FALLBACK);
   readonly searchQuery = signal('');
   readonly searchOpen = signal(false);
   readonly searchResults = computed(() => this.globalSearch.search(this.searchQuery()));
 
-  readonly topbarUser = computed(() => {
-    const input = this.inputUser();
-
-    if (input && input.name !== TOPBAR_USER_FALLBACK.name) {
-      return input;
-    }
-
-    return this.loadedUser();
-  });
+  readonly topbarUser = computed(() => this.inputUser() ?? TOPBAR_USER_FALLBACK);
 
   private readonly notificationsService = inject(AdminNotificationsService);
 
@@ -85,23 +75,7 @@ export class TopbarComponent implements OnInit {
   // readonly notificationCount = 3;
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([
-      this.loadCurrentUser(),
-      this.notificationsService.ensureLoaded(),
-    ]);
-  }
-
-
-  @HostListener('window:current-user-profile-updated', ['$event'])
-  onCurrentUserProfileUpdated(event: Event): void {
-    const profile = (event as CustomEvent<AuthenticatedUserProfile>).detail;
-
-    if (profile) {
-      this.loadedUser.set(this.mapProfileToTopbarUser(profile));
-      return;
-    }
-
-    void this.loadCurrentUser();
+    await this.notificationsService.ensureLoaded();
   }
 
   @HostListener('document:click', ['$event'])
@@ -168,77 +142,4 @@ export class TopbarComponent implements OnInit {
     }
   }
 
-  private async loadCurrentUser(): Promise<void> {
-    try {
-      const profile = await this.authService.getCurrentUserProfile();
-
-      if (!profile) {
-        this.loadedUser.set({
-          name: 'User',
-          role: 'Admin',
-          initials: 'U',
-          avatarUrl: null,
-        });
-        return;
-      }
-
-      this.loadedUser.set(this.mapProfileToTopbarUser(profile));
-    } catch {
-      this.loadedUser.set({
-        name: 'User',
-        role: 'Admin',
-        initials: 'U',
-        avatarUrl: null,
-      });
-    }
-  }
-
-  private mapProfileToTopbarUser(profile: AuthenticatedUserProfile): TopbarUser {
-    const name =
-      profile.full_name?.trim() ||
-      getNameFromEmail(profile.email) ||
-      'User';
-
-    return {
-      name,
-      role: formatRoleName(profile.roles?.name),
-      initials: getInitials(name || profile.email),
-      avatarUrl: profile.avatar_url ?? null,
-    };
-  }
 }
-
-function getNameFromEmail(email: string | null | undefined): string {
-  return email?.split('@')[0]?.trim() || '';
-}
-
-function getInitials(value: string | null | undefined): string {
-  const cleanValue = value?.trim() ?? '';
-
-  if (!cleanValue) {
-    return '?';
-  }
-
-  const parts = cleanValue.includes('@')
-    ? [cleanValue.split('@')[0]]
-    : cleanValue.split(/\s+/).filter(Boolean);
-
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-
-  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-}
-
-function formatRoleName(role: string | null | undefined): string {
-  if (!role) {
-    return 'Admin';
-  }
-
-  return role
-    .split(/[_\s-]+/)
-    .filter(Boolean)
-    .map((part) => part[0].toUpperCase() + part.slice(1).toLowerCase())
-    .join(' ');
-}
-

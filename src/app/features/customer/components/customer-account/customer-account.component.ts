@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { CustomerAuthService } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -41,6 +41,7 @@ export class CustomerAccountComponent {
   private readonly shopping = inject(CustomerShoppingStateService);
   private readonly customerOrders = inject(CustomerOrdersService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   readonly loyalty = inject(LoyaltyPointsCalculatorService);
   readonly showLoyalty = computed(
     () => !this.loyalty.loading() && this.loyalty.enabled(),
@@ -104,12 +105,17 @@ export class CustomerAccountComponent {
     this.isLoggingOut.set(true);
 
     try {
-      await this.auth.logout();
+      const result = await this.auth.logout();
+      if (!result.localSessionCleared || !result.remoteRevocationConfirmed) {
+        this.toast.warn(this.translate.instant(result.localSessionCleared
+          ? 'AUTH.ERRORS.LOGOUT_UNCONFIRMED' : 'AUTH.ERRORS.LOGOUT_LOCAL_FAILED') as string);
+      }
     } catch (error) {
       this.toast.failed(
         'Logout',
         error instanceof Error ? error.message : 'Unable to sign out.',
       );
+    } finally {
       this.isLoggingOut.set(false);
     }
   }

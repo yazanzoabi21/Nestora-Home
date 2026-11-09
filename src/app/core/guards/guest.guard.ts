@@ -7,7 +7,8 @@ export const guestGuard: CanActivateFn = async () => {
     const authService = inject(AdminAuthService);
     const router = inject(Router);
 
-    const isAuthenticated = await authService.isAuthenticated();
+    let isAuthenticated = false;
+    try { isAuthenticated = await authService.isAuthenticated(); } catch { /* Allow retry at login. */ }
 
     if (isAuthenticated) {
         return router.createUrlTree(['/admin']);

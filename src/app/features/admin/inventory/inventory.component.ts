@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -34,6 +34,7 @@ const DEFAULT_STOCK_FORM: StockUpdateFormModel = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-inventory',
   standalone: true,
   imports: [
@@ -54,6 +55,7 @@ export class InventoryComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private pageRequest?: AbortController;
 
   readonly lowStockLimit = LOW_STOCK_LIMIT;
   readonly products = signal<InventoryProduct[]>([]);
@@ -185,22 +187,34 @@ export class InventoryComponent implements OnInit {
   );
 
   async ngOnInit(): Promise<void> {
+    this.destroyRef.onDestroy(() => this.pageRequest?.abort());
     this.watchQuerySearch();
     await this.loadInventory();
   }
 
   async loadInventory(): Promise<void> {
+    if (this.destroyRef.destroyed) return;
+    this.pageRequest?.abort();
+    const request = new AbortController();
+    this.pageRequest = request;
+    const { signal } = request;
     this.loading.set(true);
 
     try {
-      this.products.set(await this.inventoryService.getInventoryProducts());
+      const products = await this.inventoryService.getInventoryProducts(signal);
+      if (signal.aborted) return;
+      this.products.set(products);
     } catch (error) {
+      if (signal.aborted) return;
       this.toast.failed(
         this.translate.instant('INVENTORY.TOAST.LOAD_FAILED_TITLE'),
         this.errorDetail(error, this.translate.instant('INVENTORY.TOAST.LOAD_FAILED_DETAIL'))
       );
     } finally {
-      this.loading.set(false);
+      if (this.pageRequest === request) {
+        this.pageRequest = undefined;
+        this.loading.set(false);
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
+import { GUEST_OFFERS_HEADER } from '../../core/services/bff/bff-supabase-client';
 import {
   CustomerOffer,
   CustomerOfferDiscount,
@@ -62,15 +63,21 @@ export class CustomerOffersService {
     return this.mapOffers(data);
   }
 
-  async getActiveCustomerOffers(): Promise<CustomerOffer[]> {
+  get supportsAnonymousOffers(): boolean {
+    return this.customerSupabase.auth.serverManaged === true;
+  }
+
+  async getActiveCustomerOffers(anonymous = false): Promise<CustomerOffer[]> {
     const now = new Date().toISOString();
-    const { data, error } = await this.customerSupabase
+    const query = this.customerSupabase
       .from('customer_offers')
       .select(CUSTOMER_OFFER_SELECT)
       .eq('is_active', true)
       .or(`start_date.is.null,start_date.lte.${now}`)
       .or(`end_date.is.null,end_date.gte.${now}`)
       .order('sort_order', { ascending: true });
+    const { data, error } = await (anonymous && this.supportsAnonymousOffers
+      ? query.setHeader(GUEST_OFFERS_HEADER, 'true') : query);
 
     if (error) throw new Error(error.message);
     return this.mapOffers(data);

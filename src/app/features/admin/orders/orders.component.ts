@@ -106,6 +106,7 @@ export class OrdersComponent
 
   private readonly destroyRef =
     inject(DestroyRef);
+  private pageRequest?: AbortController;
 
   readonly orders =
     signal<AdminOrder[]>([]);
@@ -817,7 +818,9 @@ export class OrdersComponent
   }
 
   async ngOnInit(): Promise<void> {
+    this.destroyRef.onDestroy(() => this.pageRequest?.abort());
     await this.loadOrders();
+    if (this.destroyRef.destroyed) return;
 
     this.openOrderFromRoute(
       this.route.snapshot.queryParamMap.get(
@@ -827,13 +830,18 @@ export class OrdersComponent
   }
 
   async loadOrders(): Promise<void> {
+    if (this.destroyRef.destroyed) return;
+    this.pageRequest?.abort();
+    const request = new AbortController();
+    this.pageRequest = request;
+    const { signal } = request;
     this.loading.set(true);
 
     try {
-      this.orders.set(
-        await this.ordersService.getOrders(),
-      );
+      const orders = await this.ordersService.getOrders(signal);
+      if (!signal.aborted) this.orders.set(orders);
     } catch (error) {
+      if (signal.aborted) return;
       this.toast.failed(
         this.t(
           'ORDERS.TOAST.LOAD_FAILED_TITLE',
@@ -846,7 +854,11 @@ export class OrdersComponent
         ),
       );
     } finally {
-      this.loading.set(false);
+      request.abort();
+      if (this.pageRequest === request) {
+        this.pageRequest = undefined;
+        this.loading.set(false);
+      }
     }
   }
 

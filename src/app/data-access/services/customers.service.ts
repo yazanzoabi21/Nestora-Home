@@ -29,11 +29,12 @@ const CUSTOMER_SELECT = `
 export class CustomersService {
   private readonly supabase = inject(SupabaseService).client;
 
-  async getCustomers(): Promise<AdminCustomer[]> {
-    const { data, error } = await this.supabase
+  async getCustomers(signal?: AbortSignal): Promise<AdminCustomer[]> {
+    const query = this.supabase
       .from('customers')
       .select(CUSTOMER_SELECT)
       .order('created_at', { ascending: false });
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw new Error(error.message);

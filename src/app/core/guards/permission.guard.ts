@@ -1,6 +1,5 @@
-﻿import { CanActivateFn } from '@angular/router';
+import { CanActivateFn } from '@angular/router';
+import { authGuard } from './auth.guard';
 
-export const permissionGuard: CanActivateFn = () => {
-  // TODO: Add permission checks for assigned admin modules and actions.
-  return true;
-};
+// Baseline active-admin check; module/action permissions remain server-enforced.
+export const permissionGuard: CanActivateFn = (route, state) => authGuard(route, state);

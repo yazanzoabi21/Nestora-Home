@@ -1,7 +1,8 @@
+import { ToastService } from '../../../core/services/toast.service';
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, Input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminAuthService } from '../../../core/services/auth';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 export interface UserMenuUser {
   name: string;
@@ -31,6 +32,8 @@ export class UserMenuComponent {
   @Input() user: UserMenuUser = USER_MENU_FALLBACK;
 
   private readonly authService = inject(AdminAuthService);
+  private readonly translate = inject(TranslateService);
+  private readonly toast = inject(ToastService);
 
   readonly isOpen = signal(false);
 
@@ -67,6 +70,10 @@ export class UserMenuComponent {
 
   async signOut(): Promise<void> {
     this.closeMenu();
-    await this.authService.logout();
+    const result = await this.authService.logout();
+    if (!result.localSessionCleared || !result.remoteRevocationConfirmed) {
+      this.toast.warn(this.translate.instant(result.localSessionCleared
+        ? 'AUTH.ERRORS.LOGOUT_UNCONFIRMED' : 'AUTH.ERRORS.LOGOUT_LOCAL_FAILED') as string);
+    }
   }
 }

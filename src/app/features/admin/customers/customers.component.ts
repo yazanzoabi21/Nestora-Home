@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -22,6 +22,7 @@ type StatusFilter = 'all' | CustomerStatus;
 type TierFilter = 'all' | CustomerTier;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-customers',
   standalone: true,
   imports: [
@@ -43,6 +44,7 @@ export class CustomersComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private pageRequest?: AbortController;
 
   readonly customers = signal<AdminCustomer[]>([]);
   readonly loading = signal(true);
@@ -253,21 +255,33 @@ export class CustomersComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.destroyRef.onDestroy(() => this.pageRequest?.abort());
     await this.loadCustomers();
   }
 
   async loadCustomers(): Promise<void> {
+    if (this.destroyRef.destroyed) return;
+    this.pageRequest?.abort();
+    const request = new AbortController();
+    this.pageRequest = request;
+    const { signal } = request;
     this.loading.set(true);
 
     try {
-      this.customers.set(await this.customersService.getCustomers());
+      const customers = await this.customersService.getCustomers(signal);
+      if (signal.aborted) return;
+      this.customers.set(customers);
     } catch (error) {
+      if (signal.aborted) return;
       this.toast.failed(
         this.t('CUSTOMERS.TOAST.LOAD_FAILED_TITLE'),
         this.errorDetail(error, this.t('CUSTOMERS.TOAST.LOAD_FAILED_DETAIL'))
       );
     } finally {
-      this.loading.set(false);
+      if (this.pageRequest === request) {
+        this.pageRequest = undefined;
+        this.loading.set(false);
+      }
     }
   }
 

@@ -58,6 +58,14 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "bff": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.bff.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -66,7 +74,9 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "prebundle": {
-              "exclude": ["highcharts"]
+              "exclude": [
+                "highcharts"
+              ]
             }
           },
           "configurations": {
@@ -74,7 +84,16 @@
               "buildTarget": "nestora-home:build:production"
             },
             "development": {
-              "buildTarget": "nestora-home:build:development"
+              "buildTarget": "nestora-home:build:development,bff",
+              "proxyConfig": "proxy.bff.json",
+              "ssl": false,
+              "port": 4300
+            },
+            "bff": {
+              "buildTarget": "nestora-home:build:development,bff",
+              "proxyConfig": "proxy.bff.json",
+              "port": 4300,
+              "ssl": false
             }
           },
           "defaultConfiguration": "development"

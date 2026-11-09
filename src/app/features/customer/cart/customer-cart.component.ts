@@ -239,7 +239,7 @@ export class CustomerCartComponent implements OnInit {
     this.loadingGiftProducts.set(true);
     try {
       this.eligibleGiftProducts.set(
-        (await this.discounts.getGiftProductsForDiscount(discount.id)).filter(
+        (await this.discounts.getCustomerGiftProductsForDiscount(discount.id)).filter(
           (gift) => gift.isActive && gift.product.is_active !== false && Number(gift.product.stock ?? 0) > 0,
         ),
       );

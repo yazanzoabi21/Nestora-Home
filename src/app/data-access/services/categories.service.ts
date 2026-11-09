@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
-import { SupabaseService } from '../../core/services/supabase';
+import type { NestoraSupabaseClient } from '../../core/models/auth/browser-auth.models';
+import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
 import { Category, CategoryMutationPayload } from '../models';
 
 interface ProductCategoryCountRecord {
@@ -41,16 +42,26 @@ const CATEGORY_SELECT = `
   providedIn: 'root',
 })
 export class CategoriesService {
-  private readonly supabase = inject(SupabaseService).client;
+  private readonly adminSupabase = inject(ADMIN_SUPABASE);
+  private readonly customerSupabase = inject(CUSTOMER_SUPABASE);
 
-  async getCategories(): Promise<Category[]> {
-    const { data, error } = await this.supabase
+  getCategories(signal?: AbortSignal): Promise<Category[]> {
+    return this.loadCategories(this.adminSupabase, signal);
+  }
+
+  getPublicCategories(): Promise<Category[]> {
+    return this.loadCategories(this.customerSupabase);
+  }
+
+  private async loadCategories(client: NestoraSupabaseClient, signal?: AbortSignal): Promise<Category[]> {
+    const query = client
       .from('categories')
       .select(CATEGORY_SELECT_WITH_PARENT)
       .order('created_at', { ascending: false });
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (this.isMissingParentIdError(error)) {
-      return this.getCategoriesWithoutParent();
+      return this.getCategoriesWithoutParent(client, signal);
     }
 
     if (error) {
@@ -61,14 +72,14 @@ export class CategoriesService {
   }
 
   async getCategoryById(id: string): Promise<Category> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('categories')
       .select(CATEGORY_SELECT_WITH_PARENT)
       .eq('id', id)
       .single();
 
     if (this.isMissingParentIdError(error)) {
-      const fallback = await this.supabase
+      const fallback = await this.adminSupabase
         .from('categories')
         .select(CATEGORY_SELECT)
         .eq('id', id)
@@ -88,10 +99,18 @@ export class CategoriesService {
     return this.mapCategory(data as Category);
   }
 
-  async getCategoriesWithProductCount(): Promise<Category[]> {
+  getCategoriesWithProductCount(signal?: AbortSignal): Promise<Category[]> {
+    return this.loadCategoriesWithProductCount(this.adminSupabase, signal);
+  }
+
+  getPublicCategoriesWithProductCount(): Promise<Category[]> {
+    return this.loadCategoriesWithProductCount(this.customerSupabase);
+  }
+
+  private async loadCategoriesWithProductCount(client: NestoraSupabaseClient, signal?: AbortSignal): Promise<Category[]> {
     const [categories, productCounts] = await Promise.all([
-      this.getCategories(),
-      this.getProductCountsByCategoryId(),
+      this.loadCategories(client, signal),
+      this.getProductCountsByCategoryId(client, signal),
     ]);
 
     return categories.map((category) => ({
@@ -102,7 +121,7 @@ export class CategoriesService {
   }
 
   async createCategory(payload: CategoryMutationPayload): Promise<Category> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('categories')
       .insert(this.toCategoryRecord(payload, true))
       .select(CATEGORY_SELECT_WITH_PARENT)
@@ -120,7 +139,7 @@ export class CategoriesService {
   }
 
   async updateCategory(id: string, payload: CategoryMutationPayload): Promise<Category> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('categories')
       .update(this.toCategoryRecord(payload, true))
       .eq('id', id)
@@ -139,7 +158,7 @@ export class CategoriesService {
   }
 
   async deleteCategory(id: string): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.adminSupabase
       .from('categories')
       .delete()
       .eq('id', id);
@@ -157,11 +176,12 @@ export class CategoriesService {
       .replace(/(^-|-$)/g, '');
   }
 
-  private async getCategoriesWithoutParent(): Promise<Category[]> {
-    const { data, error } = await this.supabase
+  private async getCategoriesWithoutParent(client: NestoraSupabaseClient, signal?: AbortSignal): Promise<Category[]> {
+    const query = client
       .from('categories')
       .select(CATEGORY_SELECT)
       .order('created_at', { ascending: false });
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw new Error(error.message);
@@ -171,7 +191,7 @@ export class CategoriesService {
   }
 
   private async createCategoryWithoutParent(payload: CategoryMutationPayload): Promise<Category> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('categories')
       .insert(this.toCategoryRecord(payload, false))
       .select(CATEGORY_SELECT)
@@ -185,7 +205,7 @@ export class CategoriesService {
   }
 
   private async updateCategoryWithoutParent(id: string, payload: CategoryMutationPayload): Promise<Category> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('categories')
       .update(this.toCategoryRecord(payload, false))
       .eq('id', id)
@@ -199,10 +219,11 @@ export class CategoriesService {
     return this.mapCategory(data as Category);
   }
 
-  private async getProductCountsByCategoryId(): Promise<Map<string, number>> {
-    const { data, error } = await this.supabase
+  private async getProductCountsByCategoryId(client: NestoraSupabaseClient, signal?: AbortSignal): Promise<Map<string, number>> {
+    const query = client
       .from('products')
       .select('category_id');
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw new Error(error.message);

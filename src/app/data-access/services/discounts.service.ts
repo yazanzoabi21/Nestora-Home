@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 
 import { CustomerAuthService } from '../../core/services/auth';
-import { SupabaseService } from '../../core/services/supabase';
-import { CUSTOMER_SUPABASE } from '../../core/tokens';
+import type { NestoraSupabaseClient } from '../../core/models/auth/browser-auth.models';
+import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
 import {
   Discount,
   DiscountGiftProduct,
@@ -38,12 +38,12 @@ const DISCOUNT_SELECT = `
   providedIn: 'root',
 })
 export class DiscountsService {
-  private readonly supabase = inject(SupabaseService).client;
+  private readonly adminSupabase = inject(ADMIN_SUPABASE);
   private readonly customerSupabase = inject(CUSTOMER_SUPABASE);
   private readonly customerAuth = inject(CustomerAuthService);
 
   async getDiscounts(): Promise<Discount[]> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('discounts')
       .select(DISCOUNT_SELECT)
       .order('created_at', { ascending: false });
@@ -56,7 +56,7 @@ export class DiscountsService {
   }
 
   async getDiscountById(id: string): Promise<Discount | null> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('discounts')
       .select(DISCOUNT_SELECT)
       .eq('id', id)
@@ -70,7 +70,7 @@ export class DiscountsService {
   }
 
   async createDiscount(payload: DiscountMutationPayload): Promise<Discount> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('discounts')
       .insert(this.toDiscountRecord(payload))
       .select(DISCOUNT_SELECT)
@@ -83,8 +83,16 @@ export class DiscountsService {
     return this.mapDiscount(data as unknown as Discount);
   }
 
-  async getGiftProductsForDiscount(discountId: string): Promise<DiscountGiftProduct[]> {
-    const { data, error } = await this.supabase
+  getGiftProductsForDiscount(discountId: string): Promise<DiscountGiftProduct[]> {
+    return this.loadGiftProductsForDiscount(this.adminSupabase, discountId);
+  }
+
+  getCustomerGiftProductsForDiscount(discountId: string): Promise<DiscountGiftProduct[]> {
+    return this.loadGiftProductsForDiscount(this.customerSupabase, discountId);
+  }
+
+  private async loadGiftProductsForDiscount(client: NestoraSupabaseClient, discountId: string): Promise<DiscountGiftProduct[]> {
+    const { data, error } = await client
       .from('discount_gift_products')
       .select('id,discount_id,product_id,sort_order,is_active,products:product_id(*)')
       .eq('discount_id', discountId)
@@ -120,7 +128,7 @@ export class DiscountsService {
     discountId: string,
     productIds: readonly string[],
   ): Promise<void> {
-    const { error } = await this.supabase.rpc('replace_discount_gift_products', {
+    const { error } = await this.adminSupabase.rpc('replace_discount_gift_products', {
       p_discount_id: discountId,
       p_product_ids: [...new Set(productIds)],
     });
@@ -128,7 +136,7 @@ export class DiscountsService {
   }
 
   async updateDiscount(id: string, payload: Partial<DiscountMutationPayload>): Promise<Discount> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('discounts')
       .update(this.toDiscountRecord(payload))
       .eq('id', id)
@@ -143,7 +151,7 @@ export class DiscountsService {
   }
 
   async deleteDiscount(id: string): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.adminSupabase
       .from('discounts')
       .delete()
       .eq('id', id);
@@ -321,7 +329,7 @@ export class DiscountsService {
   async getAutomaticFreeGiftDiscount(): Promise<Discount | null> {
     const now = new Date().toISOString();
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.customerSupabase
       .from('discounts')
       .select(DISCOUNT_SELECT)
       .eq('discount_type', 'free_gift')
@@ -348,7 +356,7 @@ export class DiscountsService {
       return null;
     }
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.customerSupabase
       .from('discounts')
       .select(DISCOUNT_SELECT)
       .eq('code', normalizedCode)

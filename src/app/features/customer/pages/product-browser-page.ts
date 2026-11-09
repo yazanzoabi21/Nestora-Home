@@ -365,7 +365,7 @@ export abstract class ProductBrowserPage {
 
   private async loadFilterCategories(): Promise<void> {
     try {
-      const categories = await this.categoriesService.getCategories();
+      const categories = await this.categoriesService.getPublicCategories();
 
       const activeCategoryIds = new Set(
         categories

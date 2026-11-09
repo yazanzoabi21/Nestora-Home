@@ -1,9 +1,9 @@
+import { AdminAuthService } from '../../../../core/services/auth';
 import { TestBed } from '@angular/core/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { vi } from 'vitest';
 import { MessageService } from 'primeng/api';
 import { provideHighcharts } from 'highcharts-angular';
-import { ADMIN_SUPABASE } from '../../../../core/tokens';
 import { SupabaseService } from '../../../../core/services';
 import { DashboardService, DashboardStatisticsRow } from '../../../../data-access/services/dashboard.service';
 import { Dashboard } from './dashboard';
@@ -75,7 +75,7 @@ describe('Dashboard all-time state', () => {
       imports: [Dashboard],
       providers: [provideTranslateService(), provideHighcharts({ instance: () => import('highcharts') }), MessageService,
         { provide: DashboardService, useValue: { refreshStatistics: load } },
-        { provide: ADMIN_SUPABASE, useValue: { auth: { getUser: async () => ({ data: { user: null } }) } } },
+        { provide: AdminAuthService, useValue: { currentUserProfile: () => null } },
       ],
     }).compileComponents();
   });

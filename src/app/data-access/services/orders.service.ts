@@ -99,10 +99,11 @@ interface SupabaseOrderShippingAddress {
 export class OrdersService {
   private readonly supabase = inject(ADMIN_SUPABASE);
 
-  async getOrders(): Promise<AdminOrder[]> {
-    await this.ensureAdminSession();
+  async getOrders(signal?: AbortSignal): Promise<AdminOrder[]> {
+    if (!this.supabase.auth.serverManaged) await this.ensureAdminSession();
 
-    const { data, error } = await this.supabase
+    signal?.throwIfAborted();
+    const query = this.supabase
       .from('orders')
       .select(`
         id,
@@ -126,6 +127,7 @@ export class OrdersService {
       .order('created_at', {
         ascending: false,
       });
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw error;
@@ -159,15 +161,13 @@ export class OrdersService {
       shippingAddresses,
       loyaltyProcessedOrderIds,
     ] = await Promise.all([
-      this.fetchProfiles(userIds),
+      this.fetchProfiles(userIds, signal),
 
-      this.fetchOrderItems(orderIds),
+      this.fetchOrderItems(orderIds, signal),
 
-      this.fetchShippingAddresses(orderIds),
+      this.fetchShippingAddresses(orderIds, signal),
 
-      this.fetchLoyaltyProcessedOrderIds(
-        orderIds,
-      ),
+      this.fetchLoyaltyProcessedOrderIds(orderIds, signal),
     ]);
 
     const profilesById = new Map(
@@ -215,7 +215,7 @@ export class OrdersService {
     deliveryStatus: AdminOrder['delivery'],
     paymentStatus: AdminOrder['payment'],
   ): Promise<void> {
-    await this.ensureAdminSession();
+    if (!this.supabase.auth.serverManaged) await this.ensureAdminSession();
 
     const { error } = await this.supabase.rpc(
       'update_admin_order_status',
@@ -232,7 +232,7 @@ export class OrdersService {
   }
 
   async removeOrderItem(orderId: string, orderItemId: string): Promise<void> {
-    await this.ensureAdminSession();
+    if (!this.supabase.auth.serverManaged) await this.ensureAdminSession();
 
     const { error } = await this.supabase.rpc('remove_admin_order_item', {
       p_order_id: orderId,
@@ -293,12 +293,14 @@ export class OrdersService {
 
   private async fetchProfiles(
     userIds: string[],
+    signal?: AbortSignal,
   ): Promise<SupabaseProfile[]> {
     if (!userIds.length) {
       return [];
     }
 
-    const { data, error } = await this.supabase
+    signal?.throwIfAborted();
+    const query = this.supabase
       .from('profiles')
       .select(`
         id,
@@ -307,6 +309,7 @@ export class OrdersService {
         phone
       `)
       .in('id', userIds);
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw error;
@@ -317,12 +320,14 @@ export class OrdersService {
 
   private async fetchShippingAddresses(
     orderIds: string[],
+    signal?: AbortSignal,
   ): Promise<SupabaseOrderShippingAddress[]> {
     if (!orderIds.length) {
       return [];
     }
 
-    const { data, error } = await this.supabase
+    signal?.throwIfAborted();
+    const query = this.supabase
       .from('order_shipping_addresses')
       .select(`
         order_id,
@@ -339,6 +344,7 @@ export class OrdersService {
         delivery_instructions
       `)
       .in('order_id', orderIds);
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw error;
@@ -360,12 +366,14 @@ export class OrdersService {
    */
   private async fetchOrderItems(
     orderIds: string[],
+    signal?: AbortSignal,
   ): Promise<Record<string, AdminOrderItem[]>> {
     if (!orderIds.length) {
       return {};
     }
 
-    const { data, error } = await this.supabase
+    signal?.throwIfAborted();
+    const query = this.supabase
       .from('order_items')
       .select(`
         id,
@@ -389,6 +397,7 @@ export class OrdersService {
         discounts:applied_discount_id(code)
       `)
       .in('order_id', orderIds);
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw error;
@@ -410,9 +419,7 @@ export class OrdersService {
     ];
 
     const products =
-      await this.fetchOrderProducts(
-        productIds,
-      );
+      await this.fetchOrderProducts(productIds, signal);
 
     const productsById = new Map(
       products.map((product) => [
@@ -519,12 +526,14 @@ export class OrdersService {
    */
   private async fetchOrderProducts(
     productIds: string[],
+    signal?: AbortSignal,
   ): Promise<SupabaseOrderProduct[]> {
     if (!productIds.length) {
       return [];
     }
 
-    const { data, error } = await this.supabase
+    signal?.throwIfAborted();
+    const query = this.supabase
       .from('products')
       .select(`
         id,
@@ -533,7 +542,9 @@ export class OrdersService {
         image_url
       `)
       .in('id', productIds);
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
+    signal?.throwIfAborted();
     if (error) {
       console.warn(
         'Unable to load product metadata for order items:',
@@ -550,16 +561,19 @@ export class OrdersService {
 
   private async fetchLoyaltyProcessedOrderIds(
     orderIds: readonly string[],
+    signal?: AbortSignal,
   ): Promise<ReadonlySet<string>> {
     if (!orderIds.length) {
       return new Set<string>();
     }
 
-    const { data, error } = await this.supabase
+    signal?.throwIfAborted();
+    const query = this.supabase
       .from('customer_loyalty_points_ledger')
       .select('order_id')
       .in('order_id', [...orderIds])
       .eq('transaction_type', 'earn');
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw new Error(

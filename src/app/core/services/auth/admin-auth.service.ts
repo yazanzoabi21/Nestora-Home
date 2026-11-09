@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { ADMIN_AUTH_PERSISTENCE, ADMIN_SUPABASE } from '../../tokens';
@@ -9,6 +9,9 @@ import {
   LoginRequest,
   UserProfile,
 } from '../../models/auth';
+
+import { AuthSessionLifecycle, LogoutResult } from './auth-session-lifecycle';
+import { adminProfilePayload } from './profile-update.util';
 
 const AVATAR_STORAGE_BUCKET = 'avatars';
 const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
@@ -22,42 +25,55 @@ export class AdminAuthService {
   private readonly persistence = inject(ADMIN_AUTH_PERSISTENCE);
   private readonly router = inject(Router);
 
+  private readonly lifecycle = new AuthSessionLifecycle(this.supabase, this.persistence);
+
   readonly currentUserProfile = signal<AuthenticatedUserProfile | null>(null);
   private profileRequest: {
     userId: string;
     promise: Promise<AuthenticatedUserProfile | null>;
   } | null = null;
 
+  constructor() {
+    const { data } = this.supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' && this.supabase.auth.serverManaged && !this.lifecycle.acceptsSession) {
+        this.lifecycle.prepareSession();
+        void this.getCurrentUserProfile().catch(() => this.clearState());
+        return;
+      }
+      if (event !== 'SIGNED_OUT' || !this.lifecycle.acceptsSession) return;
+      const hadProfile = this.currentUserProfile() !== null;
+      this.lifecycle.invalidate();
+      this.clearState();
+      if (hadProfile && /^\/(?:admin|super-admin)(?:\/|$)/.test(this.router.url)) {
+        void this.router.navigate(['/auth/login'], { replaceUrl: true }).catch(() => undefined);
+      }
+    });
+    inject(DestroyRef).onDestroy(() => data.subscription.unsubscribe());
+  }
+
   async login(
     request: LoginRequest,
     returnUrl?: string | null,
     rememberSession = true,
   ): Promise<void> {
-    this.persistence.setRememberSession(rememberSession);
-    const { data, error } = await this.supabase.auth.signInWithPassword({
-      email: request.email,
-      password: request.password,
-    });
-
-    if (error) throw new Error(error.message);
-
-    const userId = data.user?.id;
-    if (!userId) throw new Error('User not found.');
-
-    const profile = await this.getAuthenticatedProfile(userId);
-    if (!profile) throw new Error('Profile not found.');
-
-    if (!profile.is_active) {
-      await this.logout();
-      throw new Error('Your account is inactive.');
-    }
-
-    if (!isAdminRole(profile.roles?.name)) {
-      await this.logout();
-      throw new Error('This account does not have admin access.');
-    }
-
-    this.currentUserProfile.set(profile);
+    const profile = await this.lifecycle.authenticate(rememberSession, async (assertCurrent) => {
+      this.clearState();
+      const { data, error } = await this.supabase.auth.signInWithPassword(request);
+      assertCurrent();
+      if (error) throw new Error(error.message);
+      if (!data.user?.id) throw new Error('User not found.');
+      const profile = this.supabase.auth.serverManaged
+        ? data.profile?.id === data.user.id ? data.profile : null
+        : await this.getAuthenticatedProfile(data.user.id);
+      assertCurrent();
+      if (!profile) throw new Error('Profile not found.');
+      if (profile.is_active !== true) throw new Error('Your account is inactive.');
+      if (!isAdminRole(profile.roles?.name)) {
+        throw new Error('This account does not have admin access.');
+      }
+      this.currentUserProfile.set(profile);
+      return profile;
+    }, () => this.clearState());
 
     if (returnUrl && !returnUrl.startsWith('/shop') && returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
       await this.router.navigateByUrl(returnUrl);
@@ -67,12 +83,15 @@ export class AdminAuthService {
     await this.redirectByRole(profile.roles?.name ?? null);
   }
 
-  async logout(): Promise<void> {
-    const { error } = await this.supabase.auth.signOut({ scope: 'local' });
-    if (error) console.error('Failed to clear the local admin auth session.', error);
-
-    this.currentUserProfile.set(null);
+  async logout(): Promise<LogoutResult> {
+    const result = await this.lifecycle.logout(() => this.clearState());
     await this.router.navigate(['/auth/login'], { replaceUrl: true });
+    return result;
+  }
+
+  private clearState(): void {
+    this.currentUserProfile.set(null);
+    this.profileRequest = null;
   }
 
   async getProfile(userId: string): Promise<UserProfile | null> {
@@ -87,14 +106,14 @@ export class AdminAuthService {
   }
 
   async getCurrentUserProfile(): Promise<AuthenticatedUserProfile | null> {
-    const userId = await this.getCurrentUserId();
-    if (!userId) {
-      this.currentUserProfile.set(null);
-      return null;
-    }
-
-    const profile = await this.getAuthenticatedProfile(userId);
-    if (!profile?.is_active || !isAdminRole(profile.roles?.name)) {
+    const version = this.lifecycle.version;
+    if (!this.lifecycle.acceptsSession) return null;
+    const profile = await this.readValidatedProfile().catch((error: unknown) => {
+      if (this.lifecycle.isCurrent(version)) this.currentUserProfile.set(null);
+      throw error;
+    });
+    if (!this.lifecycle.isCurrent(version)) return null;
+    if (profile?.is_active !== true || !isAdminRole(profile.roles?.name)) {
       this.currentUserProfile.set(null);
       return null;
     }
@@ -106,12 +125,14 @@ export class AdminAuthService {
   async updateCurrentUserProfile(
     updates: CurrentUserProfileUpdate,
   ): Promise<AuthenticatedUserProfile> {
+    const payload = adminProfilePayload(updates);
+    const version = this.lifecycle.version;
     const userId = await this.getCurrentUserId();
     if (!userId) throw new Error('You must be signed in to update your profile.');
 
     const { data, error } = await this.supabase
       .from('profiles')
-      .update(updates)
+      .update(payload)
       .eq('id', userId)
       .select(this.profileSelect)
       .maybeSingle();
@@ -120,7 +141,7 @@ export class AdminAuthService {
     if (!data) throw new Error('Profile not found.');
 
     const profile = data as unknown as AuthenticatedUserProfile;
-    if (!isAdminRole(profile.roles?.name)) {
+    if (!this.lifecycle.isCurrent(version) || profile.is_active !== true || !isAdminRole(profile.roles?.name)) {
       throw new Error('This account does not have admin access.');
     }
 
@@ -153,9 +174,16 @@ export class AdminAuthService {
   }
 
   async getCurrentUserId(): Promise<string | null> {
+    return (await this.getCurrentUserProfile())?.id ?? null;
+  }
+
+  private async readValidatedProfile(): Promise<AuthenticatedUserProfile | null> {
     const { data, error } = await this.supabase.auth.getSession();
     if (error) throw new Error(error.message);
-    return data.session?.user.id ?? null;
+    const userId = data.session?.user.id;
+    if (!userId) return null;
+    if (this.supabase.auth.serverManaged) return data.profile?.id === userId ? data.profile : null;
+    return this.getAuthenticatedProfile(userId);
   }
 
   private readonly profileSelect = `

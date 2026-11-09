@@ -1,5 +1,8 @@
 import { InjectionToken, inject } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
+import type { NestoraSupabaseClient } from '../models/auth/browser-auth.models';
+import { createBffSupabaseClient } from '../services/bff/bff-supabase-client';
+import { PublicCatalogChanges } from '../services/public-catalog-changes.service';
 
 import { environment } from '../../../environments/environment';
 
@@ -8,6 +11,9 @@ const SESSION_PERSISTENCE_SUFFIX = '.session-only';
 export class AuthPersistenceStorage {
   private readonly memoryStorage = new Map<string, string | null>();
   private rememberSession: boolean;
+  private writesBlocked = false;
+
+  get remembersSession(): boolean { return this.rememberSession; }
 
   constructor(private readonly authStorageKey: string) {
     const sessionStorage = this.browserStorage('sessionStorage');
@@ -20,10 +26,15 @@ export class AuthPersistenceStorage {
   }
 
   setRememberSession(rememberSession: boolean): void {
+    this.writesBlocked = false;
     this.rememberSession = rememberSession;
     const sessionStorage = this.browserStorage('sessionStorage');
 
     this.writeStorage(sessionStorage, this.persistenceKey, rememberSession ? null : 'true');
+  }
+
+  resumeSessionWrites(): void {
+    this.writesBlocked = false;
   }
 
   getItem(key: string): string | null {
@@ -32,7 +43,15 @@ export class AuthPersistenceStorage {
       : this.readStorage(this.activeStorage(), key);
   }
 
+  clearAuthSession(): void {
+    this.writesBlocked = true;
+    for (const suffix of ['', '-user', '-code-verifier']) {
+      this.removeItem(`${this.authStorageKey}${suffix}`);
+    }
+  }
+
   setItem(key: string, value: string): void {
+    if (this.writesBlocked) return;
     const activeStorage = this.activeStorage();
     const inactiveStorage = this.inactiveStorage();
 
@@ -95,8 +114,23 @@ export class AuthPersistenceStorage {
 function createNestoraClient(
   storageKey: string,
   storage: AuthPersistenceStorage,
-): SupabaseClient {
+): NestoraSupabaseClient {
+  const admin = storageKey === 'nestora-admin-auth';
+  const changes = admin ? inject(PublicCatalogChanges) : null;
+  if (environment.bffEnabled) {
+    inject(ADMIN_AUTH_PERSISTENCE).clearAuthSession();
+    inject(CUSTOMER_AUTH_PERSISTENCE).clearAuthSession();
+    return createBffSupabaseClient(admin ? 'admin' : 'customer',
+      environment.supabaseUrl, environment.supabaseAnonKey, storage, changes?.mutationCompleted.bind(changes));
+  }
   return createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
+    ...(changes ? { global: { fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      const response = await fetch(input, init);
+      const request = input instanceof Request ? input : null;
+      if (response.ok) changes.mutationCompleted(new URL(request?.url ?? String(input)).pathname,
+        init?.method ?? request?.method ?? 'GET');
+      return response;
+    } } } : {}),
     auth: {
       storageKey,
       storage,
@@ -123,12 +157,12 @@ export const CUSTOMER_AUTH_PERSISTENCE = new InjectionToken<AuthPersistenceStora
   },
 );
 
-export const ADMIN_SUPABASE = new InjectionToken<SupabaseClient>('ADMIN_SUPABASE', {
+export const ADMIN_SUPABASE = new InjectionToken<NestoraSupabaseClient>('ADMIN_SUPABASE', {
   providedIn: 'root',
   factory: () => createNestoraClient('nestora-admin-auth', inject(ADMIN_AUTH_PERSISTENCE)),
 });
 
-export const CUSTOMER_SUPABASE = new InjectionToken<SupabaseClient>('CUSTOMER_SUPABASE', {
+export const CUSTOMER_SUPABASE = new InjectionToken<NestoraSupabaseClient>('CUSTOMER_SUPABASE', {
   providedIn: 'root',
   factory: () => createNestoraClient('nestora-customer-auth', inject(CUSTOMER_AUTH_PERSISTENCE)),
 });

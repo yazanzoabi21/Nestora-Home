@@ -9,7 +9,7 @@ import { DashboardCard } from '../../../../shared/ui/dashboard-card';
 import { ExportReportComponent, ExportReportConfig } from '../../../../shared/ui/export-report';
 import { KpiCardComponent, KpiCardData } from '../../../../shared/ui/kpi-card';
 import { DashboardService, DashboardStatisticsRow } from '../../../../data-access/services/dashboard.service';
-import { ADMIN_SUPABASE } from '../../../../core/tokens';
+import { AdminAuthService } from '../../../../core/services/auth';
 
 
 @Component({
@@ -40,7 +40,6 @@ export class Dashboard implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.loadLoggedInUser();
     void this.loadDashboard();
   }
 
@@ -50,7 +49,7 @@ export class Dashboard implements OnInit {
   private dashboardRequestId = 0;
   private dashboardAbortController?: AbortController;
 
-  private readonly supabase = inject(ADMIN_SUPABASE);
+  private readonly auth = inject(AdminAuthService);
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -69,7 +68,10 @@ export class Dashboard implements OnInit {
 
   readonly hasRevenue = (value: number): boolean => value !== 0;
 
-  readonly loggedInName = signal('');
+  readonly loggedInName = computed(() => {
+    const profile = this.auth.currentUserProfile();
+    return profile?.full_name || profile?.email.split('@')[0] || '';
+  });
 
   readonly revenueOverviewChart = computed<AnalyticsChartConfig>(() => {
     this.langVersion();
@@ -495,33 +497,5 @@ export class Dashboard implements OnInit {
         this.loading.set(false);
       }
     }
-  }
-
-  private async loadLoggedInUser(): Promise<void> {
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser();
-
-    if (!user) {
-      return;
-    }
-
-    const { data, error } = await this.supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Failed to load admin profile:', error);
-      return;
-    }
-
-    this.loggedInName.set(
-      data?.full_name ||
-      user.user_metadata?.['full_name'] ||
-      user.email?.split('@')[0] ||
-      ''
-    );
   }
 }

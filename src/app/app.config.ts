@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
-import { provideRouter, withInMemoryScrolling } from '@angular/router';
+import { provideRouter, withInMemoryScrolling, withDebugTracing } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import type { TranslationObject } from '@ngx-translate/core';
@@ -44,9 +44,10 @@ export const appConfig: ApplicationConfig = {
       instance: () => import('highcharts/esm/highcharts.js').then((module) => module.default),
     }),
     provideRouter(
-      routes,
-      withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
-    ),
+  routes,
+  withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
+  withDebugTracing(),
+),
     MessageService,
 
     provideTranslateService({

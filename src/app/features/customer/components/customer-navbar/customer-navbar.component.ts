@@ -68,7 +68,8 @@ export class CustomerNavbarComponent {
   readonly activeAnnouncementIndex = signal(0);
   readonly announcementVisible = signal(true);
   readonly announcementProgressKey = signal(0);
-  readonly announcementProgressKeys = computed(() => [this.announcementProgressKey()]);
+  // A new explicit key restarts the CSS animation on each carousel cycle.
+  readonly announcementProgressKeys = computed(() => [{ id: this.announcementProgressKey() }]);
   readonly activeAnnouncement = computed(() => {
     const announcements = this.promotionalAnnouncements();
     return announcements.length > 0
@@ -206,7 +207,7 @@ export class CustomerNavbarComponent {
 
   private async loadCategories(): Promise<void> {
     try {
-      const categories = await this.categoriesService.getCategories();
+      const categories = await this.categoriesService.getPublicCategories();
 
       this.navbarCategories.set(categories.filter((category) => category.is_active === true));
     } catch {

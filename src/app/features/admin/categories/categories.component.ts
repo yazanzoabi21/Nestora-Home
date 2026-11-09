@@ -131,6 +131,7 @@ export class CategoriesComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private pageRequest?: AbortController;
 
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
@@ -287,27 +288,39 @@ export class CategoriesComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.destroyRef.onDestroy(() => this.pageRequest?.abort());
     this.watchQuerySearch();
     await this.loadCategories();
   }
 
   async loadCategories(): Promise<void> {
+    if (this.destroyRef.destroyed) return;
+    this.pageRequest?.abort();
+    const request = new AbortController();
+    this.pageRequest = request;
+    const { signal } = request;
     this.loading.set(true);
 
     try {
-      const categories = await this.categoriesService.getCategoriesWithProductCount();
+      const categories = await this.categoriesService.getCategoriesWithProductCount(signal);
+      if (signal.aborted) return;
       this.categories.set(categories);
 
       if (!this.selectedCategory() && categories.length > 0) {
         this.selectedCategory.set(categories[0]);
       }
     } catch (error) {
+      if (signal.aborted) return;
       this.toast.failed(
         this.translate.instant('CATEGORIES.LOADING_CATEGORIES'),
         this.errorDetail(error, this.translate.instant('CATEGORIES.LOADING_CATEGORIES_FAILED'))
       );
     } finally {
-      this.loading.set(false);
+      request.abort();
+      if (this.pageRequest === request) {
+        this.pageRequest = undefined;
+        this.loading.set(false);
+      }
     }
   }
 

@@ -137,6 +137,8 @@ export class ProductsComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private pageRequest?: AbortController;
+  private readonly categoryRequest = new AbortController();
   private readonly imageIndex = inject(AdminProductImageIndexService);
 
   readonly products = signal<Product[]>([]);
@@ -478,28 +480,46 @@ export class ProductsComponent implements OnInit {
   );
 
   async ngOnInit(): Promise<void> {
+    this.destroyRef.onDestroy(() => {
+      this.pageRequest?.abort();
+      this.categoryRequest.abort();
+    });
     this.watchQuerySearch();
     await Promise.all([this.loadProducts(), this.loadCategories()]);
   }
 
   async loadProducts(): Promise<void> {
+    if (this.destroyRef.destroyed) return;
+    this.pageRequest?.abort();
+    const request = new AbortController();
+    this.pageRequest = request;
+    const { signal } = request;
     this.loading.set(true);
 
     try {
-      const products = await this.productsService.getProducts();
+      const products = await this.productsService.getProducts(signal);
+      if (signal.aborted) return;
       this.products.set(products);
     } catch (error) {
+      if (signal.aborted) return;
       this.toast.failed('Loading products', this.errorDetail(error, 'Unable to load products.'));
     } finally {
-      this.loading.set(false);
+      if (this.pageRequest === request) {
+        this.pageRequest = undefined;
+        this.loading.set(false);
+      }
     }
   }
 
   async loadCategories(): Promise<void> {
     try {
-      const categories = await this.categoriesService.getCategories();
+      const { signal } = this.categoryRequest;
+      if (signal.aborted) return;
+      const categories = await this.categoriesService.getCategories(signal);
+      if (signal.aborted) return;
       this.categoryRecords.set(categories);
     } catch (error) {
+      if (this.categoryRequest.signal.aborted) return;
       this.toast.failed(
         'Loading categories',
         this.errorDetail(error, 'Unable to load categories.'),

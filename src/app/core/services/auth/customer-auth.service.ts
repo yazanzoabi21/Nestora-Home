@@ -1,7 +1,8 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
+import type { AuthChangeEvent } from '@supabase/supabase-js';
+import type { BrowserSession, BrowserUser } from '../../models/auth/browser-auth.models';
 import { uploadAvatar } from '../../../shared/utils/avatar-upload.util';
 
 import { CUSTOMER_AUTH_PERSISTENCE, CUSTOMER_SUPABASE } from '../../tokens';
@@ -12,9 +13,12 @@ import {
   RegisterRequest,
 } from '../../models/auth';
 
+import { AuthSessionLifecycle, LogoutResult } from './auth-session-lifecycle';
+import { customerProfilePayload } from './profile-update.util';
+
 export type CustomerSignupResult =
   | { status: 'confirmation-required'; email: string }
-  | { status: 'authenticated'; session: Session };
+  | { status: 'authenticated'; session: BrowserSession };
 
 const CUSTOMER_SIGNUP_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   over_email_send_rate_limit:
@@ -66,9 +70,11 @@ export class CustomerAuthService {
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
 
+  private readonly lifecycle = new AuthSessionLifecycle(this.supabase, this.persistence);
+
   private readonly destroyRef = inject(DestroyRef);
-  readonly session = signal<Session | null>(null);
-  readonly user = computed<User | null>(() => this.session()?.user ?? null);
+  readonly session = signal<BrowserSession | null>(null);
+  readonly user = computed<BrowserUser | null>(() => this.session()?.user ?? null);
   readonly isAuthenticated = computed(() =>
     !!this.user() && this.currentCustomerProfile()?.is_active === true &&
     this.currentCustomerProfile()?.roles?.name === 'customer',
@@ -76,7 +82,7 @@ export class CustomerAuthService {
   readonly isLoading = signal(true);
   readonly currentCustomerProfile = signal<AuthenticatedUserProfile | null>(null);
   readonly customerProfile = this.currentCustomerProfile;
-  private readonly passwordRecoverySession = signal<Session | null>(null);
+  private readonly passwordRecoverySession = signal<BrowserSession | null>(null);
   readonly displayName = computed<string>(() => {
     const metadataName = this.user()?.user_metadata['full_name'];
     return this.currentCustomerProfile()?.full_name?.trim()
@@ -90,10 +96,19 @@ export class CustomerAuthService {
   private lastLoadedProfileUserId: string | null | undefined;
   private activeProfileLoad: { userId: string | null; promise: Promise<void> } | null = null;
   private profileLoadSequence = 0;
-  private readonly passwordRecoveryWaiters = new Set<(session: Session) => void>();
+  private readonly passwordRecoveryWaiters = new Set<(session: BrowserSession | null) => void>();
 
   constructor() {
     const { data } = this.supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session && this.supabase.auth.serverManaged && !this.lifecycle.acceptsSession) {
+        this.lifecycle.prepareSession();
+      }
+      if (!this.lifecycle.acceptsSession) return;
+      if (event === 'SIGNED_OUT') {
+        this.lifecycle.invalidate();
+        this.clearState();
+        return;
+      }
       this.session.set(session);
       this.handlePasswordRecoveryEvent(event, session);
       if (this.currentCustomerProfile()?.id !== session?.user.id) {
@@ -110,7 +125,10 @@ export class CustomerAuthService {
   }
 
   initialize(): Promise<void> {
-    this.initialized ??= this.restoreSession();
+    this.initialized ??= this.restoreSession().catch((error: unknown) => {
+      this.initialized = null; // A transient failure must be retryable.
+      throw error;
+    });
     return this.initialized;
   }
 
@@ -119,32 +137,17 @@ export class CustomerAuthService {
     returnUrl?: string | null,
     rememberSession = true,
   ): Promise<void> {
-    this.persistence.setRememberSession(rememberSession);
-    const { data, error } = await this.supabase.auth.signInWithPassword({
-      email: request.email,
-      password: request.password,
-    });
-
-    if (error) throw new Error(error.message);
-    this.session.set(data.session);
-
-    const userId = data.user?.id;
-    if (!userId) throw new Error('User not found.');
-
-    await this.synchronizeProfileForSession(data.session);
-    const profile = this.currentCustomerProfile();
-    if (!profile) {
-      await this.logout(false);
-      throw new Error('Customer profile not found.');
-    }
-
-    if (!profile.is_active) {
-      await this.logout(false);
-      throw new Error('Your account is inactive.');
-    }
-
-    this.currentCustomerProfile.set(profile);
-
+    await this.lifecycle.authenticate(rememberSession, async (assertCurrent) => {
+      this.clearState();
+      const { data, error } = await this.supabase.auth.signInWithPassword(request);
+      assertCurrent();
+      if (error) throw new Error(error.message);
+      if (!data.user?.id || !data.session) throw new Error('User not found.');
+      this.session.set(data.session);
+      await this.synchronizeProfileForSession(data.session, !this.supabase.auth.serverManaged);
+      assertCurrent();
+      this.requireCustomerProfile();
+    }, () => this.clearState());
     await this.navigateToCustomerReturnUrl(returnUrl);
   }
 
@@ -155,20 +158,15 @@ export class CustomerAuthService {
     const origin = this.document.defaultView?.location.origin;
     if (!origin) throw new Error('Google sign-in is unavailable in this environment.');
 
-    this.persistence.setRememberSession(rememberSession);
-    this.storeOAuthReturnUrl(returnUrl);
-
-    const { error } = await this.supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${origin}/auth/customer-callback`,
-      },
-    });
-
-    if (error) {
-      this.clearOAuthReturnUrl();
-      throw new Error(error.message);
-    }
+    await this.lifecycle.authenticate(rememberSession, async (assertCurrent) => {
+      this.storeOAuthReturnUrl(returnUrl);
+      const { error } = await this.supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${origin}/auth/customer-callback` },
+      });
+      assertCurrent();
+      if (error) throw new Error(error.message);
+    }, () => this.clearState());
   }
 
   async requestPasswordReset(email: string): Promise<void> {
@@ -183,17 +181,17 @@ export class CustomerAuthService {
     if (error) throw new Error(error.message);
   }
 
-  async waitForPasswordRecoverySession(timeoutMs = 5000): Promise<Session | null> {
+  async waitForPasswordRecoverySession(timeoutMs = 5000): Promise<BrowserSession | null> {
     if (this.passwordRecoverySession()) return this.passwordRecoverySession();
 
-    await this.initialize();
+    await this.initialize().catch(() => undefined);
     if (this.passwordRecoverySession()) return this.passwordRecoverySession();
 
     const view = this.document.defaultView;
     if (!view) return null;
 
-    return new Promise<Session | null>((resolve) => {
-      const waiter = (session: Session): void => {
+    return new Promise<BrowserSession | null>((resolve) => {
+      const waiter = (session: BrowserSession | null): void => {
         view.clearTimeout(timeoutId);
         this.passwordRecoveryWaiters.delete(waiter);
         resolve(session);
@@ -225,116 +223,83 @@ export class CustomerAuthService {
   }
 
   async completeGoogleSignIn(oauthError?: string | null): Promise<string> {
-    if (oauthError) {
+    try {
+      // Share the restoration started when the callback page was constructed.
+      if (!oauthError && this.supabase.auth.serverManaged) await this.initialize();
+      await this.lifecycle.authenticate(undefined, async (assertCurrent) => {
+        if (oauthError) throw new Error(oauthError);
+        assertCurrent();
+        const { data, error } = this.supabase.auth.serverManaged
+          ? { data: { session: this.session() }, error: null }
+          : await this.supabase.auth.getSession();
+        assertCurrent();
+        if (error) throw new Error(error.message);
+        const session = data.session;
+        if (!session?.user.id) throw new Error('Google sign-in did not return a session.');
+        this.session.set(session);
+        if (!this.supabase.auth.serverManaged) {
+          this.profileLoadSequence += 1;
+          this.activeProfileLoad = null;
+          this.currentCustomerProfile.set(null);
+        }
+        await this.synchronizeProfileForSession(session, !this.supabase.auth.serverManaged);
+        assertCurrent();
+        this.requireCustomerProfile();
+      }, () => this.clearState());
+      const returnUrl = this.readOAuthReturnUrl();
+      return this.isSafeCustomerReturnUrl(returnUrl) ? returnUrl : '/shop';
+    } finally {
       this.clearOAuthReturnUrl();
-      throw new Error(oauthError);
     }
-
-    await this.initialize();
-    const session = this.session();
-    if (!session?.user.id) throw new Error('Google sign-in did not return a session.');
-
-    await this.synchronizeProfileForSession(session, true);
-    const profile = this.currentCustomerProfile();
-    if (!profile) {
-      await this.logout(false);
-      throw new Error('Your customer profile could not be initialized.');
-    }
-    if (!profile.is_active) {
-      await this.logout(false);
-      throw new Error('Your account is inactive.');
-    }
-
-    const returnUrl = this.readOAuthReturnUrl();
-    this.clearOAuthReturnUrl();
-    return this.isSafeCustomerReturnUrl(returnUrl) ? returnUrl : '/shop';
   }
-
-  // async register(request: RegisterRequest): Promise<CustomerSignupResult> {
-  //   const { data, error } = await this.supabase.auth.signUp({
-  //     email: request.email,
-  //     password: request.password,
-  //     options: {
-  //       data: {
-  //         full_name: request.fullName,
-  //         phone: request.phone,
-  //         role: 'customer',
-  //       },
-  //     },
-  //   });
-
-  //   if (error) throw error;
-
-  //   if (!data.user?.id) throw new Error('Supabase did not return a user after signup.');
-
-  //   if (!data.session) {
-  //     return { status: 'confirmation-required', email: request.email };
-  //   }
-
-  //   this.session.set(data.session);
-  //   await this.restoreProfile(data.session);
-  //   return { status: 'authenticated', session: data.session };
-  // }
 
   async register(request: RegisterRequest): Promise<CustomerSignupResult> {
-  this.persistence.setRememberSession(true);
-  const email = request.email.trim().toLowerCase();
-  const fullName = request.fullName.trim();
-  const phone = request.phone.trim();
-
-  const { data, error } = await this.supabase.auth.signUp({
-    email,
-    password: request.password,
-    options: {
-      data: {
-        full_name: fullName,
-        phone,
-        role: 'customer',
-      },
-    },
-  });
-
-  if (error) {
-    throw error;
+    return this.lifecycle.authenticate(true, async (assertCurrent) => {
+      const email = request.email.trim().toLowerCase();
+      const { data, error } = await this.supabase.auth.signUp({
+        email,
+        password: request.password,
+        options: { data: {
+          full_name: request.fullName.trim(), phone: request.phone.trim(), role: 'customer',
+        } },
+      });
+      assertCurrent();
+      if (error) throw error;
+      if (data.confirmationRequired) return { status: 'confirmation-required', email };
+      if (!data.user?.id) throw new Error('Supabase did not return a user after signup.');
+      if (!data.session) return { status: 'confirmation-required', email };
+      this.session.set(data.session);
+      await this.synchronizeProfileForSession(data.session, !this.supabase.auth.serverManaged);
+      assertCurrent();
+      this.requireCustomerProfile();
+      return { status: 'authenticated', session: data.session };
+    }, () => this.clearState());
   }
 
-  if (!data.user?.id) {
-    throw new Error('Supabase did not return a user after signup.');
+  async logout(navigate = true): Promise<LogoutResult> {
+    const result = await this.lifecycle.logout(() => this.clearState());
+    if (navigate) await this.router.navigate(['/shop'], { replaceUrl: true });
+    return result;
   }
 
-  if (!data.session) {
-    return {
-      status: 'confirmation-required',
-      email,
-    };
-  }
-
-  this.session.set(data.session);
-  await this.synchronizeProfileForSession(data.session);
-
-  const profile = this.currentCustomerProfile();
-
-  if (!profile) {
-    await this.logout(false);
-    throw new Error('Your customer profile could not be initialized.');
-  }
-
-  return {
-    status: 'authenticated',
-    session: data.session,
-  };
-}
-
-  async logout(navigate = true): Promise<void> {
-    const { error } = await this.supabase.auth.signOut({ scope: 'local' });
-    if (error) throw new Error('Unable to sign out. Please try again.');
-
+  private clearState(): void {
     this.currentCustomerProfile.set(null);
     this.session.set(null);
+    this.passwordRecoverySession.set(null);
+    for (const waiter of this.passwordRecoveryWaiters) waiter(null);
+    this.passwordRecoveryWaiters.clear();
     this.lastLoadedProfileUserId = null;
     this.profileLoadSequence += 1;
     this.activeProfileLoad = null;
-    if (navigate) await this.router.navigate(['/shop'], { replaceUrl: true });
+    this.initialized = Promise.resolve();
+    this.clearOAuthReturnUrl();
+  }
+
+  private requireCustomerProfile(): AuthenticatedUserProfile {
+    const profile = this.currentCustomerProfile();
+    if (!profile || profile.roles?.name !== 'customer') throw new Error('Customer profile not found.');
+    if (profile.is_active !== true) throw new Error('Your account is inactive.');
+    return profile;
   }
 
   async getCurrentCustomerProfile(): Promise<AuthenticatedUserProfile | null> {
@@ -345,22 +310,34 @@ export class CustomerAuthService {
 
   async refreshCurrentCustomerProfile(): Promise<AuthenticatedUserProfile | null> {
     await this.initialize();
+    this.supabase.auth.invalidateCustomerProfile?.();
     await this.synchronizeProfileForSession(this.session(), true);
     return this.currentCustomerProfile();
   }
 
   async getCurrentUserId(): Promise<string | null> {
     await this.initialize();
+    if (!this.lifecycle.acceptsSession || !this.isAuthenticated()) return null;
     return this.isAuthenticated() ? this.user()?.id ?? null : null;
   }
 
   async updateProfile(updates: CustomerProfileUpdate): Promise<AuthenticatedUserProfile> {
+    const payload = customerProfilePayload(updates);
+    const version = this.lifecycle.version;
     const userId = await this.getCurrentUserId();
     if (!userId) throw new Error('You must be signed in to update your profile.');
-    const { data, error } = await this.supabase.from('profiles').update(updates).eq('id', userId).select(this.profileSelect).single();
+    this.supabase.auth.invalidateCustomerProfile?.();
+    this.profileLoadSequence += 1;
+    this.activeProfileLoad = null;
+    this.lastLoadedProfileUserId = undefined;
+    const { data, error } = await this.supabase.from('profiles').update(payload).eq('id', userId).select(this.profileSelect).single();
     if (error) throw new Error(error.message);
     const profile = data as unknown as AuthenticatedUserProfile;
-    if (profile.roles?.name !== 'customer') throw new Error('Customer profile not found.');
+    if (!this.lifecycle.isCurrent(version) || profile.is_active !== true || profile.roles?.name !== 'customer') throw new Error('Customer profile not found.');
+    this.supabase.auth.invalidateCustomerProfile?.();
+    this.profileLoadSequence += 1;
+    this.activeProfileLoad = null;
+    this.lastLoadedProfileUserId = userId;
     this.currentCustomerProfile.set(profile);
     return profile;
   }
@@ -384,9 +361,11 @@ export class CustomerAuthService {
   `;
 
   private async restoreSession(): Promise<void> {
+    const version = this.lifecycle.version;
     try {
       const { data, error } = await this.supabase.auth.getSession();
       if (error) throw new Error(error.message);
+      if (!this.lifecycle.isCurrent(version)) return;
       this.session.set(data.session);
       if (this.currentCustomerProfile()?.id !== data.session?.user.id) {
         this.currentCustomerProfile.set(null);
@@ -398,10 +377,20 @@ export class CustomerAuthService {
   }
 
   private async synchronizeProfileForSession(
-    session: Session | null,
+    session: BrowserSession | null,
     force = false,
   ): Promise<void> {
     const userId = session?.user.id ?? null;
+
+    const validatedProfile = this.supabase.auth.customerProfile;
+    if (!force && this.supabase.auth.serverManaged && session && validatedProfile !== undefined) {
+      this.profileLoadSequence += 1;
+      this.activeProfileLoad = null;
+      this.currentCustomerProfile.set(validatedProfile?.id === userId &&
+        validatedProfile.is_active === true && validatedProfile.roles?.name === 'customer' ? validatedProfile : null);
+      this.lastLoadedProfileUserId = userId;
+      return;
+    }
 
     if (this.activeProfileLoad?.userId === userId) {
       await this.activeProfileLoad.promise;
@@ -422,7 +411,7 @@ export class CustomerAuthService {
     }
   }
 
-  private async loadProfileForSession(session: Session | null): Promise<void> {
+  private async loadProfileForSession(session: BrowserSession | null): Promise<void> {
     const sequence = ++this.profileLoadSequence;
     const userId = session?.user.id ?? null;
 
@@ -432,7 +421,16 @@ export class CustomerAuthService {
       return;
     }
 
-    const profile = await this.getCustomerProfileById(userId);
+    let profile: AuthenticatedUserProfile | null;
+    try {
+      profile = await this.getCustomerProfileById(userId);
+    } catch (error: unknown) {
+      if (sequence === this.profileLoadSequence) {
+        this.currentCustomerProfile.set(null);
+        this.lastLoadedProfileUserId = undefined;
+      }
+      throw error;
+    }
     if (sequence !== this.profileLoadSequence || this.session()?.user.id !== userId) return;
 
     this.currentCustomerProfile.set(profile);
@@ -452,7 +450,7 @@ export class CustomerAuthService {
     return profile?.roles?.name === 'customer' ? profile : null;
   }
 
-  private handlePasswordRecoveryEvent(event: AuthChangeEvent, session: Session | null): void {
+  private handlePasswordRecoveryEvent(event: AuthChangeEvent, session: BrowserSession | null): void {
     if (event === 'PASSWORD_RECOVERY' && session) {
       this.passwordRecoverySession.set(session);
       for (const waiter of this.passwordRecoveryWaiters) waiter(session);
@@ -513,12 +511,12 @@ export class CustomerAuthService {
   }
 
   async uploadCurrentUserAvatar(file: File): Promise<string> {
-  const userId = this.user()?.id;
+    const userId = await this.getCurrentUserId();
 
-  if (!userId) {
-    throw new Error('You must be logged in to upload a profile image.');
+    if (!userId) {
+      throw new Error('You must be logged in to upload a profile image.');
+    }
+
+    return uploadAvatar(this.supabase, userId, file);
   }
-
-  return uploadAvatar(this.supabase, userId, file);
-}
 }

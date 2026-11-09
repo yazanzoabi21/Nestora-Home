@@ -1,0 +1,13 @@
+{
+  "status": "UNAPPROVED — populate from live staging metadata; do not execute as configuration",
+  "policies": [],
+  "public_rpcs": [],
+  "review_rules": [
+    "Private table reads need explicit SELECT/ALL entries and reviewed_read_scope=private.",
+    "Public catalogue SELECT operations must not be included accidentally.",
+    "Review INSERT/UPDATE/DELETE for public catalogue/admin-managed tables.",
+    "Storage needs independent SELECT/mutation coverage.",
+    "Public RPC entries require name plus all_overloads_definition_hash from inspection and manual read-only review.",
+    "Complete coverage is a release gate; empty arrays do not constitute adequate protection."
+  ]
+}

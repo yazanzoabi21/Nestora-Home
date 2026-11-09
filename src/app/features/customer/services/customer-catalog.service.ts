@@ -1,8 +1,9 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Injectable, inject, isDevMode, signal } from '@angular/core';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { DestroyRef, Injectable, effect, inject, isDevMode, signal, untracked } from '@angular/core';
+import type { AppRealtimeChannel } from '../../../core/models/auth/browser-auth.models';
 
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
+import { PublicCatalogChanges } from '../../../core/services/public-catalog-changes.service';
 import { Product } from '../../../data-access/models';
 import { CustomerProduct, CustomerProductDetails, CustomerProductVariant } from '../models';
 import { CustomerReviewsService } from './customer-reviews.service';
@@ -90,7 +91,7 @@ export class CustomerCatalogService {
   private invalidationRevision = 0;
   private pendingRequest: Promise<CustomerProduct[]> | null = null;
   private reuseCachedReviewStats = false;
-  private realtimeChannel: RealtimeChannel | null = null;
+  private realtimeChannel: AppRealtimeChannel | null = null;
   private backgroundRefreshTimer: ReturnType<typeof setTimeout> | null = null;
   private realtimeRefreshTimer: ReturnType<typeof setTimeout> | null = null;
   private lastBackgroundRevalidationAt = 0;
@@ -116,6 +117,14 @@ export class CustomerCatalogService {
   readonly realtimeChange = this.realtimeChangeState.asReadonly();
 
   constructor() {
+    const changes = inject(PublicCatalogChanges);
+    let lastRevision = changes.revision().products;
+    effect(() => {
+      const revision = changes.revision().products;
+      if (revision === lastRevision) return;
+      lastRevision = revision;
+      untracked(() => this.handleCatalogRealtimeChange('products', null));
+    });
     this.startProductRealtime();
     this.destroyRef.onDestroy(() => this.stopProductRealtime());
   }

@@ -82,6 +82,11 @@ export class CustomerSettingsService {
         currentPassword: string,
         newPassword: string,
     ): Promise<void> {
+        if (this.supabase.auth.changePassword) {
+            const { error } = await this.supabase.auth.changePassword(currentPassword, newPassword);
+            if (error) throw error;
+            return;
+        }
         const {
             data: { user },
             error: userError,

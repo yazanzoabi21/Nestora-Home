@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   computed,
   effect,
   inject,
@@ -12,9 +13,8 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '../../../../../core/services';
 import { CustomerAuthService } from '../../../../../core/services/auth';
 import { TranslationService } from '../../../../../core/services/translation';
-import { Category, CustomerOffer, Promotion } from '../../../../../data-access/models';
+import { CustomerOffer, Promotion } from '../../../../../data-access/models';
 import {
-  CategoriesService,
   CustomerOffersService,
   PromotionsService,
 } from '../../../../../data-access/services';
@@ -32,6 +32,8 @@ import {
   CustomerCatalogService,
 } from '../../../services';
 import { CustomerFlashDeals } from '../components/customer-flash-deals/customer-flash-deals/customer-flash-deals';
+
+import { HomePublicData } from './home-public-data.service';
 
 interface HomeBenefit {
   icon: string;
@@ -61,7 +63,8 @@ export class HomePageComponent {
   readonly shopping = inject(CustomerShoppingStateService);
 
   private readonly productsService = inject(CustomerCatalogService);
-  private readonly categoriesService = inject(CategoriesService);
+  private readonly publicData = inject(HomePublicData);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly promotionsService = inject(PromotionsService);
   private readonly recentlyViewedService = inject(CustomerRecentlyViewedService);
   private readonly offersService = inject(CustomerOffersService);
@@ -71,12 +74,25 @@ export class HomePageComponent {
   private readonly translate = inject(TranslateService);
   private readonly appTranslation = inject(TranslationService);
 
-  readonly products = signal<CustomerProduct[]>([]);
-  readonly categories = signal<Category[]>([]);
-  readonly promotions = signal<Promotion[]>([]);
+  readonly products = signal<CustomerProduct[]>([...(this.productsService.productsSnapshot() ?? [])]);
+  readonly categories = computed(() =>
+    (this.publicData.categories.read() ?? [])
+      .filter((category) => category.is_active !== false && category.parent_id != null)
+      .slice(0, 4),
+  );
+  readonly promotions = computed(() => this.publicData.promotions.read() ?? []);
   readonly offers = signal<CustomerOffer[]>([]);
   readonly loading = signal(true);
-  readonly loadError = signal(false);
+  readonly offersLoading = signal(true);
+  private readonly productError = signal(false);
+  private readonly categoryError = signal(false);
+  private readonly promotionError = signal(false);
+  private readonly offerError = signal(false);
+  readonly loadError = computed(() =>
+    this.productError() || this.categoryError() || this.promotionError() || this.offerError(),
+  );
+  private offerRequest = 0;
+  private offerUserId: string | null | undefined;
   readonly selectedProduct = signal<CustomerProduct | null>(null);
   readonly recentlyViewedProducts = signal<readonly CustomerProduct[]>([]);
   readonly recentlyViewedStatus = signal<RecentlyViewedStatus>('idle');
@@ -201,6 +217,7 @@ export class HomePageComponent {
 
       untracked(() => {
         this.products.set([...products]);
+        this.loading.set(false);
         const productsById = new Map(products.map((product) => [product.id, product]));
         this.recentlyViewedProducts.update((recent) =>
           recent.flatMap((product) => {
@@ -238,11 +255,38 @@ export class HomePageComponent {
         void this.loadRecentlyViewed(loadKey, revision);
       });
     });
-    void this.loadHome();
+    effect(() => {
+      this.publicData.categoriesRevision();
+      untracked(() => void this.refreshSection(this.publicData.categories, this.categoryError));
+    });
+    effect(() => {
+      this.publicData.promotionsRevision();
+      untracked(() => void this.refreshSection(this.publicData.promotions, this.promotionError));
+    });
+    effect(() => {
+      this.publicData.offersRevision();
+      const userId = this.auth.session()?.user.id ?? null;
+      const restoring = this.auth.isLoading();
+      untracked(() => {
+        if (restoring) {
+          ++this.offerRequest;
+          this.offers.set([]);
+          this.offersLoading.set(true);
+          return;
+        }
+        void this.loadOffers(userId);
+      });
+    });
+    void this.loadProducts();
   }
 
   async retry(): Promise<void> {
-    await this.loadHome();
+    await Promise.all([
+      this.loadProducts(true),
+      this.refreshSection(this.publicData.categories, this.categoryError, true),
+      this.refreshSection(this.publicData.promotions, this.promotionError, true),
+      this.auth.isLoading() ? Promise.resolve() : this.loadOffers(this.auth.session()?.user.id ?? null, true),
+    ]);
   }
 
   async addToCart(product: CustomerProduct, quantity = 1): Promise<void> {
@@ -353,33 +397,51 @@ export class HomePageComponent {
     }
   }
 
-  private async loadHome(): Promise<void> {
-    this.loading.set(true);
-    this.loadError.set(false);
+  private async loadProducts(force = false): Promise<void> {
+    this.loading.set(this.productsService.productsSnapshot() === null);
+    this.productError.set(false);
     try {
-      const [products, categories, promotions, offers] = await Promise.all([
-        this.productsService.getProducts(),
-        this.categoriesService.getCategoriesWithProductCount(),
-        this.promotionsService.getPromotions(),
-        this.offersService.getActiveCustomerOffers(),
-      ]);
-      this.products.set(products);
-      this.categories.set(
-        categories
-          .filter(
-            (category) =>
-              category.is_active !== false &&
-              category.parent_id !== null &&
-              category.parent_id !== undefined,
-          )
-          .slice(0, 4),
-      );
-      this.promotions.set(promotions);
-      this.offers.set(offers);
+      await this.productsService.getProducts(force);
     } catch {
-      this.loadError.set(true);
+      if (!this.destroyRef.destroyed) this.productError.set(true);
     } finally {
-      this.loading.set(false);
+      if (!this.destroyRef.destroyed) this.loading.set(false);
+    }
+  }
+
+  private async refreshSection(
+    section: { refresh(force?: boolean): Promise<unknown> },
+    error: { set(value: boolean): void },
+    force = false,
+  ): Promise<void> {
+    error.set(false);
+    try {
+      await section.refresh(force);
+    } catch {
+      if (!this.destroyRef.destroyed) error.set(true);
+    }
+  }
+
+  private async loadOffers(userId: string | null, force = false): Promise<void> {
+    const request = ++this.offerRequest;
+    const isCurrent = () => !this.destroyRef.destroyed && request === this.offerRequest &&
+      !this.auth.isLoading() && (this.auth.session()?.user.id ?? null) === userId;
+    if (this.offerUserId !== userId) {
+      this.offerUserId = userId;
+      this.offers.set([]);
+    }
+    const cached = userId === null ? this.publicData.guestOffers.read() : null;
+    if (cached) this.offers.set(cached);
+    this.offersLoading.set(cached === null && this.offers().length === 0);
+    this.offerError.set(false);
+    try {
+      const offers = await (userId === null ? this.publicData.guestOffers.refresh(force)
+        : this.offersService.getActiveCustomerOffers());
+      if (offers && isCurrent()) this.offers.set(offers);
+    } catch {
+      if (isCurrent()) this.offerError.set(true);
+    } finally {
+      if (isCurrent()) this.offersLoading.set(false);
     }
   }
 

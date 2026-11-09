@@ -18,7 +18,7 @@ export async function prepareAvatarImage(file: File): Promise<File> {
 }
 
 export async function uploadAvatar(
-  supabase: SupabaseClient,
+  supabase: Pick<SupabaseClient, 'storage'>,
   userId: string,
   file: File,
 ): Promise<string> {

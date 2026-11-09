@@ -4,10 +4,17 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prestart": "node scripts/check-bff.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "start:bff": "ng serve --configuration bff",
+    "prestart:bff": "node scripts/check-bff.mjs",
+    "build:bff-client": "ng build --configuration production,bff --output-path dist/nestora-bff-staging",
+    "bff:build": "npm run build --prefix bff",
+    "bff:test": "npm run test --prefix bff",
+    "bff:dev": "npm run dev --prefix bff"
   },
   "private": true,
   "packageManager": "npm@11.1.0",

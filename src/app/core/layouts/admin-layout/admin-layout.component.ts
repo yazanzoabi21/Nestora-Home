@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../../shared/ui/sidebar';
 import { TOPBAR_USER_FALLBACK, TopbarComponent, TopbarUser } from '../../../shared/ui/topbar';
@@ -6,13 +6,14 @@ import { AppRoleName, AuthenticatedUserProfile } from '../../models/auth';
 import { AdminAuthService } from '../../services/auth';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-layout',
   standalone: true,
   imports: [RouterOutlet, SidebarComponent, TopbarComponent],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss',
 })
-export class AdminLayoutComponent implements OnInit {
+export class AdminLayoutComponent {
   private readonly authService = inject(AdminAuthService);
 
   readonly sidebarCollapsed = signal(false);
@@ -21,37 +22,12 @@ export class AdminLayoutComponent implements OnInit {
     const profile = this.authService.currentUserProfile();
     return profile ? this.toTopbarUser(profile) : TOPBAR_USER_FALLBACK;
   });
-  readonly isLoadingUser = signal(true);
-  readonly userError = signal<string | null>(null);
+  openMobileSidebar(): void {
+    this.mobileSidebarOpen.set(true);
+  }
 
-  async ngOnInit(): Promise<void> {
-  await this.loadCurrentUser();
-}
-
-openMobileSidebar(): void {
-  this.mobileSidebarOpen.set(true);
-}
-
-closeMobileSidebar(): void {
-  this.mobileSidebarOpen.set(false);
-}
-
-  private async loadCurrentUser(): Promise<void> {
-    try {
-      const profile = await this.authService.getCurrentUserProfile();
-
-      if (!profile || !profile.is_active) {
-        await this.authService.logout();
-        return;
-      }
-
-      this.userError.set(null);
-    } catch (error) {
-      this.userError.set(error instanceof Error ? error.message : 'Unable to load profile.');
-      await this.authService.logout();
-    } finally {
-      this.isLoadingUser.set(false);
-    }
+  closeMobileSidebar(): void {
+    this.mobileSidebarOpen.set(false);
   }
 
   private toTopbarUser(profile: AuthenticatedUserProfile): TopbarUser {

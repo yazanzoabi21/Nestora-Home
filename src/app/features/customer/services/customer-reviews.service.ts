@@ -113,11 +113,9 @@ export class CustomerReviewsService {
 
     if (missingProductIds.length > 0) {
       const { data, error } = await this.supabase
-        .from('reviews')
+        .rpc('get_public_product_reviews', { p_product_id: null, p_limit: null })
         .select('product_id')
-        .in('product_id', missingProductIds)
-        .eq('status', 'published')
-        .not('comment', 'is', null);
+        .in('product_id', missingProductIds);
 
       if (error) throw new Error('Unable to load review counts.');
 

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 
 import { CustomerAuthService } from '../../../../core/services/auth';
 import { CustomerShoppingStateService } from '../../../customer/services';
@@ -17,6 +18,7 @@ export class CustomerAuthCallbackComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly shopping = inject(CustomerShoppingStateService);
+  private readonly translate = inject(TranslateService);
 
   readonly errorMessage = signal<string | null>(null);
 
@@ -29,7 +31,13 @@ export class CustomerAuthCallbackComponent {
       const oauthError =
         this.route.snapshot.queryParamMap.get('error_description') ??
         this.route.snapshot.queryParamMap.get('error');
-      const returnUrl = await this.auth.completeGoogleSignIn(oauthError);
+      if (oauthError !== null) {
+        // An invalid callback must not enter failed-login cleanup and log out a
+        // different active session or cancel its unrelated pending flows.
+        this.errorMessage.set(this.translate.instant('AUTH.ERRORS.GOOGLE_SIGN_IN_FAILED'));
+        return;
+      }
+      const returnUrl = await this.auth.completeGoogleSignIn();
       await this.shopping.initialize();
       await this.router.navigateByUrl(returnUrl, { replaceUrl: true });
     } catch (error: unknown) {

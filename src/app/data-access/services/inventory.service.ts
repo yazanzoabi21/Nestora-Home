@@ -52,11 +52,12 @@ const INVENTORY_LOG_SELECT = `
 export class InventoryService {
   private readonly supabase = inject(SupabaseService).client;
 
-  async getInventoryProducts(): Promise<InventoryProduct[]> {
-    const { data, error } = await this.supabase
+  async getInventoryProducts(signal?: AbortSignal): Promise<InventoryProduct[]> {
+    const query = this.supabase
       .from('products')
       .select(INVENTORY_PRODUCT_SELECT)
       .order('name', { ascending: true });
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw new Error(error.message);

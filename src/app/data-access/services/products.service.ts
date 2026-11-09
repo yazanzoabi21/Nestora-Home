@@ -69,11 +69,12 @@ export class ProductsService {
   private readonly supabase = inject(SupabaseService).client;
   private readonly productVideos = inject(ProductVideosService);
 
-  async getProducts(): Promise<Product[]> {
-    const { data, error } = await this.supabase
+  async getProducts(signal?: AbortSignal): Promise<Product[]> {
+    const query = this.supabase
       .from('products')
       .select(PRODUCT_SELECT)
       .order('created_at', { ascending: false });
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
 
     if (error) {
       throw new Error(error.message);

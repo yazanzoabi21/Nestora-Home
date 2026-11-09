@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
+import { ToastService } from '../../../../core/services/toast.service';
 import { TranslationService } from '../../../../core/services/translation';
 import {
   AdminAuthService,
@@ -39,6 +40,7 @@ export class LoginComponent {
   private readonly translate = inject(TranslateService);
   private readonly adminAuth = inject(AdminAuthService);
   private readonly customerAuth = inject(CustomerAuthService);
+  private readonly toast = inject(ToastService);
   private readonly shopping = inject(CustomerShoppingStateService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -89,6 +91,7 @@ export class LoginComponent {
   }
 
   async submitLogin(): Promise<void> {
+    if (this.loading()) return;
     try {
       this.loading.set(true);
       this.errorMessage.set(null);
@@ -118,9 +121,14 @@ export class LoginComponent {
       } else {
         await this.adminAuth.login(request, returnUrl, this.loginForm.rememberMe);
       }
-      await this.shopping.initialize();
+      await this.shopping.initialize().catch(() => {
+        this.toast.warn(this.t('AUTH.ERRORS.POST_LOGIN_LOAD_FAILED'));
+      });
     } catch {
-      this.errorMessage.set(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
+      const authorized = this.audience === 'customer'
+        ? this.customerAuth.isAuthenticated() : !!this.adminAuth.currentUserProfile();
+      this.errorMessage.set(this.t(authorized
+        ? 'AUTH.ERRORS.POST_LOGIN_LOAD_FAILED' : 'AUTH.ERRORS.INVALID_CREDENTIALS'));
     } finally {
       this.loading.set(false);
     }
@@ -213,7 +221,9 @@ export class LoginComponent {
         return;
       }
 
-      await this.shopping.initialize();
+      await this.shopping.initialize().catch(() => {
+        this.toast.warn(this.t('AUTH.ERRORS.POST_LOGIN_LOAD_FAILED'));
+      });
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
       if (returnUrl?.startsWith('/shop') && !returnUrl.startsWith('//')) {
         await this.router.navigateByUrl(returnUrl);

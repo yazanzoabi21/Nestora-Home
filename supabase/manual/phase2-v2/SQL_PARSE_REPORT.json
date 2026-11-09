@@ -1,0 +1,119 @@
+{
+  "scope": "Offline parsing only. No database connection or SQL execution.",
+  "parserPackage": "libpg-query",
+  "files": [
+    {
+      "file": "00_deployed_security_inspection.sql",
+      "sqlLanguageBodies": 0,
+      "sql": "PASS",
+      "parserVersion": 180004,
+      "statements": 23,
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 0
+    },
+    {
+      "file": "10_profile_privileges.proposed.sql",
+      "sqlLanguageBodies": 2,
+      "sql": "PASS",
+      "parserVersion": 180004,
+      "statements": 49,
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 11
+    },
+    {
+      "file": "11_profile_privileges.rollback.sql",
+      "sqlLanguageBodies": 0,
+      "sql": "PASS",
+      "parserVersion": 180004,
+      "statements": 28,
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 2
+    },
+    {
+      "file": "20_deactivation_controls.proposed.sql",
+      "sqlLanguageBodies": 1,
+      "sql": "PASS",
+      "parserVersion": 180004,
+      "statements": 11,
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 4
+    },
+    {
+      "file": "21_deactivation_controls.rollback.sql",
+      "sqlLanguageBodies": 0,
+      "sql": "PASS",
+      "parserVersion": 180004,
+      "statements": 9,
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 1
+    },
+    {
+      "file": "30_staging_hook_probe.proposed.sql",
+      "sqlLanguageBodies": 0,
+      "sql": "PASS",
+      "parserVersion": 180004,
+      "statements": 7,
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 2
+    },
+    {
+      "file": "31_staging_hook_probe.rollback.sql",
+      "sqlLanguageBodies": 0,
+      "sql": "PASS",
+      "parserVersion": 180004,
+      "statements": 5,
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 1
+    }
+  ],
+  "dynamicStatementTemplates": [
+    {
+      "command": "SELECT",
+      "parse": "PASS"
+    },
+    {
+      "command": "INSERT",
+      "parse": "PASS"
+    },
+    {
+      "command": "UPDATE",
+      "parse": "PASS"
+    },
+    {
+      "command": "DELETE",
+      "parse": "PASS"
+    },
+    {
+      "command": "ALL",
+      "parse": "PASS"
+    },
+    {
+      "sql": "ALTER ROLE authenticator IN DATABASE staging_review SET pgrst.db_pre_request='nestora_phase2.check_active_data_api_account'",
+      "parse": "PASS"
+    },
+    {
+      "sql": "ALTER ROLE authenticator IN DATABASE staging_review RESET pgrst.db_pre_request",
+      "parse": "PASS"
+    },
+    {
+      "sql": "GRANT nestora_phase2_access_manager TO postgres",
+      "parse": "PASS"
+    },
+    {
+      "sql": "REVOKE nestora_phase2_access_manager FROM postgres",
+      "parse": "PASS"
+    },
+    {
+      "sql": "DROP POLICY phase2_active_select ON public.profiles",
+      "parse": "PASS"
+    }
+  ],
+  "limitations": [
+    "PG18.4 grammar, target hosted version unknown",
+    "No existing-object/type/owner/ACL resolution",
+    "No execution or rollback test",
+    "No concurrency/load/cascade test",
+    "No live Supabase hook verification",
+    "Current deployed guard definition not available to validate its runtime restoration"
+  ]
+}

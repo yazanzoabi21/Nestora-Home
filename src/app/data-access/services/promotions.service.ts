@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
-import { SupabaseService } from '../../core/services/supabase';
+import type { NestoraSupabaseClient } from '../../core/models/auth/browser-auth.models';
+import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
 import {
   Promotion,
   PromotionMutationPayload,
@@ -53,10 +54,19 @@ const SELECTABLE_PRODUCT_SELECT = `
   providedIn: 'root',
 })
 export class PromotionsService {
-  private readonly supabase = inject(SupabaseService).client;
+  private readonly adminSupabase = inject(ADMIN_SUPABASE);
+  private readonly customerSupabase = inject(CUSTOMER_SUPABASE);
 
-  async getPromotions(): Promise<Promotion[]> {
-    const { data, error } = await this.supabase
+  getPromotions(): Promise<Promotion[]> {
+    return this.loadPromotions(this.adminSupabase);
+  }
+
+  getPublicPromotions(): Promise<Promotion[]> {
+    return this.loadPromotions(this.customerSupabase);
+  }
+
+  private async loadPromotions(client: NestoraSupabaseClient): Promise<Promotion[]> {
+    const { data, error } = await client
       .from('promotions')
       .select(PROMOTION_SELECT)
       .order('created_at', { ascending: false });
@@ -69,7 +79,7 @@ export class PromotionsService {
   }
 
   async getPromotionById(id: string): Promise<Promotion | null> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('promotions')
       .select(PROMOTION_SELECT)
       .eq('id', id)
@@ -83,7 +93,7 @@ export class PromotionsService {
   }
 
   async createPromotion(payload: PromotionMutationPayload): Promise<Promotion> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('promotions')
       .insert(this.toPromotionRecord(payload))
       .select(PROMOTION_SELECT)
@@ -100,7 +110,7 @@ export class PromotionsService {
     id: string,
     payload: Partial<PromotionMutationPayload>,
   ): Promise<Promotion> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('promotions')
       .update(this.toPromotionRecord(payload))
       .eq('id', id)
@@ -115,7 +125,7 @@ export class PromotionsService {
   }
 
   async deletePromotion(id: string): Promise<void> {
-    const { error } = await this.supabase.from('promotions').delete().eq('id', id);
+    const { error } = await this.adminSupabase.from('promotions').delete().eq('id', id);
 
     if (error) {
       throw new Error(error.message);
@@ -123,7 +133,7 @@ export class PromotionsService {
   }
 
   async getSelectableProducts(): Promise<PromotionSelectableProduct[]> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('products')
       .select(SELECTABLE_PRODUCT_SELECT)
       .eq('is_active', true)
@@ -153,7 +163,7 @@ export class PromotionsService {
   }
 
   async getPromotionProductIds(promotionId: string): Promise<string[]> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.adminSupabase
       .from('promotion_products')
       .select('product_id')
       .eq('promotion_id', promotionId)
@@ -168,7 +178,7 @@ export class PromotionsService {
 
   async replacePromotionProducts(promotionId: string, productIds: string[]): Promise<void> {
     const uniqueProductIds = [...new Set(productIds.filter(Boolean))];
-    const { error } = await this.supabase.rpc('replace_promotion_products', {
+    const { error } = await this.adminSupabase.rpc('replace_promotion_products', {
       p_promotion_id: promotionId,
       p_product_ids: uniqueProductIds,
     });
@@ -182,7 +192,7 @@ export class PromotionsService {
     this.validatePromotionImage(file);
 
     const path = `promotions/${this.currentYearMonth()}/${this.randomId()}.${this.fileExtension(file.name)}`;
-    const { error } = await this.supabase.storage.from(PROMOTION_IMAGES_BUCKET).upload(path, file, {
+    const { error } = await this.adminSupabase.storage.from(PROMOTION_IMAGES_BUCKET).upload(path, file, {
       cacheControl: '3600',
       upsert: false,
     });
@@ -191,7 +201,7 @@ export class PromotionsService {
       throw new Error(error.message);
     }
 
-    const { data } = this.supabase.storage.from(PROMOTION_IMAGES_BUCKET).getPublicUrl(path);
+    const { data } = this.adminSupabase.storage.from(PROMOTION_IMAGES_BUCKET).getPublicUrl(path);
 
     if (!data.publicUrl) {
       throw new Error('Unable to get uploaded promotion image URL.');
@@ -207,7 +217,7 @@ export class PromotionsService {
       return;
     }
 
-    const { error } = await this.supabase.storage.from(PROMOTION_IMAGES_BUCKET).remove([path]);
+    const { error } = await this.adminSupabase.storage.from(PROMOTION_IMAGES_BUCKET).remove([path]);
 
     if (error) {
       throw new Error(error.message);

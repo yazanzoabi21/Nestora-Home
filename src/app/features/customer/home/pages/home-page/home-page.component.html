@@ -258,7 +258,7 @@
     <p class="mx-auto mt-3 max-w-xl text-sm text-[#858585]">
       {{ 'CUSTOMER.HOME.OFFERS.TEXT' | translate }}
     </p>
-    @if (loading()) {
+    @if (offersLoading()) {
     <div class="mt-8 grid grid-cols-2 gap-4 xl:grid-cols-4" role="status">
       <span class="sr-only">{{ 'CUSTOMER.HOME.OFFERS.LOADING' | translate }}</span>
       @for (_ of loadingCards; track $index) {

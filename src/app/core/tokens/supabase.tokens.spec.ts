@@ -68,4 +68,20 @@ describe('AuthPersistenceStorage', () => {
 
     expect(redirectedStorage.getItem(storageKey)).toBe('oauth-session');
   });
+
+  it('clears auth companions in memory and suppresses late writes until explicit sign-in', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage full', 'QuotaExceededError');
+    });
+    const storage = new AuthPersistenceStorage(storageKey);
+    for (const suffix of ['', '-user', '-code-verifier']) storage.setItem(storageKey + suffix, 'old');
+    storage.clearAuthSession();
+    for (const suffix of ['', '-user', '-code-verifier']) {
+      storage.setItem(storageKey + suffix, 'late');
+      expect(storage.getItem(storageKey + suffix)).toBeNull();
+    }
+    storage.setRememberSession(false);
+    storage.setItem(storageKey, 'new');
+    expect(storage.getItem(storageKey)).toBe('new');
+  });
 });
