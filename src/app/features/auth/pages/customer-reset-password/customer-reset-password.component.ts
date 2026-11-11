@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import {
   AbstractControl,
@@ -8,7 +7,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ToastService } from '../../../../core/services';
@@ -17,9 +16,8 @@ import {
   CustomerAuthService,
 } from '../../../../core/services/auth';
 import { CustomerAuthShellComponent } from '../../components/customer-auth-shell';
-import { BffApi, BffRequestError } from '../../../../core/services/bff/bff-api';
 
-type RecoveryState = 'checking' | 'confirmation' | 'ready' | 'invalid';
+type RecoveryState = 'checking' | 'ready' | 'invalid';
 
 const passwordsMatchValidator: ValidatorFn = (
   control: AbstractControl,
@@ -45,9 +43,6 @@ export class CustomerResetPasswordComponent {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly document = inject(DOCUMENT);
-  private readonly bff = new BffApi('customer');
 
   readonly passwordMinLength = CUSTOMER_PASSWORD_MIN_LENGTH;
   readonly form = this.formBuilder.nonNullable.group(
@@ -63,34 +58,9 @@ export class CustomerResetPasswordComponent {
   readonly passwordVisible = signal(false);
   readonly confirmPasswordVisible = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly recoveryEmail = signal('');
 
   constructor() {
-    if (this.route.snapshot.queryParamMap.has('error')) this.recoveryState.set('invalid');
-    else if (this.route.snapshot.queryParamMap.get('confirmation') === 'required') void this.loadConfirmation();
-    else void this.validateRecoverySession();
-  }
-
-  private async loadConfirmation(): Promise<void> {
-    try {
-      const result = await this.bff.json<{ email: string }>('auth/recovery-confirmation');
-      this.recoveryEmail.set(result.email);
-      this.recoveryState.set('confirmation');
-    } catch { this.recoveryState.set('invalid'); }
-  }
-
-  async confirmRecovery(): Promise<void> {
-    if (this.loading() || this.recoveryState() !== 'confirmation') return;
-    this.loading.set(true);
-    this.errorMessage.set(null);
-    try {
-      await this.bff.json('auth/recovery-confirmation', { confirm: true });
-      // Restore the confirmed cookie in a fresh auth context; discard stale account state.
-      this.document.defaultView?.location.replace('/auth/customer-reset-password');
-    } catch (error: unknown) {
-      if (error instanceof BffRequestError && [400, 401, 403, 409].includes(error.status)) this.recoveryState.set('invalid');
-      else this.errorMessage.set(this.translate.instant('AUTH.PASSWORD_RESET.CONFIRMATION_FAILED'));
-    } finally { this.loading.set(false); }
+    void this.validateRecoverySession();
   }
 
   get passwordControl() {

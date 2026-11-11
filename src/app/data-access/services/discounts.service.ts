@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import { CustomerAuthService } from '../../core/services/auth';
-import type { NestoraSupabaseClient } from '../../core/models/auth/browser-auth.models';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
 import {
   Discount,
@@ -91,7 +91,7 @@ export class DiscountsService {
     return this.loadGiftProductsForDiscount(this.customerSupabase, discountId);
   }
 
-  private async loadGiftProductsForDiscount(client: NestoraSupabaseClient, discountId: string): Promise<DiscountGiftProduct[]> {
+  private async loadGiftProductsForDiscount(client: SupabaseClient, discountId: string): Promise<DiscountGiftProduct[]> {
     const { data, error } = await client
       .from('discount_gift_products')
       .select('id,discount_id,product_id,sort_order,is_active,products:product_id(*)')

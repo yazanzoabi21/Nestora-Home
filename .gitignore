@@ -2,9 +2,8 @@
 
 # Dependencies
 /node_modules/
-/bff/node_modules/
-/bff/dist/
-/bff/coverage/
+**/node_modules/
+**/dist/
 
 # Angular build and generated output
 /dist/

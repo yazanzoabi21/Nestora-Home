@@ -2,7 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { vi } from 'vitest';
 import { AuthPersistenceStorage } from '../../tokens/supabase.tokens';
 import { AuthSessionLifecycle } from './auth-session-lifecycle';
-import { BffRequestError } from '../bff/bff-api';
+import { AuthRetryableFetchError } from '@supabase/supabase-js';
 
 const key = 'phase2-sdk-integration-auth';
 const session = {
@@ -95,7 +95,7 @@ describe('audience cleanup with installed Supabase SDK (offline HTTP integration
     await first;
   });
 
-  for (const failure of [new TypeError('Offline'), new BffRequestError(503, 'AUTH_UNAVAILABLE')]) {
+  for (const failure of [new TypeError('Offline'), new AuthRetryableFetchError('Provider unavailable', 503)]) {
     it('preserves the SDK session and storage after a temporary login failure: ' + failure.name, async () => {
       const { lifecycle, storage } = setup(false);
       await client.auth.signInWithPassword({ email: 'test@example.com', password: 'secret' });

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { CategoriesService, CustomerOffersService, PromotionsService } from '../../../../../data-access/services';
 import { PublicCatalogChanges } from '../../../../../core/services/public-catalog-changes.service';
-import type { BrowserSession } from '../../../../../core/models/auth/browser-auth.models';
+import type { Session } from '@supabase/supabase-js';
 
 const MAX_STALE_MS = 5 * 60_000;
 
@@ -57,13 +57,12 @@ export class HomePublicData {
   );
   readonly guestOffers = publicSection(
     () => this.offersService.getActiveCustomerOffers(true), this.offersRevision, 60_000,
-    (offers) => this.offersService.supportsAnonymousOffers &&
-      offers.every(({ audience }) => audience === 'all' || audience === 'guest'),
+    (offers) => offers.every(({ audience }) => audience === 'all' || audience === 'guest'),
   );
-  private offerSession: BrowserSession | null = null;
+  private offerSession: Session | null = null;
   private memberOffers = this.createMemberOffers();
 
-  offersFor(session: BrowserSession | null) {
+  offersFor(session: Session | null) {
     if (this.offerSession !== session) {
       this.offerSession = session;
       this.memberOffers = this.createMemberOffers();

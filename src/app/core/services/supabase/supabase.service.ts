@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import type { NestoraSupabaseClient } from '../../models/auth/browser-auth.models';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { ADMIN_SUPABASE } from '../../tokens';
 
@@ -7,5 +7,5 @@ import { ADMIN_SUPABASE } from '../../tokens';
   providedIn: 'root',
 })
 export class SupabaseService {
-  readonly client: NestoraSupabaseClient = inject(ADMIN_SUPABASE);
+  readonly client: SupabaseClient = inject(ADMIN_SUPABASE);
 }

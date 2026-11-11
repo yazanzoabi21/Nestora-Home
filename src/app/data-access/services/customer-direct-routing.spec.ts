@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-import { ADMIN_SUPABASE, CUSTOMER_SUPABASE, AuthPersistenceStorage } from '../../core/tokens';
+import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
 import { CustomerAuthService } from '../../core/services/auth';
-import { createBffSupabaseClient } from '../../core/services/bff/bff-supabase-client';
+import { createClient } from '@supabase/supabase-js';
 import { CategoriesService } from './categories.service';
 import { PromotionsService } from './promotions.service';
 import { DiscountsService } from './discounts.service';
@@ -10,13 +10,14 @@ import { CustomerCartService } from '../../features/customer/services/customer-c
 import { CustomerWishlistService } from '../../features/customer/services/customer-wishlist.service';
 import { CustomerOrdersService } from '../../features/customer/orders/customer-orders.service';
 
-describe('shared storefront services select Customer/Public BFF explicitly', () => {
+describe('shared storefront services select Customer/Public Supabase directly', () => {
   let requests: { url: URL; method: string }[];
   let adminSignedIn: boolean;
   let missingParent: boolean;
+  let denyReads: boolean;
 
   beforeEach(() => {
-    requests = []; adminSignedIn = false; missingParent = false;
+    requests = []; adminSignedIn = false; missingParent = false; denyReads = false;
     vi.stubGlobal('BroadcastChannel', class {
       addEventListener(): void { /* No real tabs in this fixture. */ }
       postMessage(): void { /* No real tabs in this fixture. */ }
@@ -27,8 +28,7 @@ describe('shared storefront services select Customer/Public BFF explicitly', () 
       const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
         status, headers: { 'Content-Type': 'application/json' },
       });
-      if (url.pathname === '/api/csrf') return respond({ csrfToken: 'C'.repeat(43) });
-      if (url.pathname.startsWith('/api/admin/') && !adminSignedIn) {
+      if (denyReads) {
         return respond({ code: 'SESSION_REQUIRED', message: 'Admin session required.' }, 401);
       }
       const table = url.pathname.split('/').at(-1);
@@ -43,10 +43,12 @@ describe('shared storefront services select Customer/Public BFF explicitly', () 
       return respond(new Headers(options?.headers).get('accept')?.includes('vnd.pgrst.object') ? rows[0] ?? null : rows);
     }));
     TestBed.configureTestingModule({ providers: [
-      { provide: ADMIN_SUPABASE, useValue: createBffSupabaseClient('admin', 'https://project.supabase.test',
-        'sb_publishable_test', new AuthPersistenceStorage('routing-admin')) },
-      { provide: CUSTOMER_SUPABASE, useValue: createBffSupabaseClient('customer', 'https://project.supabase.test',
-        'sb_publishable_test', new AuthPersistenceStorage('routing-customer')) },
+      { provide: ADMIN_SUPABASE, useValue: createClient('https://project.supabase.test', 'sb_publishable_test', {
+        accessToken: async () => adminSignedIn ? 'admin-fixture-token' : null,
+      }) },
+      { provide: CUSTOMER_SUPABASE, useValue: createClient('https://project.supabase.test', 'sb_publishable_test', {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      }) },
       { provide: CustomerAuthService, useValue: {
         getCurrentUserId: async () => 'customer-fixture',
         isAuthenticated: () => true,
@@ -67,7 +69,7 @@ describe('shared storefront services select Customer/Public BFF explicitly', () 
       await discounts.getDiscountByCode('code');
       await discounts.getCustomerGiftProductsForDiscount('discount-fixture');
       expect(requests.length).toBeGreaterThan(0);
-      expect(requests.every(({ url }) => url.pathname.startsWith('/api/customer/'))).toBe(true);
+      expect(requests.every(({ url }) => url.pathname.startsWith('/rest/v1/'))).toBe(true);
     });
   }
 
@@ -75,7 +77,7 @@ describe('shared storefront services select Customer/Public BFF explicitly', () 
     missingParent = true;
     expect(await TestBed.inject(CategoriesService).getPublicCategories()).toHaveLength(1);
     expect(requests).toHaveLength(2);
-    expect(requests.every(({ url }) => url.pathname.startsWith('/api/customer/'))).toBe(true);
+    expect(requests.every(({ url }) => url.pathname.startsWith('/rest/v1/'))).toBe(true);
   });
 
   it('preserves Admin reads, category counts, writes and privileged discount RPCs', async () => {
@@ -88,16 +90,16 @@ describe('shared storefront services select Customer/Public BFF explicitly', () 
     const discounts = TestBed.inject(DiscountsService);
     await discounts.getDiscounts(); await discounts.getGiftProductsForDiscount('discount-fixture');
     await discounts.setGiftProductsForDiscount('discount-fixture', []);
-    expect(requests.filter(({ url }) => url.pathname !== '/api/csrf')
-      .every(({ url }) => url.pathname.startsWith('/api/admin/'))).toBe(true);
+    expect(requests.every(({ url }) => url.pathname.startsWith('/rest/v1/'))).toBe(true);
     expect(requests.some(({ method }) => method === 'DELETE')).toBe(true);
     expect(requests.some(({ url }) => url.pathname.endsWith('/rpc/replace_discount_gift_products'))).toBe(true);
   });
 
   it('never retries protected Admin reads as Customer/Public after an Admin 401', async () => {
+    denyReads = true;
     await expect(TestBed.inject(CategoriesService).getCategories()).rejects.toThrow('Admin session required');
     expect(requests).toHaveLength(1);
-    expect(requests[0]?.url.pathname).toBe('/api/admin/supabase/rest/v1/categories');
+    expect(requests[0]?.url.pathname).toBe('/rest/v1/categories');
   });
 
   it('keeps cart, wishlist and orders on the Customer client', async () => {
@@ -105,7 +107,7 @@ describe('shared storefront services select Customer/Public BFF explicitly', () 
     await TestBed.inject(CustomerWishlistService).loadProductIds('customer-fixture');
     await TestBed.inject(CustomerOrdersService).getCustomerOrders();
     expect(requests).toHaveLength(3);
-    expect(requests.every(({ url }) => url.pathname.startsWith('/api/customer/'))).toBe(true);
+    expect(requests.every(({ url }) => url.pathname.startsWith('/rest/v1/'))).toBe(true);
     expect(requests.map(({ url }) => url.pathname.split('/').at(-1))).toEqual(['cart_items', 'wishlist', 'orders']);
   });
 });

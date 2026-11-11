@@ -1,4 +1,4 @@
-import type { NestoraSupabaseClient } from '../../models/auth/browser-auth.models';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { AuthPersistenceStorage } from '../../tokens/supabase.tokens';
 import { isTransientAuthError } from './auth-request-error';
 
@@ -15,7 +15,7 @@ export class AuthSessionLifecycle {
   private logoutRequest: Promise<LogoutResult> | null = null;
 
   constructor(
-    private readonly client: Pick<NestoraSupabaseClient, 'auth'>,
+    private readonly client: Pick<SupabaseClient, 'auth'>,
     private readonly persistence: AuthPersistenceStorage,
   ) {}
 
@@ -36,7 +36,7 @@ export class AuthSessionLifecycle {
 
   authenticate<T>(
     remember: boolean | undefined,
-    authorize: (assertCurrent: () => void) => Promise<T>,
+    authorize: (assertCurrent: () => void, sessionEstablished: () => void) => Promise<T>,
     clearState: () => void,
   ): Promise<T> {
     const version = ++this.epoch;
@@ -46,20 +46,18 @@ export class AuthSessionLifecycle {
       };
       assertCurrent();
       const previousRemember = this.persistence.remembersSession;
+      let established = false;
       this.prepareSession(remember);
       try {
-        const result = await authorize(assertCurrent);
+        const result = await authorize(assertCurrent, () => { established = true; });
         assertCurrent();
         await this.client.auth.startAutoRefresh();
         assertCurrent();
         return result;
       } catch (error: unknown) {
-        // The BFF validates roles before issuing a cookie and cleans up failed
-        // establishment itself. A rejected login must not initiate a logout.
-        if (this.client.auth.serverManaged) {
-          if (version === this.epoch) this.persistence.setRememberSession(previousRemember);
-        } else if (isTransientAuthError(error) && version === this.epoch) this.persistence.setRememberSession(previousRemember);
-        else await this.clear(clearState);
+        if (!established && version === this.epoch) {
+          this.persistence.setRememberSession(previousRemember);
+        } else if (established && !isTransientAuthError(error)) await this.clear(clearState);
         throw error;
       }
     });
@@ -86,7 +84,6 @@ export class AuthSessionLifecycle {
       await this.client.auth.stopAutoRefresh();
       const result = await this.client.auth.signOut({ scope: 'local' });
       remoteRevocationConfirmed = !result.error;
-      if (this.client.auth.serverManaged) localSessionCleared = result.localSessionCleared === true;
     } catch {
       // A network failure must not retain an authenticated local session.
     } finally {
@@ -95,11 +92,9 @@ export class AuthSessionLifecycle {
     // Remote errors can bypass SDK removal. With storage empty, public signOut
     // completes local removal without a remote token. Do not use private SDK APIs.
     try {
-      if (!this.client.auth.serverManaged) {
-        await this.client.auth.signOut({ scope: 'local' });
-        const { data, error } = await this.client.auth.getSession();
-        localSessionCleared = !error && data.session === null;
-      }
+      await this.client.auth.signOut({ scope: 'local' });
+      const { data, error } = await this.client.auth.getSession();
+      localSessionCleared = !error && data.session === null;
     } catch {
       // Report local uncertainty separately from remote revocation.
     } finally {

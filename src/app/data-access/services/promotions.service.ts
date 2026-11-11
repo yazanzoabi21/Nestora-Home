@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
-import type { NestoraSupabaseClient } from '../../core/models/auth/browser-auth.models';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
 import {
   Promotion,
@@ -65,7 +65,7 @@ export class PromotionsService {
     return this.loadPromotions(this.customerSupabase);
   }
 
-  private async loadPromotions(client: NestoraSupabaseClient): Promise<Promotion[]> {
+  private async loadPromotions(client: SupabaseClient): Promise<Promotion[]> {
     const { data, error } = await client
       .from('promotions')
       .select(PROMOTION_SELECT)

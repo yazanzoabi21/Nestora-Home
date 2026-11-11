@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
-import type { AppRealtimeChannel } from '../../../core/models/auth/browser-auth.models';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 import { ProductVideo, ProductVideoRow } from '../../../data-access/models';
@@ -35,7 +35,7 @@ export class CustomerProductVideosService {
   private readonly backgroundRefreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly pendingRealtimeProductIds = new Set<string>();
   private realtimeRefreshTimer: ReturnType<typeof setTimeout> | null = null;
-  private realtimeChannel: AppRealtimeChannel | null = null;
+  private realtimeChannel: RealtimeChannel | null = null;
 
   private readonly videosState = signal<
     Readonly<Record<string, readonly ProductVideo[]>>

@@ -1,8 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import type { AuthChangeEvent } from '@supabase/supabase-js';
-import type { BrowserSession, BrowserUser } from '../../models/auth/browser-auth.models';
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import { uploadAvatar } from '../../../shared/utils/avatar-upload.util';
 
 import { CUSTOMER_AUTH_PERSISTENCE, CUSTOMER_SUPABASE } from '../../tokens';
@@ -18,7 +17,7 @@ import { customerProfilePayload } from './profile-update.util';
 
 export type CustomerSignupResult =
   | { status: 'confirmation-required'; email: string }
-  | { status: 'authenticated'; session: BrowserSession };
+  | { status: 'authenticated'; session: Session };
 
 const CUSTOMER_SIGNUP_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   over_email_send_rate_limit:
@@ -73,8 +72,8 @@ export class CustomerAuthService {
   private readonly lifecycle = new AuthSessionLifecycle(this.supabase, this.persistence);
 
   private readonly destroyRef = inject(DestroyRef);
-  readonly session = signal<BrowserSession | null>(null);
-  readonly user = computed<BrowserUser | null>(() => this.session()?.user ?? null);
+  readonly session = signal<Session | null>(null);
+  readonly user = computed<User | null>(() => this.session()?.user ?? null);
   readonly isAuthenticated = computed(() =>
     !!this.user() && this.currentCustomerProfile()?.is_active === true &&
     this.currentCustomerProfile()?.roles?.name === 'customer',
@@ -82,7 +81,7 @@ export class CustomerAuthService {
   readonly isLoading = signal(true);
   readonly currentCustomerProfile = signal<AuthenticatedUserProfile | null>(null);
   readonly customerProfile = this.currentCustomerProfile;
-  private readonly passwordRecoverySession = signal<BrowserSession | null>(null);
+  private readonly passwordRecoverySession = signal<Session | null>(null);
   readonly displayName = computed<string>(() => {
     const metadataName = this.user()?.user_metadata['full_name'];
     return this.currentCustomerProfile()?.full_name?.trim()
@@ -96,11 +95,11 @@ export class CustomerAuthService {
   private lastLoadedProfileUserId: string | null | undefined;
   private activeProfileLoad: { userId: string | null; promise: Promise<void> } | null = null;
   private profileLoadSequence = 0;
-  private readonly passwordRecoveryWaiters = new Set<(session: BrowserSession | null) => void>();
+  private readonly passwordRecoveryWaiters = new Set<(session: Session | null) => void>();
 
   constructor() {
     const { data } = this.supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session && this.supabase.auth.serverManaged && !this.lifecycle.acceptsSession) {
+      if (event === 'SIGNED_IN' && session && !this.lifecycle.acceptsSession) {
         this.lifecycle.prepareSession();
       }
       if (!this.lifecycle.acceptsSession) return;
@@ -137,13 +136,14 @@ export class CustomerAuthService {
     returnUrl?: string | null,
     rememberSession = true,
   ): Promise<void> {
-    await this.lifecycle.authenticate(rememberSession, async (assertCurrent) => {
+    await this.lifecycle.authenticate(rememberSession, async (assertCurrent, sessionEstablished) => {
       const { data, error } = await this.supabase.auth.signInWithPassword(request);
+      if (data.session) sessionEstablished();
       assertCurrent();
       if (error) throw error;
       if (!data.user?.id || !data.session) throw new Error('User not found.');
       this.session.set(data.session);
-      await this.synchronizeProfileForSession(data.session, !this.supabase.auth.serverManaged);
+      await this.synchronizeProfileForSession(data.session, true);
       assertCurrent();
       this.requireCustomerProfile();
     }, () => this.clearState());
@@ -180,7 +180,7 @@ export class CustomerAuthService {
     if (error) throw new Error(error.message);
   }
 
-  async waitForPasswordRecoverySession(timeoutMs = 5000): Promise<BrowserSession | null> {
+  async waitForPasswordRecoverySession(timeoutMs = 5000): Promise<Session | null> {
     if (this.passwordRecoverySession()) return this.passwordRecoverySession();
 
     await this.initialize().catch(() => undefined);
@@ -189,8 +189,8 @@ export class CustomerAuthService {
     const view = this.document.defaultView;
     if (!view) return null;
 
-    return new Promise<BrowserSession | null>((resolve) => {
-      const waiter = (session: BrowserSession | null): void => {
+    return new Promise<Session | null>((resolve) => {
+      const waiter = (session: Session | null): void => {
         view.clearTimeout(timeoutId);
         this.passwordRecoveryWaiters.delete(waiter);
         resolve(session);
@@ -209,13 +209,14 @@ export class CustomerAuthService {
     if (!recoverySession) throw new Error('The password reset link is invalid or has expired.');
 
     const { data: userData, error: userError } = await this.supabase.auth.getUser();
-    if (userError || userData.user?.id !== recoverySession.user.id) {
+    if (userError) throw userError;
+    if (userData.user?.id !== recoverySession.user.id) {
       this.passwordRecoverySession.set(null);
       throw new Error('The password reset link is invalid or has expired.');
     }
 
     const { error: updateError } = await this.supabase.auth.updateUser({ password });
-    if (updateError) throw new Error(updateError.message);
+    if (updateError) throw updateError;
 
     this.passwordRecoverySession.set(null);
     await this.logout(false);
@@ -224,24 +225,21 @@ export class CustomerAuthService {
   async completeGoogleSignIn(oauthError?: string | null): Promise<string> {
     try {
       // Share the restoration started when the callback page was constructed.
-      if (!oauthError && this.supabase.auth.serverManaged) await this.initialize();
-      await this.lifecycle.authenticate(undefined, async (assertCurrent) => {
+      if (!oauthError) await this.initialize();
+      await this.lifecycle.authenticate(undefined, async (assertCurrent, sessionEstablished) => {
         if (oauthError) throw new Error(oauthError);
         assertCurrent();
-        const { data, error } = this.supabase.auth.serverManaged
-          ? { data: { session: this.session() }, error: null }
-          : await this.supabase.auth.getSession();
+        const { data, error } = await this.supabase.auth.getSession();
+        if (data.session) sessionEstablished();
         assertCurrent();
         if (error) throw new Error(error.message);
         const session = data.session;
         if (!session?.user.id) throw new Error('Google sign-in did not return a session.');
         this.session.set(session);
-        if (!this.supabase.auth.serverManaged) {
-          this.profileLoadSequence += 1;
-          this.activeProfileLoad = null;
-          this.currentCustomerProfile.set(null);
-        }
-        await this.synchronizeProfileForSession(session, !this.supabase.auth.serverManaged);
+        this.profileLoadSequence += 1;
+        this.activeProfileLoad = null;
+        this.currentCustomerProfile.set(null);
+        await this.synchronizeProfileForSession(session, true);
         assertCurrent();
         this.requireCustomerProfile();
       }, () => this.clearState());
@@ -253,7 +251,7 @@ export class CustomerAuthService {
   }
 
   async register(request: RegisterRequest): Promise<CustomerSignupResult> {
-    return this.lifecycle.authenticate(true, async (assertCurrent) => {
+    return this.lifecycle.authenticate(true, async (assertCurrent, sessionEstablished) => {
       const email = request.email.trim().toLowerCase();
       const { data, error } = await this.supabase.auth.signUp({
         email,
@@ -262,13 +260,13 @@ export class CustomerAuthService {
           full_name: request.fullName.trim(), phone: request.phone.trim(), role: 'customer',
         } },
       });
+      if (data.session) sessionEstablished();
       assertCurrent();
       if (error) throw error;
-      if (data.confirmationRequired) return { status: 'confirmation-required', email };
       if (!data.user?.id) throw new Error('Supabase did not return a user after signup.');
       if (!data.session) return { status: 'confirmation-required', email };
       this.session.set(data.session);
-      await this.synchronizeProfileForSession(data.session, !this.supabase.auth.serverManaged);
+      await this.synchronizeProfileForSession(data.session, true);
       assertCurrent();
       this.requireCustomerProfile();
       return { status: 'authenticated', session: data.session };
@@ -309,7 +307,6 @@ export class CustomerAuthService {
 
   async refreshCurrentCustomerProfile(): Promise<AuthenticatedUserProfile | null> {
     await this.initialize();
-    this.supabase.auth.invalidateCustomerProfile?.();
     await this.synchronizeProfileForSession(this.session(), true);
     return this.currentCustomerProfile();
   }
@@ -325,7 +322,6 @@ export class CustomerAuthService {
     const version = this.lifecycle.version;
     const userId = await this.getCurrentUserId();
     if (!userId) throw new Error('You must be signed in to update your profile.');
-    this.supabase.auth.invalidateCustomerProfile?.();
     this.profileLoadSequence += 1;
     this.activeProfileLoad = null;
     this.lastLoadedProfileUserId = undefined;
@@ -333,7 +329,6 @@ export class CustomerAuthService {
     if (error) throw new Error(error.message);
     const profile = data as unknown as AuthenticatedUserProfile;
     if (!this.lifecycle.isCurrent(version) || profile.is_active !== true || profile.roles?.name !== 'customer') throw new Error('Customer profile not found.');
-    this.supabase.auth.invalidateCustomerProfile?.();
     this.profileLoadSequence += 1;
     this.activeProfileLoad = null;
     this.lastLoadedProfileUserId = userId;
@@ -376,20 +371,10 @@ export class CustomerAuthService {
   }
 
   private async synchronizeProfileForSession(
-    session: BrowserSession | null,
+    session: Session | null,
     force = false,
   ): Promise<void> {
     const userId = session?.user.id ?? null;
-
-    const validatedProfile = this.supabase.auth.customerProfile;
-    if (!force && this.supabase.auth.serverManaged && session && validatedProfile !== undefined) {
-      this.profileLoadSequence += 1;
-      this.activeProfileLoad = null;
-      this.currentCustomerProfile.set(validatedProfile?.id === userId &&
-        validatedProfile.is_active === true && validatedProfile.roles?.name === 'customer' ? validatedProfile : null);
-      this.lastLoadedProfileUserId = userId;
-      return;
-    }
 
     if (this.activeProfileLoad?.userId === userId) {
       await this.activeProfileLoad.promise;
@@ -410,7 +395,7 @@ export class CustomerAuthService {
     }
   }
 
-  private async loadProfileForSession(session: BrowserSession | null): Promise<void> {
+  private async loadProfileForSession(session: Session | null): Promise<void> {
     const sequence = ++this.profileLoadSequence;
     const userId = session?.user.id ?? null;
 
@@ -440,6 +425,7 @@ export class CustomerAuthService {
       .from('profiles')
       .select(this.profileSelect)
       .eq('id', userId)
+      .retry(false)
       .maybeSingle();
 
     if (error) throw Object.assign(new Error(error.message), { status });
@@ -448,7 +434,7 @@ export class CustomerAuthService {
     return profile?.roles?.name === 'customer' ? profile : null;
   }
 
-  private handlePasswordRecoveryEvent(event: AuthChangeEvent, session: BrowserSession | null): void {
+  private handlePasswordRecoveryEvent(event: AuthChangeEvent, session: Session | null): void {
     if (event === 'PASSWORD_RECOVERY' && session) {
       this.passwordRecoverySession.set(session);
       for (const waiter of this.passwordRecoveryWaiters) waiter(session);

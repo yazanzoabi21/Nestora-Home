@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { AuthRetryableFetchError, SupabaseClient } from '@supabase/supabase-js';
 import { vi } from 'vitest';
 
 import { AuthenticatedUserProfile } from '../../models/auth';
@@ -119,6 +119,18 @@ describe('CustomerAuthService profile synchronization', () => {
     await expect(service.updatePasswordFromRecovery('new-secret')).resolves.toBeUndefined();
   });
 
+  it('preserves password recovery proof after a temporary identity request failure', async () => {
+    const { service, emitAuthState, signOut } = configureAuthService();
+    await service.initialize();
+    emitAuthState('PASSWORD_RECOVERY', SESSION);
+    vi.mocked(TestBed.inject(CUSTOMER_SUPABASE).auth.getUser).mockResolvedValueOnce({
+      data: { user: null }, error: new AuthRetryableFetchError('Temporarily unavailable', 503),
+    });
+    await expect(service.updatePasswordFromRecovery('new-secret')).rejects.toMatchObject({ status: 503 });
+    expect(await service.waitForPasswordRecoverySession()).toBe(SESSION);
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
   it('ignores late auth events after logout', async () => {
     const { service, emitAuthState } = configureAuthService();
     await service.initialize();
@@ -230,7 +242,7 @@ function configureAuthService(initialProfileError = false): {
   if (initialProfileError) profileQuery.mockResolvedValueOnce({
     data: null, error: { message: 'temporarily unavailable' },
   });
-  const eq = vi.fn(() => ({ maybeSingle: profileQuery }));
+  const eq = vi.fn(() => ({ maybeSingle: profileQuery, retry: () => ({ maybeSingle: profileQuery }) }));
   const select = vi.fn(() => ({ eq }));
   const from = vi.fn(() => ({ select }));
   const resetPasswordForEmail = vi.fn(() => Promise.resolve({ data: {}, error: null }));

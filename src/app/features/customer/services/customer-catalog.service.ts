@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, effect, inject, isDevMode, signal, untracked } from '@angular/core';
-import type { AppRealtimeChannel } from '../../../core/models/auth/browser-auth.models';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
 import { PublicCatalogChanges } from '../../../core/services/public-catalog-changes.service';
@@ -91,7 +91,7 @@ export class CustomerCatalogService {
   private invalidationRevision = 0;
   private pendingRequest: Promise<CustomerProduct[]> | null = null;
   private reuseCachedReviewStats = false;
-  private realtimeChannel: AppRealtimeChannel | null = null;
+  private realtimeChannel: RealtimeChannel | null = null;
   private backgroundRefreshTimer: ReturnType<typeof setTimeout> | null = null;
   private realtimeRefreshTimer: ReturnType<typeof setTimeout> | null = null;
   private lastBackgroundRevalidationAt = 0;

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
-import type { NestoraSupabaseClient } from '../../core/models/auth/browser-auth.models';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
 import { Category, CategoryMutationPayload } from '../models';
 
@@ -53,7 +53,7 @@ export class CategoriesService {
     return this.loadCategories(this.customerSupabase);
   }
 
-  private async loadCategories(client: NestoraSupabaseClient, signal?: AbortSignal): Promise<Category[]> {
+  private async loadCategories(client: SupabaseClient, signal?: AbortSignal): Promise<Category[]> {
     const query = client
       .from('categories')
       .select(CATEGORY_SELECT_WITH_PARENT)
@@ -107,7 +107,7 @@ export class CategoriesService {
     return this.loadCategoriesWithProductCount(this.customerSupabase);
   }
 
-  private async loadCategoriesWithProductCount(client: NestoraSupabaseClient, signal?: AbortSignal): Promise<Category[]> {
+  private async loadCategoriesWithProductCount(client: SupabaseClient, signal?: AbortSignal): Promise<Category[]> {
     const [categories, productCounts] = await Promise.all([
       this.loadCategories(client, signal),
       this.getProductCountsByCategoryId(client, signal),
@@ -176,7 +176,7 @@ export class CategoriesService {
       .replace(/(^-|-$)/g, '');
   }
 
-  private async getCategoriesWithoutParent(client: NestoraSupabaseClient, signal?: AbortSignal): Promise<Category[]> {
+  private async getCategoriesWithoutParent(client: SupabaseClient, signal?: AbortSignal): Promise<Category[]> {
     const query = client
       .from('categories')
       .select(CATEGORY_SELECT)
@@ -219,7 +219,7 @@ export class CategoriesService {
     return this.mapCategory(data as Category);
   }
 
-  private async getProductCountsByCategoryId(client: NestoraSupabaseClient, signal?: AbortSignal): Promise<Map<string, number>> {
+  private async getProductCountsByCategoryId(client: SupabaseClient, signal?: AbortSignal): Promise<Map<string, number>> {
     const query = client
       .from('products')
       .select('category_id');

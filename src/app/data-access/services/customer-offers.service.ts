@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
-import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
-import { GUEST_OFFERS_HEADER } from '../../core/services/bff/bff-supabase-client';
+import { ADMIN_SUPABASE, CUSTOMER_SUPABASE, PUBLIC_SUPABASE } from '../../core/tokens';
 import {
   CustomerOffer,
   CustomerOfferDiscount,
@@ -51,6 +50,7 @@ const CUSTOMER_OFFER_SELECT = `
 export class CustomerOffersService {
   private readonly adminSupabase = inject(ADMIN_SUPABASE);
   private readonly customerSupabase = inject(CUSTOMER_SUPABASE);
+  private readonly publicSupabase = inject(PUBLIC_SUPABASE);
 
   async getCustomerOffersForAdmin(): Promise<CustomerOffer[]> {
     const { data, error } = await this.adminSupabase
@@ -63,21 +63,16 @@ export class CustomerOffersService {
     return this.mapOffers(data);
   }
 
-  get supportsAnonymousOffers(): boolean {
-    return this.customerSupabase.auth.serverManaged === true;
-  }
-
   async getActiveCustomerOffers(anonymous = false): Promise<CustomerOffer[]> {
     const now = new Date().toISOString();
-    const query = this.customerSupabase
+    const query = (anonymous ? this.publicSupabase : this.customerSupabase)
       .from('customer_offers')
       .select(CUSTOMER_OFFER_SELECT)
       .eq('is_active', true)
       .or(`start_date.is.null,start_date.lte.${now}`)
       .or(`end_date.is.null,end_date.gte.${now}`)
       .order('sort_order', { ascending: true });
-    const { data, error } = await (anonymous && this.supportsAnonymousOffers
-      ? query.setHeader(GUEST_OFFERS_HEADER, 'true') : query);
+    const { data, error } = await (anonymous ? query.in('audience', ['all', 'guest']) : query);
 
     if (error) throw new Error(error.message);
     return this.mapOffers(data);

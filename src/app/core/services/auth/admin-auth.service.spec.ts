@@ -3,8 +3,7 @@ import { Router } from '@angular/router';
 import { vi } from 'vitest';
 import { ADMIN_SUPABASE } from '../../tokens';
 import { AdminAuthService } from './admin-auth.service';
-import type { BrowserAuthClient } from '../../models/auth/browser-auth.models';
-import { BffRequestError } from '../bff/bff-api';
+import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js';
 
 describe('AdminAuthService authorization and cleanup', () => {
   const profileQuery = vi.fn();
@@ -14,7 +13,7 @@ describe('AdminAuthService authorization and cleanup', () => {
   const navigate = vi.fn();
   let activeSession: { user: { id: string } } | null;
   let service: AdminAuthService;
-  let authEvent: Parameters<BrowserAuthClient['onAuthStateChange']>[0];
+  let authEvent: Parameters<SupabaseClient['auth']['onAuthStateChange']>[0];
 
   beforeEach(() => {
     activeSession = { user: { id: 'test-user' } };
@@ -39,7 +38,7 @@ describe('AdminAuthService authorization and cleanup', () => {
           }),
         },
         from: vi.fn(() => ({ update, select: vi.fn(() => ({ eq: vi.fn(() => ({
-          maybeSingle: profileQuery,
+          maybeSingle: profileQuery, retry: () => ({ maybeSingle: profileQuery }),
         })) })) })),
       } },
     ] });
@@ -59,23 +58,6 @@ describe('AdminAuthService authorization and cleanup', () => {
     expect(profileQuery).toHaveBeenCalledTimes(1);
     await service.isAuthenticated();
     expect(profileQuery).toHaveBeenCalledTimes(2);
-  });
-
-  it('uses the validated BFF profile and rechecks the session on later navigation', async () => {
-    const auth = TestBed.inject(ADMIN_SUPABASE).auth;
-    Object.defineProperty(auth, 'serverManaged', { value: true });
-    const profile = { id: 'test-user', is_active: true, roles: { name: 'admin' } } as NonNullable<
-      Awaited<ReturnType<typeof service.getCurrentUserProfile>>
-    >;
-    const session = activeSession as NonNullable<Awaited<ReturnType<typeof auth.getSession>>['data']['session']>;
-    vi.mocked(auth.getSession)
-      .mockResolvedValueOnce({ data: { session, profile }, error: null })
-      .mockResolvedValueOnce({ data: { session, profile: { ...profile, is_active: false } }, error: null });
-    await expect(service.isAuthenticated()).resolves.toBe(true);
-    expect(service.currentUserProfile()).toEqual(profile);
-    await expect(service.isAuthenticated()).resolves.toBe(false);
-    expect(auth.getSession).toHaveBeenCalledTimes(2);
-    expect(profileQuery).not.toHaveBeenCalled();
   });
 
   for (const failure of ['missing', 'inactive', 'wrong-role', 'query-error']) {
@@ -99,13 +81,11 @@ describe('AdminAuthService authorization and cleanup', () => {
     expect(signOut).not.toHaveBeenCalled();
   });
 
-  for (const [status, code] of [[401, 'INVALID_CREDENTIALS'], [403, 'CSRF_FAILED'],
-    [403, 'ACCOUNT_NOT_AUTHORIZED'], [503, 'AUTH_UNAVAILABLE']] as const) {
-    it(`does not log out an existing Admin after a BFF login rejects with ${code}`, async () => {
+  for (const [status, code] of [[400, 'invalid_credentials'], [503, 'unexpected_failure']] as const) {
+    it(`preserves an existing Admin session after a rejected provider login: ${code}`, async () => {
       await service.getCurrentUserProfile();
       const previous = service.currentUserProfile();
-      Object.defineProperty(TestBed.inject(ADMIN_SUPABASE).auth, 'serverManaged', { value: true });
-      signInWithPassword.mockResolvedValue({ data: { user: null, session: null }, error: new BffRequestError(status, code) });
+      signInWithPassword.mockResolvedValue({ data: { user: null, session: null }, error: new AuthApiError('Provider failure', status, code) });
       await expect(service.login({ email: 'admin@example.com', password: 'secret' })).rejects.toMatchObject({ status, code });
       expect(signOut).not.toHaveBeenCalled();
       expect(service.currentUserProfile()).toBe(previous);

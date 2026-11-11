@@ -100,7 +100,7 @@ export class OrdersService {
   private readonly supabase = inject(ADMIN_SUPABASE);
 
   async getOrders(signal?: AbortSignal): Promise<AdminOrder[]> {
-    if (!this.supabase.auth.serverManaged) await this.ensureAdminSession();
+    await this.ensureAdminSession();
 
     signal?.throwIfAborted();
     const query = this.supabase
@@ -215,7 +215,7 @@ export class OrdersService {
     deliveryStatus: AdminOrder['delivery'],
     paymentStatus: AdminOrder['payment'],
   ): Promise<void> {
-    if (!this.supabase.auth.serverManaged) await this.ensureAdminSession();
+    await this.ensureAdminSession();
 
     const { error } = await this.supabase.rpc(
       'update_admin_order_status',
@@ -232,7 +232,7 @@ export class OrdersService {
   }
 
   async removeOrderItem(orderId: string, orderItemId: string): Promise<void> {
-    if (!this.supabase.auth.serverManaged) await this.ensureAdminSession();
+    await this.ensureAdminSession();
 
     const { error } = await this.supabase.rpc('remove_admin_order_item', {
       p_order_id: orderId,
@@ -276,15 +276,15 @@ export class OrdersService {
 
   private async ensureAdminSession(): Promise<void> {
     const {
-      data: { user },
+      data: { session },
       error,
-    } = await this.supabase.auth.getUser();
+    } = await this.supabase.auth.getSession();
 
     if (error) {
       throw error;
     }
 
-    if (!user) {
+    if (!session) {
       throw new Error(
         'The admin Supabase client does not have an authenticated session.',
       );

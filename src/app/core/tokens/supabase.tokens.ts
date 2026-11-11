@@ -1,7 +1,6 @@
 import { InjectionToken, inject } from '@angular/core';
 import { createClient } from '@supabase/supabase-js';
-import type { NestoraSupabaseClient } from '../models/auth/browser-auth.models';
-import { createBffSupabaseClient } from '../services/bff/bff-supabase-client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { PublicCatalogChanges } from '../services/public-catalog-changes.service';
 
 import { environment } from '../../../environments/environment';
@@ -114,15 +113,9 @@ export class AuthPersistenceStorage {
 function createNestoraClient(
   storageKey: string,
   storage: AuthPersistenceStorage,
-): NestoraSupabaseClient {
+): SupabaseClient {
   const admin = storageKey === 'nestora-admin-auth';
   const changes = admin ? inject(PublicCatalogChanges) : null;
-  if (environment.bffEnabled) {
-    inject(ADMIN_AUTH_PERSISTENCE).clearAuthSession();
-    inject(CUSTOMER_AUTH_PERSISTENCE).clearAuthSession();
-    return createBffSupabaseClient(admin ? 'admin' : 'customer',
-      environment.supabaseUrl, environment.supabaseAnonKey, storage, changes?.mutationCompleted.bind(changes));
-  }
   return createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
     ...(changes ? { global: { fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
       const response = await fetch(input, init);
@@ -136,7 +129,9 @@ function createNestoraClient(
       storage,
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true,
+      // Only the Customer client owns email/OAuth callbacks. Never import a
+      // Customer callback into the independent Admin session.
+      detectSessionInUrl: !admin,
     },
   });
 }
@@ -157,12 +152,20 @@ export const CUSTOMER_AUTH_PERSISTENCE = new InjectionToken<AuthPersistenceStora
   },
 );
 
-export const ADMIN_SUPABASE = new InjectionToken<NestoraSupabaseClient>('ADMIN_SUPABASE', {
+export const ADMIN_SUPABASE = new InjectionToken<SupabaseClient>('ADMIN_SUPABASE', {
   providedIn: 'root',
   factory: () => createNestoraClient('nestora-admin-auth', inject(ADMIN_AUTH_PERSISTENCE)),
 });
 
-export const CUSTOMER_SUPABASE = new InjectionToken<NestoraSupabaseClient>('CUSTOMER_SUPABASE', {
+export const CUSTOMER_SUPABASE = new InjectionToken<SupabaseClient>('CUSTOMER_SUPABASE', {
   providedIn: 'root',
   factory: () => createNestoraClient('nestora-customer-auth', inject(CUSTOMER_AUTH_PERSISTENCE)),
+});
+
+/** Anonymous public reads never inherit either audience's stored credentials. */
+export const PUBLIC_SUPABASE = new InjectionToken<SupabaseClient>('PUBLIC_SUPABASE', {
+  providedIn: 'root',
+  factory: () => createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
+    auth: { storageKey: 'nestora-public-anon', persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  }),
 });

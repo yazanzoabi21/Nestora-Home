@@ -82,11 +82,6 @@ export class CustomerSettingsService {
         currentPassword: string,
         newPassword: string,
     ): Promise<void> {
-        if (this.supabase.auth.changePassword) {
-            const { error } = await this.supabase.auth.changePassword(currentPassword, newPassword);
-            if (error) throw error;
-            return;
-        }
         const {
             data: { user },
             error: userError,
@@ -102,7 +97,8 @@ export class CustomerSettingsService {
         });
 
         if (signInError) {
-            throw new Error('Your current password is incorrect.');
+            if (signInError.code === 'invalid_credentials') throw new Error('Your current password is incorrect.');
+            throw signInError;
         }
 
         const { error: updateError } = await this.supabase.auth.updateUser({

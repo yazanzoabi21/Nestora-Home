@@ -12,6 +12,7 @@ import {
 
 import { AuthSessionLifecycle, LogoutResult } from './auth-session-lifecycle';
 import { adminProfilePayload } from './profile-update.util';
+import { accountAccessError } from './auth-request-error';
 
 const AVATAR_STORAGE_BUCKET = 'avatars';
 const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
@@ -35,7 +36,7 @@ export class AdminAuthService {
 
   constructor() {
     const { data } = this.supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN' && this.supabase.auth.serverManaged && !this.lifecycle.acceptsSession) {
+      if (event === 'SIGNED_IN' && !this.lifecycle.acceptsSession) {
         this.lifecycle.prepareSession();
         void this.getCurrentUserProfile().catch(() => undefined);
         return;
@@ -56,19 +57,18 @@ export class AdminAuthService {
     returnUrl?: string | null,
     rememberSession = true,
   ): Promise<void> {
-    const profile = await this.lifecycle.authenticate(rememberSession, async (assertCurrent) => {
+    const profile = await this.lifecycle.authenticate(rememberSession, async (assertCurrent, sessionEstablished) => {
       const { data, error } = await this.supabase.auth.signInWithPassword(request);
+      if (data.session) sessionEstablished();
       assertCurrent();
       if (error) throw error;
       if (!data.user?.id) throw new Error('User not found.');
-      const profile = this.supabase.auth.serverManaged
-        ? data.profile?.id === data.user.id ? data.profile : null
-        : await this.getAuthenticatedProfile(data.user.id);
+      const profile = await this.getAuthenticatedProfile(data.user.id);
       assertCurrent();
-      if (!profile) throw new Error('Profile not found.');
-      if (profile.is_active !== true) throw new Error('Your account is inactive.');
+      if (!profile) throw accountAccessError('Profile not found.');
+      if (profile.is_active !== true) throw accountAccessError('Your account is inactive.');
       if (!isAdminRole(profile.roles?.name)) {
-        throw new Error('This account does not have admin access.');
+        throw accountAccessError('This account does not have admin access.');
       }
       this.currentUserProfile.set(profile);
       return profile;
@@ -178,7 +178,6 @@ export class AdminAuthService {
     if (error) throw error;
     const userId = data.session?.user.id;
     if (!userId) return null;
-    if (this.supabase.auth.serverManaged) return data.profile?.id === userId ? data.profile : null;
     return this.getAuthenticatedProfile(userId);
   }
 
@@ -215,6 +214,7 @@ export class AdminAuthService {
       .from('profiles')
       .select(this.profileSelect)
       .eq('id', userId)
+      .retry(false)
       .maybeSingle();
 
     if (error) throw Object.assign(new Error(error.message), { status });
