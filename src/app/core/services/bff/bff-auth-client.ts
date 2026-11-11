@@ -12,6 +12,7 @@ interface SessionView {
 }
 
 type SessionResult = Awaited<ReturnType<BrowserAuthClient['getSession']>>;
+type SignOutResult = { error: Error | null; localSessionCleared: boolean };
 
 export class BffAuthClient implements BrowserAuthClient {
   readonly serverManaged = true;
@@ -25,6 +26,11 @@ export class BffAuthClient implements BrowserAuthClient {
   private profileVersion = 0;
   private sessionRequest: { version: number; profileVersion: number; promise: Promise<SessionResult> } | null = null;
   private logoutRequest: Promise<{ error: Error | null; localSessionCleared: boolean }> | null = null;
+  private completedLogout: SignOutResult | null = null;
+  private logoutRetryAt = 0;
+  private logoutError: Error | null = null;
+  private authenticating = false;
+  private sessionChangedDuringAuthentication = false;
 
   get customerProfile(): AuthenticatedUserProfile | null | undefined { return this.profile; }
 
@@ -38,12 +44,18 @@ export class BffAuthClient implements BrowserAuthClient {
   constructor(private readonly api: BffApi, private readonly remember: () => boolean) {
     api.onUnauthorized = () => this.invalidate();
     this.events = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nestora-bff-${api.audience}`);
-    this.events?.addEventListener('message', () => { this.api.sessionVersion++; void this.getSession(); });
+    this.events?.addEventListener('message', () => {
+      this.completedLogout = null;
+      if (this.authenticating) { this.sessionChangedDuringAuthentication = true; return; }
+      this.api.sessionVersion++;
+      void this.getSession();
+    });
   }
 
   private publish(view: SessionView, event: AuthChangeEvent): void {
     this.initialized = true;
     this.current = view.session;
+    if (view.session) this.completedLogout = null;
     this.profile = this.api.audience === 'customer' && view.session
       ? view.profile === undefined ? undefined : view.profile?.id === view.session.user.id ? view.profile : null
       : undefined;
@@ -69,22 +81,22 @@ export class BffAuthClient implements BrowserAuthClient {
     try {
       if (version !== this.api.sessionVersion || profileVersion !== this.profileVersion) return { data: { session: this.current }, error: null };
       if (this.logoutPending()) {
+        if (Date.now() < this.logoutRetryAt) return { data: { session: null },
+          error: this.logoutError ?? new BffRequestError(409, 'LOGOUT_PENDING') };
         const result = await this.signOut();
         return { data: { session: null }, error: result.error };
       }
       const view = await this.api.json<SessionView>('auth/session');
       if (version !== this.api.sessionVersion || profileVersion !== this.profileVersion) return { data: { session: this.current }, error: null };
       if (!this.initialized || this.current?.user.id !== view.session?.user.id || this.recovery !== !!view.recovery) {
-        this.publish(view, view.session ? this.initialized ? 'SIGNED_IN' : 'INITIAL_SESSION' : 'SIGNED_OUT');
+        this.publish(view, !this.initialized ? 'INITIAL_SESSION' : view.session ? 'SIGNED_IN' : 'SIGNED_OUT');
       } else if (this.api.audience === 'customer' && JSON.stringify(this.profile) !== JSON.stringify(view.profile)) {
         this.publish(view, 'USER_UPDATED');
       }
       return { data: { session: view.session, profile: view.profile }, error: null };
     } catch (error: unknown) {
       if (version !== this.api.sessionVersion || profileVersion !== this.profileVersion) return { data: { session: this.current }, error: null };
-      this.publish(this.empty(), 'SIGNED_OUT');
-      if (error instanceof BffRequestError && [401, 403].includes(error.status)) return { data: { session: null }, error: null };
-      return { data: { session: null }, error: this.failure(error) };
+      return { data: { session: this.current }, error: this.failure(error) };
     }
   }
   async getUser() {
@@ -92,20 +104,30 @@ export class BffAuthClient implements BrowserAuthClient {
     return { data: { user: result.data.session?.user ?? null }, error: result.error };
   }
   async signInWithPassword(request: { email: string; password: string }): Promise<BrowserAuthResponse> {
+    this.authenticating = true;
     try {
       if (this.logoutPending()) {
-        await this.signOut();
-        if (this.logoutPending()) throw new Error('Sign-out has not completed.');
+        const result = await this.signOut();
+        if (this.logoutPending()) throw result.error ?? new BffRequestError(409, 'LOGOUT_PENDING');
       }
+      this.completedLogout = null;
       const version = ++this.api.sessionVersion;
       const view = await this.api.json<SessionView>('auth/login', { ...request, remember: this.remember() });
       if (version !== this.api.sessionVersion) throw new Error('Authentication was cancelled.');
       this.publish(view, 'SIGNED_IN'); this.events?.postMessage('changed');
       return { data: view, error: null };
     } catch (error: unknown) { return { data: this.empty(), error: this.failure(error) }; }
+    finally {
+      this.authenticating = false;
+      if (this.sessionChangedDuringAuthentication) {
+        this.sessionChangedDuringAuthentication = false;
+        void this.getSession();
+      }
+    }
   }
   async signUp(request: Parameters<BrowserAuthClient['signUp']>[0]): Promise<BrowserAuthResponse> {
     try {
+      this.completedLogout = null;
       const version = ++this.api.sessionVersion;
       if (!('email' in request)) throw new Error('Email registration is required.');
       const metadata = request.options?.data as Record<string, unknown> | undefined;
@@ -119,6 +141,7 @@ export class BffAuthClient implements BrowserAuthClient {
   }
   async signInWithOAuth(request: Parameters<BrowserAuthClient['signInWithOAuth']>[0]) {
     try {
+      this.completedLogout = null;
       const version = ++this.api.sessionVersion;
       if (request.provider !== 'google' || this.api.audience !== 'customer') throw new Error('Provider unavailable.');
       const { url } = await this.api.json<{ url: string }>('auth/oauth', { remember: this.remember() });
@@ -131,7 +154,7 @@ export class BffAuthClient implements BrowserAuthClient {
     }
   }
   async resetPasswordForEmail(email: string) {
-    try { await this.api.json('auth/recovery', { email }); return { data: {}, error: null }; }
+    try { this.completedLogout = null; await this.api.json('auth/recovery', { email }); return { data: {}, error: null }; }
     catch { return { data: null, error: new BffRequestError(503, 'RECOVERY_UNAVAILABLE') }; }
   }
   async updateUser(request: Parameters<BrowserAuthClient['updateUser']>[0]) {
@@ -143,6 +166,7 @@ export class BffAuthClient implements BrowserAuthClient {
   }
   signOut(): Promise<{ error: Error | null; localSessionCleared: boolean }> {
     if (this.logoutRequest) return this.logoutRequest;
+    if (this.completedLogout && !this.logoutPending()) return Promise.resolve(this.completedLogout);
     const promise = this.performSignOut().finally(() => {
       if (this.logoutRequest === promise) this.logoutRequest = null;
     });
@@ -158,9 +182,22 @@ export class BffAuthClient implements BrowserAuthClient {
       const result = await this.api.json<{ remoteRevocationConfirmed: boolean; localSessionCleared: boolean }>('auth/logout', {});
       this.setLogoutPending(!result.localSessionCleared);
       this.events?.postMessage('changed');
-      return { localSessionCleared: result.localSessionCleared,
-        error: result.localSessionCleared && result.remoteRevocationConfirmed ? null : new Error('Sign-out could not be fully confirmed.') };
-    } catch (error: unknown) { return { error: this.failure(error), localSessionCleared: false }; }
+      const outcome = { localSessionCleared: result.localSessionCleared,
+        error: result.localSessionCleared && result.remoteRevocationConfirmed ? null : new BffRequestError(409, 'LOGOUT_PENDING') };
+      if (result.localSessionCleared) {
+        this.completedLogout = outcome;
+        this.logoutRetryAt = 0;
+        this.logoutError = null;
+      } else {
+        this.logoutRetryAt = Date.now() + 5000;
+        this.logoutError = outcome.error;
+      }
+      return outcome;
+    } catch (error: unknown) {
+      this.logoutRetryAt = Date.now() + 5000;
+      this.logoutError = this.failure(error);
+      return { error: this.logoutError, localSessionCleared: false };
+    }
   }
   async startAutoRefresh(): Promise<void> { /* Refresh belongs to the BFF, under the Redis lease. */ }
   async stopAutoRefresh(): Promise<void> { /* No browser token timer exists. */ }

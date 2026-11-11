@@ -8,7 +8,13 @@ export const authGuard: CanActivateFn = async () => {
   const router = inject(Router);
 
   let isAuthenticated = false;
-  try { isAuthenticated = await authService.isAuthenticated(); } catch { /* Fail closed. */ }
+  try {
+    isAuthenticated = await authService.isAuthenticated();
+  } catch {
+    // Keep the current page during an outage. The destination still requires
+    // a successful live authorization check.
+    if (authService.currentUserProfile()) return false;
+  }
 
   if (!isAuthenticated) {
     return router.createUrlTree(['/auth/login']);

@@ -2,6 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { vi } from 'vitest';
 import { AuthPersistenceStorage } from '../../tokens/supabase.tokens';
 import { AuthSessionLifecycle } from './auth-session-lifecycle';
+import { BffRequestError } from '../bff/bff-api';
 
 const key = 'phase2-sdk-integration-auth';
 const session = {
@@ -84,6 +85,29 @@ describe('audience cleanup with installed Supabase SDK (offline HTTP integration
     expect((await client.auth.getSession()).data.session).toBeNull();
     expect(lifecycle.acceptsSession).toBe(false);
   });
+
+  it('shares explicit concurrent logout operations before they enter the lifecycle queue', async () => {
+    const { lifecycle } = setup(false);
+    await client.auth.signInWithPassword({ email: 'test@example.com', password: 'secret' });
+    const first = lifecycle.logout(vi.fn());
+    const second = lifecycle.logout(vi.fn());
+    expect(second).toBe(first);
+    await first;
+  });
+
+  for (const failure of [new TypeError('Offline'), new BffRequestError(503, 'AUTH_UNAVAILABLE')]) {
+    it('preserves the SDK session and storage after a temporary login failure: ' + failure.name, async () => {
+      const { lifecycle, storage } = setup(false);
+      await client.auth.signInWithPassword({ email: 'test@example.com', password: 'secret' });
+      const persisted = storage.getItem(key);
+      const clearState = vi.fn();
+      await expect(lifecycle.authenticate(false, async () => { throw failure; }, clearState)).rejects.toBe(failure);
+      expect(clearState).not.toHaveBeenCalled();
+      expect(storage.getItem(key)).toBe(persisted);
+      expect((await client.auth.getSession()).data.session?.user.id).toBe(session.user.id);
+      expect(lifecycle.acceptsSession).toBe(true);
+    });
+  }
 
   it('does not log out the other audience SDK client', async () => {
     const { lifecycle } = setup(false);

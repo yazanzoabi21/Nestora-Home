@@ -31,12 +31,24 @@ const COUNT = `local n=redis.call('incr',KEYS[1]); if n==1 then redis.call('expi
 export class RedisStore implements SharedStore {
   private readonly client;
   constructor(url: string) {
-    this.client = createClient({ url, socket: { connectTimeout: 5000, reconnectStrategy: false }, disableOfflineQueue: true });
+    this.client = createClient({ url, socket: { connectTimeout: 5000,
+      reconnectStrategy: (attempt) => Math.min(250 * 2 ** Math.min(attempt, 4), 4000),
+    }, disableOfflineQueue: true });
     this.client.on('error', () => { /* No credentials, URLs or session records in logs. */ });
   }
-  async connect(): Promise<void> { await this.client.connect(); }
+  async connect(): Promise<void> {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([this.client.connect(), new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+          void this.close();
+          reject(new HttpError(503, 'STORE_STARTUP_UNAVAILABLE'));
+        }, 15_000);
+      })]);
+    } finally { clearTimeout(timeout); }
+  }
   async ping(): Promise<void> { await this.client.ping(); }
-  async close(): Promise<void> { this.client.destroy(); }
+  async close(): Promise<void> { if (this.client.isOpen) this.client.destroy(); }
   get(key: string): Promise<string | null> { return this.client.get(key); }
   take(key: string): Promise<string | null> { return this.client.getDel(key); }
   async set(key: string, value: string, seconds: number, lease?: Lease): Promise<void> {

@@ -1,4 +1,4 @@
-import { createClient, type Session, type SupabaseClient, type User } from '@supabase/supabase-js';
+import { createClient, isAuthSessionMissingError, type Session, type SupabaseClient, type User } from '@supabase/supabase-js';
 import type { BffConfig } from './config.js';
 import { HttpError, assertTokenFree } from './security.js';
 
@@ -22,6 +22,13 @@ export interface Profile {
   [column: string]: unknown;
 }
 export const PROFILE_SELECT = 'id,role_id,full_name,email,phone,avatar_media_id,avatar_url,is_active,created_at,birthday,roles(id,name,description)';
+
+/** An unavailable auth service is never evidence of rejected credentials. */
+export function credentialFailure(error: { status?: number; code?: string } | null): HttpError {
+  return error?.code === 'invalid_credentials' && (error.status === 400 || error.status === 401)
+    ? new HttpError(401, 'INVALID_CREDENTIALS', 'Unable to sign in.')
+    : new HttpError(error?.status === 429 ? 429 : 503, 'AUTH_UNAVAILABLE');
+}
 
 export function browserUser(user: User): BrowserUser {
   const user_metadata: Record<string, string> = {};
@@ -68,12 +75,19 @@ export class SupabaseGateway {
 
   async identity(jwt: string): Promise<BrowserUser> {
     const { data, error } = await this.authClient().auth.getUser(jwt);
-    if (error || !data.user) throw new HttpError(error?.status && error.status >= 500 ? 503 : 401, 'SESSION_INVALID');
+    if (error || !data.user) {
+      if (error?.code === 'jwt_expired' && error.status !== undefined && error.status < 500) throw new HttpError(401, 'ACCESS_TOKEN_EXPIRED');
+      if (isAuthSessionMissingError(error) || error?.status === 401 || (error?.status !== undefined && error.status >= 400 && error.status < 500 &&
+        ['bad_jwt', 'session_not_found', 'session_expired', 'user_not_found', 'user_banned'].includes(error.code ?? ''))) {
+        throw new HttpError(401, 'SESSION_INVALID');
+      }
+      throw new HttpError(503, 'IDENTITY_UNAVAILABLE');
+    }
     return browserUser(data.user);
   }
 
   async profile(jwt: string, userId: string, audience: Audience): Promise<Profile> {
-    const { data, error } = await this.userClient(jwt).from('profiles').select(PROFILE_SELECT).eq('id', userId).maybeSingle();
+    const { data, error } = await this.userClient(jwt).from('profiles').select(PROFILE_SELECT).eq('id', userId).maybeSingle().retry(false);
     if (error) throw new HttpError(503, 'PROFILE_UNAVAILABLE');
     const profile = data as unknown as Profile | null;
     const allowed = audience === 'admin' ? ['admin', 'super_admin'] : ['customer'];
@@ -108,7 +122,12 @@ export class SupabaseGateway {
 
   async refresh(refreshToken: string): Promise<Session> {
     const { data, error } = await this.authClient().auth.refreshSession({ refresh_token: refreshToken });
-    if (error || !data.session) throw new HttpError(error?.status && error.status >= 400 && error.status < 500 ? 401 : 503, 'REFRESH_FAILED');
+    if (error || !data.session) {
+      const rejected = isAuthSessionMissingError(error) || (!!error && error.status !== undefined && error.status >= 400 && error.status < 500 &&
+        ['refresh_token_not_found', 'refresh_token_already_used', 'session_not_found', 'session_expired', 'user_banned']
+          .includes(error.code ?? ''));
+      throw new HttpError(rejected ? 401 : 503, 'REFRESH_FAILED');
+    }
     return data.session;
   }
 }

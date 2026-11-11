@@ -1,5 +1,6 @@
 import type { NestoraSupabaseClient } from '../../models/auth/browser-auth.models';
 import { AuthPersistenceStorage } from '../../tokens/supabase.tokens';
+import { isTransientAuthError } from './auth-request-error';
 
 export interface LogoutResult {
   readonly localSessionCleared: boolean;
@@ -11,6 +12,7 @@ export class AuthSessionLifecycle {
   private pending: Promise<void> = Promise.resolve();
   private epoch = 0;
   private blocked = false;
+  private logoutRequest: Promise<LogoutResult> | null = null;
 
   constructor(
     private readonly client: Pick<NestoraSupabaseClient, 'auth'>,
@@ -43,6 +45,7 @@ export class AuthSessionLifecycle {
         if (version !== this.epoch) throw new Error('Authentication was cancelled.');
       };
       assertCurrent();
+      const previousRemember = this.persistence.remembersSession;
       this.prepareSession(remember);
       try {
         const result = await authorize(assertCurrent);
@@ -51,17 +54,27 @@ export class AuthSessionLifecycle {
         assertCurrent();
         return result;
       } catch (error: unknown) {
-        await this.clear(clearState);
+        // The BFF validates roles before issuing a cookie and cleans up failed
+        // establishment itself. A rejected login must not initiate a logout.
+        if (this.client.auth.serverManaged) {
+          if (version === this.epoch) this.persistence.setRememberSession(previousRemember);
+        } else if (isTransientAuthError(error) && version === this.epoch) this.persistence.setRememberSession(previousRemember);
+        else await this.clear(clearState);
         throw error;
       }
     });
   }
 
   logout(clearState: () => void): Promise<LogoutResult> {
+    if (this.logoutRequest) return this.logoutRequest;
     this.epoch += 1;
     this.blocked = true;
     clearState();
-    return this.enqueue(() => this.clear(clearState));
+    const request = this.enqueue(() => this.clear(clearState)).finally(() => {
+      if (this.logoutRequest === request) this.logoutRequest = null;
+    });
+    this.logoutRequest = request;
+    return request;
   }
 
   private async clear(clearState: () => void): Promise<LogoutResult> {

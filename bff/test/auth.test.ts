@@ -74,6 +74,54 @@ test('backend outages are explicit service errors even for guest CSRF and sessio
   } finally { await app.close(); }
 });
 
+test('both audiences survive a shared-store interruption and BFF restart with the same store and key', async () => {
+  const { app, browser, store, upstream } = await setup();
+  let restarted: FastifyInstance | undefined;
+  try {
+    await browser.login('admin');
+    await browser.login('customer');
+    const cookies = new Map(browser.cookies);
+    store.fail = true;
+    for (const audience of ['admin', 'customer']) {
+      const response = await browser.request(`/api/${audience}/auth/session`);
+      assert.equal(response.statusCode, 503);
+      assert.equal(response.cookies.length, 0, 'An outage must not clear a session cookie');
+    }
+    store.fail = false;
+    await app.close();
+    restarted = await createApp(config, store, upstream.fetch);
+    const reloaded = new Browser(restarted);
+    for (const [name, value] of cookies) reloaded.cookies.set(name, value);
+    await reloaded.initialize();
+    for (const audience of ['admin', 'customer']) {
+      const response = await reloaded.request(`/api/${audience}/auth/session`);
+      assert.equal(response.statusCode, 200);
+      assert.equal(response.json().user.id, audience + '-id');
+    }
+    await reloaded.request('/api/admin/auth/logout', 'POST', {});
+    assert.equal((await reloaded.request('/api/admin/auth/session')).json().session, null);
+    assert.equal((await reloaded.request('/api/customer/auth/session')).json().user.id, 'customer-id');
+  } finally { store.fail = false; await (restarted ?? app).close(); }
+});
+
+for (const status of [400, 500, 503]) {
+  test(`Supabase login failure ${status} is never reported as incorrect credentials without proof`, async () => {
+    const upstream = new Upstream();
+    const app = await createApp(config, new TestStore(), async (input, init) => {
+      if (String(input).includes('/auth/v1/token')) return Response.json({ message: 'Unavailable' }, { status });
+      return upstream.fetch(input, init);
+    });
+    try {
+      const browser = new Browser(app); await browser.initialize();
+      for (const audience of ['admin', 'customer']) {
+        const response = await browser.login(audience);
+        assert.equal(response.statusCode, 503);
+        assert.equal(response.json().code, 'AUTH_UNAVAILABLE');
+      }
+    } finally { await app.close(); }
+  });
+}
+
 test('Admin and Customer login return only sanitized identities and opaque secure cookies', async () => {
   const { app, store, upstream, browser } = await setup();
   try {
@@ -115,21 +163,21 @@ test('session-only login omits persistent cookie age and rotates the session ID 
 });
 
 for (const remember of [false, true]) {
-  test(`Admin enforces eight hours absolute and thirty minutes idle with remember=${remember}`, async () => {
+  test(`Admin enforces seven days absolute and twelve hours idle with remember=${remember}`, async () => {
     const { app, browser, sessions, store } = await setup();
     try {
       const response = await browser.login('admin', 'admin@example.com', remember);
       assert.equal(response.statusCode, 200);
       const cookie = response.cookies.find((item) => item.name === '__Host-nestora-admin');
       assert.ok(cookie?.httpOnly && cookie.secure && cookie.sameSite === 'Lax' && cookie.path === '/');
-      assert.ok(cookie.maxAge && cookie.maxAge <= 8 * 3600 && cookie.maxAge >= 8 * 3600 - 2);
+      assert.ok(cookie.maxAge && cookie.maxAge <= 7 * 86400 && cookie.maxAge >= 7 * 86400 - 2);
       const id = browser.cookies.get('__Host-nestora-admin')!;
       const key = sessions.key('admin', id);
       const session = sessions.vault.open<ServerSession>((await store.get(key))!, key);
       assert.equal(session.remember, false);
-      assert.equal(session.absoluteExpiresAt - session.createdAt!, 8 * 3600 * 1000);
+      assert.equal(session.absoluteExpiresAt - session.createdAt!, 7 * 86400 * 1000);
       const ttl = store.records.get(key)!.expires - Date.now();
-      assert.ok(ttl <= 30 * 60 * 1000 && ttl > 29 * 60 * 1000);
+      assert.ok(ttl <= 12 * 3600 * 1000 && ttl > (12 * 3600 - 60) * 1000);
     } finally { await app.close(); }
   });
 }
@@ -146,8 +194,8 @@ for (const expiry of ['absolute', 'idle', 'legacy'] as const) {
       // Simulate a long-lived record surviving a policy change, not just Redis TTL expiry.
       session.absoluteExpiresAt = Date.now() + 30 * 86400 * 1000;
       session.remember = true;
-      if (expiry === 'absolute') session.createdAt = Date.now() - 8 * 3600 * 1000 - 1000;
-      if (expiry === 'idle') session.lastSeenAt = Date.now() - 30 * 60 * 1000 - 1000;
+      if (expiry === 'absolute') session.createdAt = Date.now() - 7 * 86400 * 1000 - 1000;
+      if (expiry === 'idle') session.lastSeenAt = Date.now() - 12 * 3600 * 1000 - 1000;
       if (expiry === 'legacy') delete session.createdAt;
       await store.set(key, sessions.vault.seal(session, key), 600);
       const cookie = [...browser.cookies].map(([name, value]) => name + '=' + value).join('; ');
@@ -174,7 +222,7 @@ test('Admin activity and token refresh renew idle time without extending absolut
     const adminId = browser.cookies.get('__Host-nestora-admin')!;
     const key = sessions.key('admin', adminId);
     const session = sessions.vault.open<ServerSession>((await store.get(key))!, key);
-    session.lastSeenAt = Date.now() - 29 * 60 * 1000;
+    session.lastSeenAt = Date.now() - 11 * 3600 * 1000;
     session.tokenExpiresAt = Date.now() - 1000;
     await store.set(key, sessions.vault.seal(session, key), 60);
     const response = await browser.request('/api/admin/auth/refresh', 'POST', {});
@@ -183,7 +231,7 @@ test('Admin activity and token refresh renew idle time without extending absolut
     assert.equal(updated.absoluteExpiresAt, session.absoluteExpiresAt);
     assert.equal(updated.createdAt, session.createdAt);
     assert.ok(updated.lastSeenAt > session.lastSeenAt);
-    assert.ok(store.records.get(key)!.expires - Date.now() > 29 * 60 * 1000);
+    assert.ok(store.records.get(key)!.expires - Date.now() > 11 * 3600 * 1000);
     assert.equal(upstream.refreshCount, 1);
     assert.equal(await store.get(customerKey), customerRecord);
     assert.equal(browser.cookies.get('__Host-nestora-customer'), customerId);
@@ -229,13 +277,48 @@ test('server rejects wrong audience, inactive users, forged cookies and privileg
   } finally { await app.close(); }
 });
 
+test('Admin login/logout distinguish missing nonce from wrong origin without reaching Supabase', async () => {
+  const { app, browser, upstream } = await setup();
+  try {
+    for (const path of ['login', 'logout']) {
+      const nonceFailure = await browser.request('/api/admin/auth/' + path, 'POST', {}, { 'x-csrf-token': '' });
+      assert.equal(nonceFailure.statusCode, 403);
+      assert.equal(nonceFailure.json().code, 'CSRF_FAILED');
+      const originFailure = await browser.request('/api/admin/auth/' + path, 'POST', {}, { origin: 'https://wrong.test' });
+      assert.equal(originFailure.statusCode, 403);
+      assert.equal(originFailure.json().code, 'ORIGIN_DENIED');
+    }
+    assert.equal(upstream.requests.length, 0);
+    assert.equal((await browser.request('/api/admin/auth/session')).json().session, null);
+  } finally { await app.close(); }
+});
+
+test('a rejected Admin login keeps both existing audience sessions intact', async () => {
+  const { app, browser } = await setup();
+  try {
+    await browser.login('admin'); await browser.login('customer');
+    const cookies = new Map(browser.cookies);
+    const badPassword = await browser.request('/api/admin/auth/login', 'POST', { email: 'admin@example.com', password: 'wrong' });
+    assert.equal(badPassword.statusCode, 401);
+    assert.equal(badPassword.json().code, 'INVALID_CREDENTIALS');
+    assert.equal(badPassword.cookies.length, 0);
+    const wrongRole = await browser.login('admin', 'customer@example.com');
+    assert.equal(wrongRole.statusCode, 403);
+    assert.equal(wrongRole.json().code, 'ACCOUNT_NOT_AUTHORIZED');
+    for (const audience of ['admin', 'customer']) {
+      assert.equal(browser.cookies.get('__Host-nestora-' + audience), cookies.get('__Host-nestora-' + audience));
+      assert.equal((await browser.request(`/api/${audience}/auth/session`)).json().user.id, audience + '-id');
+    }
+  } finally { await app.close(); }
+});
+
 test('CSRF/origin checks reject cross-site login, checkout and logout before side effects', async () => {
   const { app, browser, upstream } = await setup();
   try {
     for (const path of ['auth/login', 'auth/logout', 'supabase/rest/v1/rpc/place_customer_order']) {
       const response = await browser.request('/api/customer/' + path, 'POST', {}, { origin: 'https://evil.test' });
       assert.equal(response.statusCode, 403);
-      assert.equal(response.json().code, 'CSRF_FAILED');
+      assert.equal(response.json().code, 'ORIGIN_DENIED');
     }
     assert.equal(upstream.requests.length, 0);
   } finally { await app.close(); }
@@ -302,17 +385,18 @@ test('refresh is serialized across concurrent requests and never returns credent
   } finally { await app.close(); }
 });
 
-test('Admin validation can overlap, and logout wins over checks already in flight', { timeout: 3000 }, async () => {
+test('Admin requests share live validation, and logout wins over checks already in flight', { timeout: 3000 }, async () => {
   const upstream = new Upstream();
   let entered!: () => void;
   let release!: () => void;
-  const bothEntered = new Promise<void>((resolve) => { entered = resolve; });
+  const validationEntered = new Promise<void>((resolve) => { entered = resolve; });
   const waitForRelease = new Promise<void>((resolve) => { release = resolve; });
   let pause = false;
   let validations = 0;
   const app = await createApp(config, new TestStore(), async (input, init) => {
     if (pause && new URL(String(input)).pathname === '/auth/v1/user') {
-      if (++validations === 2) entered();
+      validations++;
+      entered();
       await waitForRelease;
     }
     return upstream.fetch(input, init);
@@ -324,16 +408,44 @@ test('Admin validation can overlap, and logout wins over checks already in fligh
     pause = true;
     const session = browser.request('/api/admin/auth/session');
     const data = browser.request('/api/admin/supabase/rest/v1/products');
-    await bothEntered;
+    await validationEntered;
     assert.equal((await browser.request('/api/admin/auth/logout', 'POST', {})).statusCode, 200);
     release();
     assert.equal((await session).statusCode, 401);
     assert.equal((await data).statusCode, 401);
+    assert.equal(validations, 1);
     assert.equal(upstream.requests.some(({ url }) => new URL(url).pathname === '/rest/v1/products'), false);
   } finally {
     release();
     await app.close();
   }
+});
+
+test('expired PostgREST credentials trigger one server-side renewal and one retry', async () => {
+  const upstream = new Upstream();
+  let calls = 0;
+  let rejectAll = false;
+  const app = await createApp(config, new TestStore(), async (input, init) => {
+    if (new URL(String(input)).pathname === '/rest/v1/products' && (++calls === 1 || rejectAll)) {
+      return new Response(JSON.stringify({ code: 'PGRST303', message: 'JWT expired' }), {
+        status: 401, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return upstream.fetch(input, init);
+  });
+  const browser = new Browser(app);
+  try {
+    await browser.initialize();
+    assert.equal((await browser.login('admin')).statusCode, 200);
+    assert.equal((await browser.request('/api/admin/supabase/rest/v1/products')).statusCode, 200);
+    assert.equal(calls, 2);
+    assert.equal(upstream.refreshCount, 1);
+    rejectAll = true;
+    assert.equal((await browser.request('/api/admin/supabase/rest/v1/products')).statusCode, 503);
+    assert.equal(calls, 4);
+    assert.equal(upstream.refreshCount, 2);
+    assert.equal((await browser.request('/api/admin/auth/session')).statusCode, 200);
+  } finally { await app.close(); }
 });
 
 test('logout invalidates the server record despite upstream failure and cannot be resurrected by refresh', async () => {

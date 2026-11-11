@@ -37,7 +37,7 @@ export class AdminAuthService {
     const { data } = this.supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' && this.supabase.auth.serverManaged && !this.lifecycle.acceptsSession) {
         this.lifecycle.prepareSession();
-        void this.getCurrentUserProfile().catch(() => this.clearState());
+        void this.getCurrentUserProfile().catch(() => undefined);
         return;
       }
       if (event !== 'SIGNED_OUT' || !this.lifecycle.acceptsSession) return;
@@ -57,10 +57,9 @@ export class AdminAuthService {
     rememberSession = true,
   ): Promise<void> {
     const profile = await this.lifecycle.authenticate(rememberSession, async (assertCurrent) => {
-      this.clearState();
       const { data, error } = await this.supabase.auth.signInWithPassword(request);
       assertCurrent();
-      if (error) throw new Error(error.message);
+      if (error) throw error;
       if (!data.user?.id) throw new Error('User not found.');
       const profile = this.supabase.auth.serverManaged
         ? data.profile?.id === data.user.id ? data.profile : null
@@ -108,10 +107,7 @@ export class AdminAuthService {
   async getCurrentUserProfile(): Promise<AuthenticatedUserProfile | null> {
     const version = this.lifecycle.version;
     if (!this.lifecycle.acceptsSession) return null;
-    const profile = await this.readValidatedProfile().catch((error: unknown) => {
-      if (this.lifecycle.isCurrent(version)) this.currentUserProfile.set(null);
-      throw error;
-    });
+    const profile = await this.readValidatedProfile();
     if (!this.lifecycle.isCurrent(version)) return null;
     if (profile?.is_active !== true || !isAdminRole(profile.roles?.name)) {
       this.currentUserProfile.set(null);
@@ -179,7 +175,7 @@ export class AdminAuthService {
 
   private async readValidatedProfile(): Promise<AuthenticatedUserProfile | null> {
     const { data, error } = await this.supabase.auth.getSession();
-    if (error) throw new Error(error.message);
+    if (error) throw error;
     const userId = data.session?.user.id;
     if (!userId) return null;
     if (this.supabase.auth.serverManaged) return data.profile?.id === userId ? data.profile : null;
@@ -215,13 +211,13 @@ export class AdminAuthService {
   }
 
   private async loadAuthenticatedProfile(userId: string): Promise<AuthenticatedUserProfile | null> {
-    const { data, error } = await this.supabase
+    const { data, error, status } = await this.supabase
       .from('profiles')
       .select(this.profileSelect)
       .eq('id', userId)
       .maybeSingle();
 
-    if (error) throw new Error(error.message);
+    if (error) throw Object.assign(new Error(error.message), { status });
     return data as unknown as AuthenticatedUserProfile | null;
   }
 

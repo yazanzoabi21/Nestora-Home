@@ -111,7 +111,7 @@ export class Upstream {
     const data = body && headers.get('content-type')?.includes('json') ? JSON.parse(body) as Record<string, unknown> : {};
     const name = authorization?.startsWith('Bearer ') ? this.tokens.get(authorization.slice(7)) : undefined;
     const response = (value: unknown, status = 200) => new Response(status === 204 ? null : JSON.stringify(value), {
-      status, headers: { 'Content-Type': 'application/json' },
+      status, headers: { 'Content-Type': 'application/json', 'X-Supabase-Api-Version': '2024-01-01' },
     });
     if (url.pathname === '/auth/v1/token') {
       const grant = url.searchParams.get('grant_type');
@@ -119,14 +119,14 @@ export class Upstream {
         this.refreshCount++;
         const account = this.refreshTokens.get(String(data['refresh_token']));
         this.refreshTokens.delete(String(data['refresh_token']));
-        return account ? response(this.issue(account)) : response({ message: 'Invalid refresh' }, 400);
+        return account ? response(this.issue(account)) : response({ code: 'refresh_token_not_found', message: 'Invalid refresh' }, 400);
       }
       if (grant === 'pkce') {
         await this.beforeCodeExchange?.();
         return data['code_verifier'] && ['valid-code', 'recovery-code'].includes(String(data['auth_code']))
           ? response(this.issue('customer')) : response({ message: 'Invalid code' }, 400);
       }
-      if (data['password'] !== 'correct') return response({ message: 'Invalid credentials' }, 400);
+      if (data['password'] !== 'correct') return response({ code: 'invalid_credentials', message: 'Invalid credentials' }, 400);
       return response(this.issue(String(data['email']).split('@')[0] ?? 'customer'));
     }
     if (url.pathname === '/auth/v1/user') return name ? response(this.user(name)) : response({ message: 'Unauthorized' }, 401);

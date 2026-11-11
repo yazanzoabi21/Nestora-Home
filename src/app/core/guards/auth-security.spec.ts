@@ -23,7 +23,7 @@ describe('authentication guard failure boundaries', () => {
     initialize.mockReset().mockRejectedValue(new Error('unavailable'));
     customerIsAuthenticated.mockReset().mockReturnValue(false);
     TestBed.configureTestingModule({ providers: [provideRouter([]),
-      { provide: AdminAuthService, useValue: { isAuthenticated, getCurrentUserProfile } },
+      { provide: AdminAuthService, useValue: { isAuthenticated, getCurrentUserProfile, currentUserProfile: () => null } },
       { provide: CustomerAuthService, useValue: {
         initialize, isAuthenticated: customerIsAuthenticated,
       } },
@@ -52,12 +52,21 @@ describe('authentication guard failure boundaries', () => {
 
   it('denies navigation when initialization fails even if UI state was authenticated', async () => {
     customerIsAuthenticated.mockReturnValue(true);
-    expect(await TestBed.runInInjectionContext(() => customerAuthGuard(route, state))).not.toBe(true);
+    expect(await TestBed.runInInjectionContext(() => customerAuthGuard(route, state))).toBe(false);
     expect(initialize).toHaveBeenCalledTimes(1);
   });
+
+  for (const guard of [authGuard, roleGuard, permissionGuard]) {
+    it('cancels protected navigation during an outage without redirecting an established Admin to login', async () => {
+      vi.spyOn(TestBed.inject(AdminAuthService), 'currentUserProfile').mockReturnValue({
+        id: 'admin-id', is_active: true, roles: { id: 'admin-role', name: 'admin' },
+      } as NonNullable<ReturnType<AdminAuthService['currentUserProfile']>>);
+      expect(await TestBed.runInInjectionContext(() => guard(route, state))).toBe(false);
+    });
+  }
 });
 
-it('validates each Admin sidebar route once and denies direct entry after revocation', async () => {
+it('validates entry to the Admin layout without repeating the guard on sidebar navigation', async () => {
   const isAuthenticated = vi.fn().mockResolvedValue(true);
   const adminRoutes = ADMIN_ROUTES.map((route) => ({
     ...route,
@@ -72,11 +81,12 @@ it('validates each Admin sidebar route once and denies direct entry after revoca
   ] });
   const router = TestBed.inject(Router);
   const pages = ['dashboard', 'products', 'inventory', 'orders', 'customers', 'categories'];
-  for (const [index, page] of pages.entries()) {
+  for (const page of pages) {
     await expect(router.navigateByUrl('/admin/' + page)).resolves.toBe(true);
     expect(router.url).toBe('/admin/' + page);
-    expect(isAuthenticated).toHaveBeenCalledTimes(index + 1);
+    expect(isAuthenticated).toHaveBeenCalledTimes(1);
   }
+  await router.navigateByUrl('/auth/login');
   isAuthenticated.mockResolvedValue(false);
   await router.navigateByUrl('/admin/products');
   expect(router.url).toBe('/auth/login');

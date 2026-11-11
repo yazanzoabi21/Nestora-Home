@@ -4,6 +4,7 @@ import { vi } from 'vitest';
 import { ADMIN_SUPABASE } from '../../tokens';
 import { AdminAuthService } from './admin-auth.service';
 import type { BrowserAuthClient } from '../../models/auth/browser-auth.models';
+import { BffRequestError } from '../bff/bff-api';
 
 describe('AdminAuthService authorization and cleanup', () => {
   const profileQuery = vi.fn();
@@ -97,6 +98,20 @@ describe('AdminAuthService authorization and cleanup', () => {
     expect(service.currentUserProfile()).not.toBeNull();
     expect(signOut).not.toHaveBeenCalled();
   });
+
+  for (const [status, code] of [[401, 'INVALID_CREDENTIALS'], [403, 'CSRF_FAILED'],
+    [403, 'ACCOUNT_NOT_AUTHORIZED'], [503, 'AUTH_UNAVAILABLE']] as const) {
+    it(`does not log out an existing Admin after a BFF login rejects with ${code}`, async () => {
+      await service.getCurrentUserProfile();
+      const previous = service.currentUserProfile();
+      Object.defineProperty(TestBed.inject(ADMIN_SUPABASE).auth, 'serverManaged', { value: true });
+      signInWithPassword.mockResolvedValue({ data: { user: null, session: null }, error: new BffRequestError(status, code) });
+      await expect(service.login({ email: 'admin@example.com', password: 'secret' })).rejects.toMatchObject({ status, code });
+      expect(signOut).not.toHaveBeenCalled();
+      expect(service.currentUserProfile()).toBe(previous);
+      expect(activeSession).not.toBeNull();
+    });
+  }
 
   it('rejects runtime privilege injection before sending a profile mutation', async () => {
     await expect(service.updateCurrentUserProfile({ full_name: 'Name', ...{ role_id: 'super-admin' } }))

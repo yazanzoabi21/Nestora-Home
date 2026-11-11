@@ -14,12 +14,13 @@ describe('token-free BFF browser transport', () => {
   let recovery: boolean;
   let offline: boolean;
   let logoutFailed: boolean;
+  let broadcastChanged: () => void;
 
   beforeEach(() => {
     localStorage.clear(); sessionStorage.clear();
     authenticated = false; recovery = false; offline = false; logoutFailed = false;
     vi.stubGlobal('BroadcastChannel', class {
-      addEventListener(): void { /* Cross-tab transport is not opened by this fixture. */ }
+      addEventListener(_type: string, callback: () => void): void { broadcastChanged = callback; }
       postMessage(): void { /* No real browser tabs in the unit test. */ }
     });
     fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -48,7 +49,7 @@ describe('token-free BFF browser transport', () => {
     storage.setRememberSession(false);
     client = createBffSupabaseClient('customer', 'https://project.supabase.test', 'sb_publishable_test', storage);
   });
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
   it('restores a clean guest as a null session and loads public data without logging in', async () => {
     const session = await client.auth.getSession();
@@ -126,6 +127,7 @@ describe('token-free BFF browser transport', () => {
   });
 
   it('blocks data requests and session restoration until a failed logout reaches the backend', async () => {
+    vi.useFakeTimers();
     await client.auth.signInWithPassword({ email: 'customer@example.com', password: 'secret' });
     logoutFailed = true;
     expect((await client.auth.signOut()).error).not.toBeNull();
@@ -133,8 +135,49 @@ describe('token-free BFF browser transport', () => {
     expect((await client.from('orders').select('id')).error).not.toBeNull();
     expect((await client.auth.getSession()).data.session).toBeNull();
     logoutFailed = false;
+    vi.advanceTimersByTime(5001);
     expect((await client.auth.getSession()).data.session).toBeNull();
     expect(localStorage.getItem('nestora-customer-bff-logout-pending')).toBeNull();
+  });
+
+  it('does not log out during initial guest restoration', async () => {
+    const events = vi.fn(); client.auth.onAuthStateChange(events);
+    await Promise.all([client.auth.getSession(), client.auth.getUser(), client.auth.getSession()]);
+    expect(events).toHaveBeenCalledWith('INITIAL_SESSION', null);
+    expect(fetcher.mock.calls.some(([path]) => String(path).endsWith('/auth/logout'))).toBe(false);
+  });
+
+  it('coalesces concurrent and repeated completed logout calls', async () => {
+    await client.auth.signInWithPassword({ email: user.email, password: 'secret' });
+    await Promise.all([client.auth.signOut(), client.auth.signOut(), client.auth.signOut()]);
+    await client.auth.signOut();
+    expect(fetcher.mock.calls.filter(([path]) => String(path).endsWith('/auth/logout'))).toHaveLength(1);
+  });
+
+  it('does not repeatedly retry a failed logout from sequential restoration checks', async () => {
+    await client.auth.signInWithPassword({ email: user.email, password: 'secret' });
+    logoutFailed = true;
+    await client.auth.signOut();
+    await client.auth.getSession(); await client.auth.getUser(); await client.auth.getSession();
+    expect(fetcher.mock.calls.filter(([path]) => String(path).endsWith('/auth/logout'))).toHaveLength(1);
+    expect(localStorage.getItem('nestora-customer-bff-logout-pending')).toBe('true');
+    logoutFailed = false;
+    expect((await client.auth.signInWithPassword({ email: user.email, password: 'secret' })).error).toBeNull();
+    expect(localStorage.getItem('nestora-customer-bff-logout-pending')).toBeNull();
+  });
+
+  it('does not cancel a successful login when a delayed cross-tab logout notification arrives', async () => {
+    let release!: (response: Response) => void;
+    const original = fetcher.getMockImplementation()!;
+    fetcher.mockImplementation((input: RequestInfo | URL, init?: RequestInit) => String(input).endsWith('/auth/login')
+      ? new Promise<Response>((resolve) => { release = resolve; }) : original(input, init));
+    const login = client.auth.signInWithPassword({ email: user.email, password: 'secret' });
+    await vi.waitFor(() => expect(release).toBeDefined());
+    broadcastChanged();
+    authenticated = true;
+    release(Response.json({ user, session: { user } }));
+    expect((await login).error).toBeNull();
+    expect((await client.auth.getSession()).data.session?.user.id).toBe(user.id);
   });
 
   it('fails closed when /api is unavailable instead of trying Supabase login', async () => {
@@ -188,6 +231,35 @@ describe('token-free BFF browser transport', () => {
     expect((await client.auth.getSession()).error).toBeNull();
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
+
+  it('keeps an established session through a transient restore or unrelated API failure', async () => {
+    const events = vi.fn();
+    client.auth.onAuthStateChange(events);
+    await client.auth.signInWithPassword({ email: user.email, password: 'secret' });
+    events.mockClear();
+    offline = true;
+    const result = await client.auth.getSession();
+    expect(result.data.session?.user.id).toBe(user.id);
+    expect(result.error).not.toBeNull();
+    offline = false;
+    fetcher.mockResolvedValueOnce(new Response(JSON.stringify({ code: '42501' }), { status: 401 }));
+    await client.from('orders').select('id');
+    expect(events).not.toHaveBeenCalled();
+    expect((await client.auth.getSession()).data.session?.user.id).toBe(user.id);
+  });
+
+  for (const status of [500, 503]) {
+    it(`retains session and emits no logout when session restoration returns ${status}`, async () => {
+      await client.auth.signInWithPassword({ email: user.email, password: 'secret' });
+      const events = vi.fn(); client.auth.onAuthStateChange(events);
+      fetcher.mockResolvedValueOnce(Response.json({ code: 'SERVICE_UNAVAILABLE' }, { status }));
+      const result = await client.auth.getSession();
+      expect(result.data.session?.user.id).toBe(user.id);
+      expect(result.error).not.toBeNull();
+      expect(events).not.toHaveBeenCalled();
+      expect((await client.auth.getSession()).data.session?.user.id).toBe(user.id);
+    });
+  }
 
   it('does not join an old session request after a new login', async () => {
     let release!: (response: Response) => void;

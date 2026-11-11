@@ -8,6 +8,7 @@ export const customerAuthGuard: CanActivateFn = async (_route, state) => {
   try {
     await auth.initialize();
   } catch {
+    if (auth.isAuthenticated()) return false;
     return router.createUrlTree(['/auth/customer-login'], { queryParams: { returnUrl: state.url } });
   }
   return auth.isAuthenticated()

@@ -1,4 +1,5 @@
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import cookie from '@fastify/cookie';
 import helmet from '@fastify/helmet';
 import type { Session } from '@supabase/supabase-js';
@@ -6,7 +7,7 @@ import type { BffConfig } from './config.js';
 import type { SharedStore } from './store.js';
 import { HttpError, assertTokenFree, fingerprint, jsonBody, opaqueId, sameSecret, textField, validId } from './security.js';
 import { Sessions, cookieName, type ResolvedSession, type SessionTiming } from './sessions.js';
-import { SupabaseGateway, type Audience } from './supabase.js';
+import { SupabaseGateway, credentialFailure, type Audience } from './supabase.js';
 import { checkProfileMutation, dataRoute, publicRpcs } from './policy.js';
 import { registerRealtime } from './realtime.js';
 
@@ -23,14 +24,69 @@ const flowKey = (audience: Audience, id: string): string => `nestora:flow:${audi
 const flowOwnerKey = (audience: Audience, owner: string): string => `nestora:flow-owner:${audience}:{${owner}}`;
 const readCookie = (request: FastifyRequest, name: string): string | undefined => request.cookies[name];
 
+function isExpiredDataToken(status: number, bytes: Buffer): boolean {
+  if (status !== 401 || bytes.length > 4096) return false;
+  try {
+    const error = JSON.parse(bytes.toString()) as { code?: string; message?: string } | null;
+    return !!error && ['PGRST301', 'PGRST303'].includes(error.code ?? '') &&
+      typeof error.message === 'string' && /\b(?:jwt (?:is )?expired|expired (?:jwt|exp(?:iration)? claim))\b/i.test(error.message);
+  } catch {
+    return false;
+  }
+}
+
 export async function createApp(config: BffConfig, store: SharedStore, fetcher?: typeof globalThis.fetch) {
+  const traces = !config.production && process.env['BFF_TRACE_TIMING'] === '1'
+    ? new AsyncLocalStorage<Record<string, number>>() : undefined;
+  const measure = async <T>(metric: string, work: () => Promise<T>): Promise<T> => {
+    const trace = traces?.getStore();
+    if (!trace) return work();
+    const started = performance.now();
+    try { return await work(); }
+    finally { trace[metric] = (trace[metric] ?? 0) + performance.now() - started; }
+  };
+  if (traces) {
+    store = new Proxy(store, {
+      get(target, property) {
+        const method = Reflect.get(target, property);
+        if (typeof method !== 'function') return method;
+        if (['get', 'set', 'delete', 'count', 'take', 'ping'].includes(String(property))) {
+          return (...args: unknown[]) => measure('redis_commands', () => method.apply(target, args));
+        }
+        return method.bind(target);
+      },
+    });
+  }
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024, requestTimeout: 300_000,
     trustProxy: ['127.0.0.1', '::1'] });
-  const gateway = new SupabaseGateway(config, fetcher);
+  const upstreamFetch = fetcher ?? globalThis.fetch;
+  const gateway = new SupabaseGateway(config, traces ? (input, init) => {
+    const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
+    const metric = path.startsWith('/auth/') ? 'auth_http' : path === '/rest/v1/profiles'
+      ? 'profile_http' : 'data_http';
+    return measure(metric, () => upstreamFetch(input, init));
+  } : upstreamFetch);
   const sessions = new Sessions(store, gateway, config);
   const stopRevocations = sessions.revocations.start();
   app.addHook('onClose', stopRevocations);
   const requestStarts = new WeakMap<FastifyRequest, number>();
+  const requestTraces = new WeakMap<FastifyRequest, Record<string, number>>();
+  if (traces) {
+    app.addHook('onRequest', (request, _reply, done) => {
+      const trace = {};
+      requestTraces.set(request, trace);
+      traces.run(trace, done);
+    });
+    app.addHook('onResponse', async (request, reply) => {
+      const started = requestStarts.get(request);
+      if (started === undefined) return;
+      console.info('BFF timing', JSON.stringify({
+        route: request.routeOptions.url ?? '(unmatched)', method: request.method,
+        status: reply.statusCode, totalMs: Math.round(performance.now() - started),
+        phases: reply.getHeader('server-timing'), ...requestTraces.get(request),
+      }));
+    });
+  }
   function reportTiming(request: FastifyRequest, reply: FastifyReply, timing?: SessionTiming, upstreamMs?: number): void {
     const started = requestStarts.get(request);
     if (started === undefined) return;
@@ -59,13 +115,15 @@ export async function createApp(config: BffConfig, store: SharedStore, fetcher?:
     if (!config.production) requestStarts.set(request, performance.now());
     reply.header('Cache-Control', 'private, no-store, max-age=0').header('Pragma', 'no-cache').header('Vary', 'Cookie');
     if (!config.enabled && request.url !== '/api/health') throw new HttpError(503, 'BFF_DISABLED');
-    const n = await store.count(`nestora:rate:all:${fingerprint(request.ip)}`, 60);
+    const n = await measure('rate_limit', () => store.count(`nestora:rate:all:${fingerprint(request.ip)}`, 60));
     if (n > 600) throw new HttpError(429, 'RATE_LIMITED');
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
       const token = request.headers['x-csrf-token'];
       const stored = readCookie(request, csrfCookie);
-      if (request.headers.origin !== config.origin || request.headers['sec-fetch-site'] === 'cross-site' ||
-        typeof token !== 'string' || !validId(stored) || !validId(token) || !sameSecret(token, stored)) {
+      if (request.headers.origin !== config.origin || request.headers['sec-fetch-site'] === 'cross-site') {
+        throw new HttpError(403, 'ORIGIN_DENIED');
+      }
+      if (typeof token !== 'string' || !validId(stored) || !validId(token) || !sameSecret(token, stored)) {
         throw new HttpError(403, 'CSRF_FAILED');
       }
     }
@@ -74,7 +132,10 @@ export async function createApp(config: BffConfig, store: SharedStore, fetcher?:
     if (typeof payload === 'string') assertTokenFree(payload);
     return payload;
   });
-  app.get('/api/health', async () => { await store.ping(); return { ready: true, enabled: config.enabled }; });
+  app.get('/api/health', async () => {
+    await store.ping();
+    return { ready: true, enabled: config.enabled, ...(!config.production ? { origin: config.origin } : {}) };
+  });
   app.get('/api/csrf', async (request, reply) => {
     if (request.headers['sec-fetch-site'] === 'cross-site' ||
       (request.headers.origin && request.headers.origin !== config.origin)) throw new HttpError(403, 'ORIGIN_DENIED');
@@ -193,7 +254,7 @@ export async function createApp(config: BffConfig, store: SharedStore, fetcher?:
       const email = textField(body, 'email');
       await authRate(request, email);
       const { data, error } = await gateway.authClient().auth.signInWithPassword({ email, password: textField(body, 'password', 4096) });
-      if (error || !data.session) throw new HttpError(401, 'INVALID_CREDENTIALS', 'Unable to sign in.');
+      if (error || !data.session) throw credentialFailure(error);
       return establish(request, reply, audience, data.session, body['remember'] === true);
     });
     app.get(`${base}/session`, async (request, reply) => {
@@ -414,7 +475,10 @@ export async function createApp(config: BffConfig, store: SharedStore, fetcher?:
     const proof = await gateway.authClient().auth.signInWithPassword({
       email: resolved.session.user.email, password: textField(body, 'currentPassword', 4096),
     });
-    if (proof.error || !proof.data.session) throw new HttpError(400, 'CURRENT_PASSWORD_INVALID');
+    if (proof.error || !proof.data.session) {
+      if (proof.error?.code === 'invalid_credentials') throw new HttpError(400, 'CURRENT_PASSWORD_INVALID');
+      throw credentialFailure(proof.error);
+    }
     try {
       if (proof.data.user?.id !== resolved.session.user.id) throw new HttpError(403, 'SESSION_INVALID');
       const changed = await gateway.fetch(`${config.supabaseUrl}/auth/v1/user`, { method: 'PUT',
@@ -457,12 +521,13 @@ export async function createApp(config: BffConfig, store: SharedStore, fetcher?:
         checkProfileMutation(request.body, audience, resolved.session.user.id, query);
       }
       if (route.kind === 'storage' && audience === 'customer') {
-        const ownerPath = `storage/v1/object/avatars/${resolved?.session.user.id}/`;
+        const userId = resolved?.session.user.id;
+        const ownerPath = `storage/v1/object/avatars/${userId}/`;
         const removal = request.method === 'DELETE' && raw === 'storage/v1/object/avatars';
         if (removal) {
           const prefixes = jsonBody(request.body)['prefixes'];
-          if (!resolved || !Array.isArray(prefixes) || prefixes.length < 1 || prefixes.length > 100 ||
-            prefixes.some((prefix: unknown) => typeof prefix !== 'string' || !prefix.startsWith(`${resolved.session.user.id}/`) || prefix.includes('..'))) {
+          if (!userId || !Array.isArray(prefixes) || prefixes.length < 1 || prefixes.length > 100 ||
+            prefixes.some((prefix: unknown) => typeof prefix !== 'string' || !prefix.startsWith(`${userId}/`) || prefix.includes('..'))) {
             throw new HttpError(403, 'STORAGE_NOT_ALLOWED');
           }
         } else if (route.resource !== 'avatars' || !raw.startsWith(ownerPath)) throw new HttpError(403, 'STORAGE_NOT_ALLOWED');
@@ -476,22 +541,34 @@ export async function createApp(config: BffConfig, store: SharedStore, fetcher?:
       const url = `${config.supabaseUrl}/${route.path}${query.size ? `?${query}` : ''}`;
       cancellation?.signal.throwIfAborted();
       const upstreamStarted = performance.now();
-      const response = await gateway.fetch(url, { method: request.method, headers,
+      const send = () => gateway.fetch(url, { method: request.method, headers,
         signal: cancellation?.signal,
         ...(!['GET', 'HEAD'].includes(request.method) && Buffer.isBuffer(request.body) ? { body: request.body as unknown as BodyInit } : {}),
       });
+      let response = await send();
+      let bytes = Buffer.from(await response.arrayBuffer());
+      if (resolved && prefix === 'rest/v1' && isExpiredDataToken(response.status, bytes)) {
+        // PostgREST rejected the JWT before executing the query or mutation.
+        // Renew once under the session lease; concurrent failures reuse the rotation.
+        cancellation?.signal.throwIfAborted();
+        resolved = await sessions.recoverAccessToken(audience, id, resolved.session.accessToken);
+        headers.set('Authorization', `Bearer ${resolved.session.accessToken}`);
+        response = await send();
+        bytes = Buffer.from(await response.arrayBuffer());
+        if (isExpiredDataToken(response.status, bytes)) throw new HttpError(503, 'TOKEN_RENEWAL_UNAVAILABLE');
+      }
       for (const name of ['content-type', 'content-range', 'range-unit', 'preference-applied']) {
         const value = response.headers.get(name);
         if (value) reply.header(name, value);
       }
-      const bytes = Buffer.from(await response.arrayBuffer());
       const upstreamMs = performance.now() - upstreamStarted;
       if (bytes.length > config.bodyLimit) throw new HttpError(502, 'UPSTREAM_TOO_LARGE');
       // Never relay upstream cookies, redirects, Authorization or auth endpoints.
       if (/json|text\//i.test(response.headers.get('content-type') ?? '')) {
         assertTokenFree(bytes.toString('utf8'));
       }
-      if (resolved && [resolved.session.accessToken, resolved.session.refreshToken].some((secret) => bytes.includes(Buffer.from(secret)))) {
+      const session = resolved?.session;
+      if (session && [session.accessToken, session.refreshToken].some((secret) => bytes.includes(Buffer.from(secret)))) {
         throw new HttpError(502, 'UNSAFE_UPSTREAM_RESPONSE');
       }
       reportTiming(request, reply, timing, upstreamMs);

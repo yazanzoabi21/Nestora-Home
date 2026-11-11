@@ -1,18 +1,18 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Injector, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ToastService } from '../../../../core/services/toast.service';
 import { TranslationService } from '../../../../core/services/translation';
+import { loginErrorKey } from '../../../../core/services/auth/auth-request-error';
 import {
   AdminAuthService,
   CUSTOMER_PASSWORD_MIN_LENGTH,
   CustomerAuthService,
   getCustomerSignupErrorMessage,
 } from '../../../../core/services/auth';
-import { CustomerShoppingStateService } from '../../../customer/services';
 
 type AuthMode = 'login' | 'register';
 type AuthAudience = 'admin' | 'customer';
@@ -38,10 +38,10 @@ export class LoginComponent {
 
   private readonly translation = inject(TranslationService);
   private readonly translate = inject(TranslateService);
-  private readonly adminAuth = inject(AdminAuthService);
-  private readonly customerAuth = inject(CustomerAuthService);
+  private readonly injector = inject(Injector);
+  private get adminAuth(): AdminAuthService { return this.injector.get(AdminAuthService); }
+  private get customerAuth(): CustomerAuthService { return this.injector.get(CustomerAuthService); }
   private readonly toast = inject(ToastService);
-  private readonly shopping = inject(CustomerShoppingStateService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -118,17 +118,14 @@ export class LoginComponent {
       const request = { email, password };
       if (this.audience === 'customer') {
         await this.customerAuth.login(request, returnUrl, this.loginForm.rememberMe);
+        void this.initializeShopping();
       } else {
         await this.adminAuth.login(request, returnUrl, this.loginForm.rememberMe);
       }
-      await this.shopping.initialize().catch(() => {
-        this.toast.warn(this.t('AUTH.ERRORS.POST_LOGIN_LOAD_FAILED'));
-      });
-    } catch {
+    } catch (error: unknown) {
       const authorized = this.audience === 'customer'
         ? this.customerAuth.isAuthenticated() : !!this.adminAuth.currentUserProfile();
-      this.errorMessage.set(this.t(authorized
-        ? 'AUTH.ERRORS.POST_LOGIN_LOAD_FAILED' : 'AUTH.ERRORS.INVALID_CREDENTIALS'));
+      this.errorMessage.set(this.t(loginErrorKey(error, authorized)));
     } finally {
       this.loading.set(false);
     }
@@ -221,9 +218,7 @@ export class LoginComponent {
         return;
       }
 
-      await this.shopping.initialize().catch(() => {
-        this.toast.warn(this.t('AUTH.ERRORS.POST_LOGIN_LOAD_FAILED'));
-      });
+      void this.initializeShopping();
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
       if (returnUrl?.startsWith('/shop') && !returnUrl.startsWith('//')) {
         await this.router.navigateByUrl(returnUrl);
@@ -234,6 +229,15 @@ export class LoginComponent {
       this.errorMessage.set(getCustomerSignupErrorMessage(error));
     } finally {
       this.isSubmitting.set(false);
+    }
+  }
+
+  private async initializeShopping(): Promise<void> {
+    try {
+      const { CustomerShoppingStateService } = await import('../../../customer/services/customer-shopping-state.service');
+      await this.injector.get(CustomerShoppingStateService).initialize();
+    } catch {
+      this.toast.warn(this.t('AUTH.ERRORS.POST_LOGIN_LOAD_FAILED'));
     }
   }
 }

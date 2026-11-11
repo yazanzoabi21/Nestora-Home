@@ -92,7 +92,7 @@ export class HomePageComponent {
     this.productError() || this.categoryError() || this.promotionError() || this.offerError(),
   );
   private offerRequest = 0;
-  private offerUserId: string | null | undefined;
+  private offerSession?: ReturnType<CustomerAuthService['session']>;
   readonly selectedProduct = signal<CustomerProduct | null>(null);
   readonly recentlyViewedProducts = signal<readonly CustomerProduct[]>([]);
   readonly recentlyViewedStatus = signal<RecentlyViewedStatus>('idle');
@@ -265,7 +265,7 @@ export class HomePageComponent {
     });
     effect(() => {
       this.publicData.offersRevision();
-      const userId = this.auth.session()?.user.id ?? null;
+      const session = this.auth.session();
       const restoring = this.auth.isLoading();
       untracked(() => {
         if (restoring) {
@@ -274,7 +274,7 @@ export class HomePageComponent {
           this.offersLoading.set(true);
           return;
         }
-        void this.loadOffers(userId);
+        void this.loadOffers(session);
       });
     });
     void this.loadProducts();
@@ -285,7 +285,7 @@ export class HomePageComponent {
       this.loadProducts(true),
       this.refreshSection(this.publicData.categories, this.categoryError, true),
       this.refreshSection(this.publicData.promotions, this.promotionError, true),
-      this.auth.isLoading() ? Promise.resolve() : this.loadOffers(this.auth.session()?.user.id ?? null, true),
+      this.auth.isLoading() ? Promise.resolve() : this.loadOffers(this.auth.session(), true),
     ]);
   }
 
@@ -422,21 +422,21 @@ export class HomePageComponent {
     }
   }
 
-  private async loadOffers(userId: string | null, force = false): Promise<void> {
+  private async loadOffers(session: ReturnType<CustomerAuthService['session']>, force = false): Promise<void> {
     const request = ++this.offerRequest;
     const isCurrent = () => !this.destroyRef.destroyed && request === this.offerRequest &&
-      !this.auth.isLoading() && (this.auth.session()?.user.id ?? null) === userId;
-    if (this.offerUserId !== userId) {
-      this.offerUserId = userId;
+      !this.auth.isLoading() && this.auth.session() === session;
+    if (this.offerSession !== session) {
+      this.offerSession = session;
       this.offers.set([]);
     }
-    const cached = userId === null ? this.publicData.guestOffers.read() : null;
+    const cache = this.publicData.offersFor(session);
+    const cached = cache.read();
     if (cached) this.offers.set(cached);
     this.offersLoading.set(cached === null && this.offers().length === 0);
     this.offerError.set(false);
     try {
-      const offers = await (userId === null ? this.publicData.guestOffers.refresh(force)
-        : this.offersService.getActiveCustomerOffers());
+      const offers = await cache.refresh(force);
       if (offers && isCurrent()) this.offers.set(offers);
     } catch {
       if (isCurrent()) this.offerError.set(true);

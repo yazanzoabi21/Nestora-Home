@@ -138,10 +138,9 @@ export class CustomerAuthService {
     rememberSession = true,
   ): Promise<void> {
     await this.lifecycle.authenticate(rememberSession, async (assertCurrent) => {
-      this.clearState();
       const { data, error } = await this.supabase.auth.signInWithPassword(request);
       assertCurrent();
-      if (error) throw new Error(error.message);
+      if (error) throw error;
       if (!data.user?.id || !data.session) throw new Error('User not found.');
       this.session.set(data.session);
       await this.synchronizeProfileForSession(data.session, !this.supabase.auth.serverManaged);
@@ -426,7 +425,6 @@ export class CustomerAuthService {
       profile = await this.getCustomerProfileById(userId);
     } catch (error: unknown) {
       if (sequence === this.profileLoadSequence) {
-        this.currentCustomerProfile.set(null);
         this.lastLoadedProfileUserId = undefined;
       }
       throw error;
@@ -438,13 +436,13 @@ export class CustomerAuthService {
   }
 
   private async getCustomerProfileById(userId: string): Promise<AuthenticatedUserProfile | null> {
-    const { data, error } = await this.supabase
+    const { data, error, status } = await this.supabase
       .from('profiles')
       .select(this.profileSelect)
       .eq('id', userId)
       .maybeSingle();
 
-    if (error) throw new Error(error.message);
+    if (error) throw Object.assign(new Error(error.message), { status });
 
     const profile = data as unknown as AuthenticatedUserProfile | null;
     return profile?.roles?.name === 'customer' ? profile : null;
