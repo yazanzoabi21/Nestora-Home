@@ -1,0 +1,42 @@
+{
+  "scope": "Offline consistency only; no database execution or authorization result",
+  "checksPassed": 10,
+  "checksFailed": 0,
+  "artifacts": [
+    {
+      "file": "40_deployed_hardening.proposed.sql",
+      "bytes": 88698,
+      "sha256": "119f79463af2e7588cb7432b525b9fb36a0a2fedb43ad264c9f9cc3065a3466a"
+    },
+    {
+      "file": "41_deployed_hardening.rollback.sql",
+      "bytes": 71521,
+      "sha256": "81968008f1872e606d2b1735649bb080a12d8d90ccfe6adcbb1430208676a62e"
+    },
+    {
+      "file": "05_readonly_execution_prerequisites.sql",
+      "bytes": 700,
+      "sha256": "d340f55222464a682705f536147df9b3c69de79c714db0a07c2bd32d57f82dcb"
+    },
+    {
+      "file": "50_readonly_postchecks.sql",
+      "bytes": 23100,
+      "sha256": "a1d01202d99189faf81d80a91c611b3db88a51224800933aab56a9e34cfa3785"
+    },
+    {
+      "file": "90_negative_authorization.proposed.sql",
+      "bytes": 17787,
+      "sha256": "168d8aac749146294d9f7e27aab31461fc06bdf9bc3b83a1d33e89ebfdab3861"
+    },
+    {
+      "file": "92_rpc_acl_negative.proposed.sql",
+      "bytes": 23768,
+      "sha256": "8ead3d45efd41fec556a5d38ab560e0a43c0eb47ea0bafa1cf67c6903547b20e"
+    },
+    {
+      "file": "storage-authorization.proposed.cjs",
+      "bytes": 9442,
+      "sha256": "47a0b6d1f040675416d2e9e8e69c74afe7d01b79fa09355c836b7f00fb347412"
+    }
+  ]
+}

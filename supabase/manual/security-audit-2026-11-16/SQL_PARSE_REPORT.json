@@ -1,0 +1,141 @@
+{
+  "scope": "Offline SQL/PLpgSQL parsing. No connection, authorization, ACL/object resolution or rollback execution.",
+  "files": [
+    {
+      "file": "00_consolidated_readonly_metadata.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 0,
+      "parserVersion": 180004,
+      "statements": 1,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 0
+    },
+    {
+      "file": "00_inspect.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 0,
+      "parserVersion": 180004,
+      "statements": 23,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 0
+    },
+    {
+      "file": "05_readonly_execution_prerequisites.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 0,
+      "parserVersion": 180004,
+      "statements": 1,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 0
+    },
+    {
+      "file": "10_core_controls.proposed.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 2,
+      "parserVersion": 180004,
+      "statements": 24,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 6
+    },
+    {
+      "file": "11_core_controls.rollback.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 0,
+      "parserVersion": 180004,
+      "statements": 6,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 1
+    },
+    {
+      "file": "20_customer_isolation.proposed.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 0,
+      "parserVersion": 180004,
+      "statements": 15,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 2
+    },
+    {
+      "file": "40_deployed_hardening.proposed.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 4,
+      "parserVersion": 180004,
+      "statements": 144,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 57
+    },
+    {
+      "file": "41_deployed_hardening.rollback.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 6,
+      "parserVersion": 180004,
+      "statements": 172,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 19
+    },
+    {
+      "file": "50_readonly_postchecks.sql",
+      "psqlPreprocessed": false,
+      "sqlBodies": 0,
+      "parserVersion": 180004,
+      "statements": 1,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 0
+    },
+    {
+      "file": "90_negative_authorization.proposed.sql",
+      "psqlPreprocessed": true,
+      "sqlBodies": 0,
+      "parserVersion": 180004,
+      "statements": 80,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 7
+    },
+    {
+      "file": "92_rpc_acl_negative.proposed.sql",
+      "psqlPreprocessed": true,
+      "sqlBodies": 0,
+      "parserVersion": 180004,
+      "statements": 4,
+      "sql": "PASS",
+      "plpgsql": "PASS",
+      "plpgsqlBodies": 1
+    }
+  ],
+  "dynamicTemplates": [
+    {
+      "command": "SELECT",
+      "policy": "PASS"
+    },
+    {
+      "command": "INSERT",
+      "policy": "PASS"
+    },
+    {
+      "command": "UPDATE",
+      "policy": "PASS"
+    },
+    {
+      "command": "DELETE",
+      "policy": "PASS"
+    },
+    {
+      "sql": "revoke select(id),insert(id),update(id),references(id) on public.profiles from public,anon",
+      "parse": "PASS"
+    },
+    {
+      "sql": "revoke insert(id),update(id),references(id) on public.roles from public,anon,authenticated",
+      "parse": "PASS"
+    }
+  ]
+}

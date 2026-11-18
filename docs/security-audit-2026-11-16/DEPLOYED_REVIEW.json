@@ -1,0 +1,5013 @@
+{
+  "source": {
+    "capturedAt": "2026-11-16T20:40:00.871329",
+    "exportMd5": "6372743879c1d24f0dec261a9330b64d",
+    "characters": 1595366,
+    "hashVerified": true,
+    "routineHashesVerified": 77
+  },
+  "counts": {
+    "publicTables": 41,
+    "policies": 117,
+    "routines": 77,
+    "triggers": 36
+  },
+  "policyChanges": [
+    {
+      "before": {
+        "name": "Admins can manage customer contact messages",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "customer_contact_messages",
+        "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      "after": {
+        "name": "Admins can manage customer contact messages",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "customer_contact_messages",
+        "using": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Admins can manage customer content",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "customer_content_pages",
+        "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      "after": {
+        "name": "Admins can manage customer content",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "customer_content_pages",
+        "using": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Admins can manage customer FAQs",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "customer_faqs",
+        "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      "after": {
+        "name": "Admins can manage customer FAQs",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "customer_faqs",
+        "using": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "admins can update loyalty settings",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "loyalty_program_settings",
+        "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+        "schema": "public",
+        "command": "UPDATE",
+        "permissive": "PERMISSIVE",
+        "with_check": "(id = true)"
+      },
+      "after": {
+        "name": "admins can update loyalty settings",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "loyalty_program_settings",
+        "using": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())",
+        "schema": "public",
+        "command": "UPDATE",
+        "permissive": "PERMISSIVE",
+        "with_check": "((id = true)) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Admins can manage product variants",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "product_variants",
+        "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      "after": {
+        "name": "Admins can manage product variants",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "product_variants",
+        "using": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "((EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Authenticated users can delete product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "product_videos",
+        "using": "true",
+        "schema": "public",
+        "command": "DELETE",
+        "permissive": "PERMISSIVE",
+        "with_check": null
+      },
+      "after": {
+        "name": "Authenticated users can delete product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "product_videos",
+        "using": "(select public.current_user_is_admin())",
+        "schema": "public",
+        "command": "DELETE",
+        "permissive": "PERMISSIVE",
+        "with_check": null
+      }
+    },
+    {
+      "before": {
+        "name": "Authenticated users can insert product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "product_videos",
+        "using": null,
+        "schema": "public",
+        "command": "INSERT",
+        "permissive": "PERMISSIVE",
+        "with_check": "true"
+      },
+      "after": {
+        "name": "Authenticated users can insert product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "product_videos",
+        "using": null,
+        "schema": "public",
+        "command": "INSERT",
+        "permissive": "PERMISSIVE",
+        "with_check": "(select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Authenticated users can update product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "product_videos",
+        "using": "true",
+        "schema": "public",
+        "command": "UPDATE",
+        "permissive": "PERMISSIVE",
+        "with_check": "true"
+      },
+      "after": {
+        "name": "Authenticated users can update product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "product_videos",
+        "using": "(select public.current_user_is_admin())",
+        "schema": "public",
+        "command": "UPDATE",
+        "permissive": "PERMISSIVE",
+        "with_check": "(select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Admins can manage reviews",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "reviews",
+        "using": "(EXISTS ( SELECT 1\n   FROM (profiles p\n     JOIN roles r ON ((r.id = p.role_id)))\n  WHERE ((p.id = auth.uid()) AND ((r.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles p\n     JOIN roles r ON ((r.id = p.role_id)))\n  WHERE ((p.id = auth.uid()) AND ((r.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      "after": {
+        "name": "Admins can manage reviews",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "reviews",
+        "using": "((EXISTS ( SELECT 1\n   FROM (profiles p\n     JOIN roles r ON ((r.id = p.role_id)))\n  WHERE ((p.id = auth.uid()) AND ((r.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())",
+        "schema": "public",
+        "command": "ALL",
+        "permissive": "PERMISSIVE",
+        "with_check": "((EXISTS ( SELECT 1\n   FROM (profiles p\n     JOIN roles r ON ((r.id = p.role_id)))\n  WHERE ((p.id = auth.uid()) AND ((r.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Authenticated users can delete product images",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "(bucket_id = 'product-images'::text)",
+        "schema": "storage",
+        "command": "DELETE",
+        "permissive": "PERMISSIVE",
+        "with_check": null
+      },
+      "after": {
+        "name": "Authenticated users can delete product images",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "((bucket_id = 'product-images'::text)) AND (select public.current_user_is_admin())",
+        "schema": "storage",
+        "command": "DELETE",
+        "permissive": "PERMISSIVE",
+        "with_check": null
+      }
+    },
+    {
+      "before": {
+        "name": "Authenticated users can delete product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "(bucket_id = 'product-videos'::text)",
+        "schema": "storage",
+        "command": "DELETE",
+        "permissive": "PERMISSIVE",
+        "with_check": null
+      },
+      "after": {
+        "name": "Authenticated users can delete product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "((bucket_id = 'product-videos'::text)) AND (select public.current_user_is_admin())",
+        "schema": "storage",
+        "command": "DELETE",
+        "permissive": "PERMISSIVE",
+        "with_check": null
+      }
+    },
+    {
+      "before": {
+        "name": "Authenticated users can update product images",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "(bucket_id = 'product-images'::text)",
+        "schema": "storage",
+        "command": "UPDATE",
+        "permissive": "PERMISSIVE",
+        "with_check": "(bucket_id = 'product-images'::text)"
+      },
+      "after": {
+        "name": "Authenticated users can update product images",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "((bucket_id = 'product-images'::text)) AND (select public.current_user_is_admin())",
+        "schema": "storage",
+        "command": "UPDATE",
+        "permissive": "PERMISSIVE",
+        "with_check": "((bucket_id = 'product-images'::text)) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Authenticated users can upload product images",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": null,
+        "schema": "storage",
+        "command": "INSERT",
+        "permissive": "PERMISSIVE",
+        "with_check": "(bucket_id = 'product-images'::text)"
+      },
+      "after": {
+        "name": "Authenticated users can upload product images",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": null,
+        "schema": "storage",
+        "command": "INSERT",
+        "permissive": "PERMISSIVE",
+        "with_check": "((bucket_id = 'product-images'::text)) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "Authenticated users can upload product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": null,
+        "schema": "storage",
+        "command": "INSERT",
+        "permissive": "PERMISSIVE",
+        "with_check": "(bucket_id = 'product-videos'::text)"
+      },
+      "after": {
+        "name": "Authenticated users can upload product videos",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": null,
+        "schema": "storage",
+        "command": "INSERT",
+        "permissive": "PERMISSIVE",
+        "with_check": "((bucket_id = 'product-videos'::text)) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "media_library_delete",
+        "roles": [
+          "anon",
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "(bucket_id = 'media-library'::text)",
+        "schema": "storage",
+        "command": "DELETE",
+        "permissive": "PERMISSIVE",
+        "with_check": null
+      },
+      "after": {
+        "name": "media_library_delete",
+        "roles": [
+          "anon",
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "((bucket_id = 'media-library'::text)) AND (select public.current_user_is_admin())",
+        "schema": "storage",
+        "command": "DELETE",
+        "permissive": "PERMISSIVE",
+        "with_check": null
+      }
+    },
+    {
+      "before": {
+        "name": "media_library_update",
+        "roles": [
+          "anon",
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "(bucket_id = 'media-library'::text)",
+        "schema": "storage",
+        "command": "UPDATE",
+        "permissive": "PERMISSIVE",
+        "with_check": "(bucket_id = 'media-library'::text)"
+      },
+      "after": {
+        "name": "media_library_update",
+        "roles": [
+          "anon",
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "((bucket_id = 'media-library'::text)) AND (select public.current_user_is_admin())",
+        "schema": "storage",
+        "command": "UPDATE",
+        "permissive": "PERMISSIVE",
+        "with_check": "((bucket_id = 'media-library'::text)) AND (select public.current_user_is_admin())"
+      }
+    },
+    {
+      "before": {
+        "name": "media_library_upload",
+        "roles": [
+          "anon",
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": null,
+        "schema": "storage",
+        "command": "INSERT",
+        "permissive": "PERMISSIVE",
+        "with_check": "(bucket_id = 'media-library'::text)"
+      },
+      "after": {
+        "name": "media_library_upload",
+        "roles": [
+          "anon",
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": null,
+        "schema": "storage",
+        "command": "INSERT",
+        "permissive": "PERMISSIVE",
+        "with_check": "((bucket_id = 'media-library'::text)) AND (select public.current_user_is_admin())"
+      }
+    }
+  ],
+  "addedPolicies": [
+    {
+      "schema": "public",
+      "table": "carts",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "cart_items",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "customer_addresses",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "customer_notification_preferences",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "customer_product_history",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "customer_loyalty_points_balances",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "customer_loyalty_points_ledger",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "notifications",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "orders",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "order_items",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "order_shipping_addresses",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "payment_transactions",
+      "name": "security_20261116_active_actor",
+      "permissive": "RESTRICTIVE",
+      "command": "ALL",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "security_20261116_active_profile_edit",
+      "permissive": "RESTRICTIVE",
+      "command": "UPDATE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "(select private.nestora_active_actor_20261116())",
+      "with_check": "(select private.nestora_active_actor_20261116())"
+    }
+  ],
+  "functionChanges": [
+    {
+      "schema": "public",
+      "name": "current_user_is_admin",
+      "signature": "",
+      "beforeMd5": "95633dede912a8f6bf30bd9c12dbf1c9",
+      "afterMd5": "096d74454347467b46ad8bb961900777"
+    },
+    {
+      "schema": "public",
+      "name": "can_manage_customer_offers",
+      "signature": "",
+      "beforeMd5": "a61de822010100d574ea68446dcc8a58",
+      "afterMd5": "61edd3d66637ed2265b0762f0f909a9e"
+    },
+    {
+      "schema": "private",
+      "name": "is_admin",
+      "signature": "",
+      "beforeMd5": "64429c2f3b7c6a28909d932b1d864209",
+      "afterMd5": "42062c5394a6910bcb066991d166b03e"
+    },
+    {
+      "schema": "public",
+      "name": "prevent_customer_profile_privilege_changes",
+      "signature": "",
+      "beforeMd5": "96b7443cff67c8ffcf5b2e4c41146a95",
+      "afterMd5": "d7b2da1e9a8d62996204218b2d95282f"
+    },
+    {
+      "schema": "public",
+      "name": "submit_product_review",
+      "signature": "p_product_id uuid, p_rating integer, p_comment text",
+      "beforeMd5": "4d8a79aacc872abbf37c69ebec4883b2",
+      "afterMd5": "0c28c45edaea46004713a2b552261522"
+    },
+    {
+      "schema": "public",
+      "name": "edit_own_product_review",
+      "signature": "p_review_id uuid, p_rating integer, p_comment text",
+      "beforeMd5": "2534525006c1d6701e87d1fc6fae602a",
+      "afterMd5": "c3a5b8b7249bcce25fb92a5c0fe3e976"
+    },
+    {
+      "schema": "public",
+      "name": "record_product_view",
+      "signature": "target_product_id uuid",
+      "beforeMd5": "c7609bd3dc674c65f40bb9d17ad08082",
+      "afterMd5": "3577e2d9b2de934a40313ae498397b55"
+    },
+    {
+      "schema": "public",
+      "name": "replace_cart_free_gifts",
+      "signature": "p_cart_id uuid, p_discount_id uuid, p_product_ids uuid[]",
+      "beforeMd5": "143204ce2a760672ecb9c723486d4fca",
+      "afterMd5": "13130182a5a298a4c6e0298735b1ebe0"
+    },
+    {
+      "schema": "public",
+      "name": "update_inventory_stock",
+      "signature": "p_product_id uuid, p_new_stock integer, p_change_type text, p_note text",
+      "beforeMd5": "e15624974f29a1d8bcb003f5216d0e5e",
+      "afterMd5": "9ae57d43d37178df29b4bd35322d2922"
+    },
+    {
+      "schema": "public",
+      "name": "replace_product_variants",
+      "signature": "p_product_id uuid, p_variants jsonb",
+      "beforeMd5": "86a987d94d729052e830f8d4d7445e70",
+      "afterMd5": "1f167a7c6f457fcb6c5f5127442d9210"
+    },
+    {
+      "schema": "public",
+      "name": "replace_promotion_products",
+      "signature": "p_promotion_id uuid, p_product_ids uuid[]",
+      "beforeMd5": "072ee63e2cbb0fd94a631d38e9a2f25a",
+      "afterMd5": "4872950b84dca7351ebf6dcd2d862a86"
+    },
+    {
+      "schema": "public",
+      "name": "refresh_analytics",
+      "signature": "p_period_key text",
+      "beforeMd5": "d99f2c058434725cc9b26c06de837686",
+      "afterMd5": "4e2a3980056d2a4b3ef3904b810d32a7"
+    },
+    {
+      "schema": "public",
+      "name": "refresh_dashboard_statistics",
+      "signature": "p_period_key text",
+      "beforeMd5": "01c61571c3f6eab189f0f5f3c8ab8eb1",
+      "afterMd5": "023f8b27b5fc703a225821c59ec576f7"
+    },
+    {
+      "schema": "public",
+      "name": "can_current_customer_use_discount",
+      "signature": "p_discount_id uuid",
+      "beforeMd5": "bfb86f0cc286120d4a0797e73244937a",
+      "afterMd5": "3da55369a0a291673962326b1c7aa2ce"
+    },
+    {
+      "schema": "public",
+      "name": "get_my_loyalty_balance",
+      "signature": "",
+      "beforeMd5": "9ddd65c0d1915a0710eae8da0a36aedb",
+      "afterMd5": "8b811a01b9e7d43633bc53cad9792453"
+    },
+    {
+      "schema": "public",
+      "name": "get_my_loyalty_points_history",
+      "signature": "p_limit integer, p_offset integer",
+      "beforeMd5": "100e883d97a59f733350f5645c64b58f",
+      "afterMd5": "a588abd526c627c9eb2bac6923a1c880"
+    },
+    {
+      "schema": "public",
+      "name": "get_my_redeemable_loyalty_products",
+      "signature": "p_limit integer, p_offset integer",
+      "beforeMd5": "7a8293ab97f0596281e40aa7dd28a676",
+      "afterMd5": "6a0185558a88084c0c0ba13737d6a0c3"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "signature": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric, p_checkout_token uuid, p_redeem_product_ids uuid[], p_redeem_variant_ids uuid[], p_free_gift_product_ids uuid[]",
+      "beforeMd5": "c73b3999991c0b6bcf823f0d4db1a37c",
+      "afterMd5": "0be3b551b664d24d5acdc485e5597e8a"
+    }
+  ],
+  "revokedRoutineExecution": [
+    {
+      "schema": "public",
+      "name": "append_customer_loyalty_ledger_entry",
+      "signature": "p_user_id uuid, p_order_id uuid, p_order_item_id uuid, p_transaction_type text, p_points_delta integer, p_note text"
+    },
+    {
+      "schema": "public",
+      "name": "attach_customer_to_order",
+      "signature": "p_order_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "enforce_variant_order_item_price",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "handle_new_user",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "handle_public_customer_signup",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "notify_admin_new_order",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "notify_admin_new_order_from_address",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "signature": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "signature": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "signature": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric, p_checkout_token uuid"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "signature": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric, p_checkout_token uuid, p_redeem_product_ids uuid[]"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "signature": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric, p_checkout_token uuid, p_redeem_product_ids uuid[], p_redeem_variant_ids uuid[]"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order_legacy_discount",
+      "signature": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order_legacy_products_only",
+      "signature": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text"
+    },
+    {
+      "schema": "public",
+      "name": "prepare_customer_address",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "prevent_customer_profile_privilege_changes",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "prevent_loyalty_ledger_mutation",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "process_order_loyalty_status_change",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "promote_customer_address_after_delete",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "recalculate_admin_order_after_item_change",
+      "signature": "p_order_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "restore_admin_order_item_inventory",
+      "signature": "p_order_item_id uuid, p_note text"
+    },
+    {
+      "schema": "public",
+      "name": "set_customer_help_updated_at",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "set_customer_offers_updated_at",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "set_customers_updated_at",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "set_order_shipping_addresses_updated_at",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "set_payment_methods_updated_at",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "set_payment_transactions_updated_at",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "set_product_image_embedding_updated_at",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "set_updated_at",
+      "signature": ""
+    },
+    {
+      "schema": "public",
+      "name": "sync_customer_from_profile",
+      "signature": ""
+    }
+  ],
+  "policies": [
+    {
+      "name": "Anonymous visitors can create activity logs",
+      "roles": [
+        "anon"
+      ],
+      "table": "activity_logs",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(user_id IS NULL)"
+    },
+    {
+      "name": "Authenticated users can create own activity logs",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "activity_logs",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "((user_id IS NULL) OR (user_id = auth.uid()))"
+    },
+    {
+      "name": "Nestora admins manage activity logs",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "activity_logs",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Nestora admins manage",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "analytics",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Customers can create own cart items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "cart_items",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM carts\n  WHERE ((carts.id = cart_items.cart_id) AND (carts.user_id = auth.uid()))))"
+    },
+    {
+      "name": "Customers can delete own cart items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "cart_items",
+      "using": "(EXISTS ( SELECT 1\n   FROM carts\n  WHERE ((carts.id = cart_items.cart_id) AND (carts.user_id = auth.uid()))))",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can read own cart items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "cart_items",
+      "using": "(EXISTS ( SELECT 1\n   FROM carts\n  WHERE ((carts.id = cart_items.cart_id) AND (carts.user_id = auth.uid()))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can update own cart items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "cart_items",
+      "using": "(EXISTS ( SELECT 1\n   FROM carts\n  WHERE ((carts.id = cart_items.cart_id) AND (carts.user_id = auth.uid()))))",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM carts\n  WHERE ((carts.id = cart_items.cart_id) AND (carts.user_id = auth.uid()))))"
+    },
+    {
+      "name": "Nestora admins read cart items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "cart_items",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can create own cart",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "carts",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "name": "Customers can delete own cart",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "carts",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can read own cart",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "carts",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can update own cart",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "carts",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "name": "Nestora admins read carts",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "carts",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage categories",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "categories",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active categories",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "categories",
+      "using": "(is_active = true)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can create their addresses",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_addresses",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "name": "Customers can delete their addresses",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_addresses",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can read their addresses",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_addresses",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can update their addresses",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_addresses",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "name": "Nestora admins read customer addresses",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_addresses",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Admins can manage customer contact messages",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_contact_messages",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+    },
+    {
+      "name": "Anonymous visitors can submit contact messages",
+      "roles": [
+        "anon"
+      ],
+      "table": "customer_contact_messages",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "((customer_user_id IS NULL) AND ((status)::text = 'new'::text))"
+    },
+    {
+      "name": "Customers can submit contact messages",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_contact_messages",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(((customer_user_id IS NULL) OR (customer_user_id = auth.uid())) AND ((status)::text = 'new'::text))"
+    },
+    {
+      "name": "Admins can manage customer content",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_content_pages",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+    },
+    {
+      "name": "Public can read published customer content",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "customer_content_pages",
+      "using": "((is_active = true) AND (is_published = true))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Admins can manage customer FAQs",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_faqs",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+    },
+    {
+      "name": "Public can read active customer FAQs",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "customer_faqs",
+      "using": "(is_active = true)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can read own loyalty balance",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_loyalty_points_balances",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins can read loyalty balances",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_loyalty_points_balances",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "customers can read their loyalty ledger",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_loyalty_points_ledger",
+      "using": "((user_id = auth.uid()) OR (EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[]))))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can create their own notification preferences",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_notification_preferences",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(auth.uid() = customer_id)"
+    },
+    {
+      "name": "Customers can read their own notification preferences",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_notification_preferences",
+      "using": "(auth.uid() = customer_id)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can update their own notification preferences",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_notification_preferences",
+      "using": "(auth.uid() = customer_id)",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(auth.uid() = customer_id)"
+    },
+    {
+      "name": "Nestora admins read notification preferences",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_notification_preferences",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "customer_offers_admin_delete",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_offers",
+      "using": "can_manage_customer_offers()",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "customer_offers_admin_insert",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_offers",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "can_manage_customer_offers()"
+    },
+    {
+      "name": "customer_offers_admin_read",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_offers",
+      "using": "can_manage_customer_offers()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "customer_offers_admin_update",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_offers",
+      "using": "can_manage_customer_offers()",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "can_manage_customer_offers()"
+    },
+    {
+      "name": "customer_offers_public_read",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "customer_offers",
+      "using": "((is_active = true) AND ((start_date IS NULL) OR (start_date <= now())) AND ((end_date IS NULL) OR (end_date >= now())))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers delete own product history",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_product_history",
+      "using": "(auth.uid() = user_id)",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers read own product history",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_product_history",
+      "using": "(auth.uid() = user_id)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins read customer product history",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customer_product_history",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can read own customer record",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customers",
+      "using": "(profile_id = auth.uid())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage customers",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "customers",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Nestora admins manage",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dashboard_statistics",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Nestora admins manage delivery zones",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "delivery_zones",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active delivery zones",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "delivery_zones",
+      "using": "(is_active = true)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Admins manage gift products",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "discount_gift_products",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND (profile.is_active = true) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND (profile.is_active = true) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+    },
+    {
+      "name": "Customers read available gift products",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "discount_gift_products",
+      "using": "((is_active = true) AND (EXISTS ( SELECT 1\n   FROM discounts discount\n  WHERE ((discount.id = discount_gift_products.discount_id) AND ((discount.discount_type)::text = 'free_gift'::text) AND (discount.is_active = true) AND ((discount.start_date IS NULL) OR (discount.start_date <= now())) AND ((discount.end_date IS NULL) OR (discount.end_date >= now()))))) AND (EXISTS ( SELECT 1\n   FROM products product\n  WHERE ((product.id = discount_gift_products.product_id) AND (product.is_active = true) AND (COALESCE(product.stock, 0) > 0)))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage discounts",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "discounts",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active discounts",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "discounts",
+      "using": "((is_active = true) AND ((start_date IS NULL) OR (start_date <= now())) AND ((end_date IS NULL) OR (end_date >= now())))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "inventory_logs",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "admins can update loyalty settings",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "loyalty_program_settings",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(id = true)"
+    },
+    {
+      "name": "loyalty settings are readable",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "loyalty_program_settings",
+      "using": "true",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "media_assets",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Nestora admins manage",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "media_usages",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Nestora admins manage notifications",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "notifications",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Users can read own notifications",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "notifications",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Users can update own notifications",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "notifications",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "name": "Admins can manage order items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "order_items",
+      "using": "is_nestora_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "is_nestora_admin()"
+    },
+    {
+      "name": "Customers can view items from own orders",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "order_items",
+      "using": "(EXISTS ( SELECT 1\n   FROM orders customer_order\n  WHERE ((customer_order.id = order_items.order_id) AND (customer_order.user_id = auth.uid()))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Admins can read order shipping addresses",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "order_shipping_addresses",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can read shipping address for own orders",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "order_shipping_addresses",
+      "using": "(EXISTS ( SELECT 1\n   FROM orders customer_order\n  WHERE ((customer_order.id = order_shipping_addresses.order_id) AND (customer_order.user_id = auth.uid()))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Admins can manage orders",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "orders",
+      "using": "is_nestora_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "is_nestora_admin()"
+    },
+    {
+      "name": "Customers can view own orders",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "orders",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage payment methods",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "payment_methods",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active payment methods",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "payment_methods",
+      "using": "(is_active = true)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "payment_transactions",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Admins can maintain product image embeddings",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "product_image_embeddings",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND (profile.is_active = true) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND (profile.is_active = true) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+    },
+    {
+      "name": "Admins can read product image embeddings",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "product_image_embeddings",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND (profile.is_active = true) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Admins can manage product variants",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "product_variants",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles profile\n     JOIN roles role ON ((role.id = profile.role_id)))\n  WHERE ((profile.id = auth.uid()) AND ((role.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+    },
+    {
+      "name": "Public can read active product variants",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "product_variants",
+      "using": "((is_active = true) AND (EXISTS ( SELECT 1\n   FROM products product\n  WHERE ((product.id = product_variants.product_id) AND (product.is_active = true)))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Authenticated users can delete product videos",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "product_videos",
+      "using": "true",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Authenticated users can insert product videos",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "product_videos",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "true"
+    },
+    {
+      "name": "Authenticated users can read product videos",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "product_videos",
+      "using": "true",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Authenticated users can update product videos",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "product_videos",
+      "using": "true",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "true"
+    },
+    {
+      "name": "Public can read active product videos",
+      "roles": [
+        "anon"
+      ],
+      "table": "product_videos",
+      "using": "(is_active = true)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage products",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "products",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active products",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "products",
+      "using": "(is_active = true)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Admins can read profiles",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "profiles",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can read own profile",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "profiles",
+      "using": "(auth.uid() = id)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can update own profile",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "profiles",
+      "using": "(auth.uid() = id)",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "name": "Users can read own profile",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "profiles",
+      "using": "(id = ( SELECT auth.uid() AS uid))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Users can update own profile",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "profiles",
+      "using": "(auth.uid() = id)",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "name": "Nestora admins manage promotion products",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "promotion_products",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active promotion products",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "promotion_products",
+      "using": "((EXISTS ( SELECT 1\n   FROM promotions promotion\n  WHERE ((promotion.id = promotion_products.promotion_id) AND (promotion.is_active = true) AND ((promotion.start_date IS NULL) OR (promotion.start_date <= now())) AND ((promotion.end_date IS NULL) OR (promotion.end_date >= now()))))) AND (EXISTS ( SELECT 1\n   FROM products product\n  WHERE ((product.id = promotion_products.product_id) AND (product.is_active = true)))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage promotions",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "promotions",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active promotions",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "promotions",
+      "using": "((is_active = true) AND ((start_date IS NULL) OR (start_date <= now())) AND ((end_date IS NULL) OR (end_date >= now())))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Admins can manage reviews",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "reviews",
+      "using": "(EXISTS ( SELECT 1\n   FROM (profiles p\n     JOIN roles r ON ((r.id = p.role_id)))\n  WHERE ((p.id = auth.uid()) AND ((r.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM (profiles p\n     JOIN roles r ON ((r.id = p.role_id)))\n  WHERE ((p.id = auth.uid()) AND ((r.name)::text = ANY ((ARRAY['admin'::character varying, 'super_admin'::character varying])::text[])))))"
+    },
+    {
+      "name": "Customers can read own reviews",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "reviews",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Public can read published reviews",
+      "roles": [
+        "public"
+      ],
+      "table": "reviews",
+      "using": "((status)::text = 'published'::text)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Authenticated users can read own assigned role",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "roles",
+      "using": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = auth.uid()) AND (p.role_id = roles.id))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "roles",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Nestora admins manage shipping method zones",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "shipping_method_zones",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active shipping method zones",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "shipping_method_zones",
+      "using": "((is_active = true) AND (EXISTS ( SELECT 1\n   FROM shipping_methods shipping_method\n  WHERE ((shipping_method.id = shipping_method_zones.shipping_method_id) AND (shipping_method.is_active = true)))) AND (EXISTS ( SELECT 1\n   FROM delivery_zones delivery_zone\n  WHERE ((delivery_zone.id = shipping_method_zones.delivery_zone_id) AND (delivery_zone.is_active = true)))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Nestora admins manage shipping methods",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "shipping_methods",
+      "using": "current_user_is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "current_user_is_admin()"
+    },
+    {
+      "name": "Public can read active shipping methods",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "shipping_methods",
+      "using": "(is_active = true)",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can add own wishlist items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "wishlist",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "name": "Customers can delete own wishlist items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "wishlist",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can read own wishlist",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "wishlist",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Customers can update own wishlist items",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "wishlist",
+      "using": "(user_id = auth.uid())",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "name": "Anyone can view product images",
+      "roles": [
+        "public"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'product-images'::text)",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Authenticated users can delete product images",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'product-images'::text)",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Authenticated users can delete product videos",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'product-videos'::text)",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Authenticated users can read product videos",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'product-videos'::text)",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Authenticated users can update product images",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'product-images'::text)",
+      "schema": "storage",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(bucket_id = 'product-images'::text)"
+    },
+    {
+      "name": "Authenticated users can upload product images",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": null,
+      "schema": "storage",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(bucket_id = 'product-images'::text)"
+    },
+    {
+      "name": "Authenticated users can upload product videos",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": null,
+      "schema": "storage",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(bucket_id = 'product-videos'::text)"
+    },
+    {
+      "name": "Public can view avatars",
+      "roles": [
+        "public"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'avatars'::text)",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Users can delete own avatar",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "((bucket_id = 'avatars'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "Users can update own avatar",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "((bucket_id = 'avatars'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))",
+      "schema": "storage",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'avatars'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))"
+    },
+    {
+      "name": "Users can upload own avatar",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": null,
+      "schema": "storage",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'avatars'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))"
+    },
+    {
+      "name": "media_library_delete",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'media-library'::text)",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "media_library_public_read",
+      "roles": [
+        "public"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'media-library'::text)",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "name": "media_library_update",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "(bucket_id = 'media-library'::text)",
+      "schema": "storage",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(bucket_id = 'media-library'::text)"
+    },
+    {
+      "name": "media_library_upload",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": null,
+      "schema": "storage",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(bucket_id = 'media-library'::text)"
+    }
+  ],
+  "triggers": [
+    {
+      "name": "on_auth_user_created",
+      "schema": "auth",
+      "enabled": "O",
+      "relation": "users",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user()",
+      "function_name": "handle_new_user",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "on_public_customer_signup",
+      "schema": "auth",
+      "enabled": "O",
+      "relation": "users",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER on_public_customer_signup AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_public_customer_signup()",
+      "function_name": "handle_public_customer_signup",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "prepare_customer_address_row",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "customer_addresses",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER prepare_customer_address_row BEFORE INSERT OR UPDATE ON customer_addresses FOR EACH ROW EXECUTE FUNCTION prepare_customer_address()",
+      "function_name": "prepare_customer_address",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "promote_customer_address_after_delete_row",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "customer_addresses",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER promote_customer_address_after_delete_row AFTER DELETE ON customer_addresses FOR EACH ROW EXECUTE FUNCTION promote_customer_address_after_delete()",
+      "function_name": "promote_customer_address_after_delete",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "set_customer_contact_messages_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "customer_contact_messages",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER set_customer_contact_messages_updated_at BEFORE UPDATE ON customer_contact_messages FOR EACH ROW EXECUTE FUNCTION set_customer_help_updated_at()",
+      "function_name": "set_customer_help_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "set_customer_content_pages_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "customer_content_pages",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER set_customer_content_pages_updated_at BEFORE UPDATE ON customer_content_pages FOR EACH ROW EXECUTE FUNCTION set_customer_help_updated_at()",
+      "function_name": "set_customer_help_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "set_customer_faqs_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "customer_faqs",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER set_customer_faqs_updated_at BEFORE UPDATE ON customer_faqs FOR EACH ROW EXECUTE FUNCTION set_customer_help_updated_at()",
+      "function_name": "set_customer_help_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "prevent_loyalty_ledger_mutation",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "customer_loyalty_points_ledger",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER prevent_loyalty_ledger_mutation BEFORE DELETE OR UPDATE ON customer_loyalty_points_ledger FOR EACH ROW EXECUTE FUNCTION prevent_loyalty_ledger_mutation()",
+      "function_name": "prevent_loyalty_ledger_mutation",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "customer_offers_set_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "customer_offers",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER customer_offers_set_updated_at BEFORE UPDATE ON customer_offers FOR EACH ROW EXECUTE FUNCTION set_customer_offers_updated_at()",
+      "function_name": "set_customer_offers_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "set_customers_updated_at_trigger",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "customers",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER set_customers_updated_at_trigger BEFORE UPDATE ON customers FOR EACH ROW EXECUTE FUNCTION set_customers_updated_at()",
+      "function_name": "set_customers_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "set_delivery_zones_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "delivery_zones",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER set_delivery_zones_updated_at BEFORE UPDATE ON delivery_zones FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "function_name": "set_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "trg_media_assets_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "media_assets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER trg_media_assets_updated_at BEFORE UPDATE ON media_assets FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "function_name": "set_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "enforce_variant_order_item_price",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "order_items",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER enforce_variant_order_item_price BEFORE UPDATE OF price ON order_items FOR EACH ROW WHEN (new.variant_id IS NOT NULL) EXECUTE FUNCTION enforce_variant_order_item_price()",
+      "function_name": "enforce_variant_order_item_price",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "trg_notify_admin_new_order_from_address",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "order_shipping_addresses",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER trg_notify_admin_new_order_from_address AFTER INSERT ON order_shipping_addresses FOR EACH ROW EXECUTE FUNCTION notify_admin_new_order_from_address()",
+      "function_name": "notify_admin_new_order_from_address",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "trg_order_shipping_addresses_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "order_shipping_addresses",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER trg_order_shipping_addresses_updated_at BEFORE UPDATE ON order_shipping_addresses FOR EACH ROW EXECUTE FUNCTION set_order_shipping_addresses_updated_at()",
+      "function_name": "set_order_shipping_addresses_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "process_order_loyalty_status_change",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "orders",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER process_order_loyalty_status_change AFTER UPDATE OF status, payment_status ON orders FOR EACH ROW EXECUTE FUNCTION process_order_loyalty_status_change()",
+      "function_name": "process_order_loyalty_status_change",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "trg_process_order_loyalty_status_change",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "orders",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER trg_process_order_loyalty_status_change AFTER UPDATE OF status, payment_status ON orders FOR EACH ROW WHEN (old.status::text IS DISTINCT FROM new.status::text OR old.payment_status::text IS DISTINCT FROM new.payment_status::text) EXECUTE FUNCTION process_order_loyalty_status_change()",
+      "function_name": "process_order_loyalty_status_change",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "trg_payment_methods_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "payment_methods",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER trg_payment_methods_updated_at BEFORE UPDATE ON payment_methods FOR EACH ROW EXECUTE FUNCTION set_payment_methods_updated_at()",
+      "function_name": "set_payment_methods_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "trg_payment_transactions_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "payment_transactions",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER trg_payment_transactions_updated_at BEFORE UPDATE ON payment_transactions FOR EACH ROW EXECUTE FUNCTION set_payment_transactions_updated_at()",
+      "function_name": "set_payment_transactions_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "set_product_image_embedding_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "product_image_embeddings",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER set_product_image_embedding_updated_at BEFORE UPDATE ON product_image_embeddings FOR EACH ROW EXECUTE FUNCTION set_product_image_embedding_updated_at()",
+      "function_name": "set_product_image_embedding_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "protect_customer_profile_privileges",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "profiles",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER protect_customer_profile_privileges BEFORE UPDATE ON profiles FOR EACH ROW EXECUTE FUNCTION prevent_customer_profile_privilege_changes()",
+      "function_name": "prevent_customer_profile_privilege_changes",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "sync_customer_from_profile_trigger",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "profiles",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER sync_customer_from_profile_trigger AFTER INSERT OR UPDATE OF role_id, full_name, email, phone, avatar_url, is_active ON profiles FOR EACH ROW EXECUTE FUNCTION sync_customer_from_profile()",
+      "function_name": "sync_customer_from_profile",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "set_shipping_method_zones_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "shipping_method_zones",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER set_shipping_method_zones_updated_at BEFORE UPDATE ON shipping_method_zones FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "function_name": "set_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "set_shipping_methods_updated_at",
+      "schema": "public",
+      "enabled": "O",
+      "relation": "shipping_methods",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER set_shipping_methods_updated_at BEFORE UPDATE ON shipping_methods FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "function_name": "set_updated_at",
+      "function_schema": "public",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "tr_check_filters",
+      "schema": "realtime",
+      "enabled": "O",
+      "relation": "subscription",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER tr_check_filters BEFORE INSERT OR UPDATE ON realtime.subscription FOR EACH ROW EXECUTE FUNCTION realtime.subscription_check_filters()",
+      "function_name": "subscription_check_filters",
+      "function_schema": "realtime",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "enforce_bucket_name_length_trigger",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER enforce_bucket_name_length_trigger BEFORE INSERT OR UPDATE OF name ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_bucket_name_length()",
+      "function_name": "enforce_bucket_name_length",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "enforce_versioning_status_transition",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER enforce_versioning_status_transition BEFORE UPDATE OF versioning_status ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_versioning_status_transition()",
+      "function_name": "enforce_versioning_status_transition",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "protect_active_lifecycle_states",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER protect_active_lifecycle_states BEFORE DELETE ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.protect_active_lifecycle_states()",
+      "function_name": "protect_active_lifecycle_states",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "protect_bucket_control_insert",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER protect_bucket_control_insert BEFORE INSERT ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.protect_bucket_control_columns('service_role')",
+      "function_name": "protect_bucket_control_columns",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "protect_bucket_control_update",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER protect_bucket_control_update BEFORE UPDATE OF lifecycle_configuration, lifecycle_configuration_generation ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.protect_bucket_control_columns()",
+      "function_name": "protect_bucket_control_columns",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "protect_bucket_control_update_role",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER protect_bucket_control_update_role AFTER UPDATE OF lifecycle_configuration, lifecycle_configuration_generation ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_bucket_lifecycle_service_role('service_role')",
+      "function_name": "enforce_bucket_lifecycle_service_role",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "protect_buckets_delete",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER protect_buckets_delete BEFORE DELETE ON storage.buckets FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()",
+      "function_name": "protect_delete",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "wake_lifecycle_on_policy_write",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER wake_lifecycle_on_policy_write AFTER INSERT OR UPDATE OF lifecycle_configuration_generation ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.wake_lifecycle_state()",
+      "function_name": "wake_lifecycle_state",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "wake_lifecycle_on_versioning_enable",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "buckets",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER wake_lifecycle_on_versioning_enable AFTER UPDATE OF versioning_status ON storage.buckets FOR EACH ROW WHEN (new.lifecycle_configuration IS NOT NULL) EXECUTE FUNCTION storage.wake_lifecycle_state()",
+      "function_name": "wake_lifecycle_state",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "protect_objects_delete",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "objects",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER protect_objects_delete BEFORE DELETE ON storage.objects FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()",
+      "function_name": "protect_delete",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    },
+    {
+      "name": "update_objects_updated_at",
+      "schema": "storage",
+      "enabled": "O",
+      "relation": "objects",
+      "deferrable": false,
+      "definition": "CREATE TRIGGER update_objects_updated_at BEFORE UPDATE ON storage.objects FOR EACH ROW EXECUTE FUNCTION storage.update_updated_at_column()",
+      "function_name": "update_updated_at_column",
+      "function_schema": "storage",
+      "constraint_trigger": false,
+      "initially_deferred": false,
+      "function_identity_arguments": ""
+    }
+  ],
+  "routines": [
+    {
+      "schema": "auth",
+      "name": "jwt",
+      "identity_arguments": "",
+      "owner": "supabase_auth_admin",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "20054548ba2003f61a6bcb472175700b",
+      "result": "jsonb"
+    },
+    {
+      "schema": "auth",
+      "name": "role",
+      "identity_arguments": "",
+      "owner": "supabase_auth_admin",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "8a3e05459e07e0633d43c6fba2a2cdf4",
+      "result": "text"
+    },
+    {
+      "schema": "auth",
+      "name": "uid",
+      "identity_arguments": "",
+      "owner": "supabase_auth_admin",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "ea3b41bf29e2ad573067939329aa088e",
+      "result": "uuid"
+    },
+    {
+      "schema": "extensions",
+      "name": "grant_pg_cron_access",
+      "identity_arguments": "",
+      "owner": "supabase_admin",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "53a44336da0ac1dd62d89dbd988e6d1d",
+      "result": "event_trigger"
+    },
+    {
+      "schema": "extensions",
+      "name": "grant_pg_graphql_access",
+      "identity_arguments": "",
+      "owner": "supabase_admin",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "4e6d7efe4aed1b3b92063b648aa7a0cf",
+      "result": "event_trigger"
+    },
+    {
+      "schema": "extensions",
+      "name": "grant_pg_net_access",
+      "identity_arguments": "",
+      "owner": "supabase_admin",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "1d06ef4fb47bb0ab6e6f8818a62013bb",
+      "result": "event_trigger"
+    },
+    {
+      "schema": "extensions",
+      "name": "pgrst_ddl_watch",
+      "identity_arguments": "",
+      "owner": "supabase_admin",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "afaad7193dcf8f81e728d2bedb85e43e",
+      "result": "event_trigger"
+    },
+    {
+      "schema": "extensions",
+      "name": "pgrst_drop_watch",
+      "identity_arguments": "",
+      "owner": "supabase_admin",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "4357772baf5cfcd5c6d7049585b3a537",
+      "result": "event_trigger"
+    },
+    {
+      "schema": "extensions",
+      "name": "set_graphql_placeholder",
+      "identity_arguments": "",
+      "owner": "supabase_admin",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "8da9dff6b2ae47498209d341acaeb60b",
+      "result": "event_trigger"
+    },
+    {
+      "schema": "private",
+      "name": "is_admin",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": false,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "64429c2f3b7c6a28909d932b1d864209",
+      "result": "boolean"
+    },
+    {
+      "schema": "public",
+      "name": "adjust_customer_loyalty_points",
+      "identity_arguments": "p_user_id uuid, p_points_delta integer, p_note text",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "ac9011f01ee814c8d4471b516cedd594",
+      "result": "integer"
+    },
+    {
+      "schema": "public",
+      "name": "append_customer_loyalty_ledger_entry",
+      "identity_arguments": "p_user_id uuid, p_order_id uuid, p_order_item_id uuid, p_transaction_type text, p_points_delta integer, p_note text",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "2696af67f3e01cf29e538cc1d104c630",
+      "result": "integer"
+    },
+    {
+      "schema": "public",
+      "name": "attach_customer_to_order",
+      "identity_arguments": "p_order_id uuid",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "47c4cda5570a473bad0909c10c7e45a6",
+      "result": "uuid"
+    },
+    {
+      "schema": "public",
+      "name": "can_current_customer_use_discount",
+      "identity_arguments": "p_discount_id uuid",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "bfb86f0cc286120d4a0797e73244937a",
+      "result": "boolean"
+    },
+    {
+      "schema": "public",
+      "name": "can_manage_customer_offers",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "a61de822010100d574ea68446dcc8a58",
+      "result": "boolean"
+    },
+    {
+      "schema": "public",
+      "name": "current_user_is_admin",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "95633dede912a8f6bf30bd9c12dbf1c9",
+      "result": "boolean"
+    },
+    {
+      "schema": "public",
+      "name": "delete_product_image_embedding",
+      "identity_arguments": "p_product_id uuid",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "75386ea7147bb4f80b306ea0f3b1fdd6",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "edit_own_product_review",
+      "identity_arguments": "p_review_id uuid, p_rating integer, p_comment text",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "2534525006c1d6701e87d1fc6fae602a",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "enforce_variant_order_item_price",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "e766d718413ca2312d145bc789ae30b3",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "get_customer_image_search_index_count",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "1a101ec25baa710d60132add91c8fd47",
+      "result": "bigint"
+    },
+    {
+      "schema": "public",
+      "name": "get_my_loyalty_balance",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "9ddd65c0d1915a0710eae8da0a36aedb",
+      "result": "integer"
+    },
+    {
+      "schema": "public",
+      "name": "get_my_loyalty_points_history",
+      "identity_arguments": "p_limit integer, p_offset integer",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "100e883d97a59f733350f5645c64b58f",
+      "result": "TABLE(id uuid, transaction_type text, points_delta integer, note text, created_at timestamp with time zone, order_id uuid, order_item_id uuid, order_number text, order_status text)"
+    },
+    {
+      "schema": "public",
+      "name": "get_my_redeemable_loyalty_products",
+      "identity_arguments": "p_limit integer, p_offset integer",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "7a8293ab97f0596281e40aa7dd28a676",
+      "result": "TABLE(product_id uuid, name text, slug text, image_url text, effective_price numeric, points_cost integer, stock integer, category_name text)"
+    },
+    {
+      "schema": "public",
+      "name": "get_product_image_embedding_status",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "930604dcf9e44381394ac59ea7291646",
+      "result": "TABLE(product_id uuid, image_url text, indexed_image_url text, index_state text)"
+    },
+    {
+      "schema": "public",
+      "name": "get_public_product_reviews",
+      "identity_arguments": "p_product_id uuid, p_limit integer",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "db4a07d69e0b4e4532a4796c1ab8990b",
+      "result": "TABLE(id uuid, product_id uuid, user_id uuid, rating integer, comment text, status text, admin_reply text, admin_reply_at timestamp with time zone, admin_reply_by uuid, is_liked_by_admin boolean, is_featured boolean, helpful_count integer, created_at timestamp with time zone, profiles jsonb)"
+    },
+    {
+      "schema": "public",
+      "name": "handle_new_user",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "4663d8c61c338b7d1d064bc786cdda05",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "handle_public_customer_signup",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "b21cccda9eaea99bc1e3e407608fe021",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "is_nestora_admin",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=\"\""
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "5d38615a2aaf18d1e3dc667f9663bf46",
+      "result": "boolean"
+    },
+    {
+      "schema": "public",
+      "name": "notify_admin_new_order",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "be7e0657dbe664ea8b1020ec8f3973f0",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "notify_admin_new_order_from_address",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "df3a0db3ce2c4d0d08279a19dd4b592c",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "identity_arguments": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "ddd53575449abfd80d1f48e6ddbede86",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "identity_arguments": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "de19faaf944221a82d2739278ab725bf",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "identity_arguments": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric, p_checkout_token uuid",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "fbbd1b394fb878e98cb2477a2bd084f5",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "identity_arguments": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric, p_checkout_token uuid, p_redeem_product_ids uuid[]",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "c90f8d75d3f9d5b09e53a0c820722d26",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "identity_arguments": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric, p_checkout_token uuid, p_redeem_product_ids uuid[], p_redeem_variant_ids uuid[]",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "c226091bec6d5e1e86e51a180c4dadb0",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order",
+      "identity_arguments": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text, p_expected_subtotal numeric, p_checkout_token uuid, p_redeem_product_ids uuid[], p_redeem_variant_ids uuid[], p_free_gift_product_ids uuid[]",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "c73b3999991c0b6bcf823f0d4db1a37c",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order_legacy_discount",
+      "identity_arguments": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text, p_discount_id uuid, p_discount_code text",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "3d7f74116537e3adf119573b3156b148",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "place_customer_order_legacy_products_only",
+      "identity_arguments": "p_cart_id uuid, p_shipping_method_id uuid, p_payment_method_id uuid, p_shipping_address jsonb, p_items jsonb, p_customer_notes text",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "220d07f0b30cca13a90d442a1444b748",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "prepare_customer_address",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "2b57875349a3a5bebe4d2c5593fffa7b",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "prevent_customer_profile_privilege_changes",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "96b7443cff67c8ffcf5b2e4c41146a95",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "prevent_loyalty_ledger_mutation",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "1cb9eec344f93f546db98894f03755da",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "process_order_loyalty_status_change",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "bc0874bf127056433fab0f1acb9c825b",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "promote_customer_address_after_delete",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "5eca783aba941a0806cd6bae2b24ff4c",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "recalculate_admin_order_after_item_change",
+      "identity_arguments": "p_order_id uuid",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "690df794cccb1ec194afe21071755e75",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "record_product_view",
+      "identity_arguments": "target_product_id uuid",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "c7609bd3dc674c65f40bb9d17ad08082",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "refresh_analytics",
+      "identity_arguments": "p_period_key text",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "d99f2c058434725cc9b26c06de837686",
+      "result": "analytics"
+    },
+    {
+      "schema": "public",
+      "name": "refresh_dashboard_statistics",
+      "identity_arguments": "p_period_key text",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "01c61571c3f6eab189f0f5f3c8ab8eb1",
+      "result": "dashboard_statistics"
+    },
+    {
+      "schema": "public",
+      "name": "remove_admin_order_item",
+      "identity_arguments": "p_order_id uuid, p_order_item_id uuid",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "1238b02a17fb78e02d7451c460ba5d44",
+      "result": "jsonb"
+    },
+    {
+      "schema": "public",
+      "name": "replace_cart_free_gifts",
+      "identity_arguments": "p_cart_id uuid, p_discount_id uuid, p_product_ids uuid[]",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "143204ce2a760672ecb9c723486d4fca",
+      "result": "uuid[]"
+    },
+    {
+      "schema": "public",
+      "name": "replace_discount_gift_products",
+      "identity_arguments": "p_discount_id uuid, p_product_ids uuid[]",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "a145b054d7e27ed343d7e4ba985ae4cc",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "replace_product_variants",
+      "identity_arguments": "p_product_id uuid, p_variants jsonb",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "86a987d94d729052e830f8d4d7445e70",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "replace_promotion_products",
+      "identity_arguments": "p_promotion_id uuid, p_product_ids uuid[]",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "072ee63e2cbb0fd94a631d38e9a2f25a",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "restore_admin_order_item_inventory",
+      "identity_arguments": "p_order_item_id uuid, p_note text",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "828aa6d2a78f7646269bccbe9c073907",
+      "result": "boolean"
+    },
+    {
+      "schema": "public",
+      "name": "search_customer_site",
+      "identity_arguments": "p_query text, p_language text, p_limit integer",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, extensions, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "ad6c0c18bea00282513bf8e585704509",
+      "result": "TABLE(id uuid, result_type text, title text, description text, image_url text, route text, score double precision, metadata jsonb)"
+    },
+    {
+      "schema": "public",
+      "name": "search_products_by_image",
+      "identity_arguments": "query_embedding vector, match_count integer, minimum_similarity double precision",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "beeb2b9460a42260e95370309dbacd76",
+      "result": "TABLE(product_id uuid, similarity double precision)"
+    },
+    {
+      "schema": "public",
+      "name": "set_customer_help_updated_at",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "a7684b3fbebe93d412dfa5df82e6d11b",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "set_customer_offers_updated_at",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "ecc91334ecffecdc66b4e679cbdc5dbf",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "set_customers_updated_at",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "9c7833290c4841f586b7849807913632",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "set_order_shipping_addresses_updated_at",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "f013b26d9228d25ad030c11ef1a6abda",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "set_payment_methods_updated_at",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "1ed86421add0f55ac52e9c6bae4c2ed7",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "set_payment_transactions_updated_at",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "aaf06bde48acbe38a17450883608714a",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "set_product_image_embedding_updated_at",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "943fc6f27fddb96d1abd9cd3774e93b6",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "set_updated_at",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "8de7ae383447503e8949149bfb3f0efb",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "submit_product_review",
+      "identity_arguments": "p_product_id uuid, p_rating integer, p_comment text",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "4d8a79aacc872abbf37c69ebec4883b2",
+      "result": "uuid"
+    },
+    {
+      "schema": "public",
+      "name": "sync_customer_from_profile",
+      "identity_arguments": "",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "a7b8e4b50b0bf24e335659257ad6fed9",
+      "result": "trigger"
+    },
+    {
+      "schema": "public",
+      "name": "update_admin_order_status",
+      "identity_arguments": "p_order_id uuid, p_status text, p_payment_status text",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "51c981ebd45c9e4513f36edf85f2c685",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "update_inventory_stock",
+      "identity_arguments": "p_product_id uuid, p_new_stock integer, p_change_type text, p_note text",
+      "owner": "postgres",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "e15624974f29a1d8bcb003f5216d0e5e",
+      "result": "void"
+    },
+    {
+      "schema": "public",
+      "name": "upsert_product_image_embedding",
+      "identity_arguments": "p_product_id uuid, p_image_url text, p_embedding vector, p_model text, p_embedding_version integer",
+      "owner": "postgres",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=public, pg_temp"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": false
+      },
+      "definition_md5": "ce56a32b6e070d5654e28eb06691ef74",
+      "result": "void"
+    },
+    {
+      "schema": "realtime",
+      "name": "subscription_check_filters",
+      "identity_arguments": "",
+      "owner": "supabase_realtime_admin",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "ff71dc5fe6923e2a5b8b9f79f5ccbf0d",
+      "result": "trigger"
+    },
+    {
+      "schema": "storage",
+      "name": "enforce_bucket_lifecycle_service_role",
+      "identity_arguments": "",
+      "owner": "supabase_storage_admin",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=pg_catalog"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "b4b21fec5ffef02e74e2477049138937",
+      "result": "trigger"
+    },
+    {
+      "schema": "storage",
+      "name": "enforce_bucket_name_length",
+      "identity_arguments": "",
+      "owner": "supabase_storage_admin",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "11b3bd509f6b254ec1cd859e712e8c78",
+      "result": "trigger"
+    },
+    {
+      "schema": "storage",
+      "name": "enforce_versioning_status_transition",
+      "identity_arguments": "",
+      "owner": "supabase_storage_admin",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "47dc86fbd138d125125250b28b31d7ff",
+      "result": "trigger"
+    },
+    {
+      "schema": "storage",
+      "name": "protect_active_lifecycle_states",
+      "identity_arguments": "",
+      "owner": "supabase_storage_admin",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=pg_catalog"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": false,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "fce9d03398ec222c77feec887c25c384",
+      "result": "trigger"
+    },
+    {
+      "schema": "storage",
+      "name": "protect_bucket_control_columns",
+      "identity_arguments": "",
+      "owner": "supabase_storage_admin",
+      "security_definer": false,
+      "security_settings": [
+        "search_path=pg_catalog"
+      ],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "7c31ae406e2f6281ead4009fff69fc68",
+      "result": "trigger"
+    },
+    {
+      "schema": "storage",
+      "name": "protect_delete",
+      "identity_arguments": "",
+      "owner": "supabase_storage_admin",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "4371ae544fb1ef704f9c5d42265ac324",
+      "result": "trigger"
+    },
+    {
+      "schema": "storage",
+      "name": "update_updated_at_column",
+      "identity_arguments": "",
+      "owner": "supabase_storage_admin",
+      "security_definer": false,
+      "security_settings": [],
+      "effective_execute": {
+        "anon": true,
+        "service_role": true,
+        "authenticated": true,
+        "authenticator": true
+      },
+      "definition_md5": "bfecc08a6034296258f0c3e10193076c",
+      "result": "trigger"
+    },
+    {
+      "schema": "storage",
+      "name": "wake_lifecycle_state",
+      "identity_arguments": "",
+      "owner": "supabase_storage_admin",
+      "security_definer": true,
+      "security_settings": [
+        "search_path=pg_catalog"
+      ],
+      "effective_execute": {
+        "anon": false,
+        "service_role": false,
+        "authenticated": false,
+        "authenticator": false
+      },
+      "definition_md5": "326028b9d567ca2de47e9ecf67a4553b",
+      "result": "trigger"
+    }
+  ],
+  "protectedOriginalGrants": [
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "profiles",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "postgres",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "schema": "public",
+      "grantee": "anon",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "schema": "public",
+      "grantee": "authenticated",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "schema": "public",
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "relation": "roles",
+      "grantable": false,
+      "privilege": "UPDATE"
+    }
+  ],
+  "privilegeAssertions": 96,
+  "storageBuckets": [
+    {
+      "id": "avatars",
+      "name": "avatars",
+      "public": true,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "media-library",
+      "name": "media-library",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "product-images",
+      "name": "product-images",
+      "public": true,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "product-videos",
+      "name": "product-videos",
+      "public": true,
+      "file_size_limit": 52428800,
+      "allowed_mime_types": [
+        "video/mp4"
+      ]
+    }
+  ],
+  "publications": [
+    {
+      "name": "supabase_realtime",
+      "owner": "postgres",
+      "delete": true,
+      "insert": true,
+      "update": true,
+      "truncate": true,
+      "all_tables": false
+    },
+    {
+      "name": "supabase_realtime_messages_publication",
+      "owner": "supabase_admin",
+      "delete": true,
+      "insert": true,
+      "update": true,
+      "truncate": true,
+      "all_tables": false
+    }
+  ],
+  "publicationTables": [
+    {
+      "pubname": "supabase_realtime",
+      "attnames": [
+        "id",
+        "name",
+        "slug",
+        "image_url",
+        "description",
+        "created_at",
+        "parent_id",
+        "media_id",
+        "icon",
+        "is_active"
+      ],
+      "rowfilter": null,
+      "tablename": "categories",
+      "schemaname": "public"
+    },
+    {
+      "pubname": "supabase_realtime",
+      "attnames": [
+        "id",
+        "user_id",
+        "order_id",
+        "order_item_id",
+        "transaction_type",
+        "points_delta",
+        "balance_after",
+        "note",
+        "created_at"
+      ],
+      "rowfilter": null,
+      "tablename": "customer_loyalty_points_ledger",
+      "schemaname": "public"
+    },
+    {
+      "pubname": "supabase_realtime",
+      "attnames": [
+        "id",
+        "is_enabled",
+        "point_value_usd",
+        "points_earned_per_usd",
+        "minimum_redemption_points",
+        "updated_at"
+      ],
+      "rowfilter": null,
+      "tablename": "loyalty_program_settings",
+      "schemaname": "public"
+    },
+    {
+      "pubname": "supabase_realtime",
+      "attnames": [
+        "id",
+        "product_id",
+        "option_name",
+        "option_value",
+        "name",
+        "sku",
+        "price",
+        "sale_price",
+        "stock",
+        "attributes",
+        "media_id",
+        "image_url",
+        "is_active",
+        "sort_order",
+        "created_at",
+        "updated_at"
+      ],
+      "rowfilter": null,
+      "tablename": "product_variants",
+      "schemaname": "public"
+    },
+    {
+      "pubname": "supabase_realtime",
+      "attnames": [
+        "id",
+        "category_id",
+        "name",
+        "slug",
+        "description",
+        "short_description",
+        "sku",
+        "image_url",
+        "gallery",
+        "price",
+        "sale_price",
+        "stock",
+        "sold_count",
+        "is_featured",
+        "is_new",
+        "is_active",
+        "rating",
+        "created_at",
+        "media_id",
+        "features",
+        "is_loyalty_eligible",
+        "cost_price"
+      ],
+      "rowfilter": null,
+      "tablename": "products",
+      "schemaname": "public"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_08",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_09",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_10",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_11",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_12",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_13",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_14",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_15",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_16",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_17",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_18",
+      "schemaname": "realtime"
+    },
+    {
+      "pubname": "supabase_realtime_messages_publication",
+      "attnames": [
+        "topic",
+        "extension",
+        "payload",
+        "event",
+        "private",
+        "updated_at",
+        "inserted_at",
+        "id",
+        "binary_payload",
+        "skip_broadcast",
+        "expires_at"
+      ],
+      "rowfilter": null,
+      "tablename": "messages_2026_11_19",
+      "schemaname": "realtime"
+    }
+  ],
+  "sensitiveColumnPrivileges": [
+    {
+      "role": "anon",
+      "column": "config",
+      "insert": true,
+      "schema": "public",
+      "select": true,
+      "update": true,
+      "relation": "payment_methods",
+      "references": false
+    },
+    {
+      "role": "authenticated",
+      "column": "config",
+      "insert": true,
+      "schema": "public",
+      "select": true,
+      "update": true,
+      "relation": "payment_methods",
+      "references": false
+    },
+    {
+      "role": "anon",
+      "column": "cost_price",
+      "insert": true,
+      "schema": "public",
+      "select": true,
+      "update": true,
+      "relation": "products",
+      "references": false
+    },
+    {
+      "role": "authenticated",
+      "column": "cost_price",
+      "insert": true,
+      "schema": "public",
+      "select": true,
+      "update": true,
+      "relation": "products",
+      "references": false
+    }
+  ],
+  "limits": [
+    "No business rows, Auth users/sessions, passwords, JWTs or secret-store contents are queried.",
+    "No API/RPC/authorization/mutation test is performed. Owner-confirmed concerns remain unverified until this output is reviewed.",
+    "Routine definitions, trigger arguments and defaults may embed credentials; redact credential literals before sharing.",
+    "Managed schema internals are excluded except relevant trigger routines, event triggers and auth.uid/role/jwt helpers; extension routine metadata may be present.",
+    "SQL Editor connection settings may differ from effective hosted PostgREST configuration; verify exposed schemas and pre-request configuration separately.",
+    "SQL catalog dependencies do not capture all runtime/dynamic SQL or external callers.",
+    "Deployed Edge Function inventory/source/auth configuration and hosted Auth settings require separate authorized export; absence here does not mean none exist.",
+    "Storage bucket configuration is read; object names, uploaded file contents and signed download URLs are not."
+  ]
+}
