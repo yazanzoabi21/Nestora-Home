@@ -25,6 +25,7 @@ import {
   CustomerProductQuickViewComponent,
 } from '../../../components/customer-product-quick-view';
 import { CustomerRecentlyViewedComponent } from '../../../components/customer-recently-viewed';
+import { CustomerRecentlyViewedEmptyComponent } from '../../../components/customer-recently-viewed/customer-recently-viewed-empty.component';
 import { CustomerProduct } from '../../../models';
 import {
   CustomerShoppingStateService,
@@ -52,6 +53,7 @@ type RecentlyViewedStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
     CustomerProductCardSkeleton,
     CustomerProductQuickViewComponent,
     CustomerRecentlyViewedComponent,
+    CustomerRecentlyViewedEmptyComponent,
     RouterLink,
     TranslatePipe,
   ],
@@ -75,6 +77,8 @@ export class HomePageComponent {
   private readonly appTranslation = inject(TranslationService);
 
   readonly products = signal<CustomerProduct[]>([...(this.productsService.productsSnapshot() ?? [])]);
+  readonly recentlyViewedCategories = computed(() => this.publicData.categories.read() ?? []);
+  readonly categoriesLoading = signal(this.publicData.categories.read() === null);
   readonly categories = computed(() =>
     (this.publicData.categories.read() ?? [])
       .filter((category) => category.is_active !== false && category.parent_id != null)
@@ -257,7 +261,10 @@ export class HomePageComponent {
     });
     effect(() => {
       this.publicData.categoriesRevision();
-      untracked(() => void this.refreshSection(this.publicData.categories, this.categoryError));
+      untracked(() => {
+        void this.refreshSection(this.publicData.categories, this.categoryError)
+          .finally(() => this.categoriesLoading.set(false));
+      });
     });
     effect(() => {
       this.publicData.promotionsRevision();

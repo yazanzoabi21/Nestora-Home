@@ -1,0 +1,9 @@
+{
+  "imports": { "nodemailer": "npm:nodemailer@10.6.0" },
+  "compilerOptions": { "strict": true },
+  "nodeModulesDir": "none",
+  "tasks": {
+    "check": "deno check index.ts handler.test.ts",
+    "test": "deno test handler.test.ts"
+  }
+}

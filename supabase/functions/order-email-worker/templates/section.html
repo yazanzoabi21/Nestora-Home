@@ -1,0 +1,8 @@
+<section lang="{{language}}" dir="{{direction}}">
+<p class="eyebrow">{{ eyebrow }}</p><h1>{{ heading }}</h1><p>{{ greeting }}</p><p>{{ introduction }}</p>
+<div class="reference"><strong>{{ orderLabel }} #{{ orderNumber }}</strong><br><span>{{ date }}</span></div>
+<h2>{{ itemsLabel }}</h2><table role="presentation" class="items"><thead><tr><th>{{ productLabel }}</th><th>{{ quantityLabel }}</th><th>{{ unitLabel }}</th><th>{{ amountLabel }}</th></tr></thead><tbody>[[rows]]</tbody></table>
+<table role="presentation" class="totals"><tbody>[[totals]]</tbody></table>
+<h2>{{ detailsLabel }}</h2><table role="presentation" class="details"><tbody>[[details]]</tbody></table>
+[[action]]<p class="notice">{{ paymentNotice }}</p>
+</section>

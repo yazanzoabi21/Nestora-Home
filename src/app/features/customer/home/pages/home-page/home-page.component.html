@@ -359,6 +359,8 @@
     <app-customer-recently-viewed [products]="recentlyViewedProducts()" [maxItems]="10"
       [clearing]="recentlyViewedClearing()" (clearHistory)="clearRecentlyViewed()" />
   </div>
+  } @else if (recentlyViewedStatus() === 'empty' && !categoriesLoading()) {
+  <app-customer-recently-viewed-empty [categories]="recentlyViewedCategories()" />
   } @else {
   <div class="min-h-[17rem] bg-[#faf8f5] sm:min-h-[18rem]" aria-hidden="true"></div>
   }

@@ -1,0 +1,8 @@
+# Copy ONLY after approval into supabase/config.toml. No deployment is authorized now.
+[functions.order-email-worker]
+verify_jwt = false
+entrypoint = "./functions/order-email-worker/index.ts"
+import_map = "./functions/order-email-worker/deno.json"
+# Dedicated x-order-email-token authentication is mandatory in worker.ts.
+# Templates are a generated, statically imported JSON module. No static_files or runtime reads.
+# Run deno task package, package:check and check before approved --use-api deployment.

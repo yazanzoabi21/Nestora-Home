@@ -1,0 +1,6 @@
+# Review/copy this section into the selected project's config ONLY after approval.
+# This is NOT an active Supabase CLI config. No existing config is overwritten.
+[functions.hostinger-smtp-probe]
+verify_jwt = false
+# Authentication is mandatory in handler.ts through a dedicated secret header.
+# Disabling gateway user-JWT verification does not make the handler public.

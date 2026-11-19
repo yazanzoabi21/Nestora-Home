@@ -1,0 +1,58 @@
+<section class="recently-viewed-empty" aria-labelledby="recently-viewed-empty-title">
+  <div class="customer-page-container grid min-w-0 items-center gap-9 py-12 sm:py-14 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.45fr)] xl:gap-8 xl:py-16">
+    <div class="min-w-0">
+      <p class="text-xs font-black uppercase tracking-[.22em] text-[#718369]">
+        {{ 'CUSTOMER.HOME.RECENTLY_VIEWED.EYEBROW' | translate }}
+      </p>
+      <h2 id="recently-viewed-empty-title" class="empty-title mt-2 text-[clamp(2rem,3vw,2.75rem)] leading-tight text-[#1f2a1f]">
+        {{ 'CUSTOMER.HOME.RECENTLY_VIEWED.TITLE' | translate }}
+      </h2>
+      <span class="my-6 block h-px w-12 bg-[#718369]/50" aria-hidden="true"></span>
+      <p class="text-lg font-extrabold leading-snug text-[#1f2a1f]">
+        {{ 'CUSTOMER.HOME.RECENTLY_VIEWED.EMPTY_TITLE' | translate }}
+      </p>
+      <p class="mt-2 max-w-sm text-base leading-relaxed text-[#6c6256]">
+        {{ 'CUSTOMER.HOME.RECENTLY_VIEWED.EMPTY_DESCRIPTION' | translate }}
+      </p>
+      <nav class="mt-8 flex flex-wrap gap-3" [attr.aria-label]="'CUSTOMER.HOME.RECENTLY_VIEWED.EMPTY_NAV' | translate">
+        <a routerLink="/shop/products" class="empty-action empty-action-primary">
+          <i class="pi pi-shopping-bag" aria-hidden="true"></i>
+          {{ 'CUSTOMER.HOME.RECENTLY_VIEWED.START_SHOPPING' | translate }}
+          <i class="pi pi-arrow-right rtl:rotate-180" aria-hidden="true"></i>
+        </a>
+        <a routerLink="/shop/best-sellers" class="empty-action">
+          <i class="pi pi-star" aria-hidden="true"></i>
+          {{ 'CUSTOMER.HOME.RECENTLY_VIEWED.VIEW_BEST_SELLERS' | translate }}
+        </a>
+        <a routerLink="/shop/new-arrivals" class="empty-action">
+          <i class="pi pi-sparkles" aria-hidden="true"></i>
+          {{ 'CUSTOMER.HOME.RECENTLY_VIEWED.DISCOVER_NEW_ARRIVALS' | translate }}
+        </a>
+      </nav>
+    </div>
+    @if (visibleCategories().length) {
+      <div class="grid min-w-0 grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:grid-cols-3">
+        @for (category of visibleCategories(); track category.id) {
+          <a routerLink="/shop/products" [queryParams]="{ category: category.slug }"
+            class="empty-category group relative isolate block aspect-square min-w-0 overflow-hidden rounded-[1.25rem] bg-[#e8dccf] no-underline shadow-[0_5px_10px_rgba(46,36,24,.14)]">
+            <img [src]="category.image_url" alt="" loading="lazy" decoding="async"
+              (error)="onImageError(category.image_url)"
+              class="absolute inset-0 size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-105" />
+            <span class="absolute inset-0 bg-gradient-to-t from-[#352919]/85 via-[#352919]/10 to-transparent" aria-hidden="true"></span>
+            <div class="absolute inset-x-0 bottom-0 flex items-end gap-2 p-4 text-white">
+              <div class="min-w-0 flex-1">
+                <strong class="block text-base font-extrabold leading-snug [overflow-wrap:anywhere]">{{ category.name }}</strong>
+                @if (category.description?.trim()) {
+                  <p class="mt-1 line-clamp-2 text-xs leading-5 text-white/90">{{ category.description }}</p>
+                }
+              </div>
+              <span class="grid size-8 shrink-0 place-items-center rounded-full border border-white/65 bg-white/10" aria-hidden="true">
+                <i class="pi pi-arrow-right text-sm rtl:rotate-180"></i>
+              </span>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</section>

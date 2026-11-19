@@ -1,0 +1,18 @@
+# Local configuration for deploying ONLY the isolated SMTP probe.
+# This project_id is a local label, not the hosted Supabase project reference.
+# Always specify the reviewed remote project explicitly on deployment commands.
+project_id = "nestora-home"
+
+[functions.hostinger-smtp-probe]
+verify_jwt = false
+entrypoint = "./functions/hostinger-smtp-probe/index.ts"
+import_map = "./functions/hostinger-smtp-probe/deno.json"
+# Mandatory authentication is enforced by x-smtp-probe-token in handler.ts.
+# SMTP_PROBE_ENABLED and SMTP_PROBE_SEND_ENABLED remain remote secrets set false.
+# This file does not set secrets, invoke functions, or apply database migrations.
+
+[functions.order-email-worker]
+verify_jwt = false
+entrypoint = "./functions/order-email-worker/index.ts"
+import_map = "./functions/order-email-worker/deno.json"
+# HMAC/timestamp/one-use nonce authentication is mandatory. Processing/send gates stay false on deploy.

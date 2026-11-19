@@ -5,6 +5,20 @@ import type { Category } from '../../../../../data-access/models';
 import { HomePublicData } from './home-public-data.service';
 
 describe('Home public data', () => {
+  it('allows a failed category request to render no categories and retry without fake data', async () => {
+    const categories = vi.fn().mockRejectedValueOnce(new Error('Unavailable')).mockResolvedValue([]);
+    TestBed.configureTestingModule({ providers: [
+      { provide: CategoriesService, useValue: { getPublicCategoriesWithProductCount: categories } },
+      { provide: PromotionsService, useValue: { getPublicPromotions: vi.fn() } },
+      { provide: CustomerOffersService, useValue: { getActiveCustomerOffers: vi.fn() } },
+    ] });
+    const cache = TestBed.inject(HomePublicData).categories;
+    await expect(cache.refresh()).rejects.toThrow('Unavailable');
+    expect(cache.read()).toBeNull();
+    await cache.refresh();
+    expect(cache.read()).toEqual([]);
+  });
+
   it('shares a cold load, serves warm and stale snapshots, and refreshes after an Admin edit', async () => {
     const categories = vi.fn().mockResolvedValue([]);
     TestBed.configureTestingModule({ providers: [
