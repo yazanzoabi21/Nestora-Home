@@ -40,7 +40,7 @@ export interface Order {
   items: Item[];
 }
 export interface Job {
-  sandbox: true;
+  sandbox: boolean;
   deliveryMode: "capture" | "send";
   id: string;
   orderId: string;
@@ -99,7 +99,7 @@ function money(value: unknown): number {
 export function parseJob(value: unknown): Job {
   const j = record(value), o = record(j["snapshot"]);
   if (
-    j["sandbox"] !== true ||
+    typeof j["sandbox"] !== "boolean" ||
     !["capture", "send"].includes(String(j["deliveryMode"]))
   ) {
     throw new Error("SANDBOX_REQUIRED");
@@ -192,12 +192,16 @@ export function parseJob(value: unknown): Job {
   const recipient = text(j["recipient"], 254), kind = j["kind"] as Kind;
   if (
     !mailbox(recipient) ||
-    recipient !== BUSINESS_MAILBOX
+    (j["sandbox"] === true || kind === "admin"
+      ? recipient !== BUSINESS_MAILBOX
+      : !order.recipientVerified ||
+        recipient !== order.email.trim().toLowerCase()) ||
+    (j["sandbox"] === false && order.currency !== "USD")
   ) {
     throw new Error("INVALID_RECIPIENT");
   }
   return {
-    sandbox: true,
+    sandbox: j["sandbox"] as boolean,
     deliveryMode: j["deliveryMode"] as "capture" | "send",
     id: j["id"] as string,
     orderId: order.id,

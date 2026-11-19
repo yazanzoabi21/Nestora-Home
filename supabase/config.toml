@@ -16,3 +16,9 @@ verify_jwt = false
 entrypoint = "./functions/order-email-worker/index.ts"
 import_map = "./functions/order-email-worker/deno.json"
 # HMAC/timestamp/one-use nonce authentication is mandatory. Processing/send gates stay false on deploy.
+
+[functions.order-email-verification]
+verify_jwt = false
+entrypoint = "./functions/order-email-verification/index.ts"
+import_map = "./functions/order-email-verification/deno.json"
+# Order ID + unguessable checkout token and expiring one-use email code; service-only RPCs.

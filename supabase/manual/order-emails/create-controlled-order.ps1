@@ -1,6 +1,6 @@
 # Authorized ONE guest checkout, using real catalog/server pricing, pickup and manual COD.
 # No test products, payment capture, real delivery or direct order-table inserts.
-param([switch]$VerifyReplay)
+param([switch]$VerifyReplay,[ValidateSet('sandbox','production','activation')][string]$TestRun='sandbox')
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Security
@@ -23,7 +23,8 @@ if(-not(Test-Path -LiteralPath $stateDir)){
     }
   }
 }
-$statePath=Join-Path $stateDir 'controlled-order.dpapi'
+$stateFile=switch($TestRun){'production'{'controlled-order-production.dpapi'} 'activation'{'controlled-order-activation.dpapi'} default{'controlled-order.dpapi'}}
+$statePath=Join-Path $stateDir $stateFile
 $source=Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../../src/environments/environment.prod.ts') -Raw
 $key=[regex]::Match($source,"supabaseAnonKey:\s*'([^']+)'").Groups[1].Value
 if(-not $key){throw 'Public checkout client key missing.'}
@@ -39,7 +40,8 @@ if(Test-Path -LiteralPath $statePath){
   try{$state=[Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json}finally{[Array]::Clear($bytes,0,$bytes.Length)}
   if($state.result){
     if($VerifyReplay){
-      if($state.result.order_id -ne '39bd4663-80ef-4486-9c03-055b3726bfed'){
+      if(($TestRun -eq 'sandbox' -and $state.result.order_id -ne '39bd4663-80ef-4486-9c03-055b3726bfed') -or
+        $state.payload.p_shipping_address.email -ne 'info@nestorahomelb.com'){
         throw 'Replay restricted to the approved rehearsal order.'
       }
       try{

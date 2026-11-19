@@ -59,6 +59,11 @@ export const CUSTOMER_ROUTES: Routes = [
         loadComponent: () => import('./checkout').then((m) => m.CustomerCheckoutComponent),
       },
       {
+        path: 'verify-order-email',
+        loadComponent: () => import('./checkout/order-email-verification/order-email-verification.component')
+          .then((m) => m.OrderEmailVerificationComponent),
+      },
+      {
         path: 'orders',
         redirectTo: 'customer-account/orders',
         pathMatch: 'full',

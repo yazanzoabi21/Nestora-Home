@@ -81,6 +81,8 @@
   <app-checkout-order-summary class="confirmation__summary" [items]="order.items" [totals]="order.totals"
     [authenticated]="isAuthenticated()" />
 
+  <app-order-email-verification />
+
   @if (isAuthenticated() && pendingLoyaltyPoints() > 0) {
   <aside class="confirmation__loyalty" aria-live="polite">
     <span class="confirmation__loyalty-icon" aria-hidden="true">

@@ -1,6 +1,7 @@
 import { BUSINESS_MAILBOX, type Job, mailbox, parseJob } from "./model.ts";
 import { createHmac } from "node:crypto";
 import { authenticateSignal } from "./auth.ts";
+import { assertProduction, assertProductionEnvelope } from "./production.ts";
 import { loadTemplates, renderMessage, siteOrigin } from "./render.ts";
 import { type Dependencies, handler, smtpFailure } from "./worker.ts";
 import {
@@ -72,6 +73,84 @@ function fixture(kind: "admin" | "customer" = "customer"): Job {
   };
 }
 const token = "a".repeat(64);
+Deno.test("production recipients require order-scoped authorization and USD", () => {
+  const job = fixture("customer");
+  job.sandbox = false;
+  job.recipient = job.snapshot.email;
+  throws(() => parseJob(job));
+  job.snapshot.recipientVerified = true;
+  assert(parseJob(job).recipient === job.snapshot.email);
+  job.recipient = "other@example.invalid";
+  throws(() => parseJob(job));
+  job.recipient = job.snapshot.email;
+  job.snapshot.currency = "EUR";
+  throws(() => parseJob(job));
+});
+Deno.test("production transport validates headers, flags, and project", async () => {
+  const job = fixture("customer");
+  job.sandbox = false;
+  job.snapshot.recipientVerified = true;
+  job.recipient = job.snapshot.email;
+  const message = renderMessage(
+    parseJob(job),
+    "https://nestorahomelb.com",
+    await loadTemplates(),
+  );
+  const config = {
+    enabled: "true",
+    sendEnabled: "true",
+    mode: "production",
+    projectUrl: SANDBOX_PROJECT_URL,
+  };
+  assertProductionEnvelope(message, config);
+  throws(() =>
+    assertProductionEnvelope(message, {
+      ...config,
+      testRecipient: BUSINESS_MAILBOX,
+    })
+  );
+  assert(message.replyTo === BUSINESS_MAILBOX);
+  throws(() => assertProduction({ ...config, enabled: "false" }));
+  throws(() =>
+    assertProductionEnvelope(message, { ...config, sendEnabled: "false" })
+  );
+  throws(() =>
+    assertProductionEnvelope(message, {
+      ...config,
+      projectUrl: "https://example.invalid",
+    })
+  );
+  throws(() =>
+    assertProductionEnvelope({
+      ...message,
+      to: "a@example.invalid,b@example.invalid",
+    }, config)
+  );
+  throws(() =>
+    assertProductionEnvelope({
+      ...message,
+      subject: "subject\r\nBcc: attacker@example.invalid",
+    }, config)
+  );
+  throws(() =>
+    assertProductionEnvelope({
+      ...message,
+      replyTo: "a@example.invalid\r\nBcc: b@example.invalid",
+    }, config)
+  );
+});
+Deno.test("explicit mailbox quota rejection is deferred; ambiguous quota text is never replayed", () => {
+  assert(
+    smtpFailure({
+      responseCode: 550,
+      command: "MAIL FROM",
+      response: "550 Daily sending limit exceeded",
+    }).code === "SMTP_QUOTA_REJECTED",
+  );
+  assert(
+    smtpFailure({ command: "CONN", response: "quota" }).state === "uncertain",
+  );
+});
 function request(
   body: unknown = { mode: "recover" },
   credential = token,
@@ -434,7 +513,7 @@ Deno.test("a disabled send gate cannot send even if the database returns a send 
 
 Deno.test("missing sandbox identity, real recipients and forged modes fail closed", () => {
   const job = fixture();
-  for (const value of [undefined, false, "true"]) {
+  for (const value of [undefined, "true"]) {
     throws(() => parseJob({ ...job, sandbox: value }));
   }
   throws(() => parseJob({ ...job, deliveryMode: "production" }));

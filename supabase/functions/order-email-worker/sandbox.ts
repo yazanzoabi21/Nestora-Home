@@ -6,6 +6,7 @@ export interface SandboxConfig {
   sendEnabled: string | undefined;
   mode: string | undefined;
   projectUrl: string | undefined;
+  testRecipient?: string;
 }
 // There is deliberately no production-recipient branch in this deployment.
 export function assertSandbox(config: SandboxConfig, sending = false): void {

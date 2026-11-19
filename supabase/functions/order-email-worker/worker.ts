@@ -115,6 +115,13 @@ export function smtpFailure(error: unknown): { state: Outcome; code: string } {
     Number.isInteger(response) && response >= 400 && response < 600 &&
     (beforeData || command === "DATA")
   ) {
+    if (
+      typeof e["response"] === "string" &&
+      /daily.{0,30}limit|quota|rate.?limit|too many messages|sending limit/i
+        .test(e["response"])
+    ) {
+      return { state: "retry", code: "SMTP_QUOTA_REJECTED" };
+    }
     return {
       state: response < 500 ? "retry" : "failed",
       code: response < 500
@@ -210,7 +217,8 @@ export function handler(deps: Dependencies): (r: Request) => Promise<Response> {
         let job: Job, message: Message;
         try {
           job = parseJob(raw);
-          message = sandboxMessage(job, await deps.render(job));
+          const rendered = await deps.render(job);
+          message = job.sandbox ? sandboxMessage(job, rendered) : rendered;
         } catch {
           await finish("failed", "INVALID_SNAPSHOT");
           continue;

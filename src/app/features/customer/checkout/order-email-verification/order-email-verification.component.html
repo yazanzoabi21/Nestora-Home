@@ -1,0 +1,30 @@
+  @if (emailVerification.status() === 'idle') {
+<p>{{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.NO_SESSION' | translate }}</p>
+} @else {
+  <aside class="confirmation__verification" aria-live="polite">
+    @if (emailVerification.status() === 'verified') {
+    <p>{{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.VERIFIED' | translate }}</p>
+    } @else {
+    <h2>{{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.TITLE' | translate }}</h2>
+    <p>{{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.DESCRIPTION' | translate }}</p>
+    @if (emailVerification.status() === 'unavailable') {
+    <p>{{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.UNAVAILABLE' | translate }}</p>
+    }
+    <form (submit)="$event.preventDefault(); emailVerification.confirm(emailCode.value)">
+      <label for="order-email-code">{{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.CODE' | translate }}</label>
+      <input #emailCode id="order-email-code" type="text" inputmode="numeric" autocomplete="one-time-code"
+        pattern="[0-9]{8}" minlength="8" maxlength="8" required [disabled]="emailVerification.busy()" />
+      <button class="confirmation__primary" type="submit" [disabled]="emailVerification.busy()">
+        {{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.CONFIRM' | translate }}
+      </button>
+      <button type="button" [disabled]="emailVerification.busy()" (click)="emailVerification.request()">
+        {{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.RESEND' | translate }}
+      </button>
+    </form>
+    @if (emailVerification.invalidCode()) {
+    <p role="alert">{{ 'CUSTOMER.CHECKOUT.EMAIL_VERIFICATION.INVALID' | translate }}</p>
+    }
+    }
+  </aside>
+  }
+

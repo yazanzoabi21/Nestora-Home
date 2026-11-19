@@ -12,6 +12,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CustomerAuthService } from '../../../../core/services/auth';
 import { CheckoutOrderSummaryComponent } from '../checkout-order-summary/checkout-order-summary.component';
 import { CheckoutConfirmation } from '../models';
+import { OrderEmailVerificationComponent } from '../order-email-verification/order-email-verification.component';
 
 @Component({
   selector: 'app-checkout-confirmation',
@@ -21,6 +22,7 @@ import { CheckoutConfirmation } from '../models';
     RouterLink,
     TranslatePipe,
     CheckoutOrderSummaryComponent,
+    OrderEmailVerificationComponent,
   ],
   templateUrl: './checkout-confirmation.component.html',
   styleUrl: './checkout-confirmation.component.css',

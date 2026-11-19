@@ -7,6 +7,7 @@ import { CustomerAddressesService, CustomerShoppingStateService } from '../../se
 import { LoyaltyPointsCalculatorService } from '../../services';
 import { CheckoutOrderItem, PlaceCustomerOrderRpcArgs, PlacedOrderResult } from '../models';
 import { CustomerCheckoutStateService } from './customer-checkout-state.service';
+import { OrderEmailVerificationService } from './order-email-verification.service';
 
 interface PlaceCustomerOrderRpcResultRow {
   order_id?: unknown;
@@ -32,6 +33,7 @@ export class CustomerCheckoutOrderService {
   private readonly shopping = inject(CustomerShoppingStateService);
   private readonly loyalty = inject(LoyaltyPointsCalculatorService);
   private readonly addresses = inject(CustomerAddressesService);
+  private readonly emailVerification = inject(OrderEmailVerificationService);
   private checkoutToken = uuidv4();
 
   async placeOrder(
@@ -148,6 +150,7 @@ export class CustomerCheckoutOrderService {
       const result = this.mapResult(rawResult, items);
       this.state.setPlacedOrder(result);
       this.state.goToConfirmation();
+      this.emailVerification.start(result.orderId, this.checkoutToken);
       this.shopping.clearCompletedCart();
       this.loyalty.clearRedemptions();
       await this.loyalty.refreshBalance();

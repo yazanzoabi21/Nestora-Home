@@ -2262,6 +2262,17 @@
           "LOYALTY_PENDING": "{{points}} points pending — available after delivery.",
           "VIEW_ORDERS": "View Orders",
           "BACK_HOME": "Back to Home"
+        },
+        "EMAIL_VERIFICATION": {
+          "NO_SESSION": "Open this page in the same browser tab used to place your order, or contact info@nestorahomelb.com for help.",
+          "TITLE": "Confirm your order email",
+          "DESCRIPTION": "To receive your order confirmation, enter the 8-digit code from your checkout email. No account is needed. Codes expire after 10 minutes. Resend is limited; wait at least 60 seconds.",
+          "CODE": "Verification code",
+          "CONFIRM": "Verify email",
+          "RESEND": "Resend code",
+          "VERIFIED": "Your order email is verified. Your confirmation will be sent automatically.",
+          "INVALID": "The code is incorrect or expired. Check the most recent email or request another code.",
+          "UNAVAILABLE": "Email verification is temporarily unavailable. Your order is placed successfully. Please try again shortly."
         }
       },
       "PRODUCTS": {
@@ -5217,6 +5228,17 @@
           "LOYALTY_PENDING": "{{points}} نقطة معلّقة — تصبح متاحة بعد التسليم.",
           "VIEW_ORDERS": "عرض الطلبات",
           "BACK_HOME": "العودة إلى الرئيسية"
+        },
+        "EMAIL_VERIFICATION": {
+          "NO_SESSION": "افتح هذه الصفحة في علامة التبويب نفسها التي استخدمتها للطلب، أو تواصل مع info@nestorahomelb.com للمساعدة.",
+          "TITLE": "تأكيد بريد طلبك",
+          "DESCRIPTION": "لاستلام تأكيد الطلب، أدخل الرمز المكوّن من 8 أرقام المرسل إلى بريدك عند إتمام الطلب. لا يلزم إنشاء حساب. تنتهي صلاحية الرمز بعد 10 دقائق. انتظر 60 ثانية على الأقل قبل إعادة الإرسال.",
+          "CODE": "رمز التحقق",
+          "CONFIRM": "تأكيد البريد",
+          "RESEND": "إعادة إرسال الرمز",
+          "VERIFIED": "تم التحقق من بريد طلبك. سيُرسل تأكيد الطلب تلقائياً.",
+          "INVALID": "الرمز غير صحيح أو انتهت صلاحيته. تحقق من آخر رسالة أو اطلب رمزاً جديداً.",
+          "UNAVAILABLE": "التحقق من البريد غير متاح مؤقتاً. تم تسجيل طلبك بنجاح. يرجى المحاولة مجدداً قريباً."
         }
       },
       "ACCOUNT": {

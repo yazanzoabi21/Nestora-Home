@@ -1,4 +1,11 @@
-# Locked production-project sandbox — LOCAL ONLY
+# Order email implementation
+
+Current implementation and operating procedures are described in
+[PRODUCTION.md](PRODUCTION.md). The owner subsequently authorized production
+implementation, controlled testing and activation. The sandbox notes below are
+historical and do not describe the current production-capable code.
+
+## Historical sandbox notes
 
 The owner's same-project sandbox request supersedes the earlier separate-staging
 plan. No remote writes, deployments, activation or sending are authorized yet.
