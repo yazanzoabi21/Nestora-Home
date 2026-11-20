@@ -4,6 +4,7 @@ import { loadTemplates, renderMessage, siteOrigin } from "./render.ts";
 import { handler, type Rpc } from "./worker.ts";
 import { assertSandbox } from "./sandbox.ts";
 import { assertProduction } from "./production.ts";
+import { withProductImages } from "./product-images.ts";
 
 const sandboxConfig = () => ({
   enabled: Deno.env.get("ORDER_EMAIL_ENABLED"),
@@ -54,6 +55,21 @@ Deno.serve(handler({
   async render(job) {
     const origin = siteOrigin(Deno.env.get("ORDER_EMAIL_SITE_URL") ?? "");
     templates ??= loadTemplates();
-    return renderMessage(job, origin, await templates);
+    const project = Deno.env.get("SUPABASE_URL")!;
+    const decorated = await withProductImages(
+      job,
+      async (path, signal) => {
+        const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const response = await fetch(new URL(path, project), {
+          headers: { apikey: key, Authorization: `Bearer ${key}` },
+          signal,
+        });
+        if (!response.ok) throw new Error("OPTIONAL_IMAGE_LOOKUP_FAILED");
+        return await response.json();
+      },
+      origin,
+      project,
+    );
+    return renderMessage(decorated, origin, await templates);
   },
 }));

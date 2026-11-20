@@ -1,0 +1,210 @@
+{
+  "date": "2026-11-20",
+  "source": "C:/Users/yzoabi/Projects/Angular/Nestora-Home",
+  "production": "https://nestorahomelb.com",
+  "status": "Local fixes implemented; live deployment and browser validation incomplete",
+  "navigation": {
+    "method": "Production Angular build served on loopback with a temporary injected diagnostic script. Capture-phase link-click timestamp, MutationObserver route commit, two requestAnimationFrame callbacks as a paint-opportunity proxy, PerformanceObserver resource/long-task entries. No browser network/CPU throttling. Service worker disabled only in local diagnostic server. Supabase requests used the existing real public/guest configuration.",
+    "desktopBaseline": [
+      {
+        "state": "First Cart navigation, sample 1",
+        "routeCommitMs": 65,
+        "paintOpportunityMs": 80,
+        "chunkDurationsMs": [
+          11,
+          34
+        ]
+      },
+      {
+        "state": "First Cart navigation after document reload, sample 2; viewport override did not apply",
+        "actualWidth": 1375,
+        "actualHeight": 883,
+        "routeCommitMs": 52,
+        "paintOpportunityMs": 71,
+        "chunkDurationsMs": [
+          17,
+          7
+        ]
+      },
+      {
+        "state": "Repeated Cart navigation in the same document",
+        "routeCommitMs": 13,
+        "paintOpportunityMs": 37
+      }
+    ],
+    "nonBlockingRequest": {
+      "path": "/rest/v1/discounts",
+      "durationMs": 885,
+      "observation": "Completed after the first Cart page rendered"
+    },
+    "liveHttpSamples": [
+      {
+        "asset": "main-7Z2CPUQ4.js",
+        "totalMs": 1285,
+        "method": "PowerShell HTTP request"
+      },
+      {
+        "asset": "chunk-KU2S6NBI.js",
+        "totalMs": 4319.697,
+        "ttfbMs": 4007.91,
+        "compressedBytes": 10946,
+        "method": "curl --compressed, separate process"
+      },
+      {
+        "asset": "chunk-HHWK5OIU.js",
+        "totalMs": 878.465,
+        "ttfbMs": 858.7,
+        "compressedBytes": 2561
+      },
+      {
+        "asset": "chunk-KU2S6NBI.js",
+        "totalMs": 1012.278,
+        "ttfbMs": 927.857,
+        "compressedBytes": 10946,
+        "repeat": true
+      },
+      {
+        "asset": "chunk-HHWK5OIU.js",
+        "totalMs": 812.883,
+        "ttfbMs": 804.317,
+        "compressedBytes": 2561,
+        "repeat": true
+      }
+    ],
+    "interpretation": "Cold Cart route loads two chunks serially, and no loading feedback appeared until the route committed. Slow live asset delivery is a measured contributor. Direct HTTP samples are not browser click timings and do not distinguish hosting/CDN latency from this machine's network path. The reported complete three-second click delay was not reproduced or attributed exclusively.",
+    "existingBehaviorPreserved": [
+      "Customer session/profile initialization is already shared and cached, with explicit refresh and user-switch invalidation",
+      "Cart and wishlist request sharing and user-aware caches retained",
+      "Translation JSON sharing retained",
+      "No customer auth guard or RLS change",
+      "Customer navbar remained mounted during shop-to-Cart navigation"
+    ],
+    "changes": [
+      "Root route-loading status bound to Router.currentNavigation; automatically clears on cancellation/end/error",
+      "Selective code preloading for Cart, checkout, account shell, Wishlist and customer sign-in",
+      "Skip speculative loads offline, with saveData, or with slow-2g/2g connection hints",
+      "Catch speculative-load failures so subsequent preloads can recover",
+      "Removed production withDebugTracing logging"
+    ],
+    "afterBrowserTimings": null,
+    "mobileTimings": null,
+    "limitations": [
+      "Computer Use was stopped with physical Escape; no further browser interactions were performed",
+      "Viewport override did not take effect; separate mobile tab timed out",
+      "No authenticated customer, populated-cart checkout, or Admin Dashboard UI end-to-end verification",
+      "No browser Network/Performance trace export available through the selected browser API"
+    ]
+  },
+  "deployment": {
+    "localBuildInputs": [
+      "public",
+      "src/assets",
+      "Angular compiled code/styles"
+    ],
+    "localCompiledOutputUnexpectedFileCount": 0,
+    "publicProbes": [
+      {
+        "path": "/.env",
+        "status": 403,
+        "exposedContent": false
+      },
+      {
+        "path": "/.git/HEAD",
+        "status": 403,
+        "exposedContent": false
+      },
+      {
+        "path": "/package.json",
+        "status": 200,
+        "body": "Angular fallback HTML, same length as home page"
+      },
+      {
+        "path": "/supabase/manual/order-emails/ACTIVATION_RESULT.md",
+        "status": 200,
+        "body": "Angular fallback HTML, same length as home page"
+      },
+      {
+        "path": "/supabase/functions/order-email-worker/index.ts",
+        "status": 200,
+        "body": "Angular fallback HTML, same length as home page"
+      },
+      {
+        "path": "/supabase/migrations/20260720000000_allow_admins_read_profiles.sql",
+        "status": 403,
+        "exposedContent": false
+      }
+    ],
+    "limitation": "Hostinger connector requires reauthentication. CLI reconnection attempt found no registered Hostinger MCP server in CLI configuration. No authenticated public_html inventory or .htaccess inspection completed; public probes do not establish absence of all source/backup files.",
+    "liveChanges": [],
+    "requiredDeploymentScope": "For a future reviewed publish, use contents of dist/nestora-home/browser with existing server configuration; do not upload repository root, supabase, bff, diagnostics, backups or secrets."
+  },
+  "database": {
+    "access": "Read-only SELECT inspection through the existing owner diagnostic script; no migrations executed",
+    "migrationLedger": "to_regclass('supabase_migrations.schema_migrations') returned null. Exact applied migration filenames cannot be certified.",
+    "installedEvidence": [
+      "nestora_order_email settings and delivery ledger",
+      "production authorization and guest verification described in November 19 activation record",
+      "active nestora-order-email-recovery cron every five minutes",
+      "Admin notification function hash unchanged"
+    ],
+    "proposals": "Repository security/phase2-v2 packages are documented as local proposed/unconfirmed deployments; no pending proposals executed. A filename ending .proposed.sql is not reliable evidence of installed or pending status: some email proposals were subsequently activated, as recorded in ACTIVATION_RESULT.md."
+  },
+  "email": {
+    "databaseGates": {
+      "enabled": true,
+      "send_enabled": true,
+      "mode": "production"
+    },
+    "recovery": {
+      "active": true,
+      "schedule": "*/5 * * * *"
+    },
+    "acceptedDeliveries": 10,
+    "uncertainDeliveries": 0,
+    "unresolvedSignals": false,
+    "pendingDueDeliveries": false,
+    "latestOrderDeliveries": {
+      "createdAt": "2026-11-19T23:32:13.968228+02:00",
+      "admin": {
+        "state": "accepted",
+        "attempts": 1,
+        "code": "SMTP_ACCEPTED",
+        "updatedAt": "2026-11-19T23:32:15.789876+02:00"
+      },
+      "customer": {
+        "state": "accepted",
+        "attempts": 1,
+        "code": "SMTP_ACCEPTED",
+        "updatedAt": "2026-11-19T23:34:51.814702+02:00"
+      }
+    },
+    "dns": {
+      "spf": "v=spf1 include:_spf.mail.hostinger.com ~all",
+      "dmarc": "v=DMARC1; p=none",
+      "dkimA": "Published RSA public key",
+      "dkimBandC": "Published empty/revoked keys, consistent with prior activation record"
+    },
+    "content": "Source includes plaintext and escaped bilingual HTML, business-domain From/envelope, stable Message-ID and transactional subjects. Source inspection cannot establish the received message's authentication results or reputation score.",
+    "spamCause": "Unresolved: received Authentication-Results/DKIM signature headers and current Hostinger delivery/spam records unavailable. No matching received Nestora email was found by focused searches in the connected Gmail account.",
+    "changes": "None; automatic production emails remain active.",
+    "guidance": "https://support.google.com/mail/answer/81126"
+  },
+  "validation": {
+    "build": "Final production build passed; initial bundle 665.64 kB raw / 152.54 kB estimated transfer, versus 663.06 kB / 151.87 kB baseline. Existing bundle/style/CommonJS warnings remain.",
+    "fullLint": "Passed",
+    "focusedTests": "7 passed",
+    "fullTests": "171 passed in 31 files",
+    "initialBaseline": "164 passed, one existing chart timeout during concurrent builds; full updated rerun passed"
+  },
+  "modifiedFiles": [
+    "src/app/app.config.ts",
+    "src/app/app.html",
+    "src/app/app.ts",
+    "src/app/app.routes.ts",
+    "src/app/app.spec.ts",
+    "src/app/core/services/shopping-preloading.strategy.ts",
+    "src/app/core/services/shopping-preloading.strategy.spec.ts",
+    "src/app/features/auth/auth.routes.ts",
+    "src/app/features/customer/customer.routes.ts"
+  ]
+}

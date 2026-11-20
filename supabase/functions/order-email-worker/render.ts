@@ -1,6 +1,8 @@
 import labels from "./templates/labels.json" with { type: "json" };
 import bundle from "./templates/bundle.generated.json" with { type: "json" };
 import { BUSINESS_MAILBOX, type Job, mailbox, type Message } from "./model.ts";
+import { publicImageUrl } from "./product-images.ts";
+import { SANDBOX_PROJECT_URL } from "./sandbox.ts";
 
 export interface Templates {
   frame: string;
@@ -8,6 +10,10 @@ export interface Templates {
   item: string;
   detail: string;
   action: string;
+  receipt: string;
+  image: string;
+  imagePlaceholder: string;
+  grandTotal: string;
   css: string;
 }
 export function loadTemplates(): Promise<Templates> {
@@ -32,6 +38,13 @@ export function escapeHtml(value: unknown): string {
     }[c]!),
   );
 }
+/** Select an existing English catalog label; never invent a translation. */
+export function englishCatalogLabel(value: string): string {
+  const english = value.split(/\s*[|]\s*/).find((part) =>
+    /[A-Za-z]/.test(part) && !/\p{Script=Arabic}/u.test(part)
+  );
+  return english?.trim() || value;
+}
 function fill(
   template: string,
   values: Record<string, unknown>,
@@ -54,127 +67,215 @@ export function siteOrigin(value: string): string {
   }
   return url.origin;
 }
+export function paymentPresentation(
+  order: Job["snapshot"],
+): { action: string; note: string } {
+  const status = order.paymentStatus.toLowerCase();
+  if (status === "paid") {
+    return {
+      action: "Payment received",
+      note: "No payment action is required",
+    };
+  }
+  if (order.total === 0) {
+    return { action: "No payment required", note: "Order total is zero" };
+  }
+  if (
+    ["refunded", "partially_refunded", "cancelled", "canceled"].includes(
+      status,
+    ) ||
+    ["cancelled", "canceled", "refunded"].includes(order.status.toLowerCase())
+  ) {
+    return {
+      action: "No payment action available",
+      note: "Online payments are not available",
+    };
+  }
+  return ["unpaid", "pending", "failed", "partially_paid"].includes(status)
+    ? {
+      action: "Pay Now · Coming Soon",
+      note: "Disabled preview — no payment action available",
+    }
+    : {
+      action: "Payment action unavailable",
+      note: "Online payments are coming soon",
+    };
+}
+
 export function renderMessage(job: Job, site: string, t: Templates): Message {
   const origin = siteOrigin(site), o = job.snapshot;
+  const l = labels.en;
+  const receiptOnly = !job.sandbox && job.kind === "customer" &&
+    !o.recipientVerified;
+  const documentLabel = job.kind === "admin"
+    ? "NEW ORDER"
+    : "ORDER CONFIRMATION";
+  const frame = (content: string, title: string) =>
+    fill(t.frame, {
+      title,
+      preheader: receiptOnly
+        ? l.receiptHeading
+        : documentLabel + " · #" + o.orderNumber,
+      logo: origin + "/images/logo-bg.png",
+      documentLabel,
+    }, { content, css: t.css });
+  const messageId = "<nestora-order-" + job.id + "@nestorahomelb.com>";
+  if (receiptOnly) {
+    // Deliberately interpolate NO snapshot data: even order ID/items/total remain private.
+    return {
+      to: job.recipient,
+      replyTo: BUSINESS_MAILBOX,
+      subject: l.receiptSubject,
+      text: [l.receiptHeading, l.receiptBody, l.receiptNotice, BUSINESS_MAILBOX]
+        .join("\n\n"),
+      html: frame(fill(t.receipt, l), l.receiptSubject),
+      messageId,
+    };
+  }
   const subject = job.kind === "admin"
-    ? `New Order Received — #${o.orderNumber}`
-    : `Your Nestora Home Order Confirmation — #${o.orderNumber}`;
-  const textSections: string[] = [];
-  const section = (language: "en" | "ar"): string => {
-    const l: Record<string, string> = labels[language];
-    const formatter = new Intl.NumberFormat(
-      language === "ar" ? "ar-LB" : "en-US",
-      {
-        style: "currency",
-        currency: o.currency,
-        currencyDisplay: "code",
-      },
+    ? "New Order Received — #" + o.orderNumber
+    : "Your Nestora Home Order Confirmation — #" + o.orderNumber;
+  const formatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: o.currency,
+    currencyDisplay: "symbol",
+  });
+  const format = (value: number) => formatter.format(value);
+  const date = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Beirut",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(o.createdAt));
+  const heading = job.kind === "admin"
+    ? "A new order has arrived"
+    : "Thank you for your order!";
+  const introduction = job.kind === "admin"
+    ? l.adminIntroduction
+    : l.customerIntroduction;
+  const lines = [
+    documentLabel,
+    heading,
+    introduction,
+    "Order #" + o.orderNumber,
+    "Date: " + date + " (Asia/Beirut)",
+    "Order total: " + format(o.total) + " " + o.currency,
+  ];
+  const action = paymentPresentation(o);
+  lines.push(action.action, action.note);
+  const rows = o.items.map((item) => {
+    const name = englishCatalogLabel(item.name);
+    const attributes = Object.entries(item.attributes).map(([key, value]) =>
+      englishCatalogLabel(key) + ": " + englishCatalogLabel(value)
     );
-    const format = (n: number) => formatter.format(n);
-    const date = new Intl.DateTimeFormat(
-      language === "ar" ? "ar-LB" : "en-GB",
-      {
-        timeZone: "Asia/Beirut",
-        dateStyle: "long",
-        timeStyle: "short",
-      },
-    ).format(new Date(o.createdAt));
-    const heading =
-      l[job.kind === "admin" ? "adminHeading" : "customerHeading"];
-    const greeting = job.kind === "admin"
-      ? "Nestora Home"
-      : `${l["greeting"]} ${o.customerName}`;
-    const introduction =
-      l[job.kind === "admin" ? "adminIntroduction" : "customerIntroduction"];
-    const lines = [
-      heading,
-      greeting,
-      introduction,
-      `${l["orderLabel"]} #${o.orderNumber}`,
-      date,
-    ];
-    const rows = o.items.map((i) => {
-      const variant = [
-        i.variant,
-        i.sku,
-        ...Object.entries(i.attributes).map(([key, value]) =>
-          `${key}: ${value}`
-        ),
-      ].filter(Boolean).join("\n");
-      const badge = [i.gift ? l["gift"] : "", i.loyalty ? l["loyalty"] : ""]
-        .filter(Boolean).join(" · ");
-      lines.push(
-        `${i.name}\n${variant}\n${i.quantity} × ${format(i.unitPrice)} = ${
-          format(i.total)
-        } ${badge}`,
-      );
-      return fill(t.item, {
-        name: i.name,
-        variant,
-        badge,
-        quantity: i.quantity,
-        unit: format(i.unitPrice),
-        total: format(i.total),
-      });
+    const variantLabel = englishCatalogLabel(item.variant);
+    const variant = [
+      // Prefer explicit English attributes over a redundant Arabic-only variant label.
+      /\p{Script=Arabic}/u.test(variantLabel) && attributes.length &&
+        attributes.every((value) => !/\p{Script=Arabic}/u.test(value))
+        ? ""
+        : variantLabel,
+      item.sku ? "SKU: " + item.sku : "",
+      ...attributes,
+    ].filter(Boolean).join("\n");
+    const badge = [item.gift ? l.gift : "", item.loyalty ? l.loyalty : ""]
+      .filter(Boolean).join(" · ");
+    lines.push(
+      name,
+      variant,
+      "Qty: " + item.quantity + " × " + format(item.unitPrice) + " = " +
+        format(item.total),
+      badge,
+    );
+    const imageUrl = publicImageUrl(item.imageUrl, origin, SANDBOX_PROJECT_URL);
+    const thumbnail = imageUrl
+      ? fill(t.image, { imageUrl, name })
+      : t.imagePlaceholder;
+    return fill(t.item, {
+      name,
+      variant,
+      badge,
+      quantity: item.quantity,
+      unit: format(item.unitPrice),
+      total: format(item.total),
+    }, { thumbnail });
+  }).join("");
+  const totalRows: Array<[string, string]> = [[l.subtotal, format(o.subtotal)]];
+  if (o.discount || o.discountCode) {
+    totalRows.push([
+      l.discount + (o.discountCode ? " · " + o.discountCode : ""),
+      format(o.discount ? -o.discount : 0),
+    ]);
+  }
+  totalRows.push(["Shipping fee", format(o.shipping)]);
+  if (o.paymentFee) totalRows.push([l.paymentFee, format(o.paymentFee)]);
+  const renderDetails = (list: Array<[string, string]>) =>
+    list.filter(([, value]) => Boolean(value)).map(([label, value]) => {
+      lines.push(label + ": " + value);
+      return fill(t.detail, { label, value });
     }).join("");
-    const totalRows: Array<[string, string, string?]> = [
-      [l["subtotal"], format(o.subtotal)],
-      [l["shipping"], format(o.shipping)],
-      [l["paymentFee"], format(o.paymentFee)],
-    ];
-    if (o.discount || o.discountCode) {
-      totalRows.push([
-        `${l["discount"]} ${o.discountCode}`,
-        format(-o.discount),
-      ]);
-    }
-    totalRows.push([l["total"], format(o.total), "grand-total"]);
-    const details: Array<[string, string]> = [
-      [l["customerName"], o.customerName],
-      [l["email"], o.email],
-      [l["phone"], o.phone],
-      [l["address"], o.address],
-      [l["instructions"], o.instructions],
-      [l["method"], o.paymentMethod],
-      [l["paymentStatus"], l[o.paymentStatus.toLowerCase()] ?? o.paymentStatus],
-    ];
-    const renderDetails = (list: Array<[string, string, string?]>) =>
-      list.filter(([, value]) => Boolean(value)).map(
-        ([label, value, className]) => {
-          lines.push(`${label}: ${value}`);
-          return fill(t.detail, { label, value, className: className ?? "" });
-        },
-      ).join("");
-    const totals = renderDetails(totalRows),
-      detailsHtml = renderDetails(details);
-    // Guests/unverified checkout contacts receive no account/order link.
-    const url = job.kind === "admin"
-      ? `${origin}/admin/orders?orderId=${encodeURIComponent(o.id)}`
-      : o.userId && o.recipientVerified
-      ? `${origin}/shop/customer-account/orders`
-      : null;
-    const actionLabel =
-      l[job.kind === "admin" ? "adminAction" : "customerAction"];
-    if (url) lines.push(`${actionLabel}: ${url}`);
-    lines.push(l["paymentNotice"], BUSINESS_MAILBOX);
-    textSections.push(lines.join("\n"));
-    return fill(t.section, {
-      ...l,
-      heading,
-      greeting,
-      introduction,
-      orderNumber: o.orderNumber,
-      date,
-      language,
-      direction: language === "ar" ? "rtl" : "ltr",
-    }, {
-      rows,
-      totals,
-      details: detailsHtml,
-      action: url ? fill(t.action, { url, label: actionLabel }) : "",
-    });
+  const totals = renderDetails(totalRows) +
+    fill(t.grandTotal, { total: format(o.total), currency: o.currency });
+  lines.push("Total: " + format(o.total) + " " + o.currency);
+  const statusLabels: Readonly<Record<string, string>> = {
+    paid: "Paid",
+    unpaid: "Unpaid",
+    pending: "Pending",
+    failed: "Failed",
+    refunded: "Refunded",
+    partially_refunded: "Partially refunded",
+    cancelled: "Cancelled",
+    canceled: "Cancelled",
+    partially_paid: "Partially paid",
   };
-  const english = section("en"), arabic = section("ar");
+  const details: Array<[string, string]> = [[l.method, o.paymentMethod], [
+    l.paymentStatus,
+    statusLabels[o.paymentStatus.toLowerCase()] ?? o.paymentStatus,
+  ]];
+  // Full personal/customer information is for the fixed business mailbox only.
+  if (job.kind === "admin") {
+    details.push(
+      [l.customerName, o.customerName],
+      [l.email, o.email],
+      [l.phone, o.phone || "Not provided"],
+      [l.address, o.address],
+      [l.instructions, o.instructions || "None provided"],
+    );
+  }
+  const detailsHtml = renderDetails(details);
+  const url = job.kind === "admin"
+    ? origin + "/admin/orders?orderId=" + encodeURIComponent(o.id)
+    : o.userId && o.recipientVerified
+    ? origin + "/shop/customer-account/orders"
+    : null;
+  const actionLabel = job.kind === "admin" ? l.adminAction : l.customerAction;
+  if (url) lines.push(actionLabel + ": " + url);
+  const closing = job.kind === "admin"
+    ? "Please review this order before fulfilment."
+    : "Thank you for making Nestora Home part of your home.";
+  lines.push(closing, l.paymentNotice, BUSINESS_MAILBOX);
+  const content = fill(t.section, {
+    heading,
+    introduction,
+    orderNumber: o.orderNumber,
+    date,
+    total: format(o.total),
+    currency: o.currency,
+    paymentAction: action.action,
+    paymentActionNote: action.note,
+    detailsHeading: job.kind === "admin"
+      ? "Customer & payment details"
+      : "Payment details",
+    closing,
+    paymentNotice: l.paymentNotice,
+  }, {
+    rows,
+    totals,
+    details: detailsHtml,
+    action: url ? fill(t.action, { url, label: actionLabel }) : "",
+  });
   return {
     to: job.recipient,
     replyTo: job.kind === "customer"
@@ -183,11 +284,8 @@ export function renderMessage(job: Job, site: string, t: Templates): Message {
       ? o.email.trim()
       : undefined,
     subject,
-    html: fill(t.frame, {
-      title: subject,
-      logo: `${origin}/images/logo-bg.png`,
-    }, { english, arabic, css: t.css }),
-    text: textSections.join("\n\n--------------------\n\n"),
-    messageId: `<nestora-order-${job.id}@nestorahomelb.com>`,
+    html: frame(content, subject),
+    text: lines.filter(Boolean).join("\n"),
+    messageId,
   };
 }

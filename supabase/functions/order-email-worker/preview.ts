@@ -1,78 +1,87 @@
-// Layout-only previews show field placeholders, never invented product/customer data.
-import labels from "./templates/labels.json" with { type: "json" };
-import { escapeHtml, loadTemplates } from "./render.ts";
-const t = await loadTemplates();
-const fill = (
-  source: string,
-  values: Record<string, string>,
-  slots: Record<string, string> = {},
-) =>
-  source.replace(
-    /\[\[(\w+)\]\]|\{\{\s*(\w+)\s*\}\}/g,
-    (_, slot: string, key: string) =>
-      slot ? slots[slot] ?? "" : escapeHtml(values[key] ?? `{{${key}}}`),
+// Read-only preview input must be captured from explicitly owned, finalized test orders.
+// No SMTP/network/env access: streamTransport builds local MIME without delivering anything.
+import nodemailer from "nodemailer";
+import { BUSINESS_MAILBOX, parseJob } from "./model.ts";
+import { escapeHtml, loadTemplates, renderMessage } from "./render.ts";
+import { withProductImages } from "./product-images.ts";
+import { SANDBOX_PROJECT_URL } from "./sandbox.ts";
+const input = "../../../.tmp/order-email-design-baseline/preview-data.json";
+const output = "../../../output/order-email-design";
+const raw: unknown = JSON.parse(await Deno.readTextFile(input));
+if (!Array.isArray(raw) || raw.length !== 3) {
+  throw new Error("Three owned preview records required");
+}
+const templates = await loadTemplates();
+const gallery = await Deno.readTextFile(
+  new URL("./preview-gallery.html", import.meta.url),
+);
+await Deno.mkdir(output, { recursive: true });
+const transport = nodemailer.createTransport({
+  streamTransport: true,
+  buffer: true,
+  newline: "unix",
+});
+for (const value of raw) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Invalid preview entry");
+  }
+  const entry = value as Record<string, unknown>;
+  const name = String(entry["name"]);
+  if (!["admin", "customer-verified", "customer-private"].includes(name)) {
+    throw new Error("Invalid preview name");
+  }
+  const job = parseJob(entry["job"]);
+  if (
+    job.recipient !== BUSINESS_MAILBOX ||
+    job.snapshot.email !== BUSINESS_MAILBOX
+  ) throw new Error("Owned business mailbox only");
+  const decorated = await withProductImages(
+    job,
+    (path) =>
+      Promise.resolve(
+        path.startsWith("/rest/v1/order_items")
+          ? entry["items"]
+          : entry["products"],
+      ),
+    "https://nestorahomelb.com",
+    SANDBOX_PROJECT_URL,
   );
-await Deno.mkdir("../../../.tmp/order-email-previews", { recursive: true });
-for (const kind of ["admin", "customer"] as const) {
-  const section = (language: "en" | "ar") => {
-    const l: Record<string, string> = labels[language];
-    const row = fill(t.item, {
-      name: "{{product_name}}",
-      variant: "{{variant_details}}",
-      badge: "{{gift_or_loyalty}}",
-      quantity: "{{quantity}}",
-      unit: "{{unit_price}}",
-      total: "{{line_total}}",
-    });
-    const totals = ["subtotal", "shipping", "paymentFee", "discount", "total"]
-      .map((key) =>
-        fill(t.detail, {
-          label: l[key],
-          value: `{{${key}}}`,
-          className: key === "total" ? "grand-total" : "",
-        })
-      ).join("");
-    const details = [
-      "customerName",
-      "email",
-      "phone",
-      "address",
-      "instructions",
-      "method",
-      "paymentStatus",
-    ].map((key) =>
-      fill(t.detail, { label: l[key], value: `{{${key}}}`, className: "" })
-    ).join("");
-    return fill(t.section, {
-      ...l,
-      language,
-      direction: language === "ar" ? "rtl" : "ltr",
-      heading: l[kind === "admin" ? "adminHeading" : "customerHeading"],
-      greeting: "{{customer_name}}",
-      introduction:
-        l[kind === "admin" ? "adminIntroduction" : "customerIntroduction"],
-      orderNumber: "{{order_number}}",
-      date: "{{order_date}}",
-    }, {
-      rows: row,
-      totals,
-      details,
-      action: kind === "admin"
-        ? fill(t.action, {
-          url: "#approved-admin-order-link",
-          label: l["adminAction"],
-        })
-        : "",
-    });
-  };
+  const message = renderMessage(
+    decorated,
+    "https://nestorahomelb.com",
+    templates,
+  );
+  await Deno.writeTextFile(output + "/" + name + ".html", message.html);
+  await Deno.writeTextFile(output + "/" + name + ".txt", message.text);
+  const info = await transport.sendMail({
+    from: { name: "Nestora Home", address: BUSINESS_MAILBOX },
+    ...message,
+  });
+  if (!(info.message instanceof Uint8Array)) {
+    throw new Error("Buffered MIME output required");
+  }
+  await Deno.writeFile(output + "/" + name + ".eml", info.message);
+  const previewTitle = name === "admin"
+    ? "Nestora Home — New Order"
+    : name === "customer-verified"
+    ? "Nestora Home — Order Confirmation"
+    : "Nestora Home — Private Guest Receipt";
   await Deno.writeTextFile(
-    `../../../.tmp/order-email-previews/${kind}.html`,
-    fill(t.frame, {
-      title: `Nestora Home — ${kind} layout preview (placeholders)`,
-      logo: "../../public/images/logo-bg.png",
-    }, { english: section("en"), arabic: section("ar"), css: t.css }),
+    output + "/" + name + "-preview.html",
+    gallery.replaceAll("{{name}}", escapeHtml(name)).replaceAll(
+      "{{previewTitle}}",
+      escapeHtml(previewTitle),
+    ),
+  );
+  console.log(
+    JSON.stringify({
+      preview: name,
+      htmlBytes: new TextEncoder().encode(message.html).length,
+      thumbnails: decorated.snapshot.items.filter((item) =>
+        item.imageUrl
+      ).length,
+      sent: false,
+    }),
   );
 }
-console.log(
-  "Created admin.html and customer.html placeholder previews in .tmp/order-email-previews",
-);
+transport.close();

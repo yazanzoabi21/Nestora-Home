@@ -6,6 +6,8 @@ export type Outcome =
   | "uncertain"
   | "captured";
 export interface Item {
+  // Presentation-only enrichment from read-only saved-item/catalog lookup, never pricing.
+  imageUrl?: string | null;
   name: string;
   variant: string;
   sku: string;
@@ -37,6 +39,7 @@ export interface Order {
   paymentStatus: string;
   status: string;
   recipientVerified: boolean;
+  automaticConfirmation?: boolean;
   items: Item[];
 }
 export interface Job {
@@ -163,6 +166,7 @@ export function parseJob(value: unknown): Job {
     paymentStatus: text(o["paymentStatus"], 80),
     status: text(o["status"], 80),
     recipientVerified: o["recipientVerified"] === true,
+    automaticConfirmation: o["automaticConfirmation"] === true,
     items,
   };
   if (
@@ -194,7 +198,7 @@ export function parseJob(value: unknown): Job {
     !mailbox(recipient) ||
     (j["sandbox"] === true || kind === "admin"
       ? recipient !== BUSINESS_MAILBOX
-      : !order.recipientVerified ||
+      : (!order.recipientVerified && !order.automaticConfirmation) ||
         recipient !== order.email.trim().toLowerCase()) ||
     (j["sandbox"] === false && order.currency !== "USD")
   ) {

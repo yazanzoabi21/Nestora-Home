@@ -52,16 +52,18 @@ export const CUSTOMER_ROUTES: Routes = [
       },
       {
         path: 'cart',
+        data: { preload: true },
         loadComponent: () => import('./cart').then((m) => m.CustomerCartComponent),
       },
       {
         path: 'checkout',
+        data: { preload: true },
         loadComponent: () => import('./checkout').then((m) => m.CustomerCheckoutComponent),
       },
       {
         path: 'verify-order-email',
-        loadComponent: () => import('./checkout/order-email-verification/order-email-verification.component')
-          .then((m) => m.OrderEmailVerificationComponent),
+        redirectTo: '/shop',
+        pathMatch: 'full',
       },
       {
         path: 'orders',
@@ -70,6 +72,7 @@ export const CUSTOMER_ROUTES: Routes = [
       },
       {
         path: 'customer-account',
+        data: { preload: true },
         canActivate: [customerAuthGuard],
         loadComponent: () =>
           import('./components/customer-account/customer-account.component').then(
@@ -95,6 +98,7 @@ export const CUSTOMER_ROUTES: Routes = [
           },
           {
             path: 'wishlist',
+            data: { preload: true },
             loadComponent: () => import('./wishlist').then((m) => m.CustomerWishlistComponent),
           },
           {

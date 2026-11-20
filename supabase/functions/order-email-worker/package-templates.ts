@@ -5,6 +5,10 @@ const files = {
   item: "item.html",
   detail: "detail.html",
   action: "action.html",
+  receipt: "receipt.html",
+  image: "image.html",
+  imagePlaceholder: "image-placeholder.html",
+  grandTotal: "grand-total.html",
   css: "email.css",
 } as const;
 export async function expectedBundle(): Promise<string> {

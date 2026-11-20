@@ -19,7 +19,7 @@ export const AUTH_ROUTES: Routes = [
     path: 'customer-login',
     canActivate: [customerGuestGuard],
     loadComponent: () => import('./pages/login').then((m) => m.LoginComponent),
-    data: { audience: 'customer', initialMode: 'login' },
+    data: { audience: 'customer', initialMode: 'login', preload: true },
   },
   {
     path: 'customer-register',

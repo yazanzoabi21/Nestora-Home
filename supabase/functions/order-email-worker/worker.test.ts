@@ -2,7 +2,14 @@ import { BUSINESS_MAILBOX, type Job, mailbox, parseJob } from "./model.ts";
 import { createHmac } from "node:crypto";
 import { authenticateSignal } from "./auth.ts";
 import { assertProduction, assertProductionEnvelope } from "./production.ts";
-import { loadTemplates, renderMessage, siteOrigin } from "./render.ts";
+import {
+  englishCatalogLabel,
+  loadTemplates,
+  paymentPresentation,
+  renderMessage,
+  siteOrigin,
+} from "./render.ts";
+import { publicImageUrl, withProductImages } from "./product-images.ts";
 import { type Dependencies, handler, smtpFailure } from "./worker.ts";
 import {
   assertSandbox,
@@ -10,6 +17,28 @@ import {
   SANDBOX_PROJECT_URL,
   sandboxMessage,
 } from "./sandbox.ts";
+
+Deno.test("uses existing English catalog labels without translating customer data", async () => {
+  assert(
+    englishCatalogLabel("صينية | Round Baking Tray") === "Round Baking Tray",
+  );
+  assert(englishCatalogLabel("Actual product") === "Actual product");
+  assert(englishCatalogLabel("اسم محفوظ") === "اسم محفوظ");
+  const job = fixture("admin");
+  job.snapshot.items[0].name = "صينية | Round Baking Tray";
+  job.snapshot.items[0].variant = "32 سم";
+  job.snapshot.items[0].attributes = { size: "32 cm" };
+  job.snapshot.customerName = "اسم العميل";
+  const message = renderMessage(
+    job,
+    "https://nestorahomelb.com",
+    await loadTemplates(),
+  );
+  assert(message.html.includes("Round Baking Tray"));
+  assert(message.html.includes("size: 32 cm"));
+  assert(!message.html.includes("صينية") && !message.html.includes("32 سم"));
+  assert(message.html.includes("اسم العميل"));
+});
 
 function assert(value: unknown, message = "Assertion failed"): asserts value {
   if (!value) throw new Error(message);
@@ -73,6 +102,56 @@ function fixture(kind: "admin" | "customer" = "customer"): Job {
   };
 }
 const token = "a".repeat(64);
+Deno.test("automatic unverified receipts require database authorization and disclose no private order fields", async () => {
+  const job = fixture();
+  job.sandbox = false;
+  job.recipient = job.snapshot.email;
+  throws(() => parseJob(job));
+  job.snapshot.automaticConfirmation = true;
+  job.snapshot.phone = "PRIVATE_PHONE_123";
+  const message = renderMessage(
+    parseJob(job),
+    "https://nestorahomelb.com",
+    await loadTemplates(),
+  );
+  const body = message.html + message.text + message.subject;
+  for (
+    const privateValue of [
+      job.snapshot.id,
+      job.snapshot.orderNumber,
+      job.snapshot.customerName,
+      job.snapshot.email,
+      job.snapshot.phone,
+      job.snapshot.address,
+      job.snapshot.instructions,
+      job.snapshot.items[0].name,
+      job.snapshot.items[0].sku,
+      job.snapshot.discountCode,
+      "/admin/orders",
+      "/customer-account/orders",
+      "checkoutToken",
+    ]
+  ) {
+    assert(
+      !body.includes(privateValue),
+      `Private field appeared in unverified receipt: ${privateValue}`,
+    );
+  }
+  assert(message.subject === "Your Nestora Home order confirmation");
+  assert(message.replyTo === BUSINESS_MAILBOX && message.to === job.recipient);
+  job.recipient = "forged@example.invalid";
+  throws(() => parseJob(job));
+  for (
+    const email of [
+      "victim@example.com\r\nBcc:other@example.com",
+      "a@example.com,b@example.com",
+      "bad@-example.com",
+    ]
+  ) {
+    job.recipient = job.snapshot.email = email;
+    throws(() => parseJob(job));
+  }
+});
 Deno.test("production recipients require order-scoped authorization and USD", () => {
   const job = fixture("customer");
   job.sandbox = false;
@@ -264,7 +343,7 @@ Deno.test("rejects header injection, forged recipients, missing labels and overs
   );
   throws(() => parseJob(huge));
 });
-Deno.test("escapes both language sections, preserves unpaid status and safe Reply-To", async () => {
+Deno.test("English invoice escapes content, preserves unpaid status and safe Reply-To", async () => {
   const templates = await loadTemplates(), job = fixture();
   const customer = renderMessage(
     parseJob(job),
@@ -272,16 +351,17 @@ Deno.test("escapes both language sections, preserves unpaid status and safe Repl
     templates,
   );
   assert(
-    customer.html.includes("&lt;script&gt;") &&
-      !customer.html.includes("<script>"),
+    !customer.html.includes("<script>"),
   );
   assert(
     customer.html.includes("&lt;img onerror=") &&
       !customer.html.includes("<img onerror="),
   );
   assert(
-    customer.html.includes('dir="rtl"') &&
-      customer.html.includes("غير مدفوع") && customer.html.includes("Unpaid"),
+    customer.html.includes('lang="en"') &&
+      !customer.html.includes('dir="rtl"') &&
+      !/[\u0600-\u06ff]/.test(customer.html) &&
+      customer.html.includes("Unpaid"),
   );
   assert(
     customer.replyTo === BUSINESS_MAILBOX &&
@@ -302,6 +382,207 @@ Deno.test("escapes both language sections, preserves unpaid status and safe Repl
       admin.html.includes(`/admin/orders?orderId=${orderId}`),
   );
   assert(admin.subject === "New Order Received — #TEST-SECURITY");
+  assert(
+    admin.html.includes("&lt;script&gt;") &&
+      admin.html.includes("Delivery address"),
+  );
+});
+
+Deno.test("invoice uses table/inline layouts and a disabled non-anchor Pay Now; never demands payment twice", async () => {
+  const job = fixture("admin"), t = await loadTemplates();
+  for (const status of ["unpaid", "pending", "failed", "partially_paid"]) {
+    job.snapshot.paymentStatus = status;
+    const message = renderMessage(
+      parseJob(job),
+      "https://nestorahomelb.com",
+      t,
+    );
+    assert(message.html.includes("Pay Now · Coming Soon"));
+    assert(message.html.includes('aria-disabled="true"'));
+    assert(!/<a\b[^>]*>[\s\S]*?Pay Now[^<]*<\/a>/i.test(message.html));
+    assert(!/<(button|form|input|script|iframe)\b/i.test(message.html));
+    assert(
+      !/display:\s*(grid|flex)|onclick=|href="(?:javascript:|#)/i.test(
+        message.html,
+      ),
+    );
+    assert(
+      message.html.includes('width="600"') &&
+        message.html.includes("mso-table-lspace"),
+    );
+    assert(!/\[\[\w+\]\]|{{\s*\w+\s*}}/.test(message.html));
+    assert(new TextEncoder().encode(message.html).length < 102400);
+  }
+  for (
+    const status of ["paid", "refunded", "partially_refunded", "cancelled"]
+  ) {
+    job.snapshot.paymentStatus = status;
+    const message = renderMessage(
+      parseJob(job),
+      "https://nestorahomelb.com",
+      t,
+    );
+    assert(!message.html.includes("Pay Now"));
+    assert(!message.text.toLowerCase().includes("payment due"));
+    assert(
+      message.html.includes(
+        status === "paid" ? "Payment received" : "No payment action available",
+      ),
+    );
+  }
+  assert(
+    paymentPresentation({ ...job.snapshot, total: 0, paymentStatus: "unpaid" })
+      .action === "No payment required",
+  );
+  assert(
+    paymentPresentation({ ...job.snapshot, paymentStatus: "unknown" })
+      .action === "Payment action unavailable",
+  );
+});
+
+Deno.test("finalized gifts/loyalty, zero-cost items, discounts and missing images remain accurate", async () => {
+  const job = fixture("admin");
+  job.snapshot.items[0].name = "Long " + "product-name ".repeat(20);
+  job.snapshot.items[0].gift = true;
+  job.snapshot.items[0].loyalty = true;
+  job.snapshot.items[0].unitPrice = 0;
+  job.snapshot.items[0].total = 0;
+  Object.assign(job.snapshot, {
+    subtotal: 0,
+    shipping: 0,
+    paymentFee: 0,
+    discount: 0,
+    total: 0,
+  });
+  const zero = renderMessage(
+    parseJob(job),
+    "https://nestorahomelb.com",
+    await loadTemplates(),
+  );
+  assert(
+    zero.html.includes("Complimentary gift") &&
+      zero.html.includes("Paid with loyalty points"),
+  );
+  assert(
+    zero.html.includes("No image") && zero.html.includes("$0.00") &&
+      !zero.html.includes("Pay Now"),
+  );
+  assert(!zero.html.includes('<img class="product-image"'));
+  const priced = fixture("admin");
+  const invoice = renderMessage(
+    parseJob(priced),
+    "https://nestorahomelb.com",
+    await loadTemplates(),
+  );
+  assert(
+    invoice.html.includes("TEST&amp;CODE") && invoice.html.includes("-$1.00"),
+  );
+  assert(
+    invoice.html.includes("$12.00") &&
+      invoice.html.includes("Size &lt;large&gt;"),
+  );
+  assert(
+    invoice.html.includes("Green &amp; beige") &&
+      invoice.html.includes("TEST-SKU"),
+  );
+});
+
+Deno.test("public thumbnail URLs reject signed/private, injected and external destinations", () => {
+  const project = SANDBOX_PROJECT_URL, site = "https://nestorahomelb.com";
+  assert(
+    publicImageUrl(
+      project + "/storage/v1/object/public/products/a.png",
+      site,
+      project,
+    ),
+  );
+  assert(publicImageUrl(site + "/images/logo-bg.png", site, project));
+  for (
+    const value of [
+      "javascript:alert(1)",
+      "http://nestorahomelb.com/images/a.png",
+      "https://attacker.invalid/a.png",
+      project + "/storage/v1/object/sign/products/a.png?token=secret",
+      project + "/storage/v1/object/public/products/a.png?token=secret",
+      "https://user:password@nestorahomelb.com/images/a.png",
+      "data:image/png;base64,abc",
+    ]
+  ) {
+    assert(publicImageUrl(value, site, project) === null);
+  }
+});
+
+Deno.test("thumbnail lookup prefers saved variant image, falls back to real product image and preserves pricing", async () => {
+  const job = parseJob(fixture("admin"));
+  const productId = "00000000-0000-4000-8000-000000000009";
+  const variant = SANDBOX_PROJECT_URL +
+    "/storage/v1/object/public/products/variant.png";
+  const base = SANDBOX_PROJECT_URL +
+    "/storage/v1/object/public/products/base.png";
+  let reads = 0;
+  const decorated = await withProductImages(
+    job,
+    (path) => {
+      reads++;
+      return Promise.resolve(
+        path.startsWith("/rest/v1/order_items")
+          ? [{ id: orderId, product_id: productId, variant_image_url: variant }]
+          : [{ id: productId, image_url: base }],
+      );
+    },
+    "https://nestorahomelb.com",
+    SANDBOX_PROJECT_URL,
+  );
+  assert(reads === 1 && decorated.snapshot.items[0].imageUrl === variant);
+  assert(
+    decorated.snapshot.items[0].total === job.snapshot.items[0].total &&
+      decorated.snapshot.total === job.snapshot.total,
+  );
+  const fallback = await withProductImages(
+    job,
+    (path) =>
+      Promise.resolve(
+        path.startsWith("/rest/v1/order_items")
+          ? [{ id: orderId, product_id: productId, variant_image_url: null }]
+          : [{ id: productId, image_url: base }],
+      ),
+    "https://nestorahomelb.com",
+    SANDBOX_PROJECT_URL,
+  );
+  assert(fallback.snapshot.items[0].imageUrl === base);
+  assert(
+    renderMessage(fallback, "https://nestorahomelb.com", await loadTemplates())
+      .html.includes(base),
+  );
+  const failed = await withProductImages(
+    job,
+    () => Promise.reject(new Error("timeout")),
+    "https://nestorahomelb.com",
+    SANDBOX_PROJECT_URL,
+  );
+  assert(failed === job);
+  const changed = await withProductImages(
+    job,
+    () => Promise.resolve([]),
+    "https://nestorahomelb.com",
+    SANDBOX_PROJECT_URL,
+  );
+  assert(changed === job);
+  const guest = parseJob({
+    ...fixture(),
+    sandbox: false,
+    recipient: "customer@example.invalid",
+    snapshot: { ...fixture().snapshot, automaticConfirmation: true },
+  });
+  const privateReceipt = await withProductImages(
+    guest,
+    () => {
+      throw new Error("Unverified receipt must not read images");
+    },
+    "https://nestorahomelb.com",
+    SANDBOX_PROJECT_URL,
+  );
+  assert(privateReceipt === guest);
 });
 Deno.test("only verified account contacts receive a guarded customer order-list link", async () => {
   const job = fixture();

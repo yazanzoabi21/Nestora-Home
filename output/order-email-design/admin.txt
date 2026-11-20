@@ -1,0 +1,29 @@
+NEW ORDER
+A new order has arrived
+A new order has been placed. Review the finalized order and customer details below.
+Order #ORD-20261119-EC44EE
+Date: 19 Nov 2026, 22:31 (Asia/Beirut)
+Order total: $17.10 USD
+Pay Now · Coming Soon
+Disabled preview — no payment action available
+GeBe Round Baking Tray
+SKU: GEBE-ROUND-BAKING-TRAY-32CM
+size: 32 cm
+Qty: 1 × $17.00 = $17.00
+Underarm Sweat Pads for Clothing
+Qty: 2 × $1.00 = $2.00
+Subtotal: $19.00
+Discount · NESTORA10: -$1.90
+Shipping fee: $0.00
+Total: $17.10 USD
+Payment method: Cash on Delivery
+Payment status: Unpaid
+Customer: Nestora EMAIL SANDBOX TEST
+Email: info@nestorahomelb.com
+Phone: Not provided
+Delivery address: TEST ONLY - DO NOT PICK, PACK, SHIP OR FULFILL, No delivery - email test only, Lebanon, TEST-NO-DELIVERY, Lebanon
+Delivery instructions: NON-FULFILLABLE EMAIL TEST. Pickup/COD used only to avoid shipping or charging. Do not fulfill.
+View Order: https://nestorahomelb.com/admin/orders?orderId=91aa4822-0c0d-4f42-9575-f3d0cbfa294e
+Please review this order before fulfilment.
+This confirms receipt of your order. Payment is confirmed only when the payment status is Paid.
+info@nestorahomelb.com

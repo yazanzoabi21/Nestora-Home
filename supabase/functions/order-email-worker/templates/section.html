@@ -1,8 +1,19 @@
-<section lang="{{language}}" dir="{{direction}}">
-<p class="eyebrow">{{ eyebrow }}</p><h1>{{ heading }}</h1><p>{{ greeting }}</p><p>{{ introduction }}</p>
-<div class="reference"><strong>{{ orderLabel }} #{{ orderNumber }}</strong><br><span>{{ date }}</span></div>
-<h2>{{ itemsLabel }}</h2><table role="presentation" class="items"><thead><tr><th>{{ productLabel }}</th><th>{{ quantityLabel }}</th><th>{{ unitLabel }}</th><th>{{ amountLabel }}</th></tr></thead><tbody>[[rows]]</tbody></table>
-<table role="presentation" class="totals"><tbody>[[totals]]</tbody></table>
-<h2>{{ detailsLabel }}</h2><table role="presentation" class="details"><tbody>[[details]]</tbody></table>
-[[action]]<p class="notice">{{ paymentNotice }}</p>
-</section>
+<h1 style="margin:0 0 12px;color:#263c30;font-size:23px;line-height:30px;font-weight:bold;">{{heading}}</h1>
+<p style="margin:0 0 18px;color:#586955;font-size:14px;line-height:22px;">{{introduction}}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin-bottom:20px;"><tr>
+<td valign="top" style="padding:0 12px 0 0;color:#74806e;font-size:11px;line-height:18px;">ORDER NUMBER<br><strong style="color:#263c30;font-size:13px;word-break:break-word;">#{{orderNumber}}</strong></td>
+<td align="right" valign="top" style="padding:0;color:#74806e;font-size:11px;line-height:18px;">ORDER DATE<br><span style="color:#526548;font-size:12px;">{{date}}</span></td>
+</tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#e2e7dd" style="width:100%;background-color:#e2e7dd;border:1px solid #d5ddcc;border-radius:10px;"><tr><td align="center" style="padding:20px 12px;">
+<p style="margin:0 0 7px;color:#526548;font-size:12px;line-height:18px;">Order total &middot; {{currency}}</p>
+<p style="margin:0 0 15px;color:#263c30;font-size:32px;line-height:38px;font-weight:bold;">{{total}}</p>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td aria-disabled="true" align="center" bgcolor="#c1cbb8" style="padding:11px 24px;border:1px solid #adbba2;border-radius:6px;background-color:#c1cbb8;color:#334b36;font-size:14px;line-height:20px;font-weight:bold;">{{paymentAction}}<br><span style="font-size:10px;line-height:16px;font-weight:normal;">{{paymentActionNote}}</span></td></tr></table>
+</td></tr></table>
+<h2 style="margin:25px 0 3px;color:#263c30;font-size:17px;line-height:24px;">Order summary</h2>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;table-layout:fixed;">[[rows]]</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin-top:14px;">[[totals]]</table>
+<h2 style="margin:24px 0 9px;color:#263c30;font-size:15px;line-height:22px;">{{detailsHeading}}</h2>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;table-layout:fixed;">[[details]]</table>
+[[action]]
+<p style="margin:23px 0 5px;color:#526548;font-size:13px;line-height:21px;">{{closing}}</p>
+<p style="margin:0;color:#74806e;font-size:11px;line-height:18px;">{{paymentNotice}}</p>

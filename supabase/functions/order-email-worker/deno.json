@@ -1,14 +1,18 @@
 {
-  "imports": { "nodemailer": "npm:nodemailer@10.6.0" },
-  "compilerOptions": { "strict": true },
+  "imports": {
+    "nodemailer": "npm:nodemailer@10.6.0"
+  },
+  "compilerOptions": {
+    "strict": true
+  },
   "nodeModulesDir": "none",
   "tasks": {
     "package": "deno run --allow-read=./templates --allow-write=./templates/bundle.generated.json package-templates.ts",
     "package:check": "deno run --allow-read=./templates package-templates.ts --check",
-    "check": "deno task package:check && deno check index.ts worker.test.ts package-templates.ts",
+    "check": "deno task package:check && deno check index.ts worker.test.ts package-templates.ts preview.ts",
     "test": "deno test --deny-read --deny-net --deny-env worker.test.ts",
     "test:bundle": "deno bundle worker.test.ts --platform=deno --output=../../../.tmp/order-email-package/worker.bundle.test.js && deno test --no-config --no-lock --deny-read --deny-net --deny-env ../../../.tmp/order-email-package/worker.bundle.test.js",
     "bundle:check": "deno bundle index.ts --platform=deno --output=../../../.tmp/order-email-package/index.js",
-    "preview": "deno run --allow-read=./templates --allow-write=../../../.tmp/order-email-previews preview.ts"
+    "preview": "deno run --deny-net --deny-env --allow-read=./preview-gallery.html,../../../.tmp/order-email-design-baseline/preview-data.json --allow-write=../../../output/order-email-design preview.ts"
   }
 }

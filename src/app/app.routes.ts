@@ -8,6 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'auth',
+    data: { preload: true },
     loadChildren: () =>
       import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },

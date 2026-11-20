@@ -41,4 +41,11 @@
     </div>
   </ng-template>
 </p-toast>
+@if (navigating()) {
+  <div data-navigation-loading role="status" aria-live="polite"
+    class="pointer-events-none fixed inset-x-0 top-0 z-[10000] h-1 overflow-hidden bg-[#e8dccf]">
+    <div class="h-full w-full animate-pulse bg-[#6b7d5e] motion-reduce:animate-none"></div>
+    <span class="sr-only">{{ 'COMMON.LOADING' | translate }}</span>
+  </div>
+}
 <router-outlet></router-outlet>

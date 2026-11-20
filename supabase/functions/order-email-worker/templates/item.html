@@ -1,6 +1,10 @@
 <tr>
-  <td><strong>{{ name }}</strong><div class="muted">{{ variant }}</div><div class="badge">{{ badge }}</div></td>
-  <td>{{ quantity }}</td>
-  <td>{{ unit }}</td>
-  <td>{{ total }}</td>
+<td class="thumbnail-cell" width="74" valign="top" style="width:74px;padding:17px 10px 17px 0;border-bottom:1px solid #ded8cc;">[[thumbnail]]</td>
+<td valign="middle" style="padding:17px 9px 17px 0;border-bottom:1px solid #ded8cc;word-break:break-word;">
+<p style="margin:0 0 5px;color:#263c30;font-size:14px;line-height:21px;font-weight:bold;">{{name}}</p>
+<p style="margin:0;color:#74806e;font-size:11px;line-height:18px;white-space:pre-line;">{{variant}}</p>
+<p style="margin:5px 0 0;color:#74806e;font-size:12px;line-height:18px;">Qty: {{quantity}} &times; {{unit}}</p>
+<p style="margin:3px 0 0;color:#6b7d5e;font-size:10px;line-height:16px;font-weight:bold;">{{badge}}</p>
+</td>
+<td class="amount-cell" width="90" align="right" valign="middle" style="width:90px;padding:17px 0;border-bottom:1px solid #ded8cc;color:#263c30;font-size:14px;line-height:21px;font-weight:bold;white-space:nowrap;">{{total}}</td>
 </tr>

@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
-import { provideRouter, withInMemoryScrolling, withDebugTracing } from '@angular/router';
+import { provideRouter, withInMemoryScrolling, withPreloading } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import type { TranslationObject } from '@ngx-translate/core';
@@ -9,6 +9,7 @@ import { provideHighcharts } from 'highcharts-angular';
 import { Observable, map, shareReplay } from 'rxjs';
 
 import { routes } from './app.routes';
+import { ShoppingPreloadingStrategy } from './core/services/shopping-preloading.strategy';
 
 type TranslationFile = Record<string, TranslationObject>;
 
@@ -44,10 +45,10 @@ export const appConfig: ApplicationConfig = {
       instance: () => import('highcharts/esm/highcharts.js').then((module) => module.default),
     }),
     provideRouter(
-  routes,
-  withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
-  withDebugTracing(),
-),
+      routes,
+      withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
+      withPreloading(ShoppingPreloadingStrategy),
+    ),
     MessageService,
 
     provideTranslateService({

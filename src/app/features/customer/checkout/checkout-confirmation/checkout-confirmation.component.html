@@ -12,17 +12,10 @@
   </h1>
 
   <p class="confirmation__message">
-    @if (order.customerName) {
-    {{
-    'CUSTOMER.CHECKOUT.CONFIRMATION.MESSAGE_WITH_NAME'
-    | translate: { name: order.customerName }
-    }}
-    } @else {
     {{
     'CUSTOMER.CHECKOUT.CONFIRMATION.MESSAGE'
     | translate
     }}
-    }
   </p>
 
   <div class="confirmation__details">
@@ -80,8 +73,6 @@
 
   <app-checkout-order-summary class="confirmation__summary" [items]="order.items" [totals]="order.totals"
     [authenticated]="isAuthenticated()" />
-
-  <app-order-email-verification />
 
   @if (isAuthenticated() && pendingLoyaltyPoints() > 0) {
   <aside class="confirmation__loyalty" aria-live="polite">
