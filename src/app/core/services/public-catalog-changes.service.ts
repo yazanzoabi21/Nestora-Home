@@ -13,6 +13,7 @@ const affected: Readonly<Record<string, readonly Section[]>> = {
   customer_offers: ['offers'],
   'rpc/replace_promotion_products': ['promotions'],
   'rpc/replace_product_variants': ['products'],
+  'rpc/replace_product_media_image': ['products'],
   'rpc/update_inventory_stock': ['products'],
   'rpc/replace_discount_gift_products': ['offers'],
 };

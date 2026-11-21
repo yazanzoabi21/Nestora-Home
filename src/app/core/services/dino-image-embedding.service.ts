@@ -13,7 +13,10 @@ interface PendingEmbedding {
   readonly resolve: (embedding: number[]) => void;
   readonly reject: (error: Error) => void;
   readonly image: Blob;
+  readonly timeout: ReturnType<typeof setTimeout>;
 }
+
+const EMBEDDING_TIMEOUT_MS = 120_000;
 
 @Injectable({ providedIn: 'root' })
 export class DinoImageEmbeddingService implements OnDestroy {
@@ -66,10 +69,22 @@ export class DinoImageEmbeddingService implements OnDestroy {
     const requestId = crypto.randomUUID();
 
     return new Promise<number[]>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        const failure = new VisualSearchError({
+          code: this.modelReady ? 'EMBEDDING_GENERATION_FAILED' : 'MODEL_INITIALIZATION_FAILED',
+          stage: this.modelReady ? 'embedding-generation' : 'model-initialization',
+          message: 'The visual search worker timed out. Please try again.',
+          runtime: this.runtime,
+        });
+        this.destroyWorker();
+        this.state.set('error');
+        this.rejectAll(failure);
+      }, EMBEDDING_TIMEOUT_MS);
       this.pending.set(requestId, {
         resolve,
         reject,
         image,
+        timeout,
       });
 
       // Only generate when the model is completely ready
@@ -102,16 +117,14 @@ export class DinoImageEmbeddingService implements OnDestroy {
   cancel(requestId: string): void {
     const pending = this.pending.get(requestId);
     if (!pending) return;
+    clearTimeout(pending.timeout);
     pending.reject(new Error('Image analysis was cancelled.'));
     this.pending.delete(requestId);
   }
 
   ngOnDestroy(): void {
     this.destroyWorker();
-    for (const pending of this.pending.values()) {
-      pending.reject(new Error('Visual search was closed.'));
-    }
-    this.pending.clear();
+    this.rejectAll(new Error('Visual search was closed.'));
   }
 
   private ensureWorker(): void {
@@ -165,6 +178,7 @@ export class DinoImageEmbeddingService implements OnDestroy {
       case 'EMBEDDING_RESULT': {
         const pending = this.pending.get(message.requestId);
         if (!pending) return;
+        clearTimeout(pending.timeout);
         this.pending.delete(message.requestId);
         pending.resolve(message.embedding);
         this.state.set(message.runtime === 'webgpu' ? 'ready-webgpu' : 'ready-wasm');
@@ -185,7 +199,10 @@ export class DinoImageEmbeddingService implements OnDestroy {
         if (message.requestId) {
           const pending = this.pending.get(message.requestId);
           this.pending.delete(message.requestId);
-          pending?.reject(error);
+          if (pending) {
+            clearTimeout(pending.timeout);
+            pending.reject(error);
+          }
         } else {
           this.rejectAll(error);
         }
@@ -225,7 +242,10 @@ export class DinoImageEmbeddingService implements OnDestroy {
   }
 
   private rejectAll(error: Error): void {
-    for (const pending of this.pending.values()) pending.reject(error);
+    for (const pending of this.pending.values()) {
+      clearTimeout(pending.timeout);
+      pending.reject(error);
+    }
     this.pending.clear();
   }
 

@@ -1061,6 +1061,8 @@
       "TITLE": "Media Library",
       "SUBTITLE": "Manage all product images and assets · {{count}} files",
       "UPLOAD_IMAGES": "Upload Images",
+      "REPLACE_IMAGE": "Replace image",
+      "REPLACEMENT_HELP": "Choose the matching 1254 × 1254 WebP under 0.5 MB. The original file is kept.",
       "MEDIA_ASSET": "Media asset",
       "DRAG_DROP_TITLE": "Drag & drop images",
       "DRAG_DROP_TEXT": "or click to browse · PNG, JPG, WebP · max 10MB each",
@@ -1153,6 +1155,7 @@
         "COPY_SUCCESS": "URL copied to clipboard."
       },
       "ERRORS": {
+        "REPLACEMENT_FILE": "Choose a valid 1254 × 1254 WebP under 0.5 MB.",
         "INVALID_TYPE": "Please upload PNG, JPG, WebP, or GIF files only.",
         "MAX_SIZE": "File must be 10MB or smaller."
       }
@@ -3629,6 +3632,8 @@
       "TITLE": "مكتبة الوسائط",
       "SUBTITLE": "إدارة صور المنتجات والأصول · {{count}} ملف",
       "UPLOAD_IMAGES": "رفع الصور",
+      "REPLACE_IMAGE": "استبدال الصورة",
+      "REPLACEMENT_HELP": "اختر صورة WebP المطابقة بحجم 1254 × 1254 وأقل من 0.5 ميغابايت. يتم الاحتفاظ بالملف الأصلي.",
       "MEDIA_ASSET": "ملف وسائط",
       "DRAG_DROP_TITLE": "اسحب الصور وأفلتها",
       "DRAG_DROP_TEXT": "أو انقر للتصفح · PNG و JPG و WebP · الحد الأقصى 10MB لكل ملف",
@@ -3721,6 +3726,7 @@
         "COPY_SUCCESS": "تم نسخ الرابط."
       },
       "ERRORS": {
+        "REPLACEMENT_FILE": "اختر صورة WebP صالحة بحجم 1254 × 1254 وأقل من 0.5 ميغابايت.",
         "INVALID_TYPE": "يرجى رفع ملفات PNG أو JPG أو WebP أو GIF فقط.",
         "MAX_SIZE": "يجب أن يكون حجم الملف 10MB أو أقل."
       }

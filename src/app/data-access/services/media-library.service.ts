@@ -55,6 +55,50 @@ const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif
 export class MediaLibraryService {
   private readonly supabase = inject(SupabaseService).client;
 
+  canReplaceProductPng(asset: MediaAsset): boolean {
+    return asset.category === 'product' && asset.file_type === 'image' &&
+      asset.mime_type === 'image/png' && asset.bucket_name === MEDIA_BUCKET &&
+      asset.width === 1254 && asset.height === 1254 && asset.is_deleted !== true;
+  }
+
+  async replaceProductPng(
+    asset: MediaAsset,
+    file: File,
+    prepareEmbedding: () => Promise<readonly number[] | null>,
+  ): Promise<MediaAsset> {
+    if (!this.canReplaceProductPng(asset) || file.type !== 'image/webp' ||
+        !/\.webp$/i.test(file.name) || file.size === 0 || file.size >= 500_000) {
+      throw new Error('MEDIA_LIBRARY.ERRORS.REPLACEMENT_FILE');
+    }
+    const header = new TextDecoder().decode(await file.slice(0, 12).arrayBuffer());
+    const { width, height } = await this.getImageDimensions(file);
+    if (!header.startsWith('RIFF') || !header.endsWith('WEBP') ||
+        width !== asset.width || height !== asset.height) {
+      throw new Error('MEDIA_LIBRARY.ERRORS.REPLACEMENT_FILE');
+    }
+
+    const embedding = await prepareEmbedding();
+    const storagePath = `product/replacements/${asset.id}/${crypto.randomUUID()}.webp`;
+    const { error: uploadError } = await this.supabase.storage.from(MEDIA_BUCKET)
+      .upload(storagePath, file, { contentType: 'image/webp', cacheControl: '3600', upsert: false });
+    if (uploadError) throw new Error(uploadError.message);
+
+    const { data, error } = await this.supabase.rpc('replace_product_media_image', {
+      p_media_id: asset.id,
+      p_previous_url: asset.file_url,
+      p_storage_path: storagePath,
+      p_original_name: file.name,
+      p_file_size: file.size,
+      p_embedding: embedding,
+    }).single();
+    if (error) {
+      const saved = await this.getMediaAssetById(asset.id).catch(() => null);
+      if (saved?.storage_path === storagePath) return saved;
+      throw new Error(error.message);
+    }
+    return data as MediaAsset;
+  }
+
   async getMediaAssets(): Promise<MediaAsset[]> {
     const { data, error } = await this.supabase
       .from('media_assets')

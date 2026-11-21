@@ -213,8 +213,21 @@
   </app-admin-form-modal>
 
   <app-admin-form-modal [isOpen]="!!editingAsset()" title="MEDIA_LIBRARY.MODAL.EDIT_TITLE"
-    [subtitle]="assetName(editingAsset())" submitLabel="COMMON.SAVE" cancelLabel="COMMON.CANCEL" [loading]="saving()"
+    [subtitle]="assetName(editingAsset())"
+    [submitLabel]="replacementFile() ? 'MEDIA_LIBRARY.REPLACE_IMAGE' : 'COMMON.SAVE'"
+    cancelLabel="COMMON.CANCEL" [loading]="saving()"
     (close)="closeEditModal()" (submit)="saveAsset()">
+    @if (canReplaceImage()) {
+      <div class="mb-4 rounded-xl border border-[#e5ded2] p-4">
+        <label class="block text-sm font-bold text-[#342f29]" for="media-replacement">
+          {{ 'MEDIA_LIBRARY.REPLACE_IMAGE' | translate }}
+        </label>
+        <p class="mb-2 text-sm text-[#675f55]">{{ 'MEDIA_LIBRARY.REPLACEMENT_HELP' | translate }}</p>
+        <input id="media-replacement" #replacementInput type="file" accept=".webp,image/webp"
+          class="max-w-full text-sm" [disabled]="saving()" (change)="selectReplacement(replacementInput.files)" />
+      </div>
+    }
+    @if (!replacementFile()) {
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <app-admin-form-field type="text" name="mediaTitle" label="MEDIA_LIBRARY.FIELDS.TITLE"
         [value]="mediaForm().title" (valueChange)="updateMediaForm('title', $any($event))" />
@@ -233,6 +246,7 @@
         [options]="activeOptions" optionLabel="label" optionValue="value" [value]="mediaForm().isActive"
         (valueChange)="updateMediaForm('isActive', $any($event))" />
     </div>
+    }
   </app-admin-form-modal>
 
   <app-admin-form-modal [isOpen]="!!deletingAsset()" variant="delete" title="MEDIA_LIBRARY.MODAL.DELETE_TITLE"

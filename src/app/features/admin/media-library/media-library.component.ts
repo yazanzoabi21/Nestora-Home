@@ -17,6 +17,7 @@ import { AdminFormModalComponent } from '../../../shared/ui/admin-form-modal';
 import { AdminTableColumn, AdminTableComponent, AdminTableRow } from '../../../shared/ui/admin-table';
 import { KpiCardComponent, KpiCardData } from '../../../shared/ui/kpi-card';
 import { AdminPaginationComponent, PaginationPageSize } from '../../../shared/ui/admin-pagination';
+import { AdminProductImageIndexService } from '../products/admin-product-image-index.service';
 
 type MediaFilter = 'all' | 'product' | 'promotion' | 'brand';
 type MediaViewMode = 'grid' | 'list';
@@ -81,6 +82,7 @@ const EMPTY_MEDIA_FORM: MediaEditForm = {
 })
 export class MediaLibraryComponent implements OnInit {
   private readonly mediaLibraryService = inject(MediaLibraryService);
+  private readonly imageIndex = inject(AdminProductImageIndexService);
   private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -96,6 +98,11 @@ export class MediaLibraryComponent implements OnInit {
   readonly viewMode = signal<MediaViewMode>('grid');
   readonly previewAsset = signal<MediaAsset | null>(null);
   readonly editingAsset = signal<MediaAsset | null>(null);
+  readonly replacementFile = signal<File | null>(null);
+  readonly canReplaceImage = computed(() => {
+    const asset = this.editingAsset();
+    return asset !== null && this.mediaLibraryService.canReplaceProductPng(asset);
+  });
   readonly deletingAsset = signal<MediaAsset | null>(null);
   readonly failedImages = signal<Set<string>>(new Set());
   readonly mediaForm = signal<MediaEditForm>({ ...EMPTY_MEDIA_FORM });
@@ -364,6 +371,7 @@ export class MediaLibraryComponent implements OnInit {
     }
 
     this.editingAsset.set(null);
+    this.replacementFile.set(null);
     this.mediaForm.set({ ...EMPTY_MEDIA_FORM });
   }
 
@@ -383,6 +391,12 @@ export class MediaLibraryComponent implements OnInit {
     const asset = this.editingAsset();
 
     if (!asset || this.saving()) {
+      return;
+    }
+
+    const replacement = this.replacementFile();
+    if (replacement) {
+      await this.replaceImage(asset, replacement);
       return;
     }
 
@@ -408,6 +422,31 @@ export class MediaLibraryComponent implements OnInit {
         this.translate.instant('MEDIA_LIBRARY.TOAST.SAVE_FAILED_TITLE'),
         this.errorDetail(error, this.translate.instant('MEDIA_LIBRARY.TOAST.SAVE_FAILED_DETAIL'))
       );
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  selectReplacement(files: FileList | null): void {
+    this.replacementFile.set(files?.item(0) ?? null);
+  }
+
+  private async replaceImage(asset: MediaAsset, file: File): Promise<void> {
+    this.saving.set(true);
+    try {
+      const replacement = await this.mediaLibraryService.replaceProductPng(asset, file, async () => {
+        const statuses = await this.imageIndex.getStatuses();
+        return statuses.some((status) => status.imageUrl === asset.file_url)
+          ? this.imageIndex.prepareEmbedding(file)
+          : null;
+      });
+      this.assets.update((items) => items.map((item) => item.id === replacement.id ? replacement : item));
+      this.failedImages.update((failed) => new Set([...failed].filter((id) => id !== asset.id)));
+      this.toast.updated(this.translate.instant('MEDIA_LIBRARY.MEDIA_ASSET'));
+      this.closeEditModal(true);
+    } catch (error) {
+      const detail = this.errorDetail(error, this.translate.instant('MEDIA_LIBRARY.TOAST.SAVE_FAILED_DETAIL'));
+      this.toast.failed(this.translate.instant('MEDIA_LIBRARY.TOAST.SAVE_FAILED_TITLE'), detail);
     } finally {
       this.saving.set(false);
     }

@@ -165,6 +165,28 @@ export class ProductsService {
     return this.mapProduct(data as Product);
   }
 
+  async updateProductImages(
+    id: string,
+    images: Pick<Product, 'image_url' | 'media_id' | 'gallery'>,
+    previous: Pick<Product, 'image_url' | 'media_id' | 'gallery'>,
+  ): Promise<Product> {
+    let query = this.supabase.from('products').update(images).eq('id', id);
+    query = previous.image_url === null
+      ? query.is('image_url', null)
+      : query.eq('image_url', previous.image_url);
+    query = previous.media_id == null
+      ? query.is('media_id', null)
+      : query.eq('media_id', previous.media_id);
+    query = previous.gallery === null
+      ? query.is('gallery', null)
+      : query.eq('gallery', JSON.stringify(previous.gallery));
+
+    const { data, error } = await query.select(PRODUCT_SELECT).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error('Product images changed in another session. Reopen the editor and try again.');
+    return this.mapProduct(data as Product);
+  }
+
   async deleteProduct(id: string): Promise<void> {
     const videoStoragePaths = (await this.productVideos.getVideosForProduct(id)).map(
       (video) => video.storagePath,

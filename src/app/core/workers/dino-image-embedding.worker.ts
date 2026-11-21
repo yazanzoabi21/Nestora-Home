@@ -32,7 +32,10 @@ type ModelProgressInfo =
     }
   | { readonly status: 'ready'; readonly task: string; readonly model: string };
 
+type TransformersEnvironment = typeof import('@huggingface/transformers').env;
+
 interface ImagePipelineModule {
+  readonly env: TransformersEnvironment;
   readonly pipeline: (
     task: 'image-feature-extraction',
     model: string,
@@ -63,6 +66,11 @@ function progressValue(info: ModelProgressInfo): number | null {
 
 async function createPipeline(device: DinoRuntime): Promise<ImageFeatureExtractionPipeline> {
   const transformers = (await import('@huggingface/transformers')) as unknown as ImagePipelineModule;
+  const wasm = transformers.env.backends.onnx.wasm;
+  if (wasm) {
+    wasm.wasmPaths = new URL('/assets/visual-search/', self.location.origin).href;
+    wasm.numThreads = 1;
+  }
   return transformers.pipeline('image-feature-extraction', DINO_MODEL_ID, {
     dtype: DINO_DTYPE,
     device,

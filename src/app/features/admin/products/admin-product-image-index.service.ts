@@ -19,11 +19,20 @@ export class AdminProductImageIndexService {
   }
 
   async indexProduct(productId: string, imageUrl: string): Promise<void> {
+    await this.saveEmbedding(productId, imageUrl, await this.prepareEmbedding(imageUrl));
+  }
+
+  async prepareEmbedding(image: string | Blob): Promise<number[]> {
     let resized: Blob;
     try {
-      const response = await fetch(imageUrl, { mode: 'cors', credentials: 'omit' });
-      if (!response.ok) throw new Error(`Image request failed (${response.status}).`);
-      const source = await response.blob();
+      let source = image;
+      if (typeof source === 'string') {
+        const response = await fetch(source, {
+          mode: 'cors', credentials: 'omit', signal: AbortSignal.timeout(30_000),
+        });
+        if (!response.ok) throw new Error(`Image request failed (${response.status}).`);
+        source = await response.blob();
+      }
       if (!source.type.startsWith('image/')) throw new Error('Product image response is invalid.');
       resized = await resizeImageForEmbedding(source);
     } catch (error: unknown) {
@@ -34,8 +43,11 @@ export class AdminProductImageIndexService {
         originalError: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
       }, { cause: error });
     }
-    const embedding = await this.dino.generateEmbedding(resized);
-    await this.embeddings.upsert(productId, imageUrl, embedding);
+    return this.dino.generateEmbedding(resized);
+  }
+
+  saveEmbedding(productId: string, imageUrl: string, embedding: number[]): Promise<void> {
+    return this.embeddings.upsert(productId, imageUrl, embedding);
   }
 
   remove(productId: string): Promise<void> {

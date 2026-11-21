@@ -31,6 +31,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "ort-wasm-simd-threaded.jsep.*",
+                "input": "node_modules/@huggingface/transformers/dist",
+                "output": "assets/visual-search"
               }
             ],
             "styles": [

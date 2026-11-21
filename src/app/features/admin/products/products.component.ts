@@ -207,6 +207,8 @@ export class ProductsComponent implements OnInit {
   readonly productVideos = signal<AdminProductVideoItem[]>([]);
   readonly originalProductVideos = signal<ProductVideo[]>([]);
   readonly productVariants = signal<ProductVariantFormModel[]>([]);
+  private originalProductForm: ProductFormModel | null = null;
+  private originalVariants: ProductVariantFormModel[] = [];
   readonly variantError = signal<string | null>(null);
   readonly variantMediaTargetId = signal<string | null>(null);
   readonly coverImageId = signal<string | null>(null);
@@ -703,6 +705,8 @@ export class ProductsComponent implements OnInit {
       name: `${product.name} ${index + 1}`,
       mediaId: index === 0 ? (product.media_id ?? undefined) : undefined,
     }));
+    this.originalProductForm = this.productForm();
+    this.originalVariants = this.productVariants();
     this.productImages.set(images);
     this.coverImageId.set(images[0]?.id ?? null);
     this.imageUploadError.set(null);
@@ -900,12 +904,34 @@ export class ProductsComponent implements OnInit {
     let productPersisted = false;
 
     try {
+      const selectedProduct = this.selectedProduct();
+      const isEdit = this.productModalMode() === 'edit' && !!selectedProduct;
+      const variants = this.productVariants();
+      const variantsChanged = !isEdit ||
+        this.productForm().hasVariants !== this.originalProductForm?.hasVariants ||
+        variants.length !== this.originalVariants.length ||
+        variants.some((variant, index) => variant !== this.originalVariants[index]);
+      const originalVideos = this.originalProductVideos();
+      const videos = this.productVideos();
+      const videosChanged = videos.length !== originalVideos.length ||
+        videos.some((video, index) => video.existing !== originalVideos[index]);
+      const imagesOnly = isEdit && !variantsChanged && !videosChanged &&
+        this.productForm() === this.originalProductForm;
+
+      const images = this.productImages();
+      const pendingCover = images.find((image) => image.id === this.coverImageId()) ?? images[0];
+      const previousImageUrl = selectedProduct?.image_url?.trim() || null;
+      const coverChanged = (pendingCover?.url ?? null) !== previousImageUrl;
+      const embedding = imagesOnly && coverChanged && pendingCover
+        ? await this.imageIndex.prepareEmbedding(pendingCover.file ?? pendingCover.url)
+        : null;
+
       const costPriceError = this.costPriceError();
-      if (costPriceError) {
+      if (!imagesOnly && costPriceError) {
         throw new Error(costPriceError);
       }
 
-      const variantValidationError = this.validateVariants();
+      const variantValidationError = variantsChanged ? this.validateVariants() : null;
       if (variantValidationError) {
         this.variantError.set(variantValidationError);
         throw new Error(variantValidationError);
@@ -913,7 +939,7 @@ export class ProductsComponent implements OnInit {
 
       const resolvedImages: ProductImageItem[] = [];
       try {
-        for (const image of this.productImages()) {
+        for (const image of images) {
           if (!image.file) {
             resolvedImages.push(image);
             continue;
@@ -934,7 +960,7 @@ export class ProductsComponent implements OnInit {
         .filter((image) => image.id !== cover?.id)
         .map((image) => image.url);
       const payload = this.buildProductPayload(cover?.url ?? null, gallery, cover?.mediaId ?? null);
-      const resolvedVariants = this.productForm().hasVariants
+      const resolvedVariants = variantsChanged && this.productForm().hasVariants
         ? await Promise.all(
             this.productVariants().map(
               async (variant, index): Promise<ProductVariantMutationPayload> => {
@@ -967,28 +993,51 @@ export class ProductsComponent implements OnInit {
             ),
           )
         : [];
-      const selectedProduct = this.selectedProduct();
-      const isEdit = this.productModalMode() === 'edit' && !!selectedProduct;
-      const previousImageUrl = selectedProduct?.image_url?.trim() || null;
       let savedProduct: Product;
 
-      if (isEdit) {
+      if (imagesOnly) {
+        const previousGallery = selectedProduct.gallery ?? [];
+        const storedGallery = previousGallery.some((item) => typeof item !== 'string')
+          ? gallery.map((url) => previousGallery.find((item) => typeof item !== 'string' && item.url === url) ?? { url })
+              .map((item) => typeof item === 'string' ? { url: item } : item)
+          : gallery.length ? gallery : selectedProduct.gallery === null ? null : [];
+        savedProduct = await this.productsService.updateProductImages(selectedProduct.id, {
+          image_url: cover?.url ?? null,
+          media_id: cover?.mediaId ?? null,
+          gallery: storedGallery,
+        }, selectedProduct);
+        productPersisted = true;
+        try {
+          if (coverChanged && savedProduct.image_url && embedding) {
+            await this.imageIndex.saveEmbedding(savedProduct.id, savedProduct.image_url, embedding);
+          } else if (coverChanged && !savedProduct.image_url) {
+            await this.imageIndex.remove(savedProduct.id);
+          }
+        } catch (error) {
+          await this.productsService.updateProductImages(selectedProduct.id, {
+            image_url: selectedProduct.image_url,
+            media_id: selectedProduct.media_id ?? null,
+            gallery: selectedProduct.gallery,
+          }, savedProduct);
+          productPersisted = false;
+          throw error;
+        }
+      } else if (isEdit) {
         savedProduct = await this.productsService.updateProduct(selectedProduct.id, payload);
       } else {
         savedProduct = await this.productsService.createProduct(payload);
       }
       productPersisted = true;
 
-      await this.productsService.replaceProductVariants(
-        savedProduct.id,
-        this.productForm().hasVariants ? resolvedVariants : [],
-      );
+      if (variantsChanged) {
+        await this.productsService.replaceProductVariants(savedProduct.id, resolvedVariants);
+      }
 
       await this.saveProductMediaUsage(savedProduct, payload.media_id);
 
       let videoSaveWarning: string | null = null;
       try {
-        await this.syncProductVideos(savedProduct.id);
+        if (videosChanged) await this.syncProductVideos(savedProduct.id);
       } catch (videoError) {
         videoSaveWarning = this.errorDetail(
           videoError,
@@ -1006,7 +1055,7 @@ export class ProductsComponent implements OnInit {
         this.toast.created('Product');
       }
       this.closeProductModal();
-      await this.updateSavedProductImageIndex(savedProduct, previousImageUrl);
+      if (!imagesOnly) await this.updateSavedProductImageIndex(savedProduct, previousImageUrl);
       if (videoSaveWarning) {
         this.toast.warn(
           this.translate.instant('PRODUCTS.VIDEOS.PARTIAL_SAVE_TITLE'),
@@ -1565,6 +1614,8 @@ export class ProductsComponent implements OnInit {
 
   private resetProductForm(): void {
     this.selectedProduct.set(null);
+    this.originalProductForm = null;
+    this.originalVariants = [];
     this.productForm.set({ ...EMPTY_PRODUCT_FORM });
     for (const variant of this.productVariants()) {
       if (variant.imageFile && variant.imageUrl) URL.revokeObjectURL(variant.imageUrl);
