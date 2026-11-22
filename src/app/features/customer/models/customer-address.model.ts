@@ -1,4 +1,6 @@
-export interface CustomerAddress {
+import { AddressGeography } from './address-geography.model';
+
+export interface CustomerAddress extends AddressGeography {
   id: string;
   userId: string;
   label: string;
@@ -9,14 +11,13 @@ export interface CustomerAddress {
   city: string;
   areaOrDistrict: string | null;
   country: string;
-  postalCode: string | null;
   deliveryNotes: string | null;
   isDefault: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CustomerAddressInput {
+export interface CustomerAddressInput extends AddressGeography {
   label: string;
   fullName: string;
   phone: string;
@@ -25,7 +26,6 @@ export interface CustomerAddressInput {
   city: string;
   areaOrDistrict: string | null;
   country: string;
-  postalCode: string | null;
   deliveryNotes: string | null;
   isDefault: boolean;
 }
@@ -33,6 +33,9 @@ export interface CustomerAddressInput {
 export interface CustomerAddressRow {
   id: string;
   user_id: string;
+  country_id?: string | null;
+  province_id?: string | null;
+  city_id?: string | null;
   label: string;
   full_name: string;
   phone: string;
@@ -41,7 +44,6 @@ export interface CustomerAddressRow {
   city: string;
   area_or_district: string | null;
   country: string;
-  postal_code: string | null;
   delivery_notes: string | null;
   is_default: boolean;
   created_at: string;

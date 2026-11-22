@@ -1,6 +1,8 @@
+import { AddressGeography } from '../../models/address-geography.model';
+
 export type CheckoutStep = 'shipping' | 'delivery' | 'payment' | 'confirmation';
 
-export interface CheckoutShippingInformation {
+export interface CheckoutShippingInformation extends AddressGeography {
   firstName: string;
   lastName: string;
   email: string;
@@ -9,7 +11,6 @@ export interface CheckoutShippingInformation {
   addressLine2: string | null;
   city: string;
   stateProvince: string;
-  postalCode: string | null;
   country: string;
   deliveryInstructions: string | null;
 }
@@ -21,10 +22,6 @@ export interface CheckoutShippingPrefill {
   phone?: string;
   streetAddress?: string;
   addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  country?: string;
   deliveryInstructions?: string;
 }
 

@@ -13,6 +13,7 @@ export class CustomerAddressesService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
   private readonly auth = inject(CustomerAuthService);
 
+  private addressRevision = 0;
   private readonly _addresses = signal<readonly CustomerAddress[]>([]);
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
@@ -23,23 +24,18 @@ export class CustomerAddressesService {
 
   async load(): Promise<readonly CustomerAddress[]> {
     const userId = await this.requireUserId();
+    const revision = ++this.addressRevision;
     this._loading.set(true);
     this._error.set(null);
 
     try {
-      const { data, error } = await this.supabase
-        .from('customer_addresses')
-        .select('*')
-        .eq('user_id', userId)
-        .order('is_default', { ascending: false })
-        .order('created_at', { ascending: true });
-      if (error) throw new Error(error.message);
-
-      const addresses = (data as CustomerAddressRow[]).map((row) => this.mapRow(row));
-      this._addresses.set(addresses);
+      const addresses = await this.readAddresses(userId);
+      if (revision === this.addressRevision) this._addresses.set(addresses);
       return addresses;
     } catch (error) {
-      this._error.set(this.message(error, 'Unable to load saved addresses.'));
+      if (revision === this.addressRevision) {
+        this._error.set(this.message(error, 'Unable to load saved addresses.'));
+      }
       throw error;
     } finally {
       this._loading.set(false);
@@ -74,13 +70,39 @@ export class CustomerAddressesService {
 
   async remove(id: string): Promise<void> {
     const userId = await this.requireUserId();
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from('customer_addresses')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select('id')
+      .maybeSingle();
     if (error) throw new Error(error.message);
-    await this.load();
+    if (!data) throw new Error('The saved address could not be deleted.');
+
+    this._addresses.update((addresses) => addresses.filter((address) => address.id !== id));
+    void this.refreshAfterRemoval(userId);
+  }
+
+  private async refreshAfterRemoval(userId: string): Promise<void> {
+    const revision = ++this.addressRevision;
+    try {
+      const addresses = await this.readAddresses(userId);
+      if (revision === this.addressRevision) this._addresses.set(addresses);
+    } catch {
+      // The delete already succeeded. Keep the local list until the next successful load.
+    }
+  }
+
+  private async readAddresses(userId: string): Promise<CustomerAddress[]> {
+    const { data, error } = await this.supabase
+      .from('customer_addresses')
+      .select('*')
+      .eq('user_id', userId)
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data as CustomerAddressRow[]).map((row) => this.mapRow(row));
   }
 
   async setDefault(id: string): Promise<void> {
@@ -108,10 +130,12 @@ export class CustomerAddressesService {
       phone: input.phone.trim(),
       street_address: input.streetAddress.trim(),
       apartment_or_building: input.apartmentOrBuilding?.trim() || null,
+      country_id: input.countryId ?? null,
+      province_id: input.provinceId ?? null,
+      city_id: input.cityId ?? null,
       city: input.city.trim(),
       area_or_district: input.areaOrDistrict?.trim() || null,
       country: input.country.trim(),
-      postal_code: input.postalCode?.trim() || null,
       delivery_notes: input.deliveryNotes?.trim() || null,
       is_default: input.isDefault,
     };
@@ -126,10 +150,12 @@ export class CustomerAddressesService {
       phone: row.phone,
       streetAddress: row.street_address,
       apartmentOrBuilding: row.apartment_or_building,
+      countryId: row.country_id ?? null,
+      provinceId: row.province_id ?? null,
+      cityId: row.city_id ?? null,
       city: row.city,
       areaOrDistrict: row.area_or_district,
       country: row.country,
-      postalCode: row.postal_code,
       deliveryNotes: row.delivery_notes,
       isDefault: row.is_default,
       createdAt: row.created_at,

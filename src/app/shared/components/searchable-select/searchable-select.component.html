@@ -1,0 +1,59 @@
+<button #trigger type="button" [id]="controlId()" [disabled]="isDisabled()"
+  [attr.aria-labelledby]="labelId() + ' ' + controlId() + '-value'"
+  aria-haspopup="listbox" [attr.aria-controls]="controlId() + '-listbox'"
+  [attr.aria-expanded]="opened()" [attr.aria-invalid]="invalid() || null"
+  [attr.aria-describedby]="describedBy()" [attr.aria-busy]="loading() || null"
+  (click)="toggle()" (keydown)="onTriggerKey($event)"
+  class="flex h-11 w-full min-w-0 cursor-pointer items-center justify-between gap-2 rounded-[.7rem] border border-[#e6d6c4]
+    bg-[#fffdfb] px-3.5 text-start text-[.9rem] leading-tight font-semibold text-[#292f27]
+    focus-visible:border-[#738665] focus-visible:ring-2 focus-visible:ring-[#738665]/35 focus-visible:outline-none
+    aria-expanded:border-[#738665] disabled:cursor-not-allowed disabled:opacity-60">
+  <span [id]="controlId() + '-value'" class="min-w-0 truncate" [class.text-[#77726a]]="!selectedLabel()">
+    {{ loading() ? loadingLabel() : selectedLabel() || placeholder() }}
+  </span>
+  <i aria-hidden="true" class="pi shrink-0 text-xs text-[#607254]"
+    [class.pi-spin]="loading()" [class.pi-spinner]="loading()"
+    [class.pi-chevron-down]="!opened() && !loading()" [class.pi-chevron-up]="opened() && !loading()"></i>
+</button>
+
+<div #panel popover="manual"
+  class="search-panel fixed inset-auto z-[1000] m-0 max-w-none overflow-hidden rounded-[.85rem]
+    border border-[#e4d9cc] bg-[#fffdfb] text-[#292f27] shadow-[0_10px_28px_rgba(52,47,41,.16)]">
+  <div class="relative shrink-0 border-b border-[#efe6dc] p-2">
+    <i class="pi pi-search pointer-events-none absolute inset-s-5 top-1/2 -translate-y-1/2 text-sm text-[#646c5e]" aria-hidden="true"></i>
+    <input #searchInput type="text" role="combobox" aria-autocomplete="list" autocomplete="off"
+      [attr.aria-label]="searchLabel()" [attr.aria-expanded]="opened()"
+      [attr.aria-required]="required()" [attr.aria-controls]="controlId() + '-listbox'"
+      [attr.aria-activedescendant]="activeOptionId()"
+      [placeholder]="searchLabel()" [value]="search()"
+      (input)="filter(searchInput.value)" (keydown)="onSearchKey($event)"
+      class="h-11 w-full min-w-0 rounded-[.55rem] border border-[#e9dfd2] bg-[#f8f6f1] pe-3 ps-9
+        text-base font-medium text-[#292f27] outline-none placeholder:text-[#77726a]
+        focus:border-[#738665] focus:ring-2 focus:ring-[#738665]/25 sm:text-sm" />
+  </div>
+
+  <ul role="listbox" [id]="controlId() + '-listbox'" [attr.aria-labelledby]="labelId()"
+    class="m-0 min-h-0 list-none overflow-y-auto overscroll-contain p-1.5">
+    @if (opened()) {
+      @for (row of visibleRows(); track row.value; let index = $index) {
+        @let text = highlight(row.label);
+        <li role="option" tabindex="-1" [id]="optionId(index)" [attr.aria-selected]="isSelected(row)"
+          [class.bg-[#edf4e9]]="index === activeIndex()"
+          class="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2
+            text-start text-sm leading-snug font-medium hover:bg-[#f1f5ee]
+            aria-selected:bg-[#e7f0e3] aria-selected:font-semibold aria-selected:text-[#344b32]"
+          (mousedown)="$event.preventDefault()" (click)="choose(row)"
+          (keydown.enter)="$event.preventDefault(); choose(row)"
+          (keydown.space)="$event.preventDefault(); choose(row)">
+          <span class="min-w-0 wrap-anywhere">{{ text.before }}@if (text.match) {<mark class="rounded-sm bg-[#ddeadd] font-bold text-inherit">{{ text.match }}</mark>}{{ text.after }}</span>
+          @if (isSelected(row)) {
+            <i class="pi pi-check shrink-0 text-xs text-[#53744c]" aria-hidden="true"></i>
+          }
+        </li>
+      }
+    }
+  </ul>
+  @if (opened() && !visibleRows().length) {
+    <p role="status" class="m-0 overflow-y-auto px-4 pt-2 pb-4 text-center text-sm text-[#736e65]">{{ emptyLabel() }}</p>
+  }
+</div>

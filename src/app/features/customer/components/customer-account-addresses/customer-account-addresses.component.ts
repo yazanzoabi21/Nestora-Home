@@ -5,13 +5,14 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { ToastService } from '../../../../core/services/toast.service';
 import { CustomerAddress } from '../../models';
 import { CustomerAddressesService } from '../../services';
+import { CustomerAddressDeleteComponent } from '../customer-address-delete/customer-address-delete.component';
 import { CustomerAddressFormComponent } from '../customer-address-form/customer-address-form.component';
 import { AdminFormModalComponent } from '../../../../shared/ui/admin-form-modal';
 
 @Component({
   selector: 'app-customer-account-addresses',
   standalone: true,
-  imports: [TranslatePipe, CustomerAddressFormComponent, AdminFormModalComponent],
+  imports: [TranslatePipe, CustomerAddressFormComponent, AdminFormModalComponent, CustomerAddressDeleteComponent],
   templateUrl: './customer-account-addresses.component.html',
   styleUrl: './customer-account-addresses.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,9 +23,7 @@ export class CustomerAccountAddressesComponent {
   // private readonly document = inject(DOCUMENT);
 
   readonly editing = signal<CustomerAddress | null | undefined>(undefined);
-  readonly removing = signal<CustomerAddress | null>(null);
   readonly saving = signal(false);
-  readonly deleting = signal(false);
   readonly settingDefaultId = signal<string | null>(null);
 
   constructor() {
@@ -48,15 +47,6 @@ export class CustomerAccountAddressesComponent {
     this.editing.set(undefined)
   }
 
-  askRemove(address: CustomerAddress): void {
-    this.removing.set(address);
-  }
-
-  cancelRemove(): void {
-    if (this.deleting()) return;
-    this.removing.set(null)
-  }
-
   async saveAddress(value: Parameters<CustomerAddressesService['create']>[0]): Promise<void> {
     if (this.saving()) return;
     this.saving.set(true);
@@ -74,21 +64,6 @@ export class CustomerAccountAddressesComponent {
       this.toast.failed('Save address', this.message(error));
     } finally {
       this.saving.set(false);
-    }
-  }
-
-  async confirmRemove(): Promise<void> {
-    const address = this.removing();
-    if (!address || this.deleting()) return;
-    this.deleting.set(true);
-    try {
-      await this.addressBook.remove(address.id);
-      this.toast.deleted('Address');
-      this.removing.set(null);
-    } catch (error) {
-      this.toast.failed('Remove address', this.message(error));
-    } finally {
-      this.deleting.set(false);
     }
   }
 

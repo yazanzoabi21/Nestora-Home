@@ -1,0 +1,6 @@
+@if (address()) {
+  <app-admin-form-modal cdkTrapFocus [cdkTrapFocusAutoCapture]="true" [isOpen]="true" variant="delete"
+    title="CUSTOMER.ACCOUNT.ADDRESSES.REMOVE_TITLE" message="CUSTOMER.ACCOUNT.ADDRESSES.REMOVE_TEXT"
+    submitLabel="CUSTOMER.ACCOUNT.ADDRESSES.REMOVE" cancelLabel="CUSTOMER.ACCOUNT.ADDRESSES.CANCEL"
+    [loading]="deleting()" (close)="cancel()" (submit)="confirm()" />
+}

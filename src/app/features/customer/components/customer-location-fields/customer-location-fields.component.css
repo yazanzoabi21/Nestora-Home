@@ -1,0 +1,5 @@
+:host { display: contents; }
+.location-field { display: grid; align-content: start; gap: .45rem; min-width: 0; color: #817a71; font-size: .75rem; line-height: 1rem; font-weight: 700; }
+.required, small { color: #b42318; }
+.location-status { grid-column: 1 / -1; margin: 0; font-size: .75rem; color: #615d58; }
+button { text-decoration: underline; font-weight: 700; }

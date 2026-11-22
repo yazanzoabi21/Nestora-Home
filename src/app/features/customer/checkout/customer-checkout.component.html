@@ -33,12 +33,16 @@
                 [initialValue]="state.shippingInformation()"
                 [prefill]="state.shippingPrefill()"
                 [authenticated]="state.isAuthenticated()"
-                [addresses]="state.addressBook.addresses()"
+                [addresses]="state.savedAddresses()"
                 [addressesLoading]="state.addressBook.loading()"
                 [addressesError]="state.addressBook.error()"
                 [selectedAddressId]="state.selectedAddressId()"
+                [initialSaveForFuture]="state.saveAddressForFuture()"
+                [initialAddressLabel]="state.newAddressLabel()"
+                (shippingEdit)="state.editShipping()"
                 (addressSelect)="selectSavedAddress($event)"
                 (newAddress)="state.useNewAddress()"
+                (addressRemoved)="state.onSavedAddressRemoved($event)"
                 (continue)="saveShipping($event)"
               />
             }

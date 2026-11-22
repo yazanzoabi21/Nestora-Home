@@ -83,6 +83,23 @@ describe('CustomerCartService variant persistence', () => {
     expect(line.product.price).toBe(VARIANT.price);
   });
 
+  it('loads a legacy base row and a variant row as distinct checkout selections', async () => {
+    const savedRow = { products: PRODUCT, is_free_gift: false, applied_discount_id: null, discounts: null };
+    query.mockResolvedValue({ data: [
+      { ...savedRow, id: 'legacy-line', variant_id: null, quantity: 1 },
+      { ...savedRow, id: 'variant-line', variant_id: VARIANT.id, quantity: 2 },
+    ], error: null });
+
+    const lines = await service.loadLines('cart-a');
+    expect(eq).toHaveBeenCalledWith('cart_id', 'cart-a');
+    expect(lines.map(({ id, quantity, product }) => ({
+      id, quantity, productId: product.id, variantId: product.variantId, price: product.price,
+    }))).toEqual([
+      { id: 'legacy-line', quantity: 1, productId: PRODUCT.id, variantId: null, price: 10 },
+      { id: 'variant-line', quantity: 2, productId: PRODUCT.id, variantId: VARIANT.id, price: 20 },
+    ]);
+  });
+
   it('marks missing variants unavailable instead of substituting the base product', async () => {
     const [line] = await service.productsForGuest([
       { productId: PRODUCT.id, variantId: 'deleted-variant', quantity: 1 },

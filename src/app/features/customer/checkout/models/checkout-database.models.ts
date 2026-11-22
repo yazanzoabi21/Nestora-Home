@@ -48,7 +48,6 @@ export interface OrderShippingAddressInsert {
   address_line_2: string | null;
   city: string;
   state_province: string;
-  postal_code: string | null;
   country: string;
   delivery_instructions: string | null;
 }

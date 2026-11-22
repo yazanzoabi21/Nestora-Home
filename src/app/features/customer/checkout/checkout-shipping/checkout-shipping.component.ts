@@ -1,11 +1,15 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, linkedSignal, output, signal, viewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { CheckoutSelectOption, CheckoutShippingInformation, CheckoutShippingPrefill, CheckoutShippingSubmission } from '../models';
+import { CheckoutShippingInformation, CheckoutShippingPrefill, CheckoutShippingSubmission } from '../models';
 import { CustomerAddress } from '../../models';
+import { CustomerAddressDeleteComponent } from '../../components/customer-address-delete/customer-address-delete.component';
+import { CustomerLocationFieldsComponent } from '../../components/customer-location-fields/customer-location-fields.component';
 import { CheckoutFormFieldComponent } from '../shared/checkout-form-field';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+const requiredText = Validators.pattern(/\S/);
 
 type ShippingForm = FormGroup<{
   firstName: FormControl<string>;
@@ -14,10 +18,6 @@ type ShippingForm = FormGroup<{
   phone: FormControl<string>;
   streetAddress: FormControl<string>;
   addressLine2: FormControl<string>;
-  city: FormControl<string>;
-  stateProvince: FormControl<string>;
-  postalCode: FormControl<string>;
-  country: FormControl<string>;
   deliveryInstructions: FormControl<string>;
 }>;
 
@@ -26,7 +26,7 @@ type ShippingFormControlName = keyof ShippingForm['controls'];
 @Component({
   selector: 'app-checkout-shipping',
   standalone: true,
-  imports: [ReactiveFormsModule, CheckoutFormFieldComponent, TranslatePipe],
+  imports: [ReactiveFormsModule, CheckoutFormFieldComponent, CustomerLocationFieldsComponent, CustomerAddressDeleteComponent, TranslatePipe],
   templateUrl: './checkout-shipping.component.html',
   styleUrl: './checkout-shipping.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,108 +39,68 @@ export class CheckoutShippingComponent {
   readonly addressesLoading = input(false);
   readonly addressesError = input<string | null>(null);
   readonly selectedAddressId = input<string | null>(null);
+  readonly initialSaveForFuture = input(false);
+  readonly initialAddressLabel = input('Home');
+  readonly shippingEdit = output<void>();
   readonly addressSelect = output<string>();
+  readonly addressRemoved = output<string>();
   readonly newAddress = output<void>();
   readonly continue = output<CheckoutShippingSubmission>();
 
-  private hasSubmitted = false;
-  private appliedValueKey: string | null = null;
+  readonly hasSubmitted = signal(false);
+  private readonly locationFields = viewChild(CustomerLocationFieldsComponent);
+  readonly initialLocation = linkedSignal(() => {
+    const value = this.initialValue();
+    return value ? { ...value, province: value.stateProvince } : null;
+  });
+  private appliedValue: CheckoutShippingInformation | null = null;
 
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly countries = signal<CheckoutSelectOption[]>([]);
   readonly saveForFuture = new FormControl(false, { nonNullable: true });
   readonly addressLabel = new FormControl('Home', {
     nonNullable: true,
-    validators: [Validators.required, Validators.maxLength(40)],
+    validators: [Validators.required, requiredText, Validators.maxLength(40)],
   });
 
   readonly form: ShippingForm = new FormGroup({
-    firstName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    lastName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    firstName: new FormControl('', { nonNullable: true, validators: [Validators.required, requiredText] }),
+    lastName: new FormControl('', { nonNullable: true, validators: [Validators.required, requiredText] }),
     email: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
     phone: new FormControl('', { nonNullable: true }),
-    streetAddress: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    streetAddress: new FormControl('', { nonNullable: true, validators: [Validators.required, requiredText] }),
     addressLine2: new FormControl('', { nonNullable: true }),
-    city: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    stateProvince: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    postalCode: new FormControl('', { nonNullable: true }),
-    // country: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    country: new FormControl('Lebanon', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
     deliveryInstructions: new FormControl('', { nonNullable: true }),
   });
 
   constructor() {
-    this.updateCountries();
-
-    this.translate.onLangChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.updateCountries());
+    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.shippingEdit.emit();
+    });
+    this.saveForFuture.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.updatePhoneValidation();
+      this.shippingEdit.emit();
+    });
+    this.addressLabel.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.shippingEdit.emit();
+    });
 
     effect(() => {
       const initialValue = this.initialValue();
       const prefill = this.prefill();
-
-      const initialEmail =
-        initialValue?.email.trim().toLowerCase() ?? '';
-
-      const prefillEmail =
-        prefill?.email?.trim().toLowerCase() ?? '';
-
-      const initialValueBelongsToCurrentCustomer =
-        !!initialValue &&
-        !!prefill &&
-        !!initialEmail &&
-        initialEmail === prefillEmail;
-
-      if (
-        initialValue &&
-        (!prefill || initialValueBelongsToCurrentCustomer)
-      ) {
-        const valueKey = `initial:${JSON.stringify(initialValue)}`;
-
-        if (this.appliedValueKey === valueKey) {
-          return;
-        }
-
-        this.resetForm(this.toFormValue(initialValue));
-        this.appliedValueKey = valueKey;
-        return;
+      if (initialValue !== this.appliedValue) {
+        this.resetForm(initialValue ? this.toFormValue(initialValue) : this.emptyFormValue());
+        this.appliedValue = initialValue;
+        this.saveForFuture.setValue(this.initialSaveForFuture(), { emitEvent: false });
+        this.addressLabel.setValue(this.initialAddressLabel(), { emitEvent: false });
+        this.updatePhoneValidation();
       }
 
-      if (prefill) {
-        const valueKey = `prefill:${JSON.stringify(prefill)}`;
-
-        if (this.appliedValueKey === valueKey) {
-          return;
-        }
-
-        this.resetForm(this.emptyFormValue());
-        this.patchSafePrefill(prefill);
-
-        this.form.markAsPristine();
-        this.form.markAsUntouched();
-        this.hasSubmitted = false;
-
-        this.appliedValueKey = valueKey;
-        return;
-      }
-
-      if (
-        !initialValue &&
-        !prefill &&
-        this.appliedValueKey !== null
-      ) {
-        this.resetForm(this.emptyFormValue());
-        this.appliedValueKey = null;
-      }
+      if (!initialValue && prefill) this.patchSafePrefill(prefill);
     });
   }
 
@@ -150,7 +110,7 @@ export class CheckoutShippingComponent {
     this.form.reset(value, { emitEvent: false });
     this.form.markAsPristine();
     this.form.markAsUntouched();
-    this.hasSubmitted = false;
+    this.hasSubmitted.set(false);
   }
 
   private emptyFormValue(): Record<ShippingFormControlName, string> {
@@ -161,10 +121,6 @@ export class CheckoutShippingComponent {
       phone: '',
       streetAddress: '',
       addressLine2: '',
-      city: '',
-      stateProvince: '',
-      postalCode: '',
-      country: 'Lebanon',
       deliveryInstructions: '',
     };
   }
@@ -174,7 +130,7 @@ export class CheckoutShippingComponent {
 
     if (
       !control.invalid ||
-      (!control.touched && !this.hasSubmitted)
+      (!control.touched && !this.hasSubmitted())
     ) {
       return '';
     }
@@ -190,29 +146,25 @@ export class CheckoutShippingComponent {
     );
   }
 
-  private updateCountries(): void {
-    this.countries.set([
-      {
-        label: this.translate.instant(
-          'CUSTOMER.CHECKOUT.SHIPPING.COUNTRIES.LEBANON',
-        ),
-        value: 'Lebanon',
-      },
-    ]);
+  private updatePhoneValidation(): void {
+    const phone = this.form.controls.phone;
+    phone.setValidators(this.saveForFuture.value ? [Validators.required, requiredText] : null);
+    phone.updateValueAndValidity({ emitEvent: false });
   }
 
   submit(): void {
-    this.hasSubmitted = true;
+    this.hasSubmitted.set(true);
     this.form.markAllAsTouched();
+    const { firstName, lastName, email, streetAddress } = this.form.getRawValue();
+    this.form.patchValue({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim(),
+      streetAddress: streetAddress.trim(),
+    }, { emitEvent: false });
 
-    if (this.saveForFuture.value && !this.form.controls.phone.value.trim()) {
-      this.form.controls.phone.addValidators(Validators.required);
-    } else {
-      this.form.controls.phone.removeValidators(Validators.required);
-    }
-    this.form.controls.phone.updateValueAndValidity({ emitEvent: false });
-
-    if (this.form.invalid || (this.saveForFuture.value && this.addressLabel.invalid)) {
+    const location = this.locationFields()?.selection();
+    if (!location || this.form.invalid || (this.saveForFuture.value && this.addressLabel.invalid)) {
       this.addressLabel.markAsTouched();
       return;
     }
@@ -222,9 +174,14 @@ export class CheckoutShippingComponent {
     this.continue.emit({
       shippingInformation: {
         ...value,
+        country: location.country,
+        countryId: location.countryId,
+        stateProvince: location.province,
+        provinceId: location.provinceId,
+        city: location.city,
+        cityId: location.cityId,
         phone: value.phone.trim() || null,
         addressLine2: value.addressLine2.trim() || null,
-        postalCode: value.postalCode.trim() || null,
         deliveryInstructions: value.deliveryInstructions.trim() || null,
       },
       saveForFuture: this.authenticated() && !this.selectedAddressId() && this.saveForFuture.value,
@@ -233,12 +190,18 @@ export class CheckoutShippingComponent {
   }
 
   chooseAddress(id: string): void {
-    this.saveForFuture.setValue(false);
+    this.saveForFuture.setValue(false, { emitEvent: false });
+    this.updatePhoneValidation();
     this.addressSelect.emit(id);
   }
 
   chooseNewAddress(): void {
-    this.saveForFuture.setValue(false);
+    this.saveForFuture.setValue(false, { emitEvent: false });
+    this.updatePhoneValidation();
+    this.resetForm(this.emptyFormValue());
+    this.initialLocation.set(null);
+    const prefill = this.prefill();
+    if (prefill) this.patchSafePrefill(prefill);
     this.newAddress.emit();
   }
 
@@ -248,7 +211,7 @@ export class CheckoutShippingComponent {
       if (!nextValue) continue;
 
       const control = this.form.controls[name];
-      if (!control || (!control.pristine && control.value.trim())) continue;
+      if (!control || control.dirty || control.value.trim()) continue;
 
       control.patchValue(nextValue, { emitEvent: false });
       control.markAsPristine();
@@ -266,10 +229,6 @@ export class CheckoutShippingComponent {
       phone: value.phone ?? '',
       streetAddress: value.streetAddress,
       addressLine2: value.addressLine2 ?? '',
-      city: value.city,
-      stateProvince: value.stateProvince,
-      postalCode: value.postalCode ?? '',
-      country: value.country?.trim() || 'Lebanon',
       deliveryInstructions:
         value.deliveryInstructions ?? '',
     };

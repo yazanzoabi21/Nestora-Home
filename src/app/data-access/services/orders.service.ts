@@ -87,7 +87,6 @@ interface SupabaseOrderShippingAddress {
 
   city: string | null;
   state_province: string | null;
-  postal_code: string | null;
   country: string | null;
 
   delivery_instructions: string | null;
@@ -339,7 +338,6 @@ export class OrdersService {
         address_line_2,
         city,
         state_province,
-        postal_code,
         country,
         delivery_instructions
       `)
@@ -788,7 +786,6 @@ export class OrdersService {
       shippingAddress.street_address,
       shippingAddress.address_line_2,
       shippingAddress.state_province,
-      shippingAddress.postal_code,
     ]
       .map((value) => value?.trim())
       .filter(

@@ -4,7 +4,7 @@
   <section class="mx-auto flex h-full min-h-0 w-full items-center justify-center">
     <div
       class="flex max-h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#e5ded2] bg-white shadow-xl"
-      role="dialog" aria-modal="true" [class.max-w-md]="variant === 'delete' || size === 'sm'"
+      role="dialog" aria-modal="true" [attr.aria-label]="title | translate" [class.max-w-md]="variant === 'delete' || size === 'sm'"
       [class.max-w-2xl]="variant !== 'delete' && size === 'md'" [class.max-w-3xl]="variant !== 'delete' && size === 'lg'"
       [class.max-w-5xl]="variant !== 'delete' && size === 'xl'">
       <header

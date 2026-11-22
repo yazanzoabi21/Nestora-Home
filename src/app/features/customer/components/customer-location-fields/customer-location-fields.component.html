@@ -1,0 +1,39 @@
+@if (failed()) {
+  <p class="location-status" role="alert">
+    {{ 'CUSTOMER.LOCATION.error' | translate }}
+    <button type="button" (click)="retry()">{{ 'CUSTOMER.LOCATION.retry' | translate }}</button>
+  </p>
+} @else if (loading()) {
+  <p class="location-status" role="status">{{ 'CUSTOMER.LOCATION.loading' | translate }}</p>
+} @else if (!countries().length) {
+  <p class="location-status" role="status">{{ 'CUSTOMER.LOCATION.unavailable' | translate }}</p>
+} @else if (unmatchedLegacy()) {
+  <p class="location-status">
+    {{ 'CUSTOMER.LOCATION.confirm_legacy' | translate }}
+    <span>{{ legacySummary() }}</span>
+  </p>
+}
+
+@for (field of fields(); track field.key) {
+  <div class="location-field">
+    <label [id]="idPrefix() + '-' + field.key + '-label'" [for]="idPrefix() + '-' + field.key">
+      {{ ('CUSTOMER.LOCATION.' + field.key) | translate }}@if (field.key !== 'country') { <span class="required" aria-hidden="true">*</span> }
+    </label>
+    <app-searchable-select
+      [controlId]="idPrefix() + '-' + field.key"
+      [labelId]="idPrefix() + '-' + field.key + '-label'"
+      [options]="field.options" [value]="field.selected?.id ?? null"
+      [placeholder]="('CUSTOMER.LOCATION.choose_' + field.key) | translate"
+      [searchLabel]="('CUSTOMER.LOCATION.search_' + field.key) | translate"
+      [emptyLabel]="'CUSTOMER.LOCATION.no_results' | translate"
+      [clearLabel]="'CUSTOMER.LOCATION.clear_selection' | translate"
+      [loadingLabel]="'CUSTOMER.LOCATION.loading_options' | translate"
+      [required]="field.key !== 'country'" [disabled]="field.disabled" [loading]="field.loading"
+      [invalid]="showError(field.key)"
+      [describedBy]="showError(field.key) ? idPrefix() + '-' + field.key + '-error' : null"
+      (valueChange)="select(field.key, $event)" />
+    @if (showError(field.key)) {
+      <small [id]="idPrefix() + '-' + field.key + '-error'" role="alert">{{ 'CUSTOMER.LOCATION.required' | translate }}</small>
+    }
+  </div>
+}

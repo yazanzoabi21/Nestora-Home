@@ -2040,6 +2040,26 @@
       "VALIDATION_ERROR": "Enter valid non-negative loyalty settings and a point value above zero."
     },
     "CUSTOMER": {
+      "LOCATION": {
+        "country": "Country",
+        "search_country": "Search countries",
+        "search_province": "Search provinces",
+        "search_city": "Search cities or towns",
+        "no_results": "No results found",
+        "clear_selection": "Clear selection",
+        "loading_options": "Loading…",
+        "province": "State / Province",
+        "city": "City",
+        "choose_country": "Select a country",
+        "choose_province": "Select a province",
+        "choose_city": "Select a city or town",
+        "required": "Select a location.",
+        "error": "Could not load delivery locations.",
+        "retry": "Try again",
+        "loading": "Loading delivery locations…",
+        "unavailable": "There are no delivery countries available.",
+        "confirm_legacy": "Confirm the location for this saved address using the lists above."
+      },
       "LOYALTY": {
         "TITLE": "Nestora Loyalty Points",
         "LOADING": "Loading points",
@@ -2197,7 +2217,6 @@
             "ADDRESS_LINE_2": "Apartment, suite, etc.",
             "CITY": "City",
             "STATE_PROVINCE": "State / Province",
-            "POSTAL_CODE": "ZIP / Postal Code",
             "COUNTRY": "Country",
             "DELIVERY_INSTRUCTIONS": "Delivery Instructions"
           },
@@ -2206,7 +2225,9 @@
           },
           "ERRORS": {
             "REQUIRED": "This field is required.",
-            "INVALID_EMAIL": "Enter a valid email address."
+            "INVALID_EMAIL": "Enter a valid email address.",
+            "UNSUPPORTED_COUNTRY": "Checkout is available in Lebanon only.",
+            "INVALID_ADDRESS_LABEL": "Enter an address label of up to 40 characters."
           },
           "COUNTRIES": {
             "LEBANON": "Lebanon"
@@ -2340,9 +2361,12 @@
           "ADD_TITLE": "Add New Address",
           "EDIT_TITLE": "Edit Address",
           "EDIT": "Edit",
-          "REMOVE": "Remove",
-          "REMOVE_TITLE": "Remove address?",
-          "REMOVE_TEXT": "Remove {{label}} from your saved addresses? Historical orders will not be affected.",
+          "REMOVE": "Delete",
+          "REMOVE_TITLE": "Delete Address",
+          "REMOVE_TEXT": "Are you sure you want to delete this saved address? This action cannot be undone.",
+          "DELETE_LABEL": "Delete address",
+          "DELETE_SUCCESS": "Address deleted successfully.",
+          "DELETE_ERROR": "Could not delete the address. Please try again.",
           "SET_DEFAULT": "Set as Default",
           "DEFAULT": "Default",
           "MAKE_DEFAULT": "Make this my default address",
@@ -2354,7 +2378,6 @@
           "CITY": "City",
           "AREA": "Area or district",
           "COUNTRY": "Country",
-          "POSTAL_CODE": "Postal code",
           "DELIVERY_NOTES": "Delivery notes",
           "SAVE_ADDRESS": "Save Address",
           "SAVE_CHANGES": "Save Changes",
@@ -4967,6 +4990,26 @@
       "VALIDATION_ERROR": "أدخل إعدادات ولاء صحيحة غير سالبة وقيمة نقطة أكبر من صفر."
     },
     "CUSTOMER": {
+      "LOCATION": {
+        "country": "الدولة",
+        "search_country": "ابحث عن دولة",
+        "search_province": "ابحث عن محافظة",
+        "search_city": "ابحث عن مدينة أو بلدة",
+        "no_results": "لم يتم العثور على نتائج",
+        "clear_selection": "مسح الاختيار",
+        "loading_options": "جارٍ التحميل…",
+        "province": "المحافظة",
+        "city": "المدينة",
+        "choose_country": "اختر الدولة",
+        "choose_province": "اختر المحافظة",
+        "choose_city": "اختر المدينة أو البلدة",
+        "required": "اختر الموقع.",
+        "error": "تعذّر تحميل مناطق التوصيل.",
+        "retry": "إعادة المحاولة",
+        "loading": "جارٍ تحميل مناطق التوصيل…",
+        "unavailable": "لا توجد دول متاحة للتوصيل.",
+        "confirm_legacy": "أكّد موقع هذا العنوان المحفوظ باستخدام القوائم أعلاه."
+      },
       "LOYALTY": {
         "TITLE": "نقاط ولاء نيستورا",
         "LOADING": "جارٍ تحميل النقاط",
@@ -5155,7 +5198,6 @@
             "ADDRESS_LINE_2": "الشقة أو الطابق أو تفاصيل إضافية",
             "CITY": "المدينة",
             "STATE_PROVINCE": "المحافظة / المنطقة",
-            "POSTAL_CODE": "الرمز البريدي",
             "COUNTRY": "البلد",
             "DELIVERY_INSTRUCTIONS": "تعليمات التوصيل"
           },
@@ -5164,7 +5206,9 @@
           },
           "ERRORS": {
             "REQUIRED": "هذا الحقل مطلوب.",
-            "INVALID_EMAIL": "أدخل بريداً إلكترونياً صالحاً."
+            "INVALID_EMAIL": "أدخل بريداً إلكترونياً صالحاً.",
+            "UNSUPPORTED_COUNTRY": "إتمام الطلب متاح في لبنان فقط.",
+            "INVALID_ADDRESS_LABEL": "أدخل تسمية للعنوان لا تتجاوز 40 حرفاً."
           },
           "COUNTRIES": {
             "LEBANON": "لبنان"
@@ -5268,8 +5312,11 @@
           "EDIT_TITLE": "تعديل العنوان",
           "EDIT": "تعديل",
           "REMOVE": "حذف",
-          "REMOVE_TITLE": "حذف العنوان؟",
-          "REMOVE_TEXT": "هل تريد حذف {{label}} من عناوينك المحفوظة؟ لن تتأثر الطلبات السابقة.",
+          "REMOVE_TITLE": "حذف العنوان",
+          "REMOVE_TEXT": "هل أنت متأكد من أنك تريد حذف هذا العنوان المحفوظ؟ لا يمكن التراجع عن هذا الإجراء.",
+          "DELETE_LABEL": "حذف العنوان",
+          "DELETE_SUCCESS": "تم حذف العنوان بنجاح.",
+          "DELETE_ERROR": "تعذّر حذف العنوان. يرجى المحاولة مرة أخرى.",
           "SET_DEFAULT": "تعيين كافتراضي",
           "DEFAULT": "افتراضي",
           "MAKE_DEFAULT": "تعيين هذا العنوان كعنواني الافتراضي",
@@ -5281,7 +5328,6 @@
           "CITY": "المدينة",
           "AREA": "المنطقة أو الحي",
           "COUNTRY": "البلد",
-          "POSTAL_CODE": "الرمز البريدي",
           "DELIVERY_NOTES": "ملاحظات التوصيل",
           "SAVE_ADDRESS": "حفظ العنوان",
           "SAVE_CHANGES": "حفظ التغييرات",

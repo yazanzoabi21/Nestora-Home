@@ -41,7 +41,7 @@
               : ''
           ">
       <input class="mt-[0.8rem] h-4 w-4 cursor-pointer
-                   accent-[#738665]" type="radio" name="payment" [checked]="selectedId() === method.id"
+                   accent-[#738665]" type="radio" name="payment" [checked]="selectedId() === method.id" [disabled]="submitting()"
         (change)="select.emit(method.id)" />
 
       <span class="inline-flex h-[2.6rem] w-[2.6rem]
@@ -136,7 +136,7 @@
              transition-[border-color,background-color]
              duration-150
              hover:border-[#738665]
-             hover:bg-[#f3f6f0]" type="button" (click)="back.emit()">
+             hover:bg-[#f3f6f0]" type="button" [disabled]="submitting()" (click)="back.emit()">
       {{ 'CUSTOMER.CHECKOUT.PAYMENT.BACK' | translate }}
     </button>
 

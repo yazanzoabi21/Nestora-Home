@@ -24,7 +24,7 @@ interface PlaceCustomerOrderRpcResultRow {
   loyalty_points_earned?: unknown;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class CustomerCheckoutOrderService {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
   private readonly auth = inject(CustomerAuthService);
@@ -39,91 +39,93 @@ export class CustomerCheckoutOrderService {
     items: readonly CheckoutOrderItem[],
     customerNotes: string | null = null,
   ): Promise<PlacedOrderResult> {
-    const shippingInformation = this.state.shippingInformation();
-    const shippingMethod = this.state.selectedShippingMethod();
-    const paymentMethod = this.state.selectedPaymentMethod();
-    const appliedDiscount = this.shopping.appliedDiscount();
-    const customerUserId = await this.auth.getCurrentUserId();
-    const resolvedCartId = customerUserId ? cartId : null;
-
-    if (customerUserId && !resolvedCartId?.trim()) {
-      throw new Error('A customer cart is required for signed-in checkout.');
+    if (this.state.isPlacingOrder() || this.state.placedOrder()) {
+      throw new Error('Your order is already being submitted or has been placed.');
     }
-    if (!items.length) throw new Error('Your cart is empty.');
-    if (
-      appliedDiscount?.discount_type === 'free_gift' &&
-      !items.some((item) => item.isFreeGift && item.appliedDiscountCode === appliedDiscount.code)
-    ) {
-      throw new Error('Please choose your free gift before placing the order.');
-    }
-    if (items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1)) {
-      throw new Error('Every order quantity must be a positive integer.');
-    }
-    if (
-      items.some(
-        (item) =>
-          !Number.isFinite(item.unitPrice) ||
-          item.unitPrice < 0 ||
-          !Number.isFinite(item.lineTotal) ||
-          item.lineTotal < 0 ||
-          Math.abs(item.lineTotal - item.unitPrice * item.quantity) > 0.01,
-      )
-    ) {
-      throw new Error('Every checkout item must contain a valid price.');
-    }
-    if (!shippingInformation) throw new Error('Shipping information is required.');
-    if (!shippingMethod) throw new Error('A shipping method is required.');
-    if (!paymentMethod) throw new Error('A payment method is required.');
-    if (this.state.isPlacingOrder()) throw new Error('Your order is already being submitted.');
-
-    const rpcArgs: PlaceCustomerOrderRpcArgs = {
-      p_checkout_token: this.checkoutToken,
-      p_cart_id: resolvedCartId,
-      p_shipping_method_id: shippingMethod.id,
-      p_payment_method_id: paymentMethod.id,
-      p_discount_id: appliedDiscount?.id ?? null,
-      p_discount_code: appliedDiscount?.code ?? null,
-      p_expected_subtotal: items.reduce((sum, item) => sum + item.lineTotal, 0),
-      p_shipping_address: {
-        first_name: shippingInformation.firstName.trim(),
-        last_name: shippingInformation.lastName.trim(),
-        email: shippingInformation.email.trim(),
-        phone: shippingInformation.phone?.trim() || null,
-        street_address:
-          shippingInformation.streetAddress.trim(),
-        address_line_2:
-          shippingInformation.addressLine2?.trim() || null,
-        city: shippingInformation.city.trim(),
-        state_province:
-          shippingInformation.stateProvince.trim(),
-        postal_code:
-          shippingInformation.postalCode?.trim() || null,
-        country: shippingInformation.country.trim(),
-        delivery_instructions:
-          shippingInformation.deliveryInstructions?.trim() ||
-          null,
-      },
-      p_items: items.filter((item) => !item.isFreeGift).map((item) => ({
-        product_id: item.productId,
-        variant_id: item.variantId,
-        quantity: item.quantity,
-      })),
-      p_customer_notes: customerNotes?.trim() || null,
-      p_redeem_product_ids: items
-        .filter((item) => !item.isFreeGift && item.redeemWithPoints && item.variantId === null)
-        .map((item) => item.productId),
-      p_redeem_variant_ids: items
-        .filter((item) => !item.isFreeGift && item.redeemWithPoints && item.variantId !== null)
-        .map((item) => item.variantId!),
-      p_free_gift_product_ids: items
-        .filter((item) => item.isFreeGift)
-        .map((item) => item.productId),
-    };
-
     this.state.setPlacingOrder(true);
     this.state.setPlaceOrderError(null);
 
     try {
+      const shippingInformation = this.state.shippingInformation();
+      const shippingMethod = this.state.selectedShippingMethod();
+      const paymentMethod = this.state.selectedPaymentMethod();
+      const appliedDiscount = this.shopping.appliedDiscount();
+      const customerUserId = await this.auth.getCurrentUserId();
+      const resolvedCartId = customerUserId ? cartId : null;
+
+      if (customerUserId && !resolvedCartId?.trim()) {
+        throw new Error('A customer cart is required for signed-in checkout.');
+      }
+      if (!items.length) throw new Error('Your cart is empty.');
+      if (
+        appliedDiscount?.discount_type === 'free_gift' &&
+        !items.some((item) => item.isFreeGift && item.appliedDiscountCode === appliedDiscount.code)
+      ) {
+        throw new Error('Please choose your free gift before placing the order.');
+      }
+      if (items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1)) {
+        throw new Error('Every order quantity must be a positive integer.');
+      }
+      if (
+        items.some(
+          (item) =>
+            !Number.isFinite(item.unitPrice) ||
+            item.unitPrice < 0 ||
+            !Number.isFinite(item.lineTotal) ||
+            item.lineTotal < 0 ||
+            Math.abs(item.lineTotal - item.unitPrice * item.quantity) > 0.01,
+        )
+      ) {
+        throw new Error('Every checkout item must contain a valid price.');
+      }
+      if (!shippingInformation || !this.state.hasShippingInformation()) {
+        throw new Error('Confirm your shipping information before placing the order.');
+      }
+      if (!shippingMethod) throw new Error('A shipping method is required.');
+      if (!paymentMethod) throw new Error('A payment method is required.');
+
+      const rpcArgs: PlaceCustomerOrderRpcArgs = {
+        p_checkout_token: this.checkoutToken,
+        p_cart_id: resolvedCartId,
+        p_shipping_method_id: shippingMethod.id,
+        p_payment_method_id: paymentMethod.id,
+        p_discount_id: appliedDiscount?.id ?? null,
+        p_discount_code: appliedDiscount?.code ?? null,
+        p_expected_subtotal: items.reduce((sum, item) => sum + item.lineTotal, 0),
+        p_shipping_address: {
+          first_name: shippingInformation.firstName.trim(),
+          last_name: shippingInformation.lastName.trim(),
+          email: shippingInformation.email.trim(),
+          phone: shippingInformation.phone?.trim() || null,
+          street_address:
+            shippingInformation.streetAddress.trim(),
+          address_line_2:
+            shippingInformation.addressLine2?.trim() || null,
+          city: shippingInformation.city.trim(),
+          state_province:
+            shippingInformation.stateProvince.trim(),
+          country: shippingInformation.country.trim(),
+          delivery_instructions:
+            shippingInformation.deliveryInstructions?.trim() ||
+            null,
+        },
+        p_items: items.filter((item) => !item.isFreeGift).map((item) => ({
+          product_id: item.productId,
+          variant_id: item.variantId,
+          quantity: item.quantity,
+        })),
+        p_customer_notes: customerNotes?.trim() || null,
+        p_redeem_product_ids: items
+          .filter((item) => !item.isFreeGift && item.redeemWithPoints && item.variantId === null)
+          .map((item) => item.productId),
+        p_redeem_variant_ids: items
+          .filter((item) => !item.isFreeGift && item.redeemWithPoints && item.variantId !== null)
+          .map((item) => item.variantId!),
+        p_free_gift_product_ids: items
+          .filter((item) => item.isFreeGift)
+          .map((item) => item.productId),
+      };
+
       if (customerUserId && this.state.saveAddressForFuture()) {
         const savedAddress = await this.addresses.create({
           label: this.state.newAddressLabel(),
@@ -131,10 +133,12 @@ export class CustomerCheckoutOrderService {
           phone: shippingInformation.phone?.trim() || '',
           streetAddress: shippingInformation.streetAddress,
           apartmentOrBuilding: shippingInformation.addressLine2,
+          countryId: shippingInformation.countryId,
+          provinceId: shippingInformation.provinceId,
+          cityId: shippingInformation.cityId,
           city: shippingInformation.city,
           areaOrDistrict: shippingInformation.stateProvince,
           country: shippingInformation.country,
-          postalCode: shippingInformation.postalCode,
           deliveryNotes: shippingInformation.deliveryInstructions,
           isDefault: this.addresses.addresses().length === 0,
         });

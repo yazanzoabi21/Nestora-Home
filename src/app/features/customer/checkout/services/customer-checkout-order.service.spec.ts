@@ -15,6 +15,7 @@ describe('CustomerCheckoutOrderService automatic confirmation', () => {
       }, error: null });
       const confirmation = vi.fn();
       TestBed.configureTestingModule({ providers: [
+        CustomerCheckoutOrderService,
         { provide: CUSTOMER_SUPABASE, useValue: { rpc, functions: { invoke } } },
         { provide: CustomerAuthService, useValue: { getCurrentUserId: async () => userId } },
         { provide: CustomerShoppingStateService, useValue: { appliedDiscount: () => null, clearCompletedCart: vi.fn() } },
@@ -24,6 +25,7 @@ describe('CustomerCheckoutOrderService automatic confirmation', () => {
           shippingInformation: () => ({ firstName: 'Owned', lastName: 'Test', email: 'info@nestorahomelb.com',
             streetAddress: 'Owned test', city: 'Test', stateProvince: 'Test', country: 'Lebanon' }),
           selectedShippingMethod: () => ({ id: 'shipping' }), selectedPaymentMethod: () => ({ id: 'payment' }),
+          hasShippingInformation: () => true, placedOrder: () => null,
           saveAddressForFuture: () => false, isPlacingOrder: () => false, setPlacingOrder: vi.fn(), setPlaceOrderError: vi.fn(),
           setPlacedOrder: vi.fn(), goToConfirmation: confirmation,
         } },

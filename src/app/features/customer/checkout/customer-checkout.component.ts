@@ -23,7 +23,7 @@ import { CustomerCheckoutOrderService, CustomerCheckoutStateService } from './se
     CheckoutShippingComponent,
     CheckoutStepperComponent,
   ],
-  providers: [CurrencyPipe],
+  providers: [CurrencyPipe, CustomerCheckoutStateService, CustomerCheckoutOrderService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './customer-checkout.component.html',
   styleUrl: './customer-checkout.component.css',
@@ -84,20 +84,4 @@ export class CustomerCheckoutComponent implements OnInit {
       await this.state.initialize();
     }
   }
-
-  private emptyShippingValue() {
-  return {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    streetAddress: '',
-    addressLine2: '',
-    city: '',
-    stateProvince: '',
-    postalCode: '',
-    country: '',
-    deliveryInstructions: '',
-  };
-}
 }

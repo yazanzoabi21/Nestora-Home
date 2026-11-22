@@ -1,4 +1,4 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DOCUMENT } from '@angular/common';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -20,18 +20,34 @@ import {
 } from '../models';
 import { CustomerCheckoutDataService } from './customer-checkout-data.service';
 import { splitFullName } from '../../../../shared/utils/name.util';
+import { CustomerGeographyService } from '../../services/customer-geography.service';
 
-@Injectable({ providedIn: 'root' })
+const CHECKOUT_DRAFT_KEY = 'nestora_checkout_shipping_v1';
+
+interface CheckoutDraft extends CheckoutShippingSubmission {
+  ownerId: string | null;
+  selectedAddressId: string | null;
+  shippingMethodId: string | null;
+  paymentMethodId: string | null;
+}
+
+@Injectable()
 export class CustomerCheckoutStateService {
   readonly shopping = inject(CustomerShoppingStateService);
 
+  private readonly document = inject(DOCUMENT);
   private readonly auth = inject(CustomerAuthService);
   private readonly router = inject(Router);
   private readonly data = inject(CustomerCheckoutDataService);
+  private readonly geography = inject(CustomerGeographyService);
   private readonly loyalty = inject(LoyaltyPointsCalculatorService);
   readonly addressBook = inject(CustomerAddressesService);
 
   private readonly _currentStep = signal<CheckoutStep>('shipping');
+  private shippingEdited = false;
+  private paymentMethodsRequest = 0;
+  private preferredPaymentMethodId: string | null = null;
+  private readonly _shippingConfirmed = signal(false);
   private readonly _shippingInformation = signal<CheckoutShippingInformation | null>(null);
   private readonly _shippingPrefill = signal<CheckoutShippingPrefill | null>(null);
   private readonly _selectedAddressId = signal<string | null>(null);
@@ -53,6 +69,7 @@ export class CustomerCheckoutStateService {
   readonly currentStep = this._currentStep.asReadonly();
   readonly shippingInformation = this._shippingInformation.asReadonly();
   readonly shippingPrefill = this._shippingPrefill.asReadonly();
+  readonly savedAddresses = this.addressBook.addresses;
   readonly selectedAddressId = this._selectedAddressId.asReadonly();
   readonly saveAddressForFuture = this._saveAddressForFuture.asReadonly();
   readonly newAddressLabel = this._newAddressLabel.asReadonly();
@@ -78,8 +95,8 @@ export class CustomerCheckoutStateService {
   readonly confirmation = this._confirmation.asReadonly();
   readonly isAuthenticated = this.auth.isAuthenticated;
 
-  readonly hasShippingInformation = computed(() => this._shippingInformation() !== null);
-  readonly hasShippingMethod = computed(() => this._selectedShippingMethod() !== null);
+  readonly hasShippingInformation = computed(() => this._shippingConfirmed() && this._shippingInformation() !== null);
+  readonly hasShippingMethod = computed(() => this.selectedShippingMethod() !== null);
   readonly hasPaymentMethod = computed(() => this._selectedPaymentMethod() !== null);
   readonly canContinueToDelivery = computed(() => this.hasShippingInformation());
   readonly canContinueToPayment = computed(
@@ -90,6 +107,7 @@ export class CustomerCheckoutStateService {
       this.hasShippingInformation() &&
       this.hasShippingMethod() &&
       this.hasPaymentMethod() &&
+      !this._loadingPaymentMethods() &&
       this.shopping.cart().length > 0 &&
       !this._isPlacingOrder(),
   );
@@ -175,24 +193,26 @@ export class CustomerCheckoutStateService {
     this._placedOrder.set(null);
     this._confirmation.set(null);
     this._placeOrderError.set(null);
-    await this.loadShippingPrefill();
-    await this.loadShippingMethods();
+    await this.auth.initialize();
+    const preferredShippingMethodId = await this.restoreShippingDraft();
+    await Promise.all([this.loadShippingPrefill(), this.loadShippingMethods(preferredShippingMethodId)]);
   }
 
   async requireCheckoutAccess(): Promise<boolean> {
     if (this.shopping.loading()) await this.shopping.initialize();
     if (this.shopping.cart().length) return true;
+    this.clearShippingDraft();
     await this.router.navigate(['/shop/cart']);
     return false;
   }
 
-  async loadShippingMethods(): Promise<void> {
+  async loadShippingMethods(preferredId: string | null = null): Promise<void> {
     this._loadingShippingMethods.set(true);
     this._shippingMethodsError.set(null);
     try {
       const methods = await this.data.getShippingMethods();
       this._shippingMethods.set(methods);
-      const selectedId = this._selectedShippingMethod()?.id;
+      const selectedId = this._selectedShippingMethod()?.id ?? preferredId;
       this._selectedShippingMethod.set(
         methods.find((method) => method.id === selectedId) ?? null,
       );
@@ -205,38 +225,58 @@ export class CustomerCheckoutStateService {
   }
 
   async loadPaymentMethods(): Promise<void> {
+    const request = ++this.paymentMethodsRequest;
     this._loadingPaymentMethods.set(true);
     this._paymentMethodsError.set(null);
     try {
       const methods = await this.data.getPaymentMethods(this.subtotal() + this.shippingCost());
+      if (request !== this.paymentMethodsRequest) return;
       this._paymentMethods.set(methods);
-      const selectedId = this._selectedPaymentMethod()?.id;
+      const selectedId = this._selectedPaymentMethod()?.id ?? this.preferredPaymentMethodId;
       this._selectedPaymentMethod.set(
         methods.find((method) => method.id === selectedId) ?? null,
       );
     } catch (error) {
+      if (request !== this.paymentMethodsRequest) return;
+      this._selectedPaymentMethod.set(null);
       this._paymentMethods.set([]);
       this._paymentMethodsError.set(this.errorMessage(error, 'Unable to load payment methods.'));
     } finally {
-      this._loadingPaymentMethods.set(false);
+      if (request === this.paymentMethodsRequest) this._loadingPaymentMethods.set(false);
     }
+  }
+
+  editShipping(): void {
+    this.shippingEdited = true;
+    this._shippingConfirmed.set(false);
   }
 
   setShippingInformation(submission: CheckoutShippingSubmission): void {
     this._shippingInformation.set(submission.shippingInformation);
+    this._shippingConfirmed.set(true);
+    this._placeOrderError.set(null);
     this._saveAddressForFuture.set(submission.saveForFuture && this.auth.isAuthenticated());
     this._newAddressLabel.set(submission.addressLabel.trim() || 'Home');
+    this.saveShippingDraft();
   }
 
   selectSavedAddress(id: string): void {
-    const address = this.addressBook.addresses().find((item) => item.id === id);
+    const address = this.savedAddresses().find((item) => item.id === id);
     if (!address) return;
+    this.editShipping();
+    this.clearShippingDraft();
     this._selectedAddressId.set(id);
     this._saveAddressForFuture.set(false);
     this._shippingInformation.set(this.addressToShipping(address));
   }
 
+  onSavedAddressRemoved(id: string): void {
+    if (this._selectedAddressId() === id) this.useNewAddress();
+  }
+
   useNewAddress(): void {
+    this.editShipping();
+    this.clearShippingDraft();
     this._selectedAddressId.set(null);
     this._saveAddressForFuture.set(false);
     this._shippingInformation.set(null);
@@ -245,17 +285,26 @@ export class CustomerCheckoutStateService {
   markPendingAddressSaved(address: CustomerAddress): void {
     this._selectedAddressId.set(address.id);
     this._saveAddressForFuture.set(false);
+    this.saveShippingDraft();
   }
 
   selectShippingMethod(value: CheckoutShippingMethod): void {
+    if (this.isPlacingOrder()) return;
+    this.paymentMethodsRequest++;
+    this._loadingPaymentMethods.set(false);
+    if (this._selectedShippingMethod()?.id !== value.id) this.preferredPaymentMethodId = null;
     this._selectedShippingMethod.set(value);
     this._selectedPaymentMethod.set(null);
     this._paymentMethods.set([]);
+    this.saveShippingDraft();
   }
 
   selectPaymentMethod(value: CheckoutPaymentMethod): void {
+    if (this.isPlacingOrder()) return;
     this._selectedPaymentMethod.set(value);
+    this.preferredPaymentMethodId = value.id;
     this._placeOrderError.set(null);
+    this.saveShippingDraft();
   }
 
   goToShipping(): void {
@@ -267,7 +316,7 @@ export class CustomerCheckoutStateService {
   }
 
   goToPayment(): void {
-    if (!this.canContinueToPayment()) return;
+    if (this.isPlacingOrder() || !this.canContinueToPayment()) return;
     this.setStep('payment');
     void this.loadPaymentMethods();
   }
@@ -277,6 +326,7 @@ export class CustomerCheckoutStateService {
   }
 
   canOpenStep(step: CheckoutStep): boolean {
+    if (this.isPlacingOrder()) return false;
     if (step === 'shipping') return true;
     if (step === 'delivery') return this.canContinueToDelivery();
     if (step === 'payment') return this.canContinueToPayment();
@@ -305,6 +355,7 @@ export class CustomerCheckoutStateService {
       return;
     }
 
+    this.clearShippingDraft();
     const shipping = this._shippingInformation();
     const payment = this._selectedPaymentMethod();
     this._confirmation.set({
@@ -324,6 +375,12 @@ export class CustomerCheckoutStateService {
   }
 
   resetCheckout(): void {
+    this.clearShippingDraft();
+    this.shippingEdited = false;
+    this._shippingConfirmed.set(false);
+    this.paymentMethodsRequest++;
+    this.preferredPaymentMethodId = null;
+    this._loadingPaymentMethods.set(false);
     this._currentStep.set('shipping');
     this._shippingInformation.set(null);
     this._shippingPrefill.set(null);
@@ -351,10 +408,76 @@ export class CustomerCheckoutStateService {
     return `Place Order - ${total}`;
   }
 
+  private async restoreShippingDraft(): Promise<string | null> {
+    try {
+      const stored = this.document.defaultView?.sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+      if (!stored || this.shippingEdited || this._shippingInformation()) return null;
+
+      const draft: CheckoutDraft = JSON.parse(stored);
+      const ownerId = this.checkoutDraftOwner();
+      if (ownerId === undefined || draft?.ownerId !== ownerId || !draft.shippingInformation) {
+        this.clearShippingDraft();
+        return null;
+      }
+
+      this._shippingInformation.set(draft.shippingInformation);
+      const { countryId, provinceId, cityId } = draft.shippingInformation;
+      this._selectedAddressId.set(ownerId ? draft.selectedAddressId : null);
+      this._saveAddressForFuture.set(!!ownerId && draft.saveForFuture);
+      this._newAddressLabel.set(draft.addressLabel);
+      this.preferredPaymentMethodId = draft.paymentMethodId;
+      if (countryId && provinceId && cityId) {
+        const available = await this.geography.isAvailable(countryId, provinceId, cityId).catch(() => false);
+        if (available && !this.shippingEdited && this._shippingInformation() === draft.shippingInformation) {
+          this._shippingConfirmed.set(true);
+        }
+      }
+      return draft.shippingMethodId;
+    } catch {
+      this.clearShippingDraft();
+      return null;
+    }
+  }
+
+  private saveShippingDraft(): void {
+    const shippingInformation = this._shippingInformation();
+    const ownerId = this.checkoutDraftOwner();
+    if (!this._shippingConfirmed() || !shippingInformation || ownerId === undefined) return;
+
+    const draft: CheckoutDraft = {
+      ownerId,
+      shippingInformation,
+      selectedAddressId: this._selectedAddressId(),
+      saveForFuture: this._saveAddressForFuture(),
+      addressLabel: this._newAddressLabel(),
+      shippingMethodId: this._selectedShippingMethod()?.id ?? null,
+      paymentMethodId: this.preferredPaymentMethodId,
+    };
+    try {
+      this.document.defaultView?.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(draft));
+    } catch {
+      // Checkout can continue if the browser blocks tab storage.
+    }
+  }
+
+  private clearShippingDraft(): void {
+    try {
+      this.document.defaultView?.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+    } catch {
+      // Checkout can continue if the browser blocks tab storage.
+    }
+  }
+
+  private checkoutDraftOwner(): string | null | undefined {
+    return this.auth.isAuthenticated() ? this.auth.user()?.id : null;
+  }
+
   private async loadShippingPrefill(): Promise<void> {
-    await this.auth.initialize();
     if (!this.auth.isAuthenticated()) {
-      if (this._selectedAddressId()) this._shippingInformation.set(null);
+      if (this._selectedAddressId()) {
+        this._shippingInformation.set(null);
+        this._shippingConfirmed.set(false);
+      }
       this._selectedAddressId.set(null);
       this._saveAddressForFuture.set(false);
       this._shippingPrefill.set(null);
@@ -362,17 +485,12 @@ export class CustomerCheckoutStateService {
     }
 
     const profile = await this.auth.getCurrentCustomerProfile().catch(() => null);
-    if (!profile) {
-      this._shippingPrefill.set(null);
-      return;
-    }
-
-    const profileNames = splitFullName(profile.full_name);
+    const profileNames = splitFullName(profile?.full_name);
     const profilePrefill = this.compactPrefill({
       firstName: profileNames.firstName,
       lastName: profileNames.lastName,
-      email: this.auth.user()?.email ?? profile.email,
-      phone: profile.phone ?? undefined,
+      email: this.auth.user()?.email ?? profile?.email,
+      phone: profile?.phone ?? undefined,
     });
     this._shippingPrefill.set(Object.keys(profilePrefill).length > 0 ? profilePrefill : null);
 
@@ -390,6 +508,8 @@ export class CustomerCheckoutStateService {
       }
       return;
     }
+
+    if (this.shippingEdited) return;
 
     const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0];
     if (defaultAddress) {
@@ -409,9 +529,11 @@ export class CustomerCheckoutStateService {
       phone: address.phone,
       streetAddress: address.streetAddress,
       addressLine2: address.apartmentOrBuilding,
+      countryId: address.countryId,
+      provinceId: address.provinceId,
+      cityId: address.cityId,
       city: address.city,
       stateProvince: address.areaOrDistrict ?? '',
-      postalCode: address.postalCode,
       country: address.country,
       deliveryInstructions: address.deliveryNotes,
     };
@@ -424,6 +546,7 @@ export class CustomerCheckoutStateService {
   }
 
   private setStep(step: CheckoutStep): void {
+    if (this.isPlacingOrder() && step !== 'confirmation') return;
     this._currentStep.set(step);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   }
