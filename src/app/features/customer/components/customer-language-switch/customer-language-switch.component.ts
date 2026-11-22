@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
   SupportedLanguage,
@@ -17,7 +17,11 @@ import { NgClass } from '@angular/common';
 export class CustomerLanguageSwitchComponent {
   readonly translation = inject(TranslationService);
 
-  selectLanguage(language: SupportedLanguage): void {
-    this.translation.useLanguage(language);
+  readonly languageSelected = output<SupportedLanguage>();
+
+  async selectLanguage(language: SupportedLanguage): Promise<void> {
+    if (await this.translation.useLanguage(language)) {
+      this.languageSelected.emit(language);
+    }
   }
 }

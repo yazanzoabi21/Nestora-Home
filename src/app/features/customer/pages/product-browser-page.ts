@@ -16,6 +16,7 @@ import {
 import { CustomerShoppingStateService } from '../services';
 import { Category } from '../../../data-access/models';
 import { CategoriesService } from '../../../data-access/services';
+import { CustomerCategoryLabelService } from '../../../data-access/services/customer-category-label.service';
 import {
   PaginationPageSize,
   paginationPageSizeLabel,
@@ -53,6 +54,7 @@ export abstract class ProductBrowserPage {
   readonly loadingCards = Array.from({ length: 6 });
 
   private readonly categoriesService = inject(CategoriesService);
+  private readonly categoryLabels = inject(CustomerCategoryLabelService);
 
   readonly filterCategories = signal<Category[]>([]);
 
@@ -76,7 +78,7 @@ export abstract class ProductBrowserPage {
   ];
   readonly categoryOptions = computed<CustomerFilterOption[]>(() =>
     this.filterCategories().map((category) => ({
-      label: category.name,
+      label: this.categoryLabels.label(category),
       value: category.name,
       icon: category.icon?.trim() || '',
     })),
@@ -91,7 +93,7 @@ export abstract class ProductBrowserPage {
 
     const chips: ActiveFilterChip[] = this.selectedCategories().map((category) => ({
       kind: 'category',
-      label: category,
+      label: this.categoryLabels.label(category),
       value: category,
     }));
     const activePriceRange = this.activePriceRange();

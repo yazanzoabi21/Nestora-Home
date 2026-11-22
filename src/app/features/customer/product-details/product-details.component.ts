@@ -1,3 +1,4 @@
+import { CustomerCategoryLabelPipe } from '../../../shared/pipes/customer-category-label.pipe';
 import { CurrencyPipe, DecimalPipe, KeyValuePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -41,7 +42,7 @@ interface ProductPromotionBreadcrumb {
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [
+  imports: [CustomerCategoryLabelPipe,
     CurrencyPipe,
     DecimalPipe,
     KeyValuePipe,

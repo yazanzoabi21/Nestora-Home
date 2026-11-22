@@ -33,6 +33,7 @@
              focus:border-[#738665] focus:bg-white
              focus:shadow-[0_0_0_3px_rgba(115,134,101,0.12)]
              disabled:cursor-not-allowed disabled:opacity-60" [id]="name()" [name]="name()" [type]="type()"
+    [attr.dir]="type() === 'tel' ? 'ltr' : null" [class.scroll-mt-40]="type() === 'tel'"
     [formControl]="control()" [placeholder]="placeholder()" [autocomplete]="autocomplete()" [required]="required()"
     [disabled]="disabled()" [attr.aria-invalid]="error() ? 'true' : 'false'"
     [attr.aria-describedby]="error() ? name() + '-error' : null" />

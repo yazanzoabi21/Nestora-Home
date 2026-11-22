@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, linkedSignal, output, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, effect, inject, input, linkedSignal, output, signal, viewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { CheckoutShippingInformation, CheckoutShippingPrefill, CheckoutShippingSubmission } from '../models';
@@ -6,8 +6,9 @@ import { CustomerAddress } from '../../models';
 import { CustomerAddressDeleteComponent } from '../../components/customer-address-delete/customer-address-delete.component';
 import { CustomerLocationFieldsComponent } from '../../components/customer-location-fields/customer-location-fields.component';
 import { CheckoutFormFieldComponent } from '../shared/checkout-form-field';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { checkoutPhoneError, normalizeCheckoutPhone } from '../checkout-phone';
 
 const requiredText = Validators.pattern(/\S/);
 
@@ -48,6 +49,7 @@ export class CheckoutShippingComponent {
   readonly continue = output<CheckoutShippingSubmission>();
 
   readonly hasSubmitted = signal(false);
+  private readonly phoneField = viewChild('phoneField', { read: ElementRef<HTMLElement> });
   private readonly locationFields = viewChild(CustomerLocationFieldsComponent);
   readonly initialLocation = linkedSignal(() => {
     const value = this.initialValue();
@@ -55,7 +57,6 @@ export class CheckoutShippingComponent {
   });
   private appliedValue: CheckoutShippingInformation | null = null;
 
-  private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly saveForFuture = new FormControl(false, { nonNullable: true });
@@ -71,7 +72,13 @@ export class CheckoutShippingComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-    phone: new FormControl('', { nonNullable: true }),
+    phone: new FormControl('', {
+      nonNullable: true,
+      validators: [(control) => {
+        const error = checkoutPhoneError(control.value);
+        return error ? { [error]: true } : null;
+      }],
+    }),
     streetAddress: new FormControl('', { nonNullable: true, validators: [Validators.required, requiredText] }),
     addressLine2: new FormControl('', { nonNullable: true }),
     deliveryInstructions: new FormControl('', { nonNullable: true }),
@@ -82,7 +89,6 @@ export class CheckoutShippingComponent {
       this.shippingEdit.emit();
     });
     this.saveForFuture.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.updatePhoneValidation();
       this.shippingEdit.emit();
     });
     this.addressLabel.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
@@ -97,10 +103,9 @@ export class CheckoutShippingComponent {
         this.appliedValue = initialValue;
         this.saveForFuture.setValue(this.initialSaveForFuture(), { emitEvent: false });
         this.addressLabel.setValue(this.initialAddressLabel(), { emitEvent: false });
-        this.updatePhoneValidation();
       }
 
-      if (!initialValue && prefill) this.patchSafePrefill(prefill);
+      if (prefill) this.patchSafePrefill(initialValue ? { phone: prefill.phone } : prefill);
     });
   }
 
@@ -135,37 +140,32 @@ export class CheckoutShippingComponent {
       return '';
     }
 
-    if (control.hasError('email')) {
-      return this.translate.instant(
-        'CUSTOMER.CHECKOUT.SHIPPING.ERRORS.INVALID_EMAIL',
-      );
+    if (name === 'phone') {
+      return control.hasError('required')
+        ? 'CUSTOMER.CHECKOUT.SHIPPING.ERRORS.PHONE_REQUIRED'
+        : 'CUSTOMER.CHECKOUT.SHIPPING.ERRORS.INVALID_PHONE';
     }
-
-    return this.translate.instant(
-      'CUSTOMER.CHECKOUT.SHIPPING.ERRORS.REQUIRED',
-    );
-  }
-
-  private updatePhoneValidation(): void {
-    const phone = this.form.controls.phone;
-    phone.setValidators(this.saveForFuture.value ? [Validators.required, requiredText] : null);
-    phone.updateValueAndValidity({ emitEvent: false });
+    return control.hasError('email')
+      ? 'CUSTOMER.CHECKOUT.SHIPPING.ERRORS.INVALID_EMAIL'
+      : 'CUSTOMER.CHECKOUT.SHIPPING.ERRORS.REQUIRED';
   }
 
   submit(): void {
     this.hasSubmitted.set(true);
     this.form.markAllAsTouched();
-    const { firstName, lastName, email, streetAddress } = this.form.getRawValue();
+    const { firstName, lastName, email, phone, streetAddress } = this.form.getRawValue();
     this.form.patchValue({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.trim(),
+      phone: normalizeCheckoutPhone(phone),
       streetAddress: streetAddress.trim(),
     }, { emitEvent: false });
 
     const location = this.locationFields()?.selection();
     if (!location || this.form.invalid || (this.saveForFuture.value && this.addressLabel.invalid)) {
       this.addressLabel.markAsTouched();
+      if (this.form.controls.phone.invalid) this.phoneField()?.nativeElement.querySelector('input')?.focus();
       return;
     }
 
@@ -180,7 +180,6 @@ export class CheckoutShippingComponent {
         provinceId: location.provinceId,
         city: location.city,
         cityId: location.cityId,
-        phone: value.phone.trim() || null,
         addressLine2: value.addressLine2.trim() || null,
         deliveryInstructions: value.deliveryInstructions.trim() || null,
       },
@@ -191,13 +190,11 @@ export class CheckoutShippingComponent {
 
   chooseAddress(id: string): void {
     this.saveForFuture.setValue(false, { emitEvent: false });
-    this.updatePhoneValidation();
     this.addressSelect.emit(id);
   }
 
   chooseNewAddress(): void {
     this.saveForFuture.setValue(false, { emitEvent: false });
-    this.updatePhoneValidation();
     this.resetForm(this.emptyFormValue());
     this.initialLocation.set(null);
     const prefill = this.prefill();

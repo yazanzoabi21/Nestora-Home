@@ -1,6 +1,7 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { take } from 'rxjs';
 
 export type SupportedLanguage = 'en' | 'ar';
 
@@ -16,18 +17,39 @@ export class TranslationService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly translate = inject(TranslateService);
+  private languageRequest = 0;
 
   constructor() {
     this.translate.addLangs(['en', 'ar']);
     this.translate.setFallbackLang(DEFAULT_LANGUAGE);
-    this.useLanguage(this.getSavedLanguage());
+    void this.useLanguage(this.getSavedLanguage());
   }
 
-  useLanguage(language: SupportedLanguage): void {
-    this.currentLang.set(language);
-    this.translate.use(language);
-    this.updateDocument(language);
+  useLanguage(language: SupportedLanguage): Promise<boolean> {
+    const request = ++this.languageRequest;
+    return new Promise((resolve) => {
+      this.translate.use(language).pipe(take(1)).subscribe({
+        next: () => {
+          if (request !== this.languageRequest) {
+            resolve(false);
+            return;
+          }
+          this.applyLanguage(language);
+          resolve(true);
+        },
+        error: () => resolve(false),
+        complete: () => resolve(false),
+      });
+    });
+  }
 
+  toggleLanguage(): void {
+    void this.useLanguage(this.currentLang() === 'en' ? 'ar' : 'en');
+  }
+
+  private applyLanguage(language: SupportedLanguage): void {
+    this.currentLang.set(language);
+    this.updateDocument(language);
     if (this.isBrowser()) {
       try {
         localStorage.setItem(STORAGE_KEY, language);
@@ -35,10 +57,6 @@ export class TranslationService {
         // Language switching remains available when browser storage is blocked or full.
       }
     }
-  }
-
-  toggleLanguage(): void {
-    this.useLanguage(this.currentLang() === 'en' ? 'ar' : 'en');
   }
 
   private getSavedLanguage(): SupportedLanguage {

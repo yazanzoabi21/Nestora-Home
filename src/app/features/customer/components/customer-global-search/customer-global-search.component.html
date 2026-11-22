@@ -115,7 +115,7 @@
               @if (result.type === 'product') {
               <span class="mt-0.5 flex min-w-0 items-center gap-2 text-[0.7rem] font-semibold text-[#8a847c]">
                 @if (result.category) {
-                <span class="truncate">{{ result.category }}</span>
+                <span class="truncate">{{ result.category | customerCategoryLabel }}</span>
                 }
                 @if (result.sku) {
                 <span class="truncate">{{ result.sku }}</span>

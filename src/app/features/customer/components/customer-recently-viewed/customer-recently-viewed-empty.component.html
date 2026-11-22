@@ -41,7 +41,7 @@
             <span class="absolute inset-0 bg-gradient-to-t from-[#352919]/85 via-[#352919]/10 to-transparent" aria-hidden="true"></span>
             <div class="absolute inset-x-0 bottom-0 flex items-end gap-2 p-4 text-white">
               <div class="min-w-0 flex-1">
-                <strong class="block text-base font-extrabold leading-snug [overflow-wrap:anywhere]">{{ category.name }}</strong>
+                <strong class="block text-base font-extrabold leading-snug [overflow-wrap:anywhere]">{{ category | customerCategoryLabel }}</strong>
                 @if (category.description?.trim()) {
                   <p class="mt-1 line-clamp-2 text-xs leading-5 text-white/90">{{ category.description }}</p>
                 }

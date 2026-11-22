@@ -1,6 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { CheckoutConfirmationComponent } from './checkout-confirmation/checkout-confirmation.component';
 import { CheckoutDeliveryComponent } from './checkout-delivery/checkout-delivery.component';
@@ -16,6 +17,7 @@ import { CustomerCheckoutOrderService, CustomerCheckoutStateService } from './se
   standalone: true,
   imports: [
     RouterLink,
+    TranslatePipe,
     CheckoutConfirmationComponent,
     CheckoutDeliveryComponent,
     CheckoutOrderSummaryComponent,

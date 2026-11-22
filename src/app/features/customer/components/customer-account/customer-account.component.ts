@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { CustomerAuthService } from '../../../../core/services/auth';
-import { ToastService } from '../../../../core/services/toast.service';
+import { CustomerLogoutService } from '../../services/customer-logout.service';
 import { CUSTOMER_SUPABASE } from '../../../../core/tokens';
 import { CustomerOrdersService } from '../../orders/customer-orders.service';
 import { CustomerShoppingStateService, LoyaltyPointsCalculatorService } from '../../services';
@@ -40,14 +40,13 @@ export class CustomerAccountComponent {
   private readonly supabase = inject(CUSTOMER_SUPABASE);
   private readonly shopping = inject(CustomerShoppingStateService);
   private readonly customerOrders = inject(CustomerOrdersService);
-  private readonly toast = inject(ToastService);
-  private readonly translate = inject(TranslateService);
+  private readonly customerLogout = inject(CustomerLogoutService);
   readonly loyalty = inject(LoyaltyPointsCalculatorService);
   readonly showLoyalty = computed(
     () => !this.loyalty.loading() && this.loyalty.enabled(),
   );
 
-  readonly isLoggingOut = signal(false);
+  readonly isLoggingOut = this.customerLogout.isLoggingOut;
   private readonly loadedCounts = signal({ orders: 0, reviews: 0 });
   readonly counts = computed<AccountCounts>(() => ({
     ...this.loadedCounts(),
@@ -100,24 +99,8 @@ export class CustomerAccountComponent {
     void this.loadCounts();
   }
 
-  async logout(): Promise<void> {
-    if (this.isLoggingOut()) return;
-    this.isLoggingOut.set(true);
-
-    try {
-      const result = await this.auth.logout();
-      if (!result.localSessionCleared || !result.remoteRevocationConfirmed) {
-        this.toast.warn(this.translate.instant(result.localSessionCleared
-          ? 'AUTH.ERRORS.LOGOUT_UNCONFIRMED' : 'AUTH.ERRORS.LOGOUT_LOCAL_FAILED') as string);
-      }
-    } catch (error) {
-      this.toast.failed(
-        'Logout',
-        error instanceof Error ? error.message : 'Unable to sign out.',
-      );
-    } finally {
-      this.isLoggingOut.set(false);
-    }
+  logout(): void {
+    void this.customerLogout.logout();
   }
 
   private async loadCounts(): Promise<void> {

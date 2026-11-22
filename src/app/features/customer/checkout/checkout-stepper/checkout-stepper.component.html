@@ -1,4 +1,4 @@
-<ol class="checkout-stepper" aria-label="Checkout progress">
+<ol class="checkout-stepper" [attr.aria-label]="'CUSTOMER.CHECKOUT.PROGRESS_LABEL' | translate">
   @for (step of steps; track step.id; let last = $last) {
     <li class="checkout-stepper__item">
       <button
@@ -9,10 +9,10 @@
         [disabled]="!canOpen(step.id)"
         (click)="stepClick.emit(step.id)"
         [attr.aria-current]="active() === step.id ? 'step' : null"
-        [attr.aria-label]="step.label"
+        [attr.aria-label]="step.labelKey | translate"
       >
         @if (isComplete(step.id)) {
-          <i class="pi pi-check"></i>
+          <i class="pi pi-check" aria-hidden="true"></i>
         } @else {
           {{ step.number }}
         }
@@ -22,10 +22,10 @@
         [class.checkout-stepper__label--active]="active() === step.id"
         [class.checkout-stepper__label--complete]="isComplete(step.id)"
       >
-        {{ step.label }}
+        {{ step.labelKey | translate }}
       </span>
       @if (!last) {
-        <span class="checkout-stepper__line"></span>
+        <span class="checkout-stepper__line" aria-hidden="true"></span>
       }
     </li>
   }

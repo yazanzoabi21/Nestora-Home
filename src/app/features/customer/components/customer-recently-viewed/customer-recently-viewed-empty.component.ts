@@ -1,3 +1,4 @@
+import { CustomerCategoryLabelPipe } from '../../../../shared/pipes/customer-category-label.pipe';
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -6,7 +7,7 @@ import { Category } from '../../../../data-access/models';
 @Component({
   selector: 'app-customer-recently-viewed-empty',
   standalone: true,
-  imports: [RouterLink, TranslatePipe],
+  imports: [CustomerCategoryLabelPipe,RouterLink, TranslatePipe],
   templateUrl: './customer-recently-viewed-empty.component.html',
   styleUrl: './customer-recently-viewed-empty.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

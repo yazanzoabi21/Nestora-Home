@@ -23,6 +23,12 @@ body {
   overflow-x: clip;
 }
 
+@media (width < 1181px) {
+  html:has(#customer-mobile-menu) {
+    overflow: hidden;
+  }
+}
+
 app-root {
   display: block;
   min-height: 100vh;

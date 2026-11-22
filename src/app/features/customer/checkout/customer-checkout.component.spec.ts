@@ -2,8 +2,10 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { provideTranslateService } from '@ngx-translate/core';
+import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 
+import translations from '../../../../assets/i18n/translations.json';
+import { TranslationService } from '../../../core/services/translation';
 import { CustomerAuthService } from '../../../core/services/auth';
 import { ToastService } from '../../../core/services/toast.service';
 import { CUSTOMER_SUPABASE } from '../../../core/tokens';
@@ -34,6 +36,8 @@ const cod: CheckoutPaymentMethod = {
   feeFixed: 0, feePercentage: 0, calculatedFee: 0, config: {},
 };
 
+const internationalPhone = '+44 7700 900123';
+
 const saved: CustomerAddress = {
   id: 'default-address', userId: 'customer', label: 'Home', fullName: 'Saved Customer', phone: '70123456',
   streetAddress: 'Saved street', apartmentOrBuilding: null, city: 'Beirut',
@@ -51,7 +55,7 @@ async function renderCheckout(
   authenticated = false,
   loadAddresses = async (): Promise<readonly CustomerAddress[]> => [saved],
   resolveUser = async (): Promise<string | null> => authenticated ? 'customer' : null,
-  loadProfile = async (): Promise<{ full_name: string }> => ({ full_name: 'Account Customer' }),
+  loadProfile = async (): Promise<{ full_name: string; phone?: string }> => ({ full_name: 'Account Customer' }),
   variantId: string | null = 'variant',
 ) {
   const cart = signal([{ id: 'cart-line', quantity: 1, product: {
@@ -161,6 +165,7 @@ async function renderCheckout(
     enter('firstName', '  Guest  ');
     enter('lastName', 'Customer');
     enter('email', 'buyer@example.com');
+    enter('phone', '  ' + internationalPhone + '  ');
     await selectLocation('province', 'keserwan');
     await selectLocation('city', 'jounieh');
     enter('streetAddress', '  Main Street  ');
@@ -177,7 +182,98 @@ async function renderCheckout(
 
 describe('checkout shipping validation', () => {
   beforeEach(() => sessionStorage.clear());
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    localStorage.removeItem('nestora-language');
+    document.documentElement.lang = 'en';
+    document.documentElement.dir = 'ltr';
+    vi.restoreAllMocks();
+  });
+
+  for (const authenticated of [false, true]) {
+    it('localizes checkout and requires a valid phone for ' + (authenticated ? 'signed-in checkout' : 'guest checkout'), async () => {
+      const { fixture, page, root, shipping, fill, enter, payment, rpc } = await renderCheckout(
+        authenticated, async () => [], undefined, async () => ({ full_name: 'Account Customer', phone: 'bad number' }),
+      );
+      const field = root.querySelector<HTMLInputElement>('#phone')!;
+      if (authenticated) {
+        await vi.waitFor(() => expect(field.value).toBe('bad number'));
+        expect(shipping().form.controls.phone.invalid).toBe(true);
+      }
+      await fill();
+
+      const translate = TestBed.inject(TranslateService);
+      translate.setTranslation('en', translations.en);
+      translate.setTranslation('ar', translations.ar);
+      const language = TestBed.inject(TranslationService);
+      expect(root.querySelector('label[for="phone"]')?.textContent).toContain('*');
+      expect(field.required).toBe(true);
+
+      for (const lang of ['en', 'ar'] as const) {
+        language.useLanguage(lang);
+        fixture.detectChanges();
+        expect(document.documentElement.dir).toBe(lang === 'ar' ? 'rtl' : 'ltr');
+        const breadcrumb = root.querySelector('.checkout-breadcrumb')!;
+        expect(Array.from(breadcrumb.querySelectorAll('a, [aria-current]'), (item) => item.textContent?.trim())).toEqual(
+          lang === 'ar' ? ['الرئيسية', 'سلة التسوق', 'إتمام الطلب'] : ['Home', 'Cart', 'Checkout'],
+        );
+        expect(Array.from(root.querySelectorAll('.checkout-stepper button'), (item) => item.getAttribute('aria-label'))).toEqual(
+          lang === 'ar' ? ['الشحن', 'التوصيل', 'الدفع'] : ['Shipping', 'Delivery', 'Payment'],
+        );
+        expect(Array.from(root.querySelectorAll('.checkout-stepper button'), (item) => item.textContent?.trim())).toEqual(['1', '2', '3']);
+        const errors = translations[lang].CUSTOMER.CHECKOUT.SHIPPING.ERRORS;
+
+        enter('phone', lang === 'ar' ? '   ' : '');
+        shipping().submit();
+        fixture.detectChanges();
+        expect(root.querySelector('#phone-error')?.textContent).toContain(errors.PHONE_REQUIRED);
+        expect(document.activeElement).toBe(field);
+        expect(page.state.canOpenStep('delivery')).toBe(false);
+
+        enter('phone', '+0 123');
+        field.dispatchEvent(new Event('blur'));
+        fixture.detectChanges();
+        expect(root.querySelector('#phone-error')?.textContent).toContain(errors.INVALID_PHONE);
+        page.state.goToStep('payment');
+        expect(page.state.currentStep()).toBe('shipping');
+      }
+
+      enter('phone', ' +٤٤ ٧٧٠٠ ٩٠٠١٢٣ ');
+      shipping().submit();
+      expect(page.state.currentStep()).toBe('delivery');
+      await payment(standard);
+      const validShipping = page.state.shippingInformation()!;
+      for (const phone of [' ', '+0 123']) {
+        page.state.setShippingInformation({ shippingInformation: { ...validShipping, phone }, saveForFuture: false, addressLabel: '' });
+        expect(page.state.canPlaceOrder()).toBe(false);
+        await page.placeOrder();
+        expect(rpc).not.toHaveBeenCalled();
+      }
+
+      page.state.setShippingInformation({ shippingInformation: validShipping, saveForFuture: false, addressLabel: '' });
+      await page.placeOrder();
+      expect(rpc).toHaveBeenCalledExactlyOnceWith('place_customer_order', expect.objectContaining({
+        p_shipping_address: expect.objectContaining({ phone: internationalPhone }),
+      }));
+      expect(page.state.currentStep()).toBe('confirmation');
+    });
+  }
+
+  it('retains a legacy shipping draft with a missing phone for correction', async () => {
+    const { fixture, shipping, fill } = await renderCheckout();
+    await fill();
+    shipping().submit();
+    const key = 'nestora_checkout_shipping_v1';
+    const oldDraft = JSON.parse(sessionStorage.getItem(key)!) as { shippingInformation: { phone: string | null } };
+    oldDraft.shippingInformation.phone = null;
+    sessionStorage.setItem(key, JSON.stringify(oldDraft));
+    fixture.destroy();
+
+    const restored = TestBed.createComponent(CustomerCheckoutComponent);
+    restored.detectChanges();
+    await restored.whenStable();
+    expect(restored.componentInstance.state.shippingInformation()?.streetAddress).toBe('Main Street');
+    expect(restored.componentInstance.state.canOpenStep('delivery')).toBe(false);
+  });
 
   for (const method of [standard, pickup]) {
     it('places a guest variant order using ' + method.name, async () => {
@@ -195,7 +291,7 @@ describe('checkout shipping validation', () => {
         p_cart_id: null, p_payment_method_id: cod.id, p_shipping_method_id: method.id,
         p_discount_code: 'SAVE', p_items: [{ product_id: 'product', variant_id: 'variant', quantity: 1 }],
         p_shipping_address: expect.objectContaining({
-          phone: null, country: 'Lebanon', street_address: 'Main Street',
+          phone: internationalPhone, country: 'Lebanon', street_address: 'Main Street',
         }),
       }));
 
@@ -239,7 +335,7 @@ describe('checkout shipping validation', () => {
         p_cart_id: authenticated ? 'cart' : null,
         p_shipping_method_id: pickup.id,
         p_items: [{ product_id: 'product', variant_id: null, quantity: 1 }],
-        p_shipping_address: { street_address: 'Main Street', city: 'Jounieh' },
+        p_shipping_address: { street_address: 'Main Street', city: 'Jounieh', phone: internationalPhone },
       });
       expect(Object.keys(rpc.mock.calls[0][1].p_shipping_address).sort()).toEqual([
         'address_line_2', 'city', 'country', 'delivery_instructions', 'email',
@@ -376,6 +472,7 @@ describe('checkout shipping validation', () => {
     root.querySelectorAll<HTMLButtonElement>('button[role="radio"]')[1].click();
     fixture.detectChanges();
     expect(shipping().form.controls.streetAddress.value).toBe('Office street');
+    expect(shipping().form.controls.phone.value).toBe(alternate.phone);
     await vi.waitFor(() => {
       fixture.detectChanges();
       expect(root.querySelector('#checkout-location-city-value')?.textContent?.trim()).toBe('Beirut');
@@ -409,6 +506,7 @@ describe('checkout shipping validation', () => {
     expect(page.state.selectedAddressId()).toBeNull();
 
     shipping().saveForFuture.setValue(true);
+    enter('phone', '');
     shipping().submit();
     expect(shipping().error('phone')).toContain('REQUIRED');
     expect(page.state.currentStep()).toBe('shipping');

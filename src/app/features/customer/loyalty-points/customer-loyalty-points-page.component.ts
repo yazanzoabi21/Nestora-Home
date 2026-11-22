@@ -1,3 +1,4 @@
+import { CustomerCategoryLabelPipe } from '../../../shared/pipes/customer-category-label.pipe';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -9,7 +10,7 @@ import { CustomerLoyaltyPointsService } from '../services';
 @Component({
   selector: 'app-customer-loyalty-points-page',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, RouterLink, TranslatePipe],
+  imports: [CustomerCategoryLabelPipe,CurrencyPipe, DatePipe, RouterLink, TranslatePipe],
   templateUrl: './customer-loyalty-points-page.component.html',
   styleUrl: './customer-loyalty-points-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

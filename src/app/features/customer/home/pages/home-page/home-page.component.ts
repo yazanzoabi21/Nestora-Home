@@ -1,3 +1,4 @@
+import { CustomerCategoryLabelPipe } from '../../../../../shared/pipes/customer-category-label.pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -47,7 +48,7 @@ type RecentlyViewedStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [
+  imports: [CustomerCategoryLabelPipe,
     CustomerFlashDeals,
     CustomerProductCardComponent,
     CustomerProductCardSkeleton,

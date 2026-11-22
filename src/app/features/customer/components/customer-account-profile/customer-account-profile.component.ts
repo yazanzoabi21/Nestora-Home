@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { hasPracticalPhoneFormat } from '../../../../shared/validators/phone.validator';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthenticatedUserProfile } from '../../../../core/models/auth';
@@ -144,7 +145,7 @@ export class CustomerAccountProfileComponent implements OnDestroy {
 }
 
 function trimmedRequired(): ValidatorFn { return (control): ValidationErrors | null => typeof control.value === 'string' && control.value.trim() ? null : { required: true }; }
-function practicalPhone(): ValidatorFn { return (control): ValidationErrors | null => !control.value || /^[+\d][\d\s().-]{5,29}$/.test(String(control.value).trim()) ? null : { phone: true }; }
+function practicalPhone(): ValidatorFn { return (control): ValidationErrors | null => !control.value || hasPracticalPhoneFormat(String(control.value)) ? null : { phone: true }; }
 function notFutureDate(): ValidatorFn { return (control): ValidationErrors | null => !control.value || String(control.value) <= new Date().toISOString().slice(0, 10) ? null : { futureDate: true }; }
 function emptyFormValue(): CustomerProfileFormValue { return { firstName: '', lastName: '', email: '', phone: '', birthday: '' }; }
 function sameProfileValues(a: CustomerProfileFormValue, b: CustomerProfileFormValue): boolean { return a.firstName.trim() === b.firstName.trim() && a.lastName.trim() === b.lastName.trim() && a.email === b.email && a.phone.trim() === b.phone.trim() && a.birthday === b.birthday; }

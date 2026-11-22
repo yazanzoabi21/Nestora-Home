@@ -35,7 +35,7 @@
     category: categorySlug(item.category),
     source: 'navbar'
   }" class="cursor-pointer transition-colors hover:text-[#6b7d5e] hover:underline">
-        {{ item.category }}
+        {{ item.category | customerCategoryLabel: item.categoryId }}
       </a>
       <i class="pi pi-chevron-right text-[10px]"></i>
       @if (promotionBreadcrumb(); as promotionSource) {
@@ -215,7 +215,7 @@
             | translate: { count: item.reviewCount }
             }}
           </span>
-          <span class="text-[#8a847c]">{{ item.category }}</span>
+          <span class="text-[#8a847c]">{{ item.category | customerCategoryLabel: item.categoryId }}</span>
         </div>
 
         <div class="mt-10 flex flex-wrap items-center gap-4">

@@ -1,3 +1,5 @@
+import { NgTemplateOutlet } from '@angular/common';
+import { CustomerCategoryLabelPipe } from '../../../../shared/pipes/customer-category-label.pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -7,6 +9,7 @@ import {
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,7 +21,9 @@ import {
   CustomerPromotionalBarService,
   CustomerShoppingStateService,
 } from '../../services';
+import { CustomerLogoutService } from '../../services/customer-logout.service';
 import { CustomerAuthService } from '../../../../core/services/auth';
+import { TranslationService } from '../../../../core/services/translation';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CustomerLanguageSwitchComponent } from '../customer-language-switch/customer-language-switch.component';
 import { CustomerGlobalSearchComponent } from '../customer-global-search/customer-global-search.component';
@@ -28,7 +33,6 @@ interface CustomerNavLink {
   path: string;
 }
 
-// const DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT =
 const ANNOUNCEMENT_DURATION_MS = 3000;
 
 @Component({
@@ -37,7 +41,8 @@ const ANNOUNCEMENT_DURATION_MS = 3000;
   host: {
     class: 'contents',
   },
-  imports: [
+  imports: [CustomerCategoryLabelPipe,
+    NgTemplateOutlet,
     CustomerLanguageSwitchComponent,
     CustomerGlobalSearchComponent,
     RouterLink,
@@ -49,6 +54,7 @@ const ANNOUNCEMENT_DURATION_MS = 3000;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerNavbarComponent {
+  private readonly language = inject(TranslationService);
   readonly shopping = inject(CustomerShoppingStateService);
   readonly categoriesMenuOpen = signal(false);
   readonly mobileCategoriesMenuOpen = signal(false);
@@ -76,26 +82,34 @@ export class CustomerNavbarComponent {
       ? announcements[this.activeAnnouncementIndex() % announcements.length]
       : null;
   });
-  // readonly shippingDiscountAnnouncement = computed(
-  //   () => this.discountAnnouncements()[0]?.shippingText ?? DEFAULT_SHIPPING_DISCOUNT_ANNOUNCEMENT,
-  // );
-  readonly shippingDiscountAnnouncement = computed(() => {
-    return this.discountAnnouncements()[0]?.shippingText ?? '';
+  readonly featuredDiscount = computed(() => this.discountAnnouncements()[0]?.discount);
+  readonly announcementCopy = computed(() => {
+    const announcement = this.activeAnnouncement();
+    if (!announcement) return null;
+    const arabic = this.language.currentLang() === 'ar' ? announcement.arabic : undefined;
+    return {
+      ...announcement,
+      title: arabic?.title?.trim() || announcement.title,
+      message: arabic?.message?.trim() || announcement.message,
+      linkText: arabic?.linkText?.trim() || announcement.linkText,
+    };
   });
   readonly navLinks: CustomerNavLink[] = [
     { labelKey: 'CUSTOMER.PRODUCTS.ALL_PRODUCTS', path: '/shop/products' },
     { labelKey: 'CUSTOMER.PRODUCTS.NEW_ARRIVALS', path: '/shop/new-arrivals' },
   ];
   readonly customerAuth = inject(CustomerAuthService);
+  readonly customerLogout = inject(CustomerLogoutService);
+  private readonly mobileMenuTrigger = viewChild<ElementRef<HTMLButtonElement>>('mobileMenuTrigger');
   readonly accountDestination = computed(() =>
     this.customerAuth.isAuthenticated() ? '/shop/customer-account' : '/auth/customer-login',
   );
-  readonly accountAriaLabel = computed(() =>
+  readonly accountAriaLabelKey = computed(() =>
     this.customerAuth.isLoading()
-      ? 'Restoring customer session'
+      ? 'CUSTOMER.NAV.SESSION_LOADING'
       : this.customerAuth.isAuthenticated()
-        ? 'Open customer account'
-        : 'Sign in to customer account',
+        ? 'CUSTOMER.NAV.MY_ACCOUNT'
+        : 'CUSTOMER.LOYALTY.SIGN_IN',
   );
 
   private readonly categoriesService = inject(CategoriesService);
@@ -147,9 +161,14 @@ export class CustomerNavbarComponent {
     this.closeCategoriesMenu();
   }
 
-  closeMobileMenu(): void {
+  closeMobileMenu(restoreFocus = false): void {
     this.mobileMenuOpen.set(false);
     this.mobileCategoriesMenuOpen.set(false);
+    if (restoreFocus) this.mobileMenuTrigger()?.nativeElement.focus({ preventScroll: true });
+  }
+
+  async logoutFromMobileMenu(): Promise<void> {
+    if (await this.customerLogout.logout()) this.closeMobileMenu();
   }
 
   toggleMobileCategoriesMenu(): void {

@@ -33,6 +33,8 @@ export class CheckoutConfirmationComponent {
   readonly confirmation =
     input.required<CheckoutConfirmation | null>();
 
+  readonly cashOnDelivery = input(false);
+
   readonly pendingLoyaltyPoints = computed(
     () => this.confirmation()?.order.loyaltyPointsEarned ?? 0,
   );

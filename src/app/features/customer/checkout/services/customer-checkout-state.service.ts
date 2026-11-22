@@ -18,6 +18,7 @@ import {
   CheckoutTotals,
   PlacedOrderResult,
 } from '../models';
+import { checkoutPhoneError, normalizeCheckoutPhone } from '../checkout-phone';
 import { CustomerCheckoutDataService } from './customer-checkout-data.service';
 import { splitFullName } from '../../../../shared/utils/name.util';
 import { CustomerGeographyService } from '../../services/customer-geography.service';
@@ -95,7 +96,9 @@ export class CustomerCheckoutStateService {
   readonly confirmation = this._confirmation.asReadonly();
   readonly isAuthenticated = this.auth.isAuthenticated;
 
-  readonly hasShippingInformation = computed(() => this._shippingConfirmed() && this._shippingInformation() !== null);
+  readonly hasShippingInformation = computed(() =>
+    this._shippingConfirmed() && checkoutPhoneError(this._shippingInformation()?.phone) === null,
+  );
   readonly hasShippingMethod = computed(() => this.selectedShippingMethod() !== null);
   readonly hasPaymentMethod = computed(() => this._selectedPaymentMethod() !== null);
   readonly canContinueToDelivery = computed(() => this.hasShippingInformation());
@@ -252,8 +255,9 @@ export class CustomerCheckoutStateService {
   }
 
   setShippingInformation(submission: CheckoutShippingSubmission): void {
-    this._shippingInformation.set(submission.shippingInformation);
-    this._shippingConfirmed.set(true);
+    const phone = normalizeCheckoutPhone(submission.shippingInformation.phone);
+    this._shippingInformation.set({ ...submission.shippingInformation, phone });
+    this._shippingConfirmed.set(checkoutPhoneError(phone) === null);
     this._placeOrderError.set(null);
     this._saveAddressForFuture.set(submission.saveForFuture && this.auth.isAuthenticated());
     this._newAddressLabel.set(submission.addressLabel.trim() || 'Home');
@@ -420,16 +424,20 @@ export class CustomerCheckoutStateService {
         return null;
       }
 
-      this._shippingInformation.set(draft.shippingInformation);
-      const { countryId, provinceId, cityId } = draft.shippingInformation;
+      const shippingInformation = {
+        ...draft.shippingInformation,
+        phone: normalizeCheckoutPhone(draft.shippingInformation.phone) || null,
+      };
+      this._shippingInformation.set(shippingInformation);
+      const { countryId, provinceId, cityId } = shippingInformation;
       this._selectedAddressId.set(ownerId ? draft.selectedAddressId : null);
       this._saveAddressForFuture.set(!!ownerId && draft.saveForFuture);
       this._newAddressLabel.set(draft.addressLabel);
       this.preferredPaymentMethodId = draft.paymentMethodId;
       if (countryId && provinceId && cityId) {
         const available = await this.geography.isAvailable(countryId, provinceId, cityId).catch(() => false);
-        if (available && !this.shippingEdited && this._shippingInformation() === draft.shippingInformation) {
-          this._shippingConfirmed.set(true);
+        if (available && !this.shippingEdited && this._shippingInformation() === shippingInformation) {
+          this._shippingConfirmed.set(checkoutPhoneError(shippingInformation.phone) === null);
         }
       }
       return draft.shippingMethodId;
@@ -442,7 +450,7 @@ export class CustomerCheckoutStateService {
   private saveShippingDraft(): void {
     const shippingInformation = this._shippingInformation();
     const ownerId = this.checkoutDraftOwner();
-    if (!this._shippingConfirmed() || !shippingInformation || ownerId === undefined) return;
+    if (!this.hasShippingInformation() || !shippingInformation || ownerId === undefined) return;
 
     const draft: CheckoutDraft = {
       ownerId,
@@ -526,7 +534,7 @@ export class CustomerCheckoutStateService {
       firstName: names.firstName,
       lastName: names.lastName,
       email: this.auth.user()?.email ?? this.auth.customerProfile()?.email ?? '',
-      phone: address.phone,
+      phone: address.phone?.trim() || this._shippingPrefill()?.phone || null,
       streetAddress: address.streetAddress,
       addressLine2: address.apartmentOrBuilding,
       countryId: address.countryId,

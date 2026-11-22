@@ -1,11 +1,11 @@
 <main class="checkout-page">
   <div class="checkout-page__inner customer-page-container">
-    <nav class="checkout-breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/shop">Home</a>
-      <span>/</span>
-      <a routerLink="/shop/cart">Cart</a>
-      <span>/</span>
-      <span>Checkout</span>
+    <nav class="checkout-breadcrumb" [attr.aria-label]="'CUSTOMER.CART.BREADCRUMB' | translate">
+      <a routerLink="/shop">{{ 'CUSTOMER.PRODUCTS.HOME' | translate }}</a>
+      <span aria-hidden="true">/</span>
+      <a routerLink="/shop/cart">{{ 'CUSTOMER.CHECKOUT.BREADCRUMB_CART' | translate }}</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{{ 'CUSTOMER.CHECKOUT.BREADCRUMB_CHECKOUT' | translate }}</span>
     </nav>
 
     @if (state.currentStep() !== 'confirmation') {
@@ -77,7 +77,7 @@
 
       </div>
     } @else {
-      <app-checkout-confirmation [confirmation]="state.confirmation()" />
+      <app-checkout-confirmation [confirmation]="state.confirmation()" [cashOnDelivery]="state.isCashOnDelivery()" />
     }
   </div>
 </main>

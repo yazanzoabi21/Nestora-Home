@@ -79,7 +79,7 @@
 .checkout-stepper__line {
   width: clamp(1.25rem, 5vw, 3.5rem);
   height: 1px;
-  margin-left: 0.35rem;
+  margin-inline-start: 0.35rem;
   background: #ded4c7;
 }
 
@@ -98,6 +98,6 @@
 
   .checkout-stepper__line {
     width: 0.8rem;
-    margin-left: 0.15rem;
+    margin-inline-start: 0.15rem;
   }
 }

@@ -1,3 +1,4 @@
+import { CustomerCategoryLabelPipe } from '../../../../shared/pipes/customer-category-label.pipe';
 import { CurrencyPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -22,7 +23,7 @@ export interface CustomerProductAddRequest {
 @Component({
   selector: 'app-customer-product-quick-view',
   standalone: true,
-  imports: [CurrencyPipe, TranslatePipe, RouterLink],
+  imports: [CustomerCategoryLabelPipe,CurrencyPipe, TranslatePipe, RouterLink],
   templateUrl: './customer-product-quick-view.component.html',
   styleUrl: './customer-product-quick-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

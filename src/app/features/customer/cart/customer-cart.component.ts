@@ -37,6 +37,10 @@ export class CustomerCartComponent implements OnInit {
   readonly selectedLineForRemoval = signal<CustomerCartLine | null>(null);
   readonly removeModalVisible = signal(false);
   readonly removingItem = signal(false);
+  private readonly changingQuantity = signal<ReadonlySet<string>>(new Set());
+  readonly cartUpdatePending = computed(() =>
+    this.removingItem() || this.changingQuantity().size > 0 || this.shopping.pendingProductIds().size > 0,
+  );
 
   isLoyaltyRedemption(productId: string, variantId: string | null = null): boolean {
     return this.loyalty.isRedemptionRequested(productId, variantId);
@@ -50,10 +54,7 @@ export class CustomerCartComponent implements OnInit {
     this.loyalty.clearProductRedemption(productId, variantId);
   }
   readonly removeItemError = signal<string | null>(null);
-  readonly removeModalDescription = computed(() => {
-    const productName = this.selectedLineForRemoval()?.product.name ?? 'this item';
-    return `Are you sure you want to remove "${productName}" from your cart?`;
-  });
+
   readonly freeGiftDiscount = signal<Discount | null>(null);
   readonly loadingFreeGiftDiscount = signal(false);
   readonly eligibleGiftProducts = signal<DiscountGiftProduct[]>([]);
@@ -268,8 +269,36 @@ export class CustomerCartComponent implements OnInit {
     }
   }
 
+  isLineBusy(line: CustomerCartLine): boolean {
+    return this.changingQuantity().has(line.product.id) ||
+      this.shopping.pendingProductIds().has(line.product.id) || this.isRemovingLine(line);
+  }
+
+  async changeQuantity(line: CustomerCartLine, step: -1 | 1): Promise<void> {
+    if (this.isLineBusy(line)) return;
+    if (step === -1 && line.quantity === 1) {
+      this.openRemoveModal(line);
+      return;
+    }
+
+    const { id, variantId, stock } = line.product;
+    const quantity = line.quantity + step;
+    if (step === 1 && quantity > stock) return;
+
+    this.changingQuantity.update((ids) => new Set([...ids, id]));
+    try {
+      await this.shopping.setQuantity(id, quantity, variantId);
+    } finally {
+      this.changingQuantity.update((ids) => {
+        const remaining = new Set(ids);
+        remaining.delete(id);
+        return remaining;
+      });
+    }
+  }
+
   openRemoveModal(line: CustomerCartLine): void {
-    if (this.removingItem()) return;
+    if (this.removingItem() || this.isLineBusy(line)) return;
     this.selectedLineForRemoval.set(line);
     this.removeItemError.set(null);
     this.removeModalVisible.set(true);
@@ -284,7 +313,7 @@ export class CustomerCartComponent implements OnInit {
 
   async confirmRemoveItem(): Promise<void> {
     const line = this.selectedLineForRemoval();
-    if (!line || this.removingItem()) return;
+    if (!line || this.removingItem() || this.isLineBusy(line)) return;
 
     this.removingItem.set(true);
     this.removeItemError.set(null);
@@ -304,7 +333,7 @@ export class CustomerCartComponent implements OnInit {
       this.selectedLineForRemoval.set(null);
       this.removeItemError.set(null);
     } catch {
-      this.removeItemError.set('Unable to remove this item. Please try again.');
+      this.removeItemError.set('CUSTOMER.CART.REMOVE_ERROR');
     } finally {
       this.removingItem.set(false);
     }
@@ -441,6 +470,7 @@ export class CustomerCartComponent implements OnInit {
   }
 
   async checkout(): Promise<void> {
+    if (this.cartUpdatePending()) return;
     if (!this.shopping.cart().length) {
       this.toast.info('Your cart is empty', 'Add an item before checkout.');
       return;

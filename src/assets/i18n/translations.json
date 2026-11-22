@@ -1617,7 +1617,8 @@
         },
         "BOTTOM": {
           "COPYRIGHT": "© 2026 Nestora Home. All rights reserved.",
-          "PAYMENT_METHODS": "We accept Whish payments"
+          "PAYMENT_METHODS": "We accept Whish payments",
+          "DEVELOPED_BY": "Developed by"
         }
       },
       "WHATSAPP": {
@@ -2069,6 +2070,7 @@
         "SIGN_IN": "Sign in",
         "CREATE_ACCOUNT": "Create account",
         "CART_TITLE": "Loyalty points",
+        "CART_INVITATION": "Sign in before checkout to earn points when your order is delivered.",
         "CART_GUEST": "Sign in or create an account to earn {{points}} points from this order.",
         "GUEST_CHECKOUT_MESSAGE": "You can place your order as a guest. Sign in or create an account before checkout to earn loyalty points. Points are credited after delivery.",
         "CART_AUTHENTICATED": "You will earn {{points}} points after your order is delivered.",
@@ -2150,6 +2152,28 @@
         "EMPTY_TITLE": "No best sellers yet",
         "EMPTY_TEXT": "Popular products will appear here as customers complete their purchases."
       },
+      "NAV": {
+        "PRIMARY": "Primary navigation",
+        "MY_ACCOUNT": "My Account",
+        "SESSION_LOADING": "Restoring customer session",
+        "CART": "Cart, {{count}} items",
+        "OPEN_MENU": "Open navigation menu",
+        "CLOSE_MENU": "Close navigation menu",
+        "LOADING_OFFERS": "Loading offers…",
+        "NO_OFFERS": "Check back soon for new offers",
+        "OFFER_PAGINATION": "Announcement pagination",
+        "SHOW_OFFER": "Show announcement {{index}}",
+        "OFFERS": {
+          "percentage": "\u2066{{value}}%\u2069 off with code \u2066{{code}}\u2069",
+          "percentage_minimum": "\u2066{{value}}%\u2069 off with code \u2066{{code}}\u2069 on orders over \u2066{{minimumOrder}}\u2069",
+          "fixed_amount": "\u2066{{value}}\u2069 off with code \u2066{{code}}\u2069",
+          "fixed_amount_minimum": "\u2066{{value}}\u2069 off with code \u2066{{code}}\u2069 on orders over \u2066{{minimumOrder}}\u2069",
+          "free_shipping": "Free shipping with code \u2066{{code}}\u2069",
+          "free_shipping_minimum": "Free shipping with code \u2066{{code}}\u2069 on orders over \u2066{{minimumOrder}}\u2069",
+          "free_gift": "Free gift with code \u2066{{code}}\u2069",
+          "free_gift_minimum": "Free gift with code \u2066{{code}}\u2069 on orders over \u2066{{minimumOrder}}\u2069"
+        }
+      },
       "CART": {
         "TITLE": "Shopping Cart",
         "ITEMS": "items",
@@ -2166,6 +2190,16 @@
         "INCREASE": "Increase quantity",
         "REMOVE": "Remove item",
         "SUMMARY": "Order Summary",
+        "BREADCRUMB": "Breadcrumb",
+        "REMOVE_TITLE": "Remove item?",
+        "REMOVE_MESSAGE": "Remove “\u2068{{product}}\u2069” from your cart?",
+        "REMOVE_ERROR": "Unable to remove this item. Please try again.",
+        "OUT_OF_STOCK": "This item is currently out of stock.",
+        "LIMITED_STOCK": "Only {{count}} available.",
+        "REMOVE_PROMO": "Remove",
+        "PROMO_APPLIED": "Code \u2066{{code}}\u2069 applied",
+        "PERCENT_OFF": "\u2066{{value}}\u2069 off",
+        "AMOUNT_OFF": "\u2066{{value}}\u2069 off",
         "PROMO_PLACEHOLDER": "Promo code",
         "APPLY": "Apply",
         "SUBTOTAL": "Subtotal",
@@ -2186,6 +2220,7 @@
         "EMPTY": "No free gifts are currently available.",
         "UNAVAILABLE": "This gift is no longer available. Please choose another free gift.",
         "UNLOCKED": "Your free gift is unlocked!",
+        "PROGRESS_REMAINING": "Add \u2066{{amount}}\u2069 more to unlock your free gift 🎁",
         "UNLOCKED_BADGE": "Unlocked",
         "REMAINING": "more to unlock your free gift",
         "USE_CODE": "Use code:",
@@ -2194,6 +2229,9 @@
       },
       "CHECKOUT": {
         "BREADCRUMB": "Home / Cart / Checkout",
+        "BREADCRUMB_CART": "Cart",
+        "BREADCRUMB_CHECKOUT": "Checkout",
+        "PROGRESS_LABEL": "Checkout progress",
         "STEPS": {
           "SHIPPING": "Shipping",
           "DELIVERY": "Delivery",
@@ -2212,7 +2250,7 @@
             "FIRST_NAME": "First Name",
             "LAST_NAME": "Last Name",
             "EMAIL": "Email",
-            "PHONE": "Phone",
+            "PHONE": "Mobile phone number",
             "STREET_ADDRESS": "Street Address",
             "ADDRESS_LINE_2": "Apartment, suite, etc.",
             "CITY": "City",
@@ -2226,6 +2264,8 @@
           "ERRORS": {
             "REQUIRED": "This field is required.",
             "INVALID_EMAIL": "Enter a valid email address.",
+            "PHONE_REQUIRED": "Mobile phone number is required.",
+            "INVALID_PHONE": "Please enter a valid mobile phone number.",
             "UNSUPPORTED_COUNTRY": "Checkout is available in Lebanon only.",
             "INVALID_ADDRESS_LABEL": "Enter an address label of up to 40 characters."
           },
@@ -2236,6 +2276,7 @@
         "DELIVERY": {
           "TITLE": "Delivery Method",
           "LOADING": "Loading delivery methods...",
+          "LOAD_ERROR": "Unable to load delivery methods. Please try again.",
           "CONTINUE": "Continue to Payment",
           "BACK": "Back",
           "FREE": "Free",
@@ -2247,6 +2288,7 @@
         "PAYMENT": {
           "TITLE": "Payment Method",
           "LOADING": "Loading payment methods...",
+          "LOAD_ERROR": "Unable to load payment methods. Please try again.",
           "PLACE_ORDER": "Place Order · {{total}}",
           "BACK": "Back",
           "FEE": "Fee: {{amount}}",
@@ -4602,7 +4644,8 @@
         },
         "BOTTOM": {
           "COPYRIGHT": "© 2026 Nestora Home. جميع الحقوق محفوظة.",
-          "PAYMENT_METHODS": "نقبل الدفع عبر Whish"
+          "PAYMENT_METHODS": "نقبل الدفع عبر Whish",
+          "DEVELOPED_BY": "تم التطوير بواسطة"
         }
       },
       "WHATSAPP": {
@@ -5019,6 +5062,7 @@
         "SIGN_IN": "تسجيل الدخول",
         "CREATE_ACCOUNT": "إنشاء حساب",
         "CART_TITLE": "نقاط الولاء",
+        "CART_INVITATION": "سجّل الدخول قبل إتمام الطلب لتكسب نقاطًا تُضاف إلى رصيدك بعد التوصيل.",
         "CART_GUEST": "سجّل الدخول أو أنشئ حساباً لكسب {{points}} نقطة من هذا الطلب.",
         "GUEST_CHECKOUT_MESSAGE": "يمكنك إتمام طلبك كضيف. سجّل الدخول أو أنشئ حساباً قبل الدفع لكسب نقاط الولاء. تُضاف النقاط بعد التسليم.",
         "CART_AUTHENTICATED": "ستكسب {{points}} نقطة بعد تسليم طلبك.",
@@ -5100,6 +5144,28 @@
         "EMPTY_TITLE": "لا توجد منتجات أكثر مبيعاً بعد",
         "EMPTY_TEXT": "ستظهر المنتجات الرائجة هنا بعد إتمام العملاء لعمليات الشراء."
       },
+      "NAV": {
+        "PRIMARY": "التنقّل الرئيسي",
+        "MY_ACCOUNT": "حسابي",
+        "SESSION_LOADING": "جارٍ استعادة الجلسة",
+        "CART": "السلة، {{count}} عنصر",
+        "OPEN_MENU": "فتح قائمة التنقّل",
+        "CLOSE_MENU": "إغلاق قائمة التنقّل",
+        "LOADING_OFFERS": "جارٍ تحميل العروض…",
+        "NO_OFFERS": "ترقّب عروضنا الجديدة",
+        "OFFER_PAGINATION": "اختيار العرض",
+        "SHOW_OFFER": "عرض الإعلان {{index}}",
+        "OFFERS": {
+          "percentage": "خصم \u2066{{value}}%\u2069 باستخدام الرمز \u2066{{code}}\u2069",
+          "percentage_minimum": "خصم \u2066{{value}}%\u2069 باستخدام الرمز \u2066{{code}}\u2069 للطلبات التي تزيد عن \u2066{{minimumOrder}}\u2069",
+          "fixed_amount": "خصم \u2066{{value}}\u2069 باستخدام الرمز \u2066{{code}}\u2069",
+          "fixed_amount_minimum": "خصم \u2066{{value}}\u2069 باستخدام الرمز \u2066{{code}}\u2069 للطلبات التي تزيد عن \u2066{{minimumOrder}}\u2069",
+          "free_shipping": "شحن مجاني باستخدام الرمز \u2066{{code}}\u2069",
+          "free_shipping_minimum": "شحن مجاني باستخدام الرمز \u2066{{code}}\u2069 للطلبات التي تزيد عن \u2066{{minimumOrder}}\u2069",
+          "free_gift": "هدية مجانية باستخدام الرمز \u2066{{code}}\u2069",
+          "free_gift_minimum": "هدية مجانية باستخدام الرمز \u2066{{code}}\u2069 للطلبات التي تزيد عن \u2066{{minimumOrder}}\u2069"
+        }
+      },
       "CART": {
         "TITLE": "سلة التسوق",
         "ITEMS": "عناصر",
@@ -5116,6 +5182,16 @@
         "INCREASE": "زيادة الكمية",
         "REMOVE": "إزالة المنتج",
         "SUMMARY": "ملخص الطلب",
+        "BREADCRUMB": "مسار التنقّل",
+        "REMOVE_TITLE": "إزالة المنتج؟",
+        "REMOVE_MESSAGE": "هل تريد إزالة «\u2068{{product}}\u2069» من سلتك؟",
+        "REMOVE_ERROR": "تعذّرت إزالة المنتج. حاول مجددًا.",
+        "OUT_OF_STOCK": "هذا المنتج غير متوفر حاليًا.",
+        "LIMITED_STOCK": "الكمية المتاحة: {{count}} فقط.",
+        "REMOVE_PROMO": "إزالة",
+        "PROMO_APPLIED": "تم تطبيق الرمز \u2066{{code}}\u2069",
+        "PERCENT_OFF": "خصم \u2066{{value}}\u2069",
+        "AMOUNT_OFF": "خصم \u2066{{value}}\u2069",
         "PROMO_PLACEHOLDER": "رمز الخصم",
         "APPLY": "تطبيق",
         "SUBTOTAL": "المجموع الفرعي",
@@ -5136,6 +5212,7 @@
         "EMPTY": "لا توجد هدايا مجانية متاحة حالياً.",
         "UNAVAILABLE": "لم تعد هذه الهدية متاحة. يرجى اختيار هدية مجانية أخرى.",
         "UNLOCKED": "تم فتح هديتك المجانية!",
+        "PROGRESS_REMAINING": "أضف \u2066{{amount}}\u2069 لفتح هديتك المجانية 🎁",
         "UNLOCKED_BADGE": "متاحة",
         "REMAINING": "إضافية لفتح هديتك المجانية",
         "USE_CODE": "استخدم الرمز:",
@@ -5175,6 +5252,9 @@
       },
       "CHECKOUT": {
         "BREADCRUMB": "الرئيسية / السلة / الدفع",
+        "BREADCRUMB_CART": "سلة التسوق",
+        "BREADCRUMB_CHECKOUT": "إتمام الطلب",
+        "PROGRESS_LABEL": "مراحل إتمام الطلب",
         "STEPS": {
           "SHIPPING": "الشحن",
           "DELIVERY": "التوصيل",
@@ -5193,7 +5273,7 @@
             "FIRST_NAME": "الاسم الأول",
             "LAST_NAME": "اسم العائلة",
             "EMAIL": "البريد الإلكتروني",
-            "PHONE": "رقم الهاتف",
+            "PHONE": "رقم الهاتف المحمول",
             "STREET_ADDRESS": "عنوان الشارع",
             "ADDRESS_LINE_2": "الشقة أو الطابق أو تفاصيل إضافية",
             "CITY": "المدينة",
@@ -5207,6 +5287,8 @@
           "ERRORS": {
             "REQUIRED": "هذا الحقل مطلوب.",
             "INVALID_EMAIL": "أدخل بريداً إلكترونياً صالحاً.",
+            "PHONE_REQUIRED": "رقم الهاتف المحمول مطلوب.",
+            "INVALID_PHONE": "يرجى إدخال رقم هاتف محمول صحيح.",
             "UNSUPPORTED_COUNTRY": "إتمام الطلب متاح في لبنان فقط.",
             "INVALID_ADDRESS_LABEL": "أدخل تسمية للعنوان لا تتجاوز 40 حرفاً."
           },
@@ -5217,6 +5299,7 @@
         "DELIVERY": {
           "TITLE": "طريقة التوصيل",
           "LOADING": "جارٍ تحميل طرق التوصيل...",
+          "LOAD_ERROR": "تعذّر تحميل طرق التوصيل. يرجى المحاولة مرة أخرى.",
           "CONTINUE": "المتابعة إلى الدفع",
           "BACK": "رجوع",
           "FREE": "مجاني",
@@ -5228,6 +5311,7 @@
         "PAYMENT": {
           "TITLE": "طريقة الدفع",
           "LOADING": "جارٍ تحميل طرق الدفع...",
+          "LOAD_ERROR": "تعذّر تحميل طرق الدفع. يرجى المحاولة مرة أخرى.",
           "PLACE_ORDER": "تأكيد الطلب · {{total}}",
           "BACK": "رجوع",
           "FEE": "الرسوم: {{amount}}",

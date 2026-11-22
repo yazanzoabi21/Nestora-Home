@@ -3,7 +3,7 @@
     <div class="min-w-0 text-sm font-bold">
       <span class="text-[#6b7d5e]">{{ product().brand }}</span>
       <i class="pi pi-chevron-right mx-2 text-[10px] text-[#c3baaf]"></i>
-      <span class="text-[#9a948d]">{{ product().category }}</span>
+      <span class="text-[#9a948d]">{{ product().category | customerCategoryLabel: product().categoryId }}</span>
     </div>
 
     <button

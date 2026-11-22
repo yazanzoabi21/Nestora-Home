@@ -15,6 +15,11 @@
 }
 
 .loyalty-badge--detail {
+  max-width: 100%;
+  border-radius: 0.875rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
   flex-wrap: wrap;
   gap: 0.55rem;
   padding: 0.65rem 0.85rem;

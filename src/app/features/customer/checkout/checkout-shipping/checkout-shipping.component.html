@@ -49,22 +49,22 @@
     <app-checkout-form-field name="firstName" [label]="
         'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.FIRST_NAME'
           | translate
-      " autocomplete="given-name" [required]="true" [control]="form.controls.firstName" [error]="error('firstName')" />
+      " autocomplete="given-name" [required]="true" [control]="form.controls.firstName" [error]="error('firstName') | translate" />
 
     <app-checkout-form-field name="lastName" [label]="
         'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.LAST_NAME'
           | translate
-      " autocomplete="family-name" [required]="true" [control]="form.controls.lastName" [error]="error('lastName')" />
+      " autocomplete="family-name" [required]="true" [control]="form.controls.lastName" [error]="error('lastName') | translate" />
 
     <app-checkout-form-field name="email" [label]="
         'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.EMAIL'
           | translate
-      " type="email" autocomplete="email" [required]="true" [control]="form.controls.email" [error]="error('email')" />
+      " type="email" autocomplete="email" [required]="true" [control]="form.controls.email" [error]="error('email') | translate" />
 
-    <app-checkout-form-field name="phone" [label]="
+    <app-checkout-form-field #phoneField name="phone" [label]="
         'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.PHONE'
           | translate
-      " type="tel" autocomplete="tel" [control]="form.controls.phone" [error]="error('phone')" />
+      " type="tel" autocomplete="tel" [required]="true" [control]="form.controls.phone" [error]="error('phone') | translate" />
 
     <app-customer-location-fields idPrefix="checkout-location" [initial]="initialLocation()"
       [submitted]="hasSubmitted()" (changed)="shippingEdit.emit()" />
@@ -73,13 +73,13 @@
         'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.STREET_ADDRESS'
           | translate
       " autocomplete="street-address" [required]="true" [control]="form.controls.streetAddress"
-      [error]="error('streetAddress')" />
+      [error]="error('streetAddress') | translate" />
 
     <app-checkout-form-field name="addressLine2" [label]="
         'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.ADDRESS_LINE_2'
           | translate
       " autocomplete="address-line2" [fullWidth]="true" [control]="form.controls.addressLine2"
-      [error]="error('addressLine2')" />
+      [error]="error('addressLine2') | translate" />
 
     <app-checkout-form-field name="deliveryInstructions" [label]="
         'CUSTOMER.CHECKOUT.SHIPPING.FIELDS.DELIVERY_INSTRUCTIONS'
@@ -87,7 +87,7 @@
       " [placeholder]="
         'CUSTOMER.CHECKOUT.SHIPPING.PLACEHOLDERS.DELIVERY_INSTRUCTIONS'
           | translate
-      " [fullWidth]="true" [control]="form.controls.deliveryInstructions" [error]="error('deliveryInstructions')" />
+      " [fullWidth]="true" [control]="form.controls.deliveryInstructions" [error]="error('deliveryInstructions') | translate" />
 
     @if (authenticated() && !selectedAddressId()) {
       <div class="col-span-full rounded-xl bg-[#f6f7f3] p-4 max-sm:col-span-1">

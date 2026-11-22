@@ -1,55 +1,39 @@
 <header class="sticky top-0 z-[1000] block w-full">
-  <!-- Promotions and discounts carousel -->
-  <div
-    class="relative flex h-10 w-full items-center justify-center overflow-hidden bg-[#30362f] px-10 text-center text-[11px] font-semibold leading-none text-white max-sm:h-10 max-sm:px-8 max-sm:text-[9px]"
-    aria-live="polite" aria-roledescription="carousel" (mouseenter)="pauseAnnouncementCarousel()"
-    (mouseleave)="resumeAnnouncementCarousel()" (focusin)="pauseAnnouncementCarousel()"
-    (focusout)="resumeAnnouncementCarousel()">
-    @if (announcementsLoading()) {
-    <span class="inline-flex items-center gap-2 whitespace-nowrap animate-pulse">
-      <i class="pi pi-spinner pi-spin" aria-hidden="true"></i>
-      <span>LOADING OFFERS</span>
-    </span>
-    } @else if (activeAnnouncement(); as announcement) {
-    <div
-      class="flex min-w-0 max-w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap transition-opacity duration-150"
-      [class.opacity-0]="!announcementVisible()" [class.opacity-100]="announcementVisible()">
-      @if (announcement.icon) {
-      <i [class]="announcement.icon + ' shrink-0'" aria-hidden="true"></i>
-      }
+  <ng-template #discountCopy let-discount>
+    {{ ('CUSTOMER.NAV.OFFERS.' + discount.type + (discount.minimumOrder ? '_minimum' : '')) | translate: discount }}
+  </ng-template>
 
-      @if (announcement.badgeText) {
-      <span
-        class="shrink-0 rounded-full border border-white/40 px-2 py-0.5 text-[9px] leading-none max-[390px]:px-1.5 max-[390px]:text-[8px]">
-        {{ announcement.badgeText }}
-      </span>
-      }
-
-      <!-- Title: always visible -->
-      <span class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-        {{ announcement.title }}
-      </span>
-
-      <!-- Long message: desktop/tablet only -->
-      @if (announcement.message) {
-      <span class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-        — {{ announcement.message }}
-      </span>
-      }
-
-      @if (announcement.link && announcement.linkText) {
-      <a [href]="announcement.link"
-        class="shrink-0 cursor-pointer whitespace-nowrap text-white underline decoration-1 underline-offset-[3px] hover:text-white/80 max-sm:hidden">
-        {{ announcement.linkText }}
-      </a>
+  <div class="announcement-bar relative grid w-full items-center gap-x-2 bg-[#30362f] px-3 py-1.5 text-center text-[11px] font-semibold leading-snug text-white"
+    [class.announcement-bar--rotating]="promotionalAnnouncements().length > 1"
+    aria-live="polite" (mouseenter)="pauseAnnouncementCarousel()" (mouseleave)="resumeAnnouncementCarousel()"
+    (focusin)="pauseAnnouncementCarousel()" (focusout)="resumeAnnouncementCarousel()">
+    <div class="min-w-0 [overflow-wrap:anywhere] transition-opacity duration-150"
+      [class.opacity-0]="!announcementVisible()">
+      @if (announcementsLoading()) {
+        <i class="pi pi-spinner pi-spin me-1" aria-hidden="true"></i>
+        {{ 'CUSTOMER.NAV.LOADING_OFFERS' | translate }}
+      } @else if (announcementCopy(); as announcement) {
+        @if (announcement.icon) { <i [class]="announcement.icon + ' me-1'" aria-hidden="true"></i> }
+        @if (announcement.badgeText) {
+          <bdi class="me-1 inline-block rounded-full border border-white/40 px-1.5">{{ announcement.badgeText }}</bdi>
+        }
+        @if (announcement.discount; as discount) {
+          <ng-container [ngTemplateOutlet]="discountCopy" [ngTemplateOutletContext]="{ $implicit: discount }" />
+        } @else {
+          <bdi>{{ announcement.title }}</bdi>
+          @if (announcement.message) { <span> — <bdi>{{ announcement.message }}</bdi></span> }
+          @if (announcement.link && announcement.linkText) {
+            <a [href]="announcement.link" class="ms-1 text-white underline underline-offset-2 hover:text-white/80">
+              <bdi>{{ announcement.linkText }}</bdi>
+            </a>
+          }
+        }
+      } @else {
+        {{ 'CUSTOMER.NAV.NO_OFFERS' | translate }}
       }
     </div>
-    } @else {
-    <span class="whitespace-nowrap"> CHECK BACK SOON FOR NEW OFFERS </span>
-    }
-
     @if (promotionalAnnouncements().length > 1) {
-    <div class="absolute end-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5" aria-label="Announcement pagination">
+    <div class="flex flex-wrap justify-center gap-0.5" [attr.aria-label]="'CUSTOMER.NAV.OFFER_PAGINATION' | translate">
       @for (
       announcement of promotionalAnnouncements();
       track announcement.source + ':' + announcement.id;
@@ -57,7 +41,7 @@
       ) {
       <button type="button"
         class="grid h-4 w-4 cursor-pointer place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 max-sm:h-3 max-sm:w-3"
-        [attr.aria-label]="'Show announcement ' + (index + 1)"
+        [attr.aria-label]="'CUSTOMER.NAV.SHOW_OFFER' | translate: { index: index + 1 }"
         [attr.aria-current]="index === activeAnnouncementIndex() ? 'true' : null" (click)="selectAnnouncement(index)">
         <span class="h-1.5 rounded-full transition-all duration-200" [class.w-3]="index === activeAnnouncementIndex()"
           [class.bg-white]="index === activeAnnouncementIndex()" [class.w-1.5]="index !== activeAnnouncementIndex()"
@@ -68,21 +52,20 @@
     }
 
     @for (progressKey of announcementProgressKeys(); track progressKey.id) {
-    <span class="announcement-progress pointer-events-none absolute inset-x-0 bottom-0 h-0.5 origin-left bg-[#9aac91]"
-      [class.announcement-progress--paused]="announcementCarouselPaused()" aria-hidden="true"></span>
+      <span class="announcement-progress pointer-events-none absolute inset-x-0 bottom-0 h-0.5 origin-left bg-[#9aac91] rtl:origin-right"
+        [class.announcement-progress--paused]="announcementCarouselPaused()" aria-hidden="true"></span>
     }
   </div>
 
-  <!-- Discount shipping bar -->
-  <div
-    class="flex min-h-8 w-full items-center justify-center overflow-clip bg-[#718369] px-4 py-2 text-center text-[11px] font-semibold uppercase leading-4 tracking-[0.15em] text-white max-sm:min-h-[30px] max-sm:px-2.5 max-sm:text-[8px] max-sm:leading-3 max-sm:tracking-[0.09em]"
-    aria-live="polite">
-    <span class="max-w-full break-words">{{ shippingDiscountAnnouncement() }}</span>
+  <div class="discount-bar grid w-full place-items-center bg-[#718369] px-3 py-1 text-center text-[10px] font-semibold uppercase leading-snug text-white [overflow-wrap:anywhere]" aria-live="polite">
+    @if (featuredDiscount(); as discount) {
+      <span><ng-container [ngTemplateOutlet]="discountCopy" [ngTemplateOutletContext]="{ $implicit: discount }" /></span>
+    }
   </div>
 
   <!-- Main navbar -->
   <nav class="relative z-[1010] w-full border-b border-[#e8dccf] bg-white/[0.98] backdrop-blur-[8px]"
-    aria-label="Primary navigation">
+    [attr.aria-label]="'CUSTOMER.NAV.PRIMARY' | translate">
     <!-- Desktop navbar -->
     <div
       class="customer-page-container hidden h-[82px] items-center gap-[clamp(0.75rem,1.5vw,1.75rem)] min-[1181px]:flex">
@@ -143,7 +126,7 @@
                 <i [class]="categoryIconClass(category) + ' text-sm'"></i>
               </span>
 
-              <span>{{ category.name }}</span>
+              <span>{{ category | customerCategoryLabel }}</span>
             </a>
             }
           </div>
@@ -186,7 +169,7 @@
         <!-- Cart -->
         <a routerLink="/shop/cart"
           class="relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] no-underline transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] max-sm:h-10 max-sm:w-10"
-          [attr.aria-label]="'Cart, ' + shopping.cartQuantity() + ' items'">
+          [attr.aria-label]="'CUSTOMER.NAV.CART' | translate: { count: shopping.cartQuantity() }">
           <i class="pi pi-shopping-bag text-base" aria-hidden="true"></i>
 
           @if (shopping.cartQuantity() > 0) {
@@ -201,7 +184,7 @@
         <!-- Profile -->
         <button type="button"
           class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e8dccf] bg-white text-[#1f2a1f] transition-[background-color,border-color,color] duration-150 hover:border-[#6b7d5e] hover:bg-[#f8f7f5] hover:text-[#6b7d5e] disabled:cursor-not-allowed disabled:opacity-60 max-sm:h-10 max-sm:w-10"
-          [attr.aria-label]="accountAriaLabel()" [disabled]="customerAuth.isLoading()"
+          [attr.aria-label]="accountAriaLabelKey() | translate" [disabled]="customerAuth.isLoading()"
           [attr.aria-busy]="customerAuth.isLoading()" (click)="openAccount()">
           @if (customerAuth.isLoading()) {
           <i class="pi pi-spinner pi-spin text-base" aria-hidden="true"></i>
@@ -227,7 +210,7 @@
       <div class="relative flex w-full min-w-0 items-center gap-1.5 min-[360px]:gap-2">
         <button type="button"
           class="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-[#718369] text-sm font-black uppercase text-white disabled:cursor-not-allowed disabled:opacity-60"
-          [attr.aria-label]="accountAriaLabel()" [disabled]="customerAuth.isLoading()"
+          [attr.aria-label]="accountAriaLabelKey() | translate" [disabled]="customerAuth.isLoading()"
           [attr.aria-busy]="customerAuth.isLoading()" (click)="openAccount()">
           @if (customerAuth.isLoading()) {
           <i class="pi pi-spinner pi-spin text-sm" aria-hidden="true"></i>
@@ -263,7 +246,7 @@
           <!-- Mobile cart -->
           <a routerLink="/shop/cart"
             class="relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#1f2a1f] no-underline transition-[background-color,color,box-shadow] duration-[160ms] hover:bg-[#f3f0ea] hover:text-[#6b7d5e] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
-            [attr.aria-label]="'Cart, ' + shopping.cartQuantity() + ' items'" (click)="closeMobileMenu()">
+            [attr.aria-label]="'CUSTOMER.NAV.CART' | translate: { count: shopping.cartQuantity() }" (click)="closeMobileMenu()">
             <i class="pi pi-shopping-cart text-[1.2rem]" aria-hidden="true"></i>
 
             @if (shopping.cartQuantity() > 0) {
@@ -276,10 +259,10 @@
           </a>
 
           <!-- Mobile menu trigger -->
-          <button type="button"
+          <button #mobileMenuTrigger type="button"
             class="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[#1f2a1f] transition-[background-color,color,box-shadow] duration-[160ms] hover:bg-[#f3f0ea] hover:text-[#6b7d5e] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
             aria-controls="customer-mobile-menu" [attr.aria-expanded]="mobileMenuOpen()"
-            [attr.aria-label]="mobileMenuOpen() ? 'Close navigation menu' : 'Open navigation menu'"
+            [attr.aria-label]="(mobileMenuOpen() ? 'CUSTOMER.NAV.CLOSE_MENU' : 'CUSTOMER.NAV.OPEN_MENU') | translate"
             (click)="toggleMobileMenu()">
             <i class="pi text-[1.15rem]" [class.pi-bars]="!mobileMenuOpen()" [class.pi-times]="mobileMenuOpen()"
               aria-hidden="true"></i>
@@ -293,15 +276,7 @@
     <div id="customer-mobile-menu"
       class="absolute inset-x-0 top-full z-[1020] max-h-[calc(100dvh-14rem)] overflow-y-auto overscroll-contain border-t border-[#e8dccf] bg-white shadow-[0_18px_35px_rgba(31,42,31,0.16)] min-[1181px]:!hidden">
       <div class="min-h-0">
-        <div class="customer-page-container grid gap-1 py-4">
-          <!-- Language -->
-          <!-- <div
-            class="mb-[0.4rem] flex min-h-[3.75rem] items-center justify-between gap-4 border-b border-[#eee7df] pb-3 text-[0.82rem] font-[750] text-[#53604f]">
-            <span>{{ 'COMMON.LANGUAGE' | translate }}</span>
-
-            <app-customer-language-switch />
-          </div> -->
-
+        <div class="customer-page-container grid gap-1 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <!-- Home -->
           <a routerLink="/shop" routerLinkActive="!bg-[#f7f4ef] !px-2 !text-[#5f704f]"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -344,32 +319,47 @@
                 <i [class]="categoryIconClass(category) + ' text-sm'"></i>
               </span>
 
-              <span>{{ category.name }}</span>
+              <span>{{ category | customerCategoryLabel }}</span>
             </a>
             }
           </div>
           }
 
           <!-- Account -->
-          <a [routerLink]="accountDestination()"
+          <a [routerLink]="accountDestination()" routerLinkActive="!bg-[#f7f4ef] !px-2 !text-[#5f704f]"
             class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] px-0 py-[0.55rem] text-[0.92rem] font-[650] text-[#1f2a1f] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:px-2 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
             (click)="closeMobileMenu()">
-            My Account
+            {{ 'CUSTOMER.NAV.MY_ACCOUNT' | translate }}
           </a>
 
           <!-- Wishlist -->
-          <a routerLink="/shop/customer-account/wishlist"
+          <a routerLink="/shop/customer-account/wishlist" routerLinkActive="!bg-[#f7f4ef] !px-2 !text-[#5f704f]"
             class="flex min-h-11 cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] px-0 py-[0.55rem] text-[0.92rem] font-[650] text-[#1f2a1f] no-underline transition-[background-color,color,padding] duration-[160ms] hover:bg-[#f7f4ef] hover:px-2 hover:text-[#5f704f] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2"
             (click)="closeMobileMenu()">
-            Wishlist
+            {{ 'CUSTOMER.ACCOUNT.NAV.WISHLIST' | translate }}
           </a>
+
+          @if (customerAuth.isAuthenticated()) {
+          <div class="mt-2 border-t border-[#e8dccf] pt-2">
+            <button type="button"
+              class="flex min-h-11 w-full cursor-pointer items-center gap-[0.7rem] rounded-[0.85rem] px-0 py-[0.35rem] text-start text-[0.92rem] font-[650] text-[#1f2a1f] transition-colors hover:bg-[#f7f4ef] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#6b7d5e]/30 focus-visible:ring-offset-2 disabled:cursor-wait"
+              [disabled]="customerLogout.isLoggingOut()" [attr.aria-busy]="customerLogout.isLoggingOut()"
+              (click)="logoutFromMobileMenu()">
+              <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f5f0eb] text-[#b43b37]" aria-hidden="true">
+                <i class="pi text-sm" [class.pi-sign-out]="!customerLogout.isLoggingOut()"
+                  [class.pi-spinner]="customerLogout.isLoggingOut()" [class.pi-spin]="customerLogout.isLoggingOut()"></i>
+              </span>
+              <span>{{ (customerLogout.isLoggingOut() ? 'CUSTOMER.ACCOUNT.LOGGING_OUT' : 'CUSTOMER.ACCOUNT.LOGOUT') | translate }}</span>
+            </button>
+          </div>
+          }
 
           <!-- Utility section -->
           <div
-            class="mt-3 flex min-h-[3.75rem] items-center justify-between gap-4 border-t border-[#eee7df] pt-3 text-[0.82rem] font-[750] text-[#53604f]">
+            class="mt-2 flex min-h-[3.75rem] items-center justify-between gap-4 border-t border-[#eee7df] pt-3 text-[0.82rem] font-[750] text-[#53604f]">
             <span>{{ 'COMMON.LANGUAGE' | translate }}</span>
 
-            <app-customer-language-switch />
+            <app-customer-language-switch (languageSelected)="closeMobileMenu(true)" />
           </div>
         </div>
       </div>

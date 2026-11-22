@@ -11,6 +11,7 @@
 
 .checkout-breadcrumb {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1.8rem;
@@ -27,7 +28,7 @@
   color: #738665;
 }
 
-.checkout-breadcrumb span:last-child {
+.checkout-breadcrumb [aria-current="page"] {
   color: #292f27;
 }
 

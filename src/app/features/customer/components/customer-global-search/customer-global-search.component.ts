@@ -1,3 +1,4 @@
+import { CustomerCategoryLabelPipe } from '../../../../shared/pipes/customer-category-label.pipe';
 import { CurrencyPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -18,6 +19,7 @@ import { filter } from 'rxjs';
 
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { Category } from '../../../../data-access/models';
+import { CustomerCategoryLabelService } from '../../../../data-access/services/customer-category-label.service';
 import {
   CustomerSearchResult,
   CustomerSearchResultGroup,
@@ -35,7 +37,7 @@ const PRODUCT_IMAGE_FALLBACK = 'assets/images/product-placeholder.png';
 @Component({
   selector: 'app-customer-global-search',
   standalone: true,
-  imports: [CurrencyPipe, TranslatePipe],
+  imports: [CustomerCategoryLabelPipe,CurrencyPipe, TranslatePipe],
   templateUrl: './customer-global-search.component.html',
   styleUrl: './customer-global-search.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,6 +47,7 @@ export class CustomerGlobalSearchComponent {
   readonly categories = input<readonly Category[]>([]);
   readonly searchFocus = output<void>();
 
+  private readonly categoryLabels = inject(CustomerCategoryLabelService);
   private readonly searchService = inject(CustomerSearchService);
   private readonly appTranslation = inject(TranslationService);
   private readonly router = inject(Router);
@@ -95,7 +98,7 @@ export class CustomerGlobalSearchComponent {
       .slice(0, SUGGESTION_LIMIT)
       .map((category) => ({
         id: category.id,
-        label: category.name,
+        label: this.categoryLabels.label(category),
         type: 'category' as const,
         value: category.slug,
         icon: category.icon?.trim() || null,

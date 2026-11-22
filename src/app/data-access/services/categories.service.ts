@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { ADMIN_SUPABASE, CUSTOMER_SUPABASE } from '../../core/tokens';
 import { Category, CategoryMutationPayload } from '../models';
+import { CustomerCategoryLabelService } from './customer-category-label.service';
 
 interface ProductCategoryCountRecord {
   category_id: string | null;
@@ -45,30 +46,47 @@ export class CategoriesService {
   private readonly adminSupabase = inject(ADMIN_SUPABASE);
   private readonly customerSupabase = inject(CUSTOMER_SUPABASE);
 
+  private readonly categoryLabels = inject(CustomerCategoryLabelService);
+  private publicCategoriesRequest?: Promise<Category[]>;
+
   getCategories(signal?: AbortSignal): Promise<Category[]> {
     return this.loadCategories(this.adminSupabase, signal);
   }
 
   getPublicCategories(): Promise<Category[]> {
-    return this.loadCategories(this.customerSupabase);
+    this.publicCategoriesRequest ??= this.fetchPublicCategories().finally(() => {
+      this.publicCategoriesRequest = undefined;
+    });
+    return this.publicCategoriesRequest;
   }
 
-  private async loadCategories(client: SupabaseClient, signal?: AbortSignal): Promise<Category[]> {
+  private async fetchPublicCategories(): Promise<Category[]> {
+    const categories = await this.loadCategories(this.customerSupabase, undefined, true);
+    this.categoryLabels.setCategories(categories);
+    return categories;
+  }
+
+  private async loadCategories(
+    client: SupabaseClient,
+    signal?: AbortSignal,
+    publicRead = false,
+  ): Promise<Category[]> {
     const query = client
       .from('categories')
-      .select(CATEGORY_SELECT_WITH_PARENT)
+      .select(publicRead ? '*,parent_id' : CATEGORY_SELECT_WITH_PARENT)
       .order('created_at', { ascending: false });
-    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query)
+      .overrideTypes<Category[], { merge: false }>();
 
     if (this.isMissingParentIdError(error)) {
-      return this.getCategoriesWithoutParent(client, signal);
+      return this.getCategoriesWithoutParent(client, signal, publicRead);
     }
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return (data ?? []).map((category) => this.mapCategory(category as Category));
+    return (data ?? []).map((category) => this.mapCategory(category));
   }
 
   async getCategoryById(id: string): Promise<Category> {
@@ -104,12 +122,16 @@ export class CategoriesService {
   }
 
   getPublicCategoriesWithProductCount(): Promise<Category[]> {
-    return this.loadCategoriesWithProductCount(this.customerSupabase);
+    return this.loadCategoriesWithProductCount(this.customerSupabase, undefined, this.getPublicCategories());
   }
 
-  private async loadCategoriesWithProductCount(client: SupabaseClient, signal?: AbortSignal): Promise<Category[]> {
+  private async loadCategoriesWithProductCount(
+    client: SupabaseClient,
+    signal?: AbortSignal,
+    categoriesRequest = this.loadCategories(client, signal),
+  ): Promise<Category[]> {
     const [categories, productCounts] = await Promise.all([
-      this.loadCategories(client, signal),
+      categoriesRequest,
       this.getProductCountsByCategoryId(client, signal),
     ]);
 
@@ -176,18 +198,23 @@ export class CategoriesService {
       .replace(/(^-|-$)/g, '');
   }
 
-  private async getCategoriesWithoutParent(client: SupabaseClient, signal?: AbortSignal): Promise<Category[]> {
+  private async getCategoriesWithoutParent(
+    client: SupabaseClient,
+    signal?: AbortSignal,
+    publicRead = false,
+  ): Promise<Category[]> {
     const query = client
       .from('categories')
-      .select(CATEGORY_SELECT)
+      .select(publicRead ? '*' : CATEGORY_SELECT)
       .order('created_at', { ascending: false });
-    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query);
+    const { data, error } = await (signal ? query.abortSignal(signal).retry(false) : query)
+      .overrideTypes<Category[], { merge: false }>();
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return (data ?? []).map((category) => this.mapCategory(category as Category));
+    return (data ?? []).map((category) => this.mapCategory(category));
   }
 
   private async createCategoryWithoutParent(payload: CategoryMutationPayload): Promise<Category> {

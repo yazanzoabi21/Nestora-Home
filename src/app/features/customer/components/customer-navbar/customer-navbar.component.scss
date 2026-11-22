@@ -16,3 +16,25 @@
   animation-play-state: paused;
 }
 
+
+.announcement-bar {
+  min-height: 2.5rem;
+}
+
+.announcement-bar--rotating {
+  grid-template-columns: minmax(0, 1fr) minmax(min-content, 20%);
+}
+
+.discount-bar {
+  min-height: 2rem;
+}
+
+@media (max-width: 639px) {
+  .announcement-bar {
+    min-height: 3rem;
+  }
+
+  .discount-bar {
+    min-height: 2.25rem;
+  }
+}

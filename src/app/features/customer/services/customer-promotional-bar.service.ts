@@ -11,17 +11,21 @@ export interface CustomerPromotionAnnouncement {
   link?: string | null;
   linkText?: string | null;
   icon?: string | null;
-  shippingText?: string;
+  arabic?: { title?: string | null; message?: string | null; linkText?: string | null };
+  discount?: { type: DiscountType; value: string; code: string; minimumOrder: string | null };
   source: 'promotion' | 'discount';
 }
 
 interface PromotionAnnouncementRecord {
   id: string;
   title: string;
+  title_ar?: string | null;
   description: string | null;
+  description_ar?: string | null;
   badge_text: string | null;
   button_link: string | null;
   button_text: string | null;
+  button_text_ar?: string | null;
   icon: string | null;
 }
 
@@ -34,16 +38,6 @@ interface DiscountAnnouncementRecord {
   usage_limit: number | string | null;
   usage_count: number | string | null;
 }
-
-const PROMOTION_ANNOUNCEMENT_SELECT = `
-  id,
-  title,
-  description,
-  badge_text,
-  button_link,
-  button_text,
-  icon
-`;
 
 const DISCOUNT_ANNOUNCEMENT_SELECT = `
   id,
@@ -72,7 +66,7 @@ export class CustomerPromotionalBarService {
   private async getActivePromotions(now: string): Promise<CustomerPromotionAnnouncement[]> {
     const { data, error } = await this.supabase
       .from('promotions')
-      .select(PROMOTION_ANNOUNCEMENT_SELECT)
+      .select()
       .eq('is_active', true)
       .eq('display_type', 'bar')
       .or(`start_date.is.null,start_date.lte.${now}`)
@@ -95,6 +89,11 @@ export class CustomerPromotionalBarService {
         link: promotion.button_link,
         linkText: promotion.button_text,
         icon: promotion.icon,
+        arabic: {
+          title: promotion.title_ar,
+          message: promotion.description_ar,
+          linkText: promotion.button_text_ar,
+        },
         source: 'promotion',
       };
     });
@@ -119,77 +118,23 @@ export class CustomerPromotionalBarService {
         const usageLimit = this.toNumber(discount.usage_limit);
         return usageLimit === null || (this.toNumber(discount.usage_count) ?? 0) < usageLimit;
       })
-      .map((discount) => ({
-        id: discount.id,
-        title: this.discountAnnouncementText(discount),
-        message: null,
-        badgeText: discount.code,
-        link: null,
-        linkText: null,
-        icon: this.discountIcon(discount.discount_type),
-        shippingText: this.shippingDiscountAnnouncementText(discount),
-        source: 'discount' as const,
-      }));
-  }
-
-  private shippingDiscountAnnouncementText(
-    discount: DiscountAnnouncementRecord,
-  ): string {
-    const code = discount.code.trim().toUpperCase();
-    const value = this.toNumber(discount.discount_value) ?? 0;
-    const minimumOrder = this.toNumber(discount.minimum_order_amount);
-
-    const minimumOrderText =
-      minimumOrder && minimumOrder > 0
-        ? ` ON ORDERS OVER ${this.formatCurrency(minimumOrder)}`
-        : '';
-
-    switch (discount.discount_type) {
-      case 'percentage':
-        return `USE CODE: ${code} FOR ${this.formatNumber(value)}% OFF${minimumOrderText}`;
-
-      case 'fixed_amount':
-        return `USE CODE: ${code} FOR ${this.formatCurrency(value)} OFF${minimumOrderText}`;
-
-      case 'free_shipping':
-        return `FREE SHIPPING${minimumOrderText} · USE CODE: ${code}`;
-
-      case 'free_gift':
-        return `FREE GIFT${minimumOrderText} · USE CODE: ${code}`;
-    }
-  }
-
-  private discountAnnouncementText(
-    discount: DiscountAnnouncementRecord,
-  ): string {
-    const code = discount.code.trim().toUpperCase();
-    const value = this.toNumber(discount.discount_value) ?? 0;
-
-    let text: string;
-
-    switch (discount.discount_type) {
-      case 'percentage':
-        text = `Use code ${code} for ${this.formatNumber(value)}% off`;
-        break;
-
-      case 'fixed_amount':
-        text = `Use code ${code} for ${this.formatCurrency(value)} off`;
-        break;
-
-      case 'free_shipping':
-        text = `Free shipping — use code ${code}`;
-        break;
-
-      case 'free_gift':
-        text = `Free gift — use code ${code}`;
-        break;
-    }
-
-    const minimumOrder = this.toNumber(discount.minimum_order_amount);
-
-    return minimumOrder && minimumOrder > 0
-      ? `${text} on orders over ${this.formatCurrency(minimumOrder)}`
-      : text;
+      .map((discount) => {
+        const value = this.toNumber(discount.discount_value) ?? 0;
+        const minimumOrder = this.toNumber(discount.minimum_order_amount);
+        return {
+          id: discount.id,
+          title: '',
+          badgeText: discount.code,
+          icon: this.discountIcon(discount.discount_type),
+          discount: {
+            type: discount.discount_type,
+            value: discount.discount_type === 'percentage' ? this.formatNumber(value) : this.formatCurrency(value),
+            code: discount.code,
+            minimumOrder: minimumOrder && minimumOrder > 0 ? this.formatCurrency(minimumOrder) : null,
+          },
+          source: 'discount' as const,
+        };
+      });
   }
 
   private discountIcon(discountType: DiscountType): string {

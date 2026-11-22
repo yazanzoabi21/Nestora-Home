@@ -146,7 +146,7 @@
         <img class="redeem-product-image block h-28 w-full max-w-full bg-[#eee8df] object-cover min-[361px]:h-32 sm:h-36" [src]="product.imageUrl || 'assets/images/product-placeholder.png'"
           [alt]="product.name" loading="lazy" />
         <div class="redeem-product-body min-w-0 p-2.5 min-[361px]:p-3">
-          <p class="truncate text-[0.68rem] font-bold text-[#718369]">{{ product.categoryName || ('COMMON.PRODUCTS' | translate) }}</p>
+          <p class="truncate text-[0.68rem] font-bold text-[#718369]">{{ product.categoryName ? (product.categoryName | customerCategoryLabel) : ('COMMON.PRODUCTS' | translate) }}</p>
           <h3 class="mt-1 line-clamp-2 text-[0.8rem] font-black leading-[1.3] text-[#1f2a1f] min-[361px]:min-h-9 min-[361px]:text-sm">{{ product.name }}</h3>
           <strong class="points-cost-badge mt-2 inline-flex max-w-full items-center gap-1 rounded-full bg-[#edf4e9] px-2 py-1 text-[0.65rem] text-[#58704e]">
             <i class="pi pi-star-fill text-[0.55rem]" aria-hidden="true"></i>
