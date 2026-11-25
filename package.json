@@ -4,7 +4,13 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "npm run sitemap:generate",
     "build": "ng build",
+    "postbuild": "npm run sitemap:validate",
+    "sitemap:generate": "node scripts/generate-sitemap.mjs",
+    "sitemap:refresh": "node scripts/generate-sitemap.mjs --output dist/nestora-home/browser",
+    "sitemap:validate": "node scripts/validate-sitemap.mjs",
+    "sitemap:verify-live": "node scripts/validate-sitemap.mjs --live",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint"

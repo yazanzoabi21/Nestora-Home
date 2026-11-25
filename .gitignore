@@ -6,6 +6,7 @@
 **/dist/
 
 # Angular build and generated output
+/public/sitemap.xml
 /dist/
 /out-tsc/
 /bazel-out/

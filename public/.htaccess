@@ -1,0 +1,26 @@
+Options -MultiViews
+DirectoryIndex index.html
+
+<IfModule mod_mime.c>
+  AddType application/xml .xml
+  AddType text/plain .txt
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "^(sitemap\.xml|robots\.txt)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+RewriteEngine On
+
+# Serve real assets before Angular's router can handle the request.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [END]
+
+# A missing crawler file must be a 404, never an HTML success response.
+RewriteRule ^(?:sitemap\.xml|robots\.txt)$ - [R=404,END]
+
+# Preserve deep links for the Angular application.
+RewriteRule ^ index.html [END]

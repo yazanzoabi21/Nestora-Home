@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /super-admin
+Disallow: /auth
+Disallow: /shop/cart
+Disallow: /shop/checkout
+Disallow: /shop/customer-account
+Disallow: /shop/orders
+Disallow: /shop/verify-order-email
+Disallow: /shop/wishlist
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+Disallow: /wishlist
+
+Sitemap: https://nestorahomelb.com/sitemap.xml
