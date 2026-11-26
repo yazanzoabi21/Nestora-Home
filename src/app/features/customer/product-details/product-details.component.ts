@@ -332,7 +332,7 @@ export class ProductDetailsComponent {
   }
 
   selectVariant(variant: CustomerProductVariant): void {
-    if (!variant.isActive || (variant.stock ?? this.product()?.stock ?? 0) <= 0) return;
+    if (!variant.isActive) return;
     this.selectedVariant.set(variant);
     this.quantity.set(1);
     this.variantImageOverride.set(variant.imageUrl?.trim() || null);
@@ -464,7 +464,7 @@ export class ProductDetailsComponent {
 
   async redeemWithPoints(): Promise<void> {
     const item = this.displayProduct();
-    if (!item) return;
+    if (!item?.inStock) return;
 
     if (!this.customerAuth.isAuthenticated()) {
       await this.router.navigate(['/auth/customer-login'], {
