@@ -8,18 +8,33 @@
         <p class="mt-2 break-words text-xs font-semibold leading-5 text-[#a9aca5] min-[361px]:text-sm">{{
           'CUSTOMERS.FOOTER.NEWSLETTER.DESCRIPTION' | translate }}</p>
       </div>
-      <form class="flex w-full min-w-0 max-w-md flex-col gap-3 sm:flex-row">
+      <form class="w-full min-w-0 max-w-md" [formGroup]="newsletterForm" (ngSubmit)="subscribe()" novalidate
+        [attr.aria-busy]="submitting()">
+        <div class="flex min-w-0 flex-col gap-3 sm:flex-row">
         <label class="relative min-w-0 flex-1">
           <span class="sr-only">{{ 'CUSTOMERS.FOOTER.NEWSLETTER.EMAIL_LABEL' | translate }}</span>
           <i class="pi pi-envelope absolute start-4 top-1/2 -translate-y-1/2 text-sm text-[#a9aca5]"></i>
-          <input type="email" [placeholder]="'CUSTOMERS.FOOTER.NEWSLETTER.EMAIL_PLACEHOLDER' | translate"
+          <input type="email" formControlName="email" required maxlength="254" autocomplete="email"
+            [attr.aria-invalid]="email.touched && email.invalid"
+            aria-describedby="newsletter-feedback"
+            [placeholder]="'CUSTOMERS.FOOTER.NEWSLETTER.EMAIL_PLACEHOLDER' | translate"
             class="h-12 w-full min-w-0 max-w-full rounded-2xl border border-white/15 bg-white/5 ps-11 pe-4 text-sm font-semibold text-white outline-none placeholder:text-[#8f928d] focus:border-[#7d8f70]" />
         </label>
-        <button type="button"
-          class="inline-flex h-12 w-full max-w-full items-center justify-center gap-2 rounded-2xl bg-[#7d8f70] px-5 text-sm font-black text-white transition hover:bg-[#6b7d5e] sm:w-auto sm:px-6">
-          {{ 'CUSTOMERS.FOOTER.NEWSLETTER.SUBSCRIBE' | translate }}
+        <button type="submit" [disabled]="submitting()"
+          class="inline-flex h-12 w-full max-w-full items-center justify-center gap-2 rounded-2xl bg-[#7d8f70] px-5 text-sm font-black text-white transition hover:bg-[#6b7d5e] disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:px-6">
+          {{ (submitting() ? 'CUSTOMERS.FOOTER.NEWSLETTER.SUBMITTING' : 'CUSTOMERS.FOOTER.NEWSLETTER.SUBSCRIBE') | translate }}
           <i class="pi pi-arrow-right text-xs rtl:rotate-180"></i>
         </button>
+        </div>
+        <div id="newsletter-feedback" aria-live="polite" aria-atomic="true">
+          @if (email.touched && email.invalid) {
+          <p class="mt-2 text-sm text-red-200">{{ 'CUSTOMERS.FOOTER.NEWSLETTER.INVALID_EMAIL' | translate }}</p>
+          } @else if (status() === 'success') {
+          <p class="mt-2 text-sm text-[#d8e5cf]">{{ 'CUSTOMERS.FOOTER.NEWSLETTER.SUCCESS' | translate }}</p>
+          } @else if (status() === 'error') {
+          <p class="mt-2 text-sm text-red-200">{{ 'CUSTOMERS.FOOTER.NEWSLETTER.ERROR' | translate }}</p>
+          }
+        </div>
       </form>
     </div>
   </section>

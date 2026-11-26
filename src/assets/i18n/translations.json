@@ -1579,7 +1579,11 @@
           "DESCRIPTION": "New arrivals, exclusive deals, and home inspiration — weekly.",
           "EMAIL_LABEL": "Email address",
           "EMAIL_PLACEHOLDER": "Enter your email",
-          "SUBSCRIBE": "Subscribe"
+          "SUBSCRIBE": "Subscribe",
+          "SUBMITTING": "Subscribing…",
+          "INVALID_EMAIL": "Please enter a valid email address.",
+          "SUCCESS": "Thank you! Your email is on our newsletter list.",
+          "ERROR": "We couldn't save your subscription. Please try again."
         },
         "BRAND_DESCRIPTION": "Elevating everyday living with premium home accessories, kitchen tools, cookware, and smart home solutions.",
         "SOCIAL": {
@@ -4606,7 +4610,11 @@
           "DESCRIPTION": "منتجات جديدة وعروض حصرية وأفكار ملهمة للمنزل أسبوعياً.",
           "EMAIL_LABEL": "البريد الإلكتروني",
           "EMAIL_PLACEHOLDER": "أدخل بريدك الإلكتروني",
-          "SUBSCRIBE": "اشتراك"
+          "SUBSCRIBE": "اشتراك",
+          "SUBMITTING": "جارٍ الاشتراك…",
+          "INVALID_EMAIL": "يرجى إدخال بريد إلكتروني صالح.",
+          "SUCCESS": "شكراً لك! بريدك الإلكتروني ضمن قائمة النشرة البريدية.",
+          "ERROR": "تعذّر حفظ اشتراكك. يرجى المحاولة مجدداً."
         },
         "BRAND_DESCRIPTION": "نرتقي بتفاصيل الحياة اليومية من خلال إكسسوارات منزلية مميزة وأدوات مطبخ وأواني طهي وحلول منزلية ذكية.",
         "SOCIAL": {
