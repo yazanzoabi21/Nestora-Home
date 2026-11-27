@@ -1,0 +1,38 @@
+* { box-sizing: border-box; }
+body { margin: 0; }
+.scene { background: #faf8f5; color: #1f2a1f; font-family: Arial, Tahoma, sans-serif; overflow: hidden; }
+.dark { background: #1f2a1f; color: #faf8f5; }
+.brand { position: absolute; top: 150px; left: 90px; font-size: 30px; font-weight: 700; letter-spacing: 5px; }
+.eyebrow { font-size: 28px; font-weight: 700; letter-spacing: 6px; color: #718369; }
+.headline { font-family: Georgia, 'Times New Roman', serif; font-size: 112px; line-height: 1.04; font-weight: 400; margin: 24px 0; letter-spacing: -4px; }
+.arabic { font-family: Tahoma, Arial, sans-serif; font-size: 44px; line-height: 1.5; direction: rtl; letter-spacing: 0; }
+.footer { position: absolute; bottom: 260px; left: 90px; right: 90px; font-size: 30px; letter-spacing: 2px; }
+.pill { border: 1px solid #b5bea9; padding: 22px 34px; border-radius: 60px; font-size: 30px; letter-spacing: 4px; display: inline-block; }
+.circle { position: absolute; border: 1px solid #aeb8a4; border-radius: 50%; width: 1200px; height: 1200px; right: -650px; top: 450px; opacity: .28; }
+.browser { position: absolute; left: 80px; top: 615px; width: 920px; height: 810px; border-radius: 28px; overflow: hidden; box-shadow: 0 40px 100px #0004; background: #fff; }
+.chrome { height: 65px; background: #e8dccf; padding: 19px 28px; font-size: 23px; color: #1f2a1f; display: flex; gap: 24px; align-items: center; }
+.dots { letter-spacing: 6px; color: #718369; }
+.screen { position: relative; height: 745px; overflow: hidden; }
+.product { width: 800px; height: 684px; position: absolute; left: 140px; top: 650px; border-radius: 44px; overflow: hidden; box-shadow: 0 30px 80px #1f2a1f22; }
+.number { position: absolute; top: 330px; right: 90px; font-size: 28px; color: #718369; letter-spacing: 4px; }
+.line { width: 100px; height: 3px; background: #a48b61; margin: 34px auto; }
+.logo { position: absolute; top: 275px; left: 260px; width: 560px; height: 560px; border-radius: 50%; overflow: hidden; }
+.cta { position: absolute; top: 1380px; left: 90px; width: 900px; text-align: center; padding: 32px 18px; background: #e8dccf; color: #1f2a1f; border-radius: 70px; font-size: 43px; font-weight: 700; }
+.opening-shade { background: linear-gradient(180deg, #1f2a1f55, #1f2a1fbb 55%, #1f2a1fee); }
+.opening-copy { position: absolute; left: 90px; right: 90px; top: 610px; }
+.opening-copy .headline { margin: 50px 0 40px; }
+.website-copy { position: absolute; left: 90px; right: 90px; top: 310px; }
+.website-copy .eyebrow { font-size: 24px; letter-spacing: 3px; }
+.website-copy .headline { font-size: 102px; }
+.website-footer { position: absolute; left: 80px; right: 80px; top: 1510px; text-align: center; }
+.browse { font-family: Georgia, serif; font-size: 55px; margin-bottom: 22px; }
+.product-copy { position: absolute; left: 90px; right: 90px; top: 365px; }
+.product-copy .headline { font-size: 104px; white-space: pre-line; }
+.product-footer { position: absolute; top: 1440px; left: 90px; right: 90px; text-align: center; }
+.product-subtitle { font-size: 42px; margin-bottom: 24px; }
+.closing-copy { position: absolute; top: 900px; left: 90px; right: 90px; text-align: center; }
+.closing-copy .eyebrow { font-size: 24px; letter-spacing: 4px; color: #b9c3ad; }
+.closing-copy .headline { font-size: 140px; line-height: .97; margin: 30px 0; }
+.closing-copy .headline em { color: #e8dccf; }
+.closing-footer { position: absolute; left: 90px; right: 90px; top: 1570px; text-align: center; font-size: 27px; letter-spacing: 4px; }
+.closing-footer span { display: block; font-size: 33px; letter-spacing: 0; margin-top: 24px; }
